@@ -1,7 +1,7 @@
 import { Link, useRouterState, useNavigate } from "@tanstack/react-router";
 import { useState, type ReactNode } from "react";
 import {
-  LayoutDashboard, BookOpen, PenLine, Package, Wallet, FileText, Settings, LogOut, Menu, X,
+  LayoutDashboard, BookOpen, PenLine, Package, Wallet, FileText, Settings, LogOut, Menu, X, Calculator,
 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth, useProfile } from "@/hooks/use-auth";
@@ -13,6 +13,7 @@ const NAV = [
   { to: "/manuscrits", label: "Manuscrits", icon: BookOpen },
   { to: "/auteurs", label: "Auteurs", icon: PenLine },
   { to: "/stocks", label: "Stocks", icon: Package },
+  { to: "/estimateur", label: "Estimateur", icon: Calculator },
   { to: "/finances", label: "Finances", icon: Wallet },
   { to: "/contrats", label: "Contrats", icon: FileText },
   { to: "/parametres", label: "Paramètres", icon: Settings },

@@ -14,6 +14,45 @@ export type Database = {
   }
   public: {
     Tables: {
+      auteurs: {
+        Row: {
+          created_at: string
+          email: string | null
+          entreprise_id: string
+          id: string
+          nom_complet: string
+          numero_mobile_money: string | null
+          operateur:
+            | Database["public"]["Enums"]["mobile_money_operateur"]
+            | null
+          telephone: string | null
+        }
+        Insert: {
+          created_at?: string
+          email?: string | null
+          entreprise_id: string
+          id?: string
+          nom_complet: string
+          numero_mobile_money?: string | null
+          operateur?:
+            | Database["public"]["Enums"]["mobile_money_operateur"]
+            | null
+          telephone?: string | null
+        }
+        Update: {
+          created_at?: string
+          email?: string | null
+          entreprise_id?: string
+          id?: string
+          nom_complet?: string
+          numero_mobile_money?: string | null
+          operateur?:
+            | Database["public"]["Enums"]["mobile_money_operateur"]
+            | null
+          telephone?: string | null
+        }
+        Relationships: []
+      }
       entreprises: {
         Row: {
           created_at: string
@@ -38,34 +77,97 @@ export type Database = {
         }
         Relationships: []
       }
+      estimations_cout: {
+        Row: {
+          cout_couverture: number
+          cout_papier: number
+          cout_total: number
+          created_at: string
+          droits_auteur: number
+          entreprise_id: string
+          id: string
+          inclure_delestage: boolean
+          manuscrit_id: string | null
+          manuscrit_titre: string
+          marge_librairie: number
+          nombre_exemplaires: number
+          nombre_pages: number
+          prix_vente_suggere: number
+          surcout_delestage: number
+          type_couverture: Database["public"]["Enums"]["couverture_type"]
+        }
+        Insert: {
+          cout_couverture: number
+          cout_papier: number
+          cout_total: number
+          created_at?: string
+          droits_auteur: number
+          entreprise_id: string
+          id?: string
+          inclure_delestage?: boolean
+          manuscrit_id?: string | null
+          manuscrit_titre: string
+          marge_librairie: number
+          nombre_exemplaires: number
+          nombre_pages: number
+          prix_vente_suggere: number
+          surcout_delestage: number
+          type_couverture: Database["public"]["Enums"]["couverture_type"]
+        }
+        Update: {
+          cout_couverture?: number
+          cout_papier?: number
+          cout_total?: number
+          created_at?: string
+          droits_auteur?: number
+          entreprise_id?: string
+          id?: string
+          inclure_delestage?: boolean
+          manuscrit_id?: string | null
+          manuscrit_titre?: string
+          marge_librairie?: number
+          nombre_exemplaires?: number
+          nombre_pages?: number
+          prix_vente_suggere?: number
+          surcout_delestage?: number
+          type_couverture?: Database["public"]["Enums"]["couverture_type"]
+        }
+        Relationships: []
+      }
       manuscrits: {
         Row: {
           auteur: string
+          auteur_id: string | null
           created_at: string
           entreprise_id: string
           genre: string | null
           id: string
           langue: string | null
+          nombre_pages: number | null
           statut: Database["public"]["Enums"]["manuscrit_statut"]
           titre: string
         }
         Insert: {
           auteur: string
+          auteur_id?: string | null
           created_at?: string
           entreprise_id: string
           genre?: string | null
           id?: string
           langue?: string | null
+          nombre_pages?: number | null
           statut?: Database["public"]["Enums"]["manuscrit_statut"]
           titre: string
         }
         Update: {
           auteur?: string
+          auteur_id?: string | null
           created_at?: string
           entreprise_id?: string
           genre?: string | null
           id?: string
           langue?: string | null
+          nombre_pages?: number | null
           statut?: Database["public"]["Enums"]["manuscrit_statut"]
           titre?: string
         }
@@ -111,26 +213,41 @@ export type Database = {
       stocks: {
         Row: {
           created_at: string
+          derniere_visite: string | null
           entreprise_id: string
+          exemplaires_deposes: number
           exemplaires_restants: number
           exemplaires_total: number
+          exemplaires_vendus: number
           id: string
+          librairie_adresse: string | null
+          librairie_nom: string | null
           manuscrit_id: string
         }
         Insert: {
           created_at?: string
+          derniere_visite?: string | null
           entreprise_id: string
+          exemplaires_deposes?: number
           exemplaires_restants?: number
           exemplaires_total?: number
+          exemplaires_vendus?: number
           id?: string
+          librairie_adresse?: string | null
+          librairie_nom?: string | null
           manuscrit_id: string
         }
         Update: {
           created_at?: string
+          derniere_visite?: string | null
           entreprise_id?: string
+          exemplaires_deposes?: number
           exemplaires_restants?: number
           exemplaires_total?: number
+          exemplaires_vendus?: number
           id?: string
+          librairie_adresse?: string | null
+          librairie_nom?: string | null
           manuscrit_id?: string
         }
         Relationships: [
@@ -153,6 +270,7 @@ export type Database = {
       ventes: {
         Row: {
           created_at: string
+          droits_auteur_fcfa: number
           entreprise_id: string
           id: string
           manuscrit_id: string
@@ -161,6 +279,7 @@ export type Database = {
         }
         Insert: {
           created_at?: string
+          droits_auteur_fcfa?: number
           entreprise_id: string
           id?: string
           manuscrit_id: string
@@ -169,6 +288,7 @@ export type Database = {
         }
         Update: {
           created_at?: string
+          droits_auteur_fcfa?: number
           entreprise_id?: string
           id?: string
           manuscrit_id?: string
@@ -200,6 +320,7 @@ export type Database = {
       current_entreprise_id: { Args: never; Returns: string }
     }
     Enums: {
+      couverture_type: "Souple" | "Rigide"
       manuscrit_statut:
         | "recu"
         | "lecture"
@@ -207,6 +328,7 @@ export type Database = {
         | "maquette"
         | "impression"
         | "publie"
+      mobile_money_operateur: "Orange Money" | "Moov Money"
       paiement_statut: "en_attente" | "paye" | "annule"
     }
     CompositeTypes: {
@@ -335,6 +457,7 @@ export type CompositeTypes<
 export const Constants = {
   public: {
     Enums: {
+      couverture_type: ["Souple", "Rigide"],
       manuscrit_statut: [
         "recu",
         "lecture",
@@ -343,6 +466,7 @@ export const Constants = {
         "impression",
         "publie",
       ],
+      mobile_money_operateur: ["Orange Money", "Moov Money"],
       paiement_statut: ["en_attente", "paye", "annule"],
     },
   },
