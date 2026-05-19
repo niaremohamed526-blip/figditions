@@ -17,9 +17,11 @@ import { Route as AuthenticatedStocksRouteImport } from './routes/_authenticated
 import { Route as AuthenticatedParametresRouteImport } from './routes/_authenticated/parametres'
 import { Route as AuthenticatedManuscritsRouteImport } from './routes/_authenticated/manuscrits'
 import { Route as AuthenticatedFinancesRouteImport } from './routes/_authenticated/finances'
+import { Route as AuthenticatedEstimateurRouteImport } from './routes/_authenticated/estimateur'
 import { Route as AuthenticatedDashboardRouteImport } from './routes/_authenticated/dashboard'
 import { Route as AuthenticatedContratsRouteImport } from './routes/_authenticated/contrats'
 import { Route as AuthenticatedAuteursRouteImport } from './routes/_authenticated/auteurs'
+import { Route as AuthenticatedAuteursAuteurIdRouteImport } from './routes/_authenticated/auteurs.$auteurId'
 
 const SignupRoute = SignupRouteImport.update({
   id: '/signup',
@@ -60,6 +62,11 @@ const AuthenticatedFinancesRoute = AuthenticatedFinancesRouteImport.update({
   path: '/finances',
   getParentRoute: () => AuthenticatedRoute,
 } as any)
+const AuthenticatedEstimateurRoute = AuthenticatedEstimateurRouteImport.update({
+  id: '/estimateur',
+  path: '/estimateur',
+  getParentRoute: () => AuthenticatedRoute,
+} as any)
 const AuthenticatedDashboardRoute = AuthenticatedDashboardRouteImport.update({
   id: '/dashboard',
   path: '/dashboard',
@@ -75,30 +82,40 @@ const AuthenticatedAuteursRoute = AuthenticatedAuteursRouteImport.update({
   path: '/auteurs',
   getParentRoute: () => AuthenticatedRoute,
 } as any)
+const AuthenticatedAuteursAuteurIdRoute =
+  AuthenticatedAuteursAuteurIdRouteImport.update({
+    id: '/$auteurId',
+    path: '/$auteurId',
+    getParentRoute: () => AuthenticatedAuteursRoute,
+  } as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/login': typeof LoginRoute
   '/signup': typeof SignupRoute
-  '/auteurs': typeof AuthenticatedAuteursRoute
+  '/auteurs': typeof AuthenticatedAuteursRouteWithChildren
   '/contrats': typeof AuthenticatedContratsRoute
   '/dashboard': typeof AuthenticatedDashboardRoute
+  '/estimateur': typeof AuthenticatedEstimateurRoute
   '/finances': typeof AuthenticatedFinancesRoute
   '/manuscrits': typeof AuthenticatedManuscritsRoute
   '/parametres': typeof AuthenticatedParametresRoute
   '/stocks': typeof AuthenticatedStocksRoute
+  '/auteurs/$auteurId': typeof AuthenticatedAuteursAuteurIdRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/login': typeof LoginRoute
   '/signup': typeof SignupRoute
-  '/auteurs': typeof AuthenticatedAuteursRoute
+  '/auteurs': typeof AuthenticatedAuteursRouteWithChildren
   '/contrats': typeof AuthenticatedContratsRoute
   '/dashboard': typeof AuthenticatedDashboardRoute
+  '/estimateur': typeof AuthenticatedEstimateurRoute
   '/finances': typeof AuthenticatedFinancesRoute
   '/manuscrits': typeof AuthenticatedManuscritsRoute
   '/parametres': typeof AuthenticatedParametresRoute
   '/stocks': typeof AuthenticatedStocksRoute
+  '/auteurs/$auteurId': typeof AuthenticatedAuteursAuteurIdRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -106,13 +123,15 @@ export interface FileRoutesById {
   '/_authenticated': typeof AuthenticatedRouteWithChildren
   '/login': typeof LoginRoute
   '/signup': typeof SignupRoute
-  '/_authenticated/auteurs': typeof AuthenticatedAuteursRoute
+  '/_authenticated/auteurs': typeof AuthenticatedAuteursRouteWithChildren
   '/_authenticated/contrats': typeof AuthenticatedContratsRoute
   '/_authenticated/dashboard': typeof AuthenticatedDashboardRoute
+  '/_authenticated/estimateur': typeof AuthenticatedEstimateurRoute
   '/_authenticated/finances': typeof AuthenticatedFinancesRoute
   '/_authenticated/manuscrits': typeof AuthenticatedManuscritsRoute
   '/_authenticated/parametres': typeof AuthenticatedParametresRoute
   '/_authenticated/stocks': typeof AuthenticatedStocksRoute
+  '/_authenticated/auteurs/$auteurId': typeof AuthenticatedAuteursAuteurIdRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -123,10 +142,12 @@ export interface FileRouteTypes {
     | '/auteurs'
     | '/contrats'
     | '/dashboard'
+    | '/estimateur'
     | '/finances'
     | '/manuscrits'
     | '/parametres'
     | '/stocks'
+    | '/auteurs/$auteurId'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -135,10 +156,12 @@ export interface FileRouteTypes {
     | '/auteurs'
     | '/contrats'
     | '/dashboard'
+    | '/estimateur'
     | '/finances'
     | '/manuscrits'
     | '/parametres'
     | '/stocks'
+    | '/auteurs/$auteurId'
   id:
     | '__root__'
     | '/'
@@ -148,10 +171,12 @@ export interface FileRouteTypes {
     | '/_authenticated/auteurs'
     | '/_authenticated/contrats'
     | '/_authenticated/dashboard'
+    | '/_authenticated/estimateur'
     | '/_authenticated/finances'
     | '/_authenticated/manuscrits'
     | '/_authenticated/parametres'
     | '/_authenticated/stocks'
+    | '/_authenticated/auteurs/$auteurId'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -219,6 +244,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedFinancesRouteImport
       parentRoute: typeof AuthenticatedRoute
     }
+    '/_authenticated/estimateur': {
+      id: '/_authenticated/estimateur'
+      path: '/estimateur'
+      fullPath: '/estimateur'
+      preLoaderRoute: typeof AuthenticatedEstimateurRouteImport
+      parentRoute: typeof AuthenticatedRoute
+    }
     '/_authenticated/dashboard': {
       id: '/_authenticated/dashboard'
       path: '/dashboard'
@@ -240,13 +272,32 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedAuteursRouteImport
       parentRoute: typeof AuthenticatedRoute
     }
+    '/_authenticated/auteurs/$auteurId': {
+      id: '/_authenticated/auteurs/$auteurId'
+      path: '/$auteurId'
+      fullPath: '/auteurs/$auteurId'
+      preLoaderRoute: typeof AuthenticatedAuteursAuteurIdRouteImport
+      parentRoute: typeof AuthenticatedAuteursRoute
+    }
   }
 }
 
+interface AuthenticatedAuteursRouteChildren {
+  AuthenticatedAuteursAuteurIdRoute: typeof AuthenticatedAuteursAuteurIdRoute
+}
+
+const AuthenticatedAuteursRouteChildren: AuthenticatedAuteursRouteChildren = {
+  AuthenticatedAuteursAuteurIdRoute: AuthenticatedAuteursAuteurIdRoute,
+}
+
+const AuthenticatedAuteursRouteWithChildren =
+  AuthenticatedAuteursRoute._addFileChildren(AuthenticatedAuteursRouteChildren)
+
 interface AuthenticatedRouteChildren {
-  AuthenticatedAuteursRoute: typeof AuthenticatedAuteursRoute
+  AuthenticatedAuteursRoute: typeof AuthenticatedAuteursRouteWithChildren
   AuthenticatedContratsRoute: typeof AuthenticatedContratsRoute
   AuthenticatedDashboardRoute: typeof AuthenticatedDashboardRoute
+  AuthenticatedEstimateurRoute: typeof AuthenticatedEstimateurRoute
   AuthenticatedFinancesRoute: typeof AuthenticatedFinancesRoute
   AuthenticatedManuscritsRoute: typeof AuthenticatedManuscritsRoute
   AuthenticatedParametresRoute: typeof AuthenticatedParametresRoute
@@ -254,9 +305,10 @@ interface AuthenticatedRouteChildren {
 }
 
 const AuthenticatedRouteChildren: AuthenticatedRouteChildren = {
-  AuthenticatedAuteursRoute: AuthenticatedAuteursRoute,
+  AuthenticatedAuteursRoute: AuthenticatedAuteursRouteWithChildren,
   AuthenticatedContratsRoute: AuthenticatedContratsRoute,
   AuthenticatedDashboardRoute: AuthenticatedDashboardRoute,
+  AuthenticatedEstimateurRoute: AuthenticatedEstimateurRoute,
   AuthenticatedFinancesRoute: AuthenticatedFinancesRoute,
   AuthenticatedManuscritsRoute: AuthenticatedManuscritsRoute,
   AuthenticatedParametresRoute: AuthenticatedParametresRoute,
@@ -276,3 +328,13 @@ const rootRouteChildren: RootRouteChildren = {
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
+
+import type { getRouter } from './router.tsx'
+import type { startInstance } from './start.ts'
+declare module '@tanstack/react-start' {
+  interface Register {
+    ssr: true
+    router: Awaited<ReturnType<typeof getRouter>>
+    config: Awaited<ReturnType<typeof startInstance.getOptions>>
+  }
+}

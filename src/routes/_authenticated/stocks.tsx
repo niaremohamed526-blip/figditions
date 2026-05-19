@@ -1,10 +1,358 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { PlaceholderPage } from "@/components/placeholder-page";
-import { Package } from "lucide-react";
+import { useEffect, useMemo, useState } from "react";
+import { Plus, Search, Package, Loader2, Pencil, Trash2, Calendar as CalendarIcon, Store, BookOpen, TrendingUp, ShoppingBag } from "lucide-react";
+import { format } from "date-fns";
+import { fr } from "date-fns/locale";
+import { supabase } from "@/integrations/supabase/client";
+import { useAuth, useProfile } from "@/hooks/use-auth";
+import { Input } from "@/components/ui/input";
+import { Button } from "@/components/ui/button";
+import { Label } from "@/components/ui/label";
+import { Skeleton } from "@/components/ui/skeleton";
+import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { Calendar } from "@/components/ui/calendar";
+import {
+  AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent,
+  AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
+import { toast } from "sonner";
+import { cn } from "@/lib/utils";
 
 export const Route = createFileRoute("/_authenticated/stocks")({
-  component: () => (
-    <PlaceholderPage icon={Package} title="Stocks"
-      description="Suivez vos exemplaires en entrepôt et en distribution." />
-  ),
+  component: StocksPage,
+  head: () => ({ meta: [{ title: "Stocks — FIGDITIONS" }] }),
 });
+
+interface Stock {
+  id: string;
+  manuscrit_id: string;
+  librairie_nom: string | null;
+  librairie_adresse: string | null;
+  exemplaires_deposes: number;
+  exemplaires_vendus: number;
+  exemplaires_restants: number;
+  derniere_visite: string | null;
+}
+interface Manuscrit { id: string; titre: string; statut: string; }
+
+function StocksPage() {
+  const { user } = useAuth();
+  const { profile } = useProfile(user?.id);
+  const [items, setItems] = useState<Stock[] | null>(null);
+  const [manuscrits, setManuscrits] = useState<Manuscrit[]>([]);
+  const [q, setQ] = useState("");
+  const [sheetOpen, setSheetOpen] = useState(false);
+  const [editing, setEditing] = useState<Stock | null>(null);
+  const [toDelete, setToDelete] = useState<Stock | null>(null);
+  const [deleting, setDeleting] = useState(false);
+
+  const load = async () => {
+    setItems(null);
+    const [{ data: stocks, error }, { data: ms }] = await Promise.all([
+      supabase.from("stocks").select("*").order("created_at", { ascending: false }),
+      supabase.from("manuscrits").select("id, titre, statut"),
+    ]);
+    if (error) toast.error(error.message);
+    setItems((stocks ?? []) as Stock[]);
+    setManuscrits((ms ?? []) as Manuscrit[]);
+  };
+
+  useEffect(() => { if (profile?.entreprise_id) load(); }, [profile?.entreprise_id]);
+
+  const titreMap = useMemo(() => Object.fromEntries(manuscrits.map((m) => [m.id, m.titre])), [manuscrits]);
+
+  const filtered = useMemo(() => {
+    if (!items) return null;
+    const needle = q.toLowerCase().trim();
+    if (!needle) return items;
+    return items.filter((s) =>
+      (s.librairie_nom ?? "").toLowerCase().includes(needle) ||
+      (titreMap[s.manuscrit_id] ?? "").toLowerCase().includes(needle)
+    );
+  }, [items, q, titreMap]);
+
+  const totals = useMemo(() => {
+    const list = items ?? [];
+    const bookstores = new Set(list.map((s) => (s.librairie_nom ?? "").trim()).filter(Boolean));
+    return {
+      deposes: list.reduce((s, x) => s + (x.exemplaires_deposes ?? 0), 0),
+      vendus: list.reduce((s, x) => s + (x.exemplaires_vendus ?? 0), 0),
+      restants: list.reduce((s, x) => s + (x.exemplaires_restants ?? 0), 0),
+      librairies: bookstores.size,
+    };
+  }, [items]);
+
+  const openNew = () => { setEditing(null); setSheetOpen(true); };
+  const openEdit = (s: Stock) => { setEditing(s); setSheetOpen(true); };
+
+  const confirmDelete = async () => {
+    if (!toDelete) return;
+    setDeleting(true);
+    const { error } = await supabase.from("stocks").delete().eq("id", toDelete.id);
+    setDeleting(false);
+    if (error) return toast.error(error.message);
+    toast.success("Dépôt supprimé");
+    setItems((prev) => prev?.filter((x) => x.id !== toDelete.id) ?? prev);
+    setToDelete(null);
+  };
+
+  const remainingColor = (n: number) =>
+    n === 0 ? "text-red-400 bg-red-500/15 border-red-500/30"
+      : n <= 5 ? "text-orange-400 bg-orange-500/15 border-orange-500/30"
+      : "text-primary bg-primary/15 border-primary/30";
+
+  return (
+    <div className="space-y-6">
+      <header className="flex flex-wrap items-end justify-between gap-4">
+        <div>
+          <h1 className="text-3xl font-bold tracking-tight">Stocks</h1>
+          <p className="text-muted-foreground mt-1">Suivez vos dépôts dans les librairies de Bamako.</p>
+        </div>
+        <Button onClick={openNew} className="bg-primary text-primary-foreground hover:bg-primary/90">
+          <Plus className="h-4 w-4 mr-2" /> Ajouter un dépôt
+        </Button>
+      </header>
+
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
+        <SummaryCard icon={<BookOpen />} label="En circulation" value={totals.deposes} />
+        <SummaryCard icon={<ShoppingBag />} label="Vendus" value={totals.vendus} accent="primary" />
+        <SummaryCard icon={<TrendingUp />} label="Restants" value={totals.restants} />
+        <SummaryCard icon={<Store />} label="Librairies" value={totals.librairies} accent="gold" />
+      </div>
+
+      <div className="relative max-w-md">
+        <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+        <Input placeholder="Rechercher par librairie ou titre…" value={q} onChange={(e) => setQ(e.target.value)} className="pl-9 bg-card" />
+      </div>
+
+      <div className="rounded-xl border border-border bg-card overflow-hidden">
+        {filtered === null ? (
+          <div className="p-6 space-y-3">
+            {Array.from({ length: 5 }).map((_, i) => <Skeleton key={i} className="h-12 w-full" />)}
+          </div>
+        ) : filtered.length === 0 ? (
+          <EmptyState hasItems={(items?.length ?? 0) > 0} onAdd={openNew} />
+        ) : (
+          <div className="overflow-x-auto">
+            <table className="w-full text-sm">
+              <thead className="bg-muted/30 text-muted-foreground">
+                <tr className="text-left">
+                  <th className="px-4 py-3 font-medium">Titre</th>
+                  <th className="px-4 py-3 font-medium">Librairie</th>
+                  <th className="px-4 py-3 font-medium hidden lg:table-cell">Adresse</th>
+                  <th className="px-4 py-3 font-medium text-center">Déposés</th>
+                  <th className="px-4 py-3 font-medium text-center">Vendus</th>
+                  <th className="px-4 py-3 font-medium text-center">Restants</th>
+                  <th className="px-4 py-3 font-medium hidden md:table-cell">Dernière visite</th>
+                  <th className="px-4 py-3 font-medium w-20 text-right">Actions</th>
+                </tr>
+              </thead>
+              <tbody>
+                {filtered.map((s) => (
+                  <tr key={s.id} className="group border-t border-border hover:bg-primary/5 transition-colors">
+                    <td className="px-4 py-3 font-medium">{titreMap[s.manuscrit_id] ?? "—"}</td>
+                    <td className="px-4 py-3">{s.librairie_nom ?? "—"}</td>
+                    <td className="px-4 py-3 text-muted-foreground hidden lg:table-cell">{s.librairie_adresse ?? "—"}</td>
+                    <td className="px-4 py-3 text-center text-muted-foreground">{s.exemplaires_deposes}</td>
+                    <td className="px-4 py-3 text-center text-muted-foreground">{s.exemplaires_vendus}</td>
+                    <td className="px-4 py-3 text-center">
+                      <span className={cn("inline-flex items-center justify-center min-w-9 px-2 h-6 rounded-full border text-xs font-semibold transition-colors", remainingColor(s.exemplaires_restants))}>
+                        {s.exemplaires_restants}
+                      </span>
+                    </td>
+                    <td className="px-4 py-3 text-muted-foreground hidden md:table-cell">
+                      {s.derniere_visite ? format(new Date(s.derniere_visite), "dd MMM yyyy", { locale: fr }) : "—"}
+                    </td>
+                    <td className="px-4 py-3 text-right">
+                      <div className="flex items-center justify-end gap-1 opacity-0 group-hover:opacity-100 focus-within:opacity-100 transition-opacity">
+                        <Button size="icon" variant="ghost" className="h-8 w-8 hover:bg-primary/15 hover:text-primary" onClick={() => openEdit(s)} title="Modifier">
+                          <Pencil className="h-4 w-4" />
+                        </Button>
+                        <Button size="icon" variant="ghost" className="h-8 w-8 hover:bg-destructive/15 hover:text-destructive" onClick={() => setToDelete(s)} title="Supprimer">
+                          <Trash2 className="h-4 w-4" />
+                        </Button>
+                      </div>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        )}
+      </div>
+
+      <Sheet open={sheetOpen} onOpenChange={setSheetOpen}>
+        <SheetContent side="right" className="bg-card border-border w-full sm:max-w-md overflow-y-auto">
+          <SheetHeader><SheetTitle>{editing ? "Modifier le dépôt" : "Ajouter un dépôt"}</SheetTitle></SheetHeader>
+          <StockForm
+            key={editing?.id ?? "new"}
+            entrepriseId={profile?.entreprise_id ?? null}
+            manuscrits={manuscrits.filter((m) => m.statut === "publie")}
+            existing={editing}
+            onSaved={() => { setSheetOpen(false); load(); }}
+          />
+        </SheetContent>
+      </Sheet>
+
+      <AlertDialog open={!!toDelete} onOpenChange={(o) => !o && setToDelete(null)}>
+        <AlertDialogContent className="bg-card border-border">
+          <AlertDialogHeader>
+            <AlertDialogTitle>Supprimer ce dépôt ?</AlertDialogTitle>
+            <AlertDialogDescription>
+              Êtes-vous sûr de vouloir supprimer ce dépôt&nbsp;? Cette action est irréversible.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel disabled={deleting}>Annuler</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={(e) => { e.preventDefault(); confirmDelete(); }}
+              disabled={deleting}
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+            >
+              {deleting ? <Loader2 className="h-4 w-4 animate-spin" /> : "Supprimer"}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+    </div>
+  );
+}
+
+function SummaryCard({ icon, label, value, accent }: { icon: React.ReactNode; label: string; value: number; accent?: "primary" | "gold" }) {
+  const color = accent === "gold" ? "text-[color:var(--gold)]" : accent === "primary" ? "text-primary" : "text-foreground";
+  return (
+    <div className="rounded-xl border border-border bg-card p-4">
+      <div className="flex items-center gap-2 text-muted-foreground text-xs">
+        <span className={accent === "gold" ? "text-[color:var(--gold)]" : "text-primary"}>
+          {icon}
+        </span>
+        {label}
+      </div>
+      <p className={cn("mt-1.5 text-2xl font-bold", color)}>{new Intl.NumberFormat("fr-FR").format(value)}</p>
+    </div>
+  );
+}
+
+function EmptyState({ hasItems, onAdd }: { hasItems: boolean; onAdd: () => void }) {
+  return (
+    <div className="py-16 text-center px-4">
+      <div className="mx-auto h-16 w-16 rounded-2xl bg-primary/10 text-primary flex items-center justify-center">
+        <Package className="h-8 w-8" />
+      </div>
+      <h3 className="mt-4 font-semibold">{hasItems ? "Aucun résultat" : "Aucun dépôt"}</h3>
+      <p className="mt-1 text-sm text-muted-foreground">
+        {hasItems ? "Essayez d'ajuster votre recherche." : "Enregistrez votre premier dépôt en librairie."}
+      </p>
+      {!hasItems && (
+        <Button onClick={onAdd} className="mt-4 bg-primary text-primary-foreground hover:bg-primary/90">
+          <Plus className="h-4 w-4 mr-2" /> Ajouter un dépôt
+        </Button>
+      )}
+    </div>
+  );
+}
+
+function StockForm({
+  entrepriseId, manuscrits, existing, onSaved,
+}: {
+  entrepriseId: string | null;
+  manuscrits: Manuscrit[];
+  existing: Stock | null;
+  onSaved: () => void;
+}) {
+  const [form, setForm] = useState({
+    manuscrit_id: existing?.manuscrit_id ?? "",
+    librairie_nom: existing?.librairie_nom ?? "",
+    librairie_adresse: existing?.librairie_adresse ?? "",
+    exemplaires_deposes: existing?.exemplaires_deposes ?? 0,
+    exemplaires_vendus: existing?.exemplaires_vendus ?? 0,
+    derniere_visite: existing?.derniere_visite ? new Date(existing.derniere_visite) : undefined as Date | undefined,
+  });
+  const [loading, setLoading] = useState(false);
+
+  const restants = Math.max(0, Number(form.exemplaires_deposes) - Number(form.exemplaires_vendus));
+
+  const submit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!entrepriseId) return toast.error("Profil non chargé");
+    if (!form.manuscrit_id) return toast.error("Sélectionnez un manuscrit");
+    setLoading(true);
+    const payload: any = {
+      manuscrit_id: form.manuscrit_id,
+      librairie_nom: form.librairie_nom || null,
+      librairie_adresse: form.librairie_adresse || null,
+      exemplaires_deposes: Number(form.exemplaires_deposes),
+      exemplaires_vendus: Number(form.exemplaires_vendus),
+      exemplaires_restants: restants,
+      exemplaires_total: Number(form.exemplaires_deposes),
+      derniere_visite: form.derniere_visite ? format(form.derniere_visite, "yyyy-MM-dd") : null,
+    };
+    const { error } = existing
+      ? await supabase.from("stocks").update(payload).eq("id", existing.id)
+      : await supabase.from("stocks").insert({ ...payload, entreprise_id: entrepriseId });
+    setLoading(false);
+    if (error) return toast.error(error.message);
+    toast.success(existing ? "Stock mis à jour" : "Dépôt ajouté");
+    onSaved();
+  };
+
+  return (
+    <form onSubmit={submit} className="space-y-4 mt-6">
+      <div className="space-y-2">
+        <Label>Manuscrit publié</Label>
+        <Select value={form.manuscrit_id} onValueChange={(v) => setForm({ ...form, manuscrit_id: v })}>
+          <SelectTrigger><SelectValue placeholder="Sélectionner…" /></SelectTrigger>
+          <SelectContent>
+            {manuscrits.length === 0 && <div className="px-3 py-2 text-xs text-muted-foreground">Aucun manuscrit publié</div>}
+            {manuscrits.map((m) => <SelectItem key={m.id} value={m.id}>{m.titre}</SelectItem>)}
+          </SelectContent>
+        </Select>
+      </div>
+      <div className="space-y-2">
+        <Label>Nom de la librairie</Label>
+        <Input required value={form.librairie_nom} onChange={(e) => setForm({ ...form, librairie_nom: e.target.value })} placeholder="Librairie Harmattan…" />
+      </div>
+      <div className="space-y-2">
+        <Label>Adresse</Label>
+        <Input value={form.librairie_adresse} onChange={(e) => setForm({ ...form, librairie_adresse: e.target.value })} placeholder="Hamdallaye ACI 2000…" />
+      </div>
+      <div className="grid grid-cols-2 gap-3">
+        <div className="space-y-2">
+          <Label>Exemplaires déposés</Label>
+          <Input type="number" min={0} required value={form.exemplaires_deposes}
+            onChange={(e) => setForm({ ...form, exemplaires_deposes: Number(e.target.value) })} />
+        </div>
+        <div className="space-y-2">
+          <Label>Exemplaires vendus</Label>
+          <Input type="number" min={0} required value={form.exemplaires_vendus}
+            onChange={(e) => setForm({ ...form, exemplaires_vendus: Number(e.target.value) })} />
+        </div>
+      </div>
+      <div className="rounded-lg border border-border bg-background/40 px-3 py-2 text-sm flex items-center justify-between">
+        <span className="text-muted-foreground">Restants (auto)</span>
+        <span className="font-semibold text-primary">{restants}</span>
+      </div>
+      <div className="space-y-2">
+        <Label>Dernière visite</Label>
+        <Popover>
+          <PopoverTrigger asChild>
+            <Button variant="outline" className={cn("w-full justify-start text-left font-normal", !form.derniere_visite && "text-muted-foreground")}>
+              <CalendarIcon className="mr-2 h-4 w-4" />
+              {form.derniere_visite ? format(form.derniere_visite, "PPP", { locale: fr }) : "Choisir une date"}
+            </Button>
+          </PopoverTrigger>
+          <PopoverContent className="w-auto p-0 bg-card border-border" align="start">
+            <Calendar mode="single" selected={form.derniere_visite}
+              onSelect={(d) => setForm({ ...form, derniere_visite: d })}
+              initialFocus locale={fr} className={cn("p-3 pointer-events-auto")} />
+          </PopoverContent>
+        </Popover>
+      </div>
+      <Button type="submit" disabled={loading} className="w-full bg-primary text-primary-foreground hover:bg-primary/90">
+        {loading ? <Loader2 className="h-4 w-4 animate-spin" /> : (existing ? "Enregistrer les modifications" : "Ajouter le dépôt")}
+      </Button>
+    </form>
+  );
+}
