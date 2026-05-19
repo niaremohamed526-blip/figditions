@@ -1,6 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useEffect, useMemo, useState } from "react";
-import { Calculator, Save, Loader2, Trash2, FileText, Printer, Zap, Package, Store, Pen, Sparkles } from "lucide-react";
+import { Calculator, Save, Loader2, Trash2, Zap, Sparkles } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth, useProfile } from "@/hooks/use-auth";
 import { Input } from "@/components/ui/input";
