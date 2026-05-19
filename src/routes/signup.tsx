@@ -52,7 +52,7 @@ function SignupPage() {
     <div className="min-h-screen gradient-bg flex items-center justify-center px-4 py-12">
       <div className="w-full max-w-md animate-[fade-up_0.6s_ease-out_both]">
         <div className="text-center mb-8 flex flex-col items-center">
-          <Logo className="h-20 w-auto mb-4" />
+          <Logo className="h-28 w-auto mb-2" />
           <p className="mt-1 text-muted-foreground text-sm">
             La plateforme éditoriale de l'Afrique de l'Ouest
           </p>
