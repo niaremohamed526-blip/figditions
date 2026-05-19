@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { toast } from "sonner";
 import { Loader2 } from "lucide-react";
+import { Logo } from "@/components/logo";
 
 export const Route = createFileRoute("/login")({
   component: LoginPage,
@@ -31,11 +32,9 @@ function LoginPage() {
   return (
     <div className="min-h-screen gradient-bg flex items-center justify-center px-4 py-12">
       <div className="w-full max-w-md animate-[fade-up_0.6s_ease-out_both]">
-        <div className="text-center mb-10">
-          <h1 className="text-5xl font-extrabold tracking-tight text-[color:var(--gold)]" style={{ letterSpacing: "0.02em" }}>
-            FIGDITIONS
-          </h1>
-          <p className="mt-3 text-muted-foreground text-sm">
+        <div className="text-center mb-10 flex flex-col items-center">
+          <Logo className="h-20 w-auto mb-4" />
+          <p className="mt-1 text-muted-foreground text-sm">
             La plateforme éditoriale de l'Afrique de l'Ouest
           </p>
         </div>

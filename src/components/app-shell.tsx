@@ -6,6 +6,7 @@ import {
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth, useProfile } from "@/hooks/use-auth";
 import { cn } from "@/lib/utils";
+import { Logo } from "@/components/logo";
 
 const NAV = [
   { to: "/dashboard", label: "Tableau de bord", icon: LayoutDashboard },
@@ -35,9 +36,9 @@ export function AppShell({ children }: { children: ReactNode }) {
     <div className="min-h-screen gradient-bg flex">
       {/* Sidebar desktop */}
       <aside className="hidden md:flex w-64 flex-col bg-sidebar border-r border-border sticky top-0 h-screen">
-        <div className="px-6 py-6 border-b border-border">
-          <Link to="/dashboard" className="text-2xl font-extrabold tracking-tight text-[color:var(--gold)]">
-            FIGDITIONS
+        <div className="px-4 py-5 border-b border-border">
+          <Link to="/dashboard" className="block">
+            <Logo className="h-10 w-auto mx-auto" />
           </Link>
         </div>
         <nav className="flex-1 px-3 py-6 space-y-1 overflow-y-auto">
@@ -78,7 +79,7 @@ export function AppShell({ children }: { children: ReactNode }) {
 
       {/* Mobile top bar */}
       <div className="md:hidden fixed top-0 left-0 right-0 z-30 bg-sidebar/95 backdrop-blur border-b border-border h-14 flex items-center justify-between px-4">
-        <Link to="/dashboard" className="text-lg font-extrabold text-[color:var(--gold)]">FIGDITIONS</Link>
+        <Link to="/dashboard"><Logo className="h-8 w-auto" /></Link>
         <button onClick={() => setMobileOpen((o) => !o)} className="p-2">
           {mobileOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
         </button>
