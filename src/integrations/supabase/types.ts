@@ -14,16 +14,200 @@ export type Database = {
   }
   public: {
     Tables: {
-      [_ in never]: never
+      entreprises: {
+        Row: {
+          created_at: string
+          id: string
+          nom: string
+          owner_id: string
+          ville: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          nom: string
+          owner_id: string
+          ville?: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          nom?: string
+          owner_id?: string
+          ville?: string
+        }
+        Relationships: []
+      }
+      manuscrits: {
+        Row: {
+          auteur: string
+          created_at: string
+          entreprise_id: string
+          genre: string | null
+          id: string
+          langue: string | null
+          statut: Database["public"]["Enums"]["manuscrit_statut"]
+          titre: string
+        }
+        Insert: {
+          auteur: string
+          created_at?: string
+          entreprise_id: string
+          genre?: string | null
+          id?: string
+          langue?: string | null
+          statut?: Database["public"]["Enums"]["manuscrit_statut"]
+          titre: string
+        }
+        Update: {
+          auteur?: string
+          created_at?: string
+          entreprise_id?: string
+          genre?: string | null
+          id?: string
+          langue?: string | null
+          statut?: Database["public"]["Enums"]["manuscrit_statut"]
+          titre?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "manuscrits_entreprise_id_fkey"
+            columns: ["entreprise_id"]
+            isOneToOne: false
+            referencedRelation: "entreprises"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      profiles: {
+        Row: {
+          created_at: string
+          entreprise_id: string | null
+          full_name: string
+          id: string
+        }
+        Insert: {
+          created_at?: string
+          entreprise_id?: string | null
+          full_name: string
+          id: string
+        }
+        Update: {
+          created_at?: string
+          entreprise_id?: string | null
+          full_name?: string
+          id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "profiles_entreprise_id_fkey"
+            columns: ["entreprise_id"]
+            isOneToOne: false
+            referencedRelation: "entreprises"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      stocks: {
+        Row: {
+          created_at: string
+          entreprise_id: string
+          exemplaires_restants: number
+          exemplaires_total: number
+          id: string
+          manuscrit_id: string
+        }
+        Insert: {
+          created_at?: string
+          entreprise_id: string
+          exemplaires_restants?: number
+          exemplaires_total?: number
+          id?: string
+          manuscrit_id: string
+        }
+        Update: {
+          created_at?: string
+          entreprise_id?: string
+          exemplaires_restants?: number
+          exemplaires_total?: number
+          id?: string
+          manuscrit_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "stocks_entreprise_id_fkey"
+            columns: ["entreprise_id"]
+            isOneToOne: false
+            referencedRelation: "entreprises"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "stocks_manuscrit_id_fkey"
+            columns: ["manuscrit_id"]
+            isOneToOne: false
+            referencedRelation: "manuscrits"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      ventes: {
+        Row: {
+          created_at: string
+          entreprise_id: string
+          id: string
+          manuscrit_id: string
+          montant: number
+          statut_paiement: Database["public"]["Enums"]["paiement_statut"]
+        }
+        Insert: {
+          created_at?: string
+          entreprise_id: string
+          id?: string
+          manuscrit_id: string
+          montant?: number
+          statut_paiement?: Database["public"]["Enums"]["paiement_statut"]
+        }
+        Update: {
+          created_at?: string
+          entreprise_id?: string
+          id?: string
+          manuscrit_id?: string
+          montant?: number
+          statut_paiement?: Database["public"]["Enums"]["paiement_statut"]
+        }
+        Relationships: [
+          {
+            foreignKeyName: "ventes_entreprise_id_fkey"
+            columns: ["entreprise_id"]
+            isOneToOne: false
+            referencedRelation: "entreprises"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "ventes_manuscrit_id_fkey"
+            columns: ["manuscrit_id"]
+            isOneToOne: false
+            referencedRelation: "manuscrits"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
     }
     Views: {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      current_entreprise_id: { Args: never; Returns: string }
     }
     Enums: {
-      [_ in never]: never
+      manuscrit_statut:
+        | "recu"
+        | "lecture"
+        | "correction"
+        | "maquette"
+        | "impression"
+        | "publie"
+      paiement_statut: "en_attente" | "paye" | "annule"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -150,6 +334,16 @@ export type CompositeTypes<
 
 export const Constants = {
   public: {
-    Enums: {},
+    Enums: {
+      manuscrit_statut: [
+        "recu",
+        "lecture",
+        "correction",
+        "maquette",
+        "impression",
+        "publie",
+      ],
+      paiement_statut: ["en_attente", "paye", "annule"],
+    },
   },
 } as const
