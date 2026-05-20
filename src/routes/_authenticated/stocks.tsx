@@ -1,6 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useEffect, useMemo, useState } from "react";
-import { Plus, Search, Package, Loader2, Pencil, Trash2, Calendar as CalendarIcon, Store, BookOpen, TrendingUp, ShoppingBag } from "lucide-react";
+import { Plus, Search, Package, Loader2, Pencil, Trash2, Calendar as CalendarIcon, Store, BookOpen, TrendingUp, ShoppingBag, Wallet, PenLine } from "lucide-react";
 import { format } from "date-fns";
 import { fr } from "date-fns/locale";
 import { supabase } from "@/integrations/supabase/client";
@@ -19,6 +19,7 @@ import {
 } from "@/components/ui/alert-dialog";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
+import { fcfa } from "@/lib/format";
 
 export const Route = createFileRoute("/_authenticated/stocks")({
   component: StocksPage,
@@ -34,8 +35,9 @@ interface Stock {
   exemplaires_vendus: number;
   exemplaires_restants: number;
   derniere_visite: string | null;
+  prix_unitaire_fcfa: number | null;
 }
-interface Manuscrit { id: string; titre: string; statut: string; }
+interface Manuscrit { id: string; titre: string; statut: string; auteur_id?: string | null; }
 
 function StocksPage() {
   const { user } = useAuth();
@@ -52,7 +54,7 @@ function StocksPage() {
     setItems(null);
     const [{ data: stocks, error }, { data: ms }] = await Promise.all([
       supabase.from("stocks").select("*").order("created_at", { ascending: false }),
-      supabase.from("manuscrits").select("id, titre, statut"),
+      (supabase as any).from("manuscrits").select("id, titre, statut, auteur_id"),
     ]);
     if (error) toast.error(error.message);
     setItems((stocks ?? []) as Stock[]);
@@ -81,6 +83,7 @@ function StocksPage() {
       vendus: list.reduce((s, x) => s + (x.exemplaires_vendus ?? 0), 0),
       restants: list.reduce((s, x) => s + (x.exemplaires_restants ?? 0), 0),
       librairies: bookstores.size,
+      ca: list.reduce((s, x) => s + (x.exemplaires_vendus ?? 0) * Number(x.prix_unitaire_fcfa ?? 0), 0),
     };
   }, [items]);
 
@@ -115,11 +118,12 @@ function StocksPage() {
         </Button>
       </header>
 
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
-        <SummaryCard icon={<BookOpen />} label="En circulation" value={totals.deposes} />
-        <SummaryCard icon={<ShoppingBag />} label="Vendus" value={totals.vendus} accent="primary" />
-        <SummaryCard icon={<TrendingUp />} label="Restants" value={totals.restants} />
-        <SummaryCard icon={<Store />} label="Librairies" value={totals.librairies} accent="gold" />
+      <div className="grid grid-cols-2 lg:grid-cols-5 gap-3">
+        <SummaryCard icon={<BookOpen />} label="En circulation" value={String(totals.deposes)} />
+        <SummaryCard icon={<ShoppingBag />} label="Vendus" value={String(totals.vendus)} accent="primary" />
+        <SummaryCard icon={<TrendingUp />} label="Restants" value={String(totals.restants)} />
+        <SummaryCard icon={<Store />} label="Librairies" value={String(totals.librairies)} />
+        <SummaryCard icon={<Wallet />} label="Chiffre d'affaires" value={fcfa(totals.ca)} accent="gold" />
       </div>
 
       <div className="relative max-w-md">
@@ -141,42 +145,47 @@ function StocksPage() {
                 <tr className="text-left">
                   <th className="px-4 py-3 font-medium">Titre</th>
                   <th className="px-4 py-3 font-medium">Librairie</th>
-                  <th className="px-4 py-3 font-medium hidden lg:table-cell">Adresse</th>
                   <th className="px-4 py-3 font-medium text-center">Déposés</th>
                   <th className="px-4 py-3 font-medium text-center">Vendus</th>
                   <th className="px-4 py-3 font-medium text-center">Restants</th>
+                  <th className="px-4 py-3 font-medium text-right">Prix unit.</th>
+                  <th className="px-4 py-3 font-medium text-right">Chiffre d'affaires</th>
                   <th className="px-4 py-3 font-medium hidden md:table-cell">Dernière visite</th>
                   <th className="px-4 py-3 font-medium w-20 text-right">Actions</th>
                 </tr>
               </thead>
               <tbody>
-                {filtered.map((s) => (
-                  <tr key={s.id} className="group border-t border-border hover:bg-primary/5 transition-colors">
-                    <td className="px-4 py-3 font-medium">{titreMap[s.manuscrit_id] ?? "—"}</td>
-                    <td className="px-4 py-3">{s.librairie_nom ?? "—"}</td>
-                    <td className="px-4 py-3 text-muted-foreground hidden lg:table-cell">{s.librairie_adresse ?? "—"}</td>
-                    <td className="px-4 py-3 text-center text-muted-foreground">{s.exemplaires_deposes}</td>
-                    <td className="px-4 py-3 text-center text-muted-foreground">{s.exemplaires_vendus}</td>
-                    <td className="px-4 py-3 text-center">
-                      <span className={cn("inline-flex items-center justify-center min-w-9 px-2 h-6 rounded-full border text-xs font-semibold transition-colors", remainingColor(s.exemplaires_restants))}>
-                        {s.exemplaires_restants}
-                      </span>
-                    </td>
-                    <td className="px-4 py-3 text-muted-foreground hidden md:table-cell">
-                      {s.derniere_visite ? format(new Date(s.derniere_visite), "dd MMM yyyy", { locale: fr }) : "—"}
-                    </td>
-                    <td className="px-4 py-3 text-right">
-                      <div className="flex items-center justify-end gap-1 opacity-0 group-hover:opacity-100 focus-within:opacity-100 transition-opacity">
-                        <Button size="icon" variant="ghost" className="h-8 w-8 hover:bg-primary/15 hover:text-primary" onClick={() => openEdit(s)} title="Modifier">
-                          <Pencil className="h-4 w-4" />
-                        </Button>
-                        <Button size="icon" variant="ghost" className="h-8 w-8 hover:bg-destructive/15 hover:text-destructive" onClick={() => setToDelete(s)} title="Supprimer">
-                          <Trash2 className="h-4 w-4" />
-                        </Button>
-                      </div>
-                    </td>
-                  </tr>
-                ))}
+                {filtered.map((s) => {
+                  const ca = (s.exemplaires_vendus ?? 0) * Number(s.prix_unitaire_fcfa ?? 0);
+                  return (
+                    <tr key={s.id} className="group border-t border-border hover:bg-primary/5 transition-colors">
+                      <td className="px-4 py-3 font-medium">{titreMap[s.manuscrit_id] ?? "—"}</td>
+                      <td className="px-4 py-3">{s.librairie_nom ?? "—"}</td>
+                      <td className="px-4 py-3 text-center text-muted-foreground">{s.exemplaires_deposes}</td>
+                      <td className="px-4 py-3 text-center text-muted-foreground">{s.exemplaires_vendus}</td>
+                      <td className="px-4 py-3 text-center">
+                        <span className={cn("inline-flex items-center justify-center min-w-9 px-2 h-6 rounded-full border text-xs font-semibold transition-colors", remainingColor(s.exemplaires_restants))}>
+                          {s.exemplaires_restants}
+                        </span>
+                      </td>
+                      <td className="px-4 py-3 text-right text-muted-foreground">{s.prix_unitaire_fcfa ? fcfa(s.prix_unitaire_fcfa) : "—"}</td>
+                      <td className="px-4 py-3 text-right font-semibold text-[color:var(--gold)]">{fcfa(ca)}</td>
+                      <td className="px-4 py-3 text-muted-foreground hidden md:table-cell">
+                        {s.derniere_visite ? format(new Date(s.derniere_visite), "dd MMM yyyy", { locale: fr }) : "—"}
+                      </td>
+                      <td className="px-4 py-3 text-right">
+                        <div className="flex items-center justify-end gap-1 opacity-0 group-hover:opacity-100 focus-within:opacity-100 transition-opacity">
+                          <Button size="icon" variant="ghost" className="h-8 w-8 hover:bg-primary/15 hover:text-primary" onClick={() => openEdit(s)} title="Modifier">
+                            <Pencil className="h-4 w-4" />
+                          </Button>
+                          <Button size="icon" variant="ghost" className="h-8 w-8 hover:bg-destructive/15 hover:text-destructive" onClick={() => setToDelete(s)} title="Supprimer">
+                            <Trash2 className="h-4 w-4" />
+                          </Button>
+                        </div>
+                      </td>
+                    </tr>
+                  );
+                })}
               </tbody>
             </table>
           </div>
@@ -220,7 +229,7 @@ function StocksPage() {
   );
 }
 
-function SummaryCard({ icon, label, value, accent }: { icon: React.ReactNode; label: string; value: number; accent?: "primary" | "gold" }) {
+function SummaryCard({ icon, label, value, accent }: { icon: React.ReactNode; label: string; value: string; accent?: "primary" | "gold" }) {
   const color = accent === "gold" ? "text-[color:var(--gold)]" : accent === "primary" ? "text-primary" : "text-foreground";
   return (
     <div className="rounded-xl border border-border bg-card p-4">
@@ -230,7 +239,7 @@ function SummaryCard({ icon, label, value, accent }: { icon: React.ReactNode; la
         </span>
         {label}
       </div>
-      <p className={cn("mt-1.5 text-2xl font-bold", color)}>{new Intl.NumberFormat("fr-FR").format(value)}</p>
+      <p className={cn("mt-1.5 text-2xl font-bold truncate", color)}>{value}</p>
     </div>
   );
 }
@@ -268,11 +277,16 @@ function StockForm({
     librairie_adresse: existing?.librairie_adresse ?? "",
     exemplaires_deposes: existing?.exemplaires_deposes ?? 0,
     exemplaires_vendus: existing?.exemplaires_vendus ?? 0,
+    prix_unitaire_fcfa: Number(existing?.prix_unitaire_fcfa ?? 0),
     derniere_visite: existing?.derniere_visite ? new Date(existing.derniere_visite) : undefined as Date | undefined,
   });
   const [loading, setLoading] = useState(false);
+  const previousVendus = Number(existing?.exemplaires_vendus ?? 0);
 
   const restants = Math.max(0, Number(form.exemplaires_deposes) - Number(form.exemplaires_vendus));
+  const montantTotal = Number(form.exemplaires_vendus) * Number(form.prix_unitaire_fcfa);
+  const droitsAuteur = montantTotal * 0.1;
+  const deltaVendus = Math.max(0, Number(form.exemplaires_vendus) - previousVendus);
 
   const submit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -287,13 +301,36 @@ function StockForm({
       exemplaires_vendus: Number(form.exemplaires_vendus),
       exemplaires_restants: restants,
       exemplaires_total: Number(form.exemplaires_deposes),
+      prix_unitaire_fcfa: Number(form.prix_unitaire_fcfa),
       derniere_visite: form.derniere_visite ? format(form.derniere_visite, "yyyy-MM-dd") : null,
     };
     const { error } = existing
       ? await supabase.from("stocks").update(payload).eq("id", existing.id)
       : await supabase.from("stocks").insert({ ...payload, entreprise_id: entrepriseId });
+
+    if (error) { setLoading(false); return toast.error(error.message); }
+
+    // Auto-create a vente record if new sales were registered
+    if (deltaVendus > 0 && Number(form.prix_unitaire_fcfa) > 0) {
+      const auteur_id = manuscrits.find((m) => m.id === form.manuscrit_id)?.auteur_id ?? null;
+      const venteMontant = deltaVendus * Number(form.prix_unitaire_fcfa);
+      const venteDroits = venteMontant * 0.1;
+      const { error: vErr } = await (supabase as any).from("ventes").insert({
+        entreprise_id: entrepriseId,
+        manuscrit_id: form.manuscrit_id,
+        auteur_id,
+        quantite_vendue: deltaVendus,
+        prix_unitaire_fcfa: Number(form.prix_unitaire_fcfa),
+        montant_total_fcfa: venteMontant,
+        montant: venteMontant,
+        droits_auteur_fcfa: venteDroits,
+        statut_paiement: "en_attente",
+        date_vente: format(new Date(), "yyyy-MM-dd"),
+      });
+      if (vErr) toast.error("Vente non enregistrée: " + vErr.message);
+    }
+
     setLoading(false);
-    if (error) return toast.error(error.message);
     toast.success(existing ? "Stock mis à jour" : "Dépôt ajouté");
     onSaved();
   };
@@ -330,10 +367,31 @@ function StockForm({
             onChange={(e) => setForm({ ...form, exemplaires_vendus: Number(e.target.value) })} />
         </div>
       </div>
-      <div className="rounded-lg border border-border bg-background/40 px-3 py-2 text-sm flex items-center justify-between">
-        <span className="text-muted-foreground">Restants (auto)</span>
-        <span className="font-semibold text-primary">{restants}</span>
+      <div className="space-y-2">
+        <Label>Prix unitaire (FCFA)</Label>
+        <Input type="number" min={0} required value={form.prix_unitaire_fcfa}
+          onChange={(e) => setForm({ ...form, prix_unitaire_fcfa: Number(e.target.value) })}
+          placeholder="ex: 5000" />
       </div>
+
+      {/* Live calculations */}
+      <div className="rounded-xl border border-border bg-background/40 p-4 space-y-2 text-sm">
+        <Row icon={<BookOpen className="h-4 w-4" />} label="Exemplaires restants">
+          <span className="font-semibold text-primary">{restants}</span>
+        </Row>
+        <Row icon={<Wallet className="h-4 w-4" />} label="Chiffre d'affaires généré">
+          <span className="font-semibold text-[color:var(--gold)]">{fcfa(montantTotal)}</span>
+        </Row>
+        <Row icon={<PenLine className="h-4 w-4" />} label="Droits auteur estimés (10%)">
+          <span className="font-semibold text-[color:var(--gold)]">{fcfa(droitsAuteur)}</span>
+        </Row>
+        {deltaVendus > 0 && Number(form.prix_unitaire_fcfa) > 0 && (
+          <p className="pt-2 text-xs text-muted-foreground border-t border-border">
+            ✨ Une vente de <span className="text-primary font-medium">{deltaVendus} exemplaire(s)</span> sera enregistrée automatiquement.
+          </p>
+        )}
+      </div>
+
       <div className="space-y-2">
         <Label>Dernière visite</Label>
         <Popover>
@@ -354,5 +412,14 @@ function StockForm({
         {loading ? <Loader2 className="h-4 w-4 animate-spin" /> : (existing ? "Enregistrer les modifications" : "Ajouter le dépôt")}
       </Button>
     </form>
+  );
+}
+
+function Row({ icon, label, children }: { icon: React.ReactNode; label: string; children: React.ReactNode }) {
+  return (
+    <div className="flex items-center justify-between">
+      <span className="text-muted-foreground inline-flex items-center gap-2"><span className="text-primary">{icon}</span>{label}</span>
+      {children}
+    </div>
   );
 }
