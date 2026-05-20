@@ -223,6 +223,7 @@ export type Database = {
           librairie_adresse: string | null
           librairie_nom: string | null
           manuscrit_id: string
+          prix_unitaire_fcfa: number
         }
         Insert: {
           created_at?: string
@@ -236,6 +237,7 @@ export type Database = {
           librairie_adresse?: string | null
           librairie_nom?: string | null
           manuscrit_id: string
+          prix_unitaire_fcfa?: number
         }
         Update: {
           created_at?: string
@@ -249,6 +251,7 @@ export type Database = {
           librairie_adresse?: string | null
           librairie_nom?: string | null
           manuscrit_id?: string
+          prix_unitaire_fcfa?: number
         }
         Relationships: [
           {
@@ -269,30 +272,45 @@ export type Database = {
       }
       ventes: {
         Row: {
+          auteur_id: string | null
           created_at: string
+          date_vente: string
           droits_auteur_fcfa: number
           entreprise_id: string
           id: string
           manuscrit_id: string
           montant: number
+          montant_total_fcfa: number
+          prix_unitaire_fcfa: number
+          quantite_vendue: number
           statut_paiement: Database["public"]["Enums"]["paiement_statut"]
         }
         Insert: {
+          auteur_id?: string | null
           created_at?: string
+          date_vente?: string
           droits_auteur_fcfa?: number
           entreprise_id: string
           id?: string
           manuscrit_id: string
           montant?: number
+          montant_total_fcfa?: number
+          prix_unitaire_fcfa?: number
+          quantite_vendue?: number
           statut_paiement?: Database["public"]["Enums"]["paiement_statut"]
         }
         Update: {
+          auteur_id?: string | null
           created_at?: string
+          date_vente?: string
           droits_auteur_fcfa?: number
           entreprise_id?: string
           id?: string
           manuscrit_id?: string
           montant?: number
+          montant_total_fcfa?: number
+          prix_unitaire_fcfa?: number
+          quantite_vendue?: number
           statut_paiement?: Database["public"]["Enums"]["paiement_statut"]
         }
         Relationships: [
