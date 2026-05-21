@@ -239,6 +239,13 @@ function ManuscritsPage() {
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
+
+      <UpgradeModal
+        open={upgradeOpen}
+        onOpenChange={setUpgradeOpen}
+        title="Limite atteinte"
+        description={`Vous avez atteint la limite de ${plan.maxManuscrits} manuscrits du plan ${plan.label}. Passez au plan Pro pour ajouter des manuscrits illimités.`}
+      />
     </div>
   );
 }
