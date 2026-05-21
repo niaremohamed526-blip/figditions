@@ -1,6 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useEffect, useMemo, useState } from "react";
-import { Check, X, Sparkles, UserPlus, Trash2, Loader2, Crown, Lock, Copy, RotateCcw } from "lucide-react";
+import { Check, X, Sparkles, UserPlus, Trash2, Loader2, Crown, Lock, Copy } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth, useProfile, type AppRole, type AppPlan } from "@/hooks/use-auth";
 import { Button } from "@/components/ui/button";
