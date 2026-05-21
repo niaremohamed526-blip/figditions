@@ -250,6 +250,182 @@ function HowItWorks() {
   );
 }
 
+function Pricing() {
+  const { t } = useI18n();
+  const [yearly, setYearly] = useState(false);
+
+  const tiers = [
+    {
+      key: "starter",
+      badge: t("Gratuit", "Free"),
+      title: "Starter",
+      subtitle: t("Pour démarrer votre maison d'édition", "To start your publishing house"),
+      monthly: 0, yearly: 0,
+      features: [
+        { ok: true, fr: "1 compte utilisateur", en: "1 user account" },
+        { ok: true, fr: "Jusqu'à 5 manuscrits", en: "Up to 5 manuscripts" },
+        { ok: true, fr: "Suivi des stocks (2 librairies max)", en: "Stock tracking (2 bookstores max)" },
+        { ok: true, fr: "Estimateur de coûts", en: "Cost estimator" },
+        { ok: false, fr: "Générateur de contrats", en: "Contract generator" },
+        { ok: false, fr: "Module finances & royalties", en: "Finances & royalties" },
+        { ok: false, fr: "Export ePub", en: "ePub export" },
+        { ok: false, fr: "Support prioritaire", en: "Priority support" },
+      ],
+      cta: t("Commencer gratuitement", "Get started for free"),
+      ctaVariant: "outline" as const,
+      cardClass: "border-border bg-card",
+      btnClass: "border-primary text-primary hover:bg-primary hover:text-primary-foreground",
+    },
+    {
+      key: "pro",
+      badge: t("Le plus populaire ⭐", "Most popular ⭐"),
+      title: "Pro",
+      subtitle: t("Pour les maisons d'édition en croissance", "For growing publishing houses"),
+      monthly: 20000, yearly: 200000,
+      features: [
+        { ok: true, fr: "Jusqu'à 3 comptes utilisateurs", en: "Up to 3 user accounts" },
+        { ok: true, fr: "Manuscrits illimités", en: "Unlimited manuscripts" },
+        { ok: true, fr: "Stocks illimités", en: "Unlimited stocks" },
+        { ok: true, fr: "Estimateur de coûts", en: "Cost estimator" },
+        { ok: true, fr: "Générateur de contrats OHADA", en: "OHADA contract generator" },
+        { ok: true, fr: "Module finances & royalties", en: "Finances & royalties" },
+        { ok: true, fr: "Export PDF", en: "PDF export" },
+        { ok: false, fr: "Export ePub", en: "ePub export" },
+        { ok: false, fr: "Support prioritaire", en: "Priority support" },
+      ],
+      cta: t("Choisir Pro", "Choose Pro"),
+      ctaVariant: "default" as const,
+      cardClass: "border-primary shadow-glow bg-gradient-to-b from-[#0D2137] to-[#0A1628] lg:scale-105 lg:-my-2 relative",
+      btnClass: "bg-primary text-primary-foreground hover:bg-primary/90",
+      highlighted: true,
+    },
+    {
+      key: "business",
+      badge: t("Complet", "Complete"),
+      title: "Business",
+      subtitle: t("Pour les grandes maisons d'édition", "For large publishing houses"),
+      monthly: 50000, yearly: 500000,
+      features: [
+        { ok: true, fr: "Utilisateurs illimités", en: "Unlimited users" },
+        { ok: true, fr: "Manuscrits illimités", en: "Unlimited manuscripts" },
+        { ok: true, fr: "Stocks illimités", en: "Unlimited stocks" },
+        { ok: true, fr: "Estimateur de coûts", en: "Cost estimator" },
+        { ok: true, fr: "Générateur de contrats OHADA", en: "OHADA contract generator" },
+        { ok: true, fr: "Module finances & royalties", en: "Finances & royalties" },
+        { ok: true, fr: "Export PDF + ePub", en: "PDF + ePub export" },
+        { ok: true, fr: "Assistant subventions", en: "Grants assistant" },
+        { ok: true, fr: "Branding personnalisé", en: "Custom branding" },
+        { ok: true, fr: "Support prioritaire", en: "Priority support" },
+      ],
+      cta: t("Choisir Business", "Choose Business"),
+      ctaVariant: "default" as const,
+      cardClass: "border-[color:var(--gold)]/60 shadow-[0_0_30px_-10px_var(--gold)] bg-card",
+      btnClass: "bg-[color:var(--gold)] text-background hover:bg-[color:var(--gold)]/90",
+    },
+  ];
+
+  return (
+    <section id="pricing" className="py-24 px-4 bg-background">
+      <div className="max-w-7xl mx-auto">
+        <div className="text-center mb-10">
+          <h2 className="text-3xl md:text-5xl font-bold tracking-tight">{t("Des tarifs adaptés à votre maison", "Pricing for every publishing house")}</h2>
+          <p className="mt-3 text-muted-foreground max-w-2xl mx-auto">
+            {t("Commencez gratuitement, évoluez quand vous êtes prêt.", "Start for free, upgrade when you're ready.")}
+          </p>
+
+          <div className="mt-8 inline-flex items-center gap-3">
+            <div className="inline-flex items-center rounded-full border border-border bg-card p-1">
+              <button onClick={() => setYearly(false)} className={cn(
+                "px-4 py-1.5 rounded-full text-sm font-semibold transition-colors",
+                !yearly ? "bg-primary text-primary-foreground" : "text-muted-foreground"
+              )}>{t("Mensuel", "Monthly")}</button>
+              <button onClick={() => setYearly(true)} className={cn(
+                "px-4 py-1.5 rounded-full text-sm font-semibold transition-colors",
+                yearly ? "bg-primary text-primary-foreground" : "text-muted-foreground"
+              )}>{t("Annuel", "Yearly")}</button>
+            </div>
+            {yearly && (
+              <span className="inline-flex items-center gap-1 text-xs font-semibold px-2.5 py-1 rounded-full bg-primary/15 text-primary border border-primary/30 animate-fade-in">
+                {t("2 mois offerts 🎉", "2 months free 🎉")}
+              </span>
+            )}
+          </div>
+        </div>
+
+        <div className="grid md:grid-cols-3 gap-6 items-stretch">
+          {tiers.map((tier) => {
+            const monthlyEquivalent = yearly ? Math.round(tier.yearly / 12) : tier.monthly;
+            const savings = tier.monthly * 12 - tier.yearly;
+            return (
+              <div key={tier.key} className={cn("rounded-2xl border p-7 flex flex-col transition-all duration-300", tier.cardClass)}>
+                {tier.highlighted && (
+                  <div className="absolute -top-3 left-1/2 -translate-x-1/2">
+                    <span className="text-xs font-bold px-3 py-1 rounded-full bg-[color:var(--gold)] text-background shadow-glow">
+                      {tier.badge}
+                    </span>
+                  </div>
+                )}
+                {!tier.highlighted && (
+                  <span className={cn(
+                    "self-start text-xs font-semibold border rounded-full px-2.5 py-0.5 mb-3",
+                    tier.key === "business" ? "bg-[color:var(--gold)]/15 text-[color:var(--gold)] border-[color:var(--gold)]/30"
+                      : "bg-muted text-muted-foreground border-border",
+                  )}>{tier.badge}</span>
+                )}
+                <h3 className="text-2xl font-bold">{tier.title}</h3>
+                <p className="text-sm text-muted-foreground mt-1">{tier.subtitle}</p>
+
+                <div className="mt-5">
+                  {tier.monthly === 0 ? (
+                    <p className="text-4xl font-bold">{t("0 FCFA", "0 FCFA")}<span className="text-sm font-normal text-muted-foreground"> / {t("mois", "month")}</span></p>
+                  ) : (
+                    <>
+                      <p className="text-4xl font-bold">{monthlyEquivalent.toLocaleString("fr-FR")} <span className="text-sm font-normal text-muted-foreground">FCFA / {t("mois", "month")}</span></p>
+                      {yearly ? (
+                        <p className="mt-1 text-xs text-primary font-semibold">
+                          {tier.yearly.toLocaleString("fr-FR")} FCFA / {t("an", "year")} · {t("Économisez", "Save")} {savings.toLocaleString("fr-FR")} FCFA
+                        </p>
+                      ) : (
+                        <p className="mt-1 text-xs text-muted-foreground">
+                          {t("ou", "or")} {tier.yearly.toLocaleString("fr-FR")} FCFA / {t("an", "year")}
+                        </p>
+                      )}
+                    </>
+                  )}
+                </div>
+
+                <ul className="mt-6 space-y-2.5 text-sm flex-1">
+                  {tier.features.map((f, i) => (
+                    <li key={i} className="flex items-start gap-2">
+                      {f.ok
+                        ? <Check className="h-4 w-4 text-primary shrink-0 mt-0.5" />
+                        : <X className="h-4 w-4 text-muted-foreground shrink-0 mt-0.5" />}
+                      <span className={f.ok ? "" : "text-muted-foreground line-through"}>{t(f.fr, f.en)}</span>
+                    </li>
+                  ))}
+                </ul>
+
+                <Link to="/signup" className="mt-7 block">
+                  <Button className={cn("w-full h-11", tier.btnClass)} variant={tier.ctaVariant === "outline" ? "outline" : "default"}>
+                    {tier.cta}
+                  </Button>
+                </Link>
+              </div>
+            );
+          })}
+        </div>
+
+        <p className="mt-8 text-center text-sm text-muted-foreground">
+          {t(
+            "Pas de carte bancaire requise · Annulez à tout moment · Paiement via Orange Money ou Moov Money",
+            "No credit card required · Cancel anytime · Pay with Orange Money or Moov Money"
+          )}
+        </p>
+      </div>
+    </section>
+  );
+}
+
 function CtaBanner() {
   const { t } = useI18n();
   return (
