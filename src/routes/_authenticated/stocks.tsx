@@ -20,6 +20,8 @@ import {
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
 import { fcfa } from "@/lib/format";
+import { planFor } from "@/lib/plans";
+import { UpgradeModal } from "@/components/upgrade-modal";
 
 export const Route = createFileRoute("/_authenticated/stocks")({
   component: StocksPage,
@@ -41,7 +43,8 @@ interface Manuscrit { id: string; titre: string; statut: string; auteur_id?: str
 
 function StocksPage() {
   const { user } = useAuth();
-  const { profile } = useProfile(user?.id);
+  const { profile, entreprise } = useProfile(user?.id);
+  const plan = planFor(entreprise?.plan);
   const [items, setItems] = useState<Stock[] | null>(null);
   const [manuscrits, setManuscrits] = useState<Manuscrit[]>([]);
   const [q, setQ] = useState("");
@@ -49,6 +52,7 @@ function StocksPage() {
   const [editing, setEditing] = useState<Stock | null>(null);
   const [toDelete, setToDelete] = useState<Stock | null>(null);
   const [deleting, setDeleting] = useState(false);
+  const [upgradeOpen, setUpgradeOpen] = useState(false);
 
   const load = async () => {
     setItems(null);
@@ -87,7 +91,11 @@ function StocksPage() {
     };
   }, [items]);
 
-  const openNew = () => { setEditing(null); setSheetOpen(true); };
+  const openNew = () => {
+    const uniqueBookstores = new Set((items ?? []).map((s) => (s.librairie_nom ?? "").trim().toLowerCase()).filter(Boolean));
+    if (uniqueBookstores.size >= plan.maxBookstores) { setUpgradeOpen(true); return; }
+    setEditing(null); setSheetOpen(true);
+  };
   const openEdit = (s: Stock) => { setEditing(s); setSheetOpen(true); };
 
   const confirmDelete = async () => {
