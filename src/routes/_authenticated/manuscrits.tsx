@@ -18,6 +18,8 @@ import {
   AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
 import { toast } from "sonner";
+import { planFor } from "@/lib/plans";
+import { UpgradeModal } from "@/components/upgrade-modal";
 
 export const Route = createFileRoute("/_authenticated/manuscrits")({
   component: ManuscritsPage,
@@ -31,7 +33,8 @@ interface Manuscrit {
 
 function ManuscritsPage() {
   const { user } = useAuth();
-  const { profile } = useProfile(user?.id);
+  const { profile, entreprise } = useProfile(user?.id);
+  const plan = planFor(entreprise?.plan);
   const [items, setItems] = useState<Manuscrit[] | null>(null);
   const [q, setQ] = useState("");
   const [filter, setFilter] = useState<string>("all");
@@ -39,6 +42,7 @@ function ManuscritsPage() {
   const [editing, setEditing] = useState<Manuscrit | null>(null);
   const [toDelete, setToDelete] = useState<Manuscrit | null>(null);
   const [deleting, setDeleting] = useState(false);
+  const [upgradeOpen, setUpgradeOpen] = useState(false);
 
   const load = async () => {
     setItems(null);
@@ -60,7 +64,10 @@ function ManuscritsPage() {
     );
   }, [items, q, filter]);
 
-  const openNew = () => { setEditing(null); setSheetOpen(true); };
+  const openNew = () => {
+    if ((items?.length ?? 0) >= plan.maxManuscrits) { setUpgradeOpen(true); return; }
+    setEditing(null); setSheetOpen(true);
+  };
   const openEdit = (m: Manuscrit) => { setEditing(m); setSheetOpen(true); };
 
   const updateStatut = async (m: Manuscrit, statut: string) => {
