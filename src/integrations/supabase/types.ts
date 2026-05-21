@@ -57,22 +57,28 @@ export type Database = {
         Row: {
           created_at: string
           id: string
+          max_utilisateurs: number
           nom: string
           owner_id: string
+          plan: string
           ville: string
         }
         Insert: {
           created_at?: string
           id?: string
+          max_utilisateurs?: number
           nom: string
           owner_id: string
+          plan?: string
           ville?: string
         }
         Update: {
           created_at?: string
           id?: string
+          max_utilisateurs?: number
           nom?: string
           owner_id?: string
+          plan?: string
           ville?: string
         }
         Relationships: []
@@ -134,6 +140,39 @@ export type Database = {
         }
         Relationships: []
       }
+      invitations: {
+        Row: {
+          created_at: string
+          email: string
+          entreprise_id: string
+          expires_at: string
+          id: string
+          role: string
+          statut: string
+          token: string
+        }
+        Insert: {
+          created_at?: string
+          email: string
+          entreprise_id: string
+          expires_at?: string
+          id?: string
+          role?: string
+          statut?: string
+          token?: string
+        }
+        Update: {
+          created_at?: string
+          email?: string
+          entreprise_id?: string
+          expires_at?: string
+          id?: string
+          role?: string
+          statut?: string
+          token?: string
+        }
+        Relationships: []
+      }
       manuscrits: {
         Row: {
           auteur: string
@@ -187,18 +226,21 @@ export type Database = {
           entreprise_id: string | null
           full_name: string
           id: string
+          role: string
         }
         Insert: {
           created_at?: string
           entreprise_id?: string | null
           full_name: string
           id: string
+          role?: string
         }
         Update: {
           created_at?: string
           entreprise_id?: string | null
           full_name?: string
           id?: string
+          role?: string
         }
         Relationships: [
           {
