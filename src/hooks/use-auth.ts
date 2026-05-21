@@ -2,15 +2,22 @@ import { useEffect, useState } from "react";
 import type { Session, User } from "@supabase/supabase-js";
 import { supabase } from "@/integrations/supabase/client";
 
+export type AppRole = "admin" | "editeur" | "comptable" | "commercial";
+export type AppPlan = "starter" | "pro" | "business";
+
 export interface Profile {
   id: string;
   full_name: string;
   entreprise_id: string | null;
+  role: AppRole;
 }
 export interface Entreprise {
   id: string;
   nom: string;
   ville: string;
+  plan: AppPlan;
+  max_utilisateurs: number;
+  owner_id: string;
 }
 
 export function useAuth() {
