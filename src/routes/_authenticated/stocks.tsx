@@ -233,6 +233,13 @@ function StocksPage() {
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
+
+      <UpgradeModal
+        open={upgradeOpen}
+        onOpenChange={setUpgradeOpen}
+        title="Limite atteinte"
+        description={`Vous avez atteint la limite de ${plan.maxBookstores} librairies du plan ${plan.label}. Passez au plan Pro pour suivre des librairies illimitées.`}
+      />
     </div>
   );
 }
