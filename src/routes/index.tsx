@@ -1,6 +1,6 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
-import { Menu, X, Star, BookOpen, Users, Package, Wallet, FileText, Calculator, Twitter, Linkedin, Facebook, ArrowRight } from "lucide-react";
+import { Menu, X, Star, BookOpen, Users, Package, Wallet, FileText, Calculator, Twitter, Linkedin, Facebook, ArrowRight, Check } from "lucide-react";
 import { Logo } from "@/components/logo";
 import { useI18n } from "@/hooks/use-i18n";
 import { Button } from "@/components/ui/button";
@@ -25,6 +25,7 @@ function Landing() {
       <Hero />
       <Features />
       <HowItWorks />
+      <Pricing />
       <CtaBanner />
       <Footer />
     </div>
