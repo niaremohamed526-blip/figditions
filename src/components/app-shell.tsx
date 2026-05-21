@@ -1,23 +1,32 @@
 import { Link, useRouterState, useNavigate } from "@tanstack/react-router";
 import { useState, type ReactNode } from "react";
 import {
-  LayoutDashboard, BookOpen, PenLine, Package, Wallet, FileText, Settings, LogOut, Menu, X, Calculator,
+  LayoutDashboard, BookOpen, PenLine, Package, Wallet, FileText, Settings, LogOut, Menu, X, Calculator, Lock,
 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
-import { useAuth, useProfile } from "@/hooks/use-auth";
+import { useAuth, useProfile, type AppRole } from "@/hooks/use-auth";
 import { cn } from "@/lib/utils";
 import { Logo } from "@/components/logo";
+import { planFor } from "@/lib/plans";
 
-const NAV = [
-  { to: "/dashboard", label: "Tableau de bord", icon: LayoutDashboard },
-  { to: "/manuscrits", label: "Manuscrits", icon: BookOpen },
-  { to: "/auteurs", label: "Auteurs", icon: PenLine },
-  { to: "/stocks", label: "Stocks", icon: Package },
-  { to: "/estimateur", label: "Estimateur", icon: Calculator },
-  { to: "/finances", label: "Finances", icon: Wallet },
-  { to: "/contrats", label: "Contrats", icon: FileText },
-  { to: "/parametres", label: "Paramètres", icon: Settings },
-] as const;
+type NavItem = {
+  to: string;
+  label: string;
+  icon: typeof LayoutDashboard;
+  roles: AppRole[];
+  feature?: "contrats" | "finances";
+};
+
+const NAV: NavItem[] = [
+  { to: "/dashboard", label: "Tableau de bord", icon: LayoutDashboard, roles: ["admin", "editeur", "comptable", "commercial"] },
+  { to: "/manuscrits", label: "Manuscrits", icon: BookOpen, roles: ["admin", "editeur"] },
+  { to: "/auteurs", label: "Auteurs", icon: PenLine, roles: ["admin", "editeur"] },
+  { to: "/stocks", label: "Stocks", icon: Package, roles: ["admin", "commercial"] },
+  { to: "/estimateur", label: "Estimateur", icon: Calculator, roles: ["admin", "editeur"] },
+  { to: "/finances", label: "Finances", icon: Wallet, roles: ["admin", "comptable"], feature: "finances" },
+  { to: "/contrats", label: "Contrats", icon: FileText, roles: ["admin"], feature: "contrats" },
+  { to: "/parametres", label: "Paramètres", icon: Settings, roles: ["admin"] },
+];
 
 export function AppShell({ children }: { children: ReactNode }) {
   const { user } = useAuth();
@@ -31,11 +40,36 @@ export function AppShell({ children }: { children: ReactNode }) {
     navigate({ to: "/login" });
   };
 
+  const role: AppRole = profile?.role ?? "admin";
+  const plan = planFor(entreprise?.plan);
+  const items = NAV
+    .filter((n) => n.roles.includes(role))
+    .map((n) => ({ ...n, locked: n.feature ? !plan[n.feature] : false }));
+
   const initial = (profile?.full_name || user?.email || "?").charAt(0).toUpperCase();
+
+  const renderLink = (n: typeof items[number], onClick?: () => void) => {
+    const active = path === n.to || path.startsWith(n.to + "/");
+    const Icon = n.icon;
+    return (
+      <Link key={n.to} to={n.to} onClick={onClick}
+        className={cn(
+          "group relative flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-all",
+          active ? "bg-primary/10 text-foreground" : "text-muted-foreground hover:text-foreground hover:bg-sidebar-accent",
+          n.locked && "opacity-60",
+        )}>
+        {active && (
+          <span className="absolute left-0 top-1/2 -translate-y-1/2 h-6 w-1 rounded-r bg-primary shadow-[0_0_12px_var(--color-primary)]" />
+        )}
+        <Icon className="h-4 w-4" />
+        <span className="flex-1">{n.label}</span>
+        {n.locked && <Lock className="h-3.5 w-3.5 text-[color:var(--gold)]" />}
+      </Link>
+    );
+  };
 
   return (
     <div className="min-h-screen gradient-bg flex">
-      {/* Sidebar desktop */}
       <aside className="hidden md:flex w-64 flex-col bg-sidebar border-r border-border sticky top-0 h-screen">
         <div className="px-3 py-5 border-b border-border">
           <Link to="/dashboard" className="block">
@@ -43,24 +77,7 @@ export function AppShell({ children }: { children: ReactNode }) {
           </Link>
         </div>
         <nav className="flex-1 px-3 py-6 space-y-1 overflow-y-auto">
-          {NAV.map(({ to, label, icon: Icon }) => {
-            const active = path === to || path.startsWith(to + "/");
-            return (
-              <Link key={to} to={to}
-                className={cn(
-                  "group relative flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-all",
-                  active
-                    ? "bg-primary/10 text-foreground"
-                    : "text-muted-foreground hover:text-foreground hover:bg-sidebar-accent"
-                )}>
-                {active && (
-                  <span className="absolute left-0 top-1/2 -translate-y-1/2 h-6 w-1 rounded-r bg-primary shadow-[0_0_12px_var(--color-primary)]" />
-                )}
-                <Icon className="h-4 w-4" />
-                <span>{label}</span>
-              </Link>
-            );
-          })}
+          {items.map((n) => renderLink(n))}
         </nav>
         <div className="border-t border-border p-4">
           <div className="flex items-center gap-3">
@@ -78,7 +95,6 @@ export function AppShell({ children }: { children: ReactNode }) {
         </div>
       </aside>
 
-      {/* Mobile top bar */}
       <div className="md:hidden fixed top-0 left-0 right-0 z-30 bg-sidebar/95 backdrop-blur border-b border-border h-14 flex items-center justify-between px-4">
         <Link to="/dashboard"><Logo className="h-10 w-auto" /></Link>
         <button onClick={() => setMobileOpen((o) => !o)} className="p-2">
@@ -86,14 +102,9 @@ export function AppShell({ children }: { children: ReactNode }) {
         </button>
       </div>
       {mobileOpen && (
-        <div className="md:hidden fixed inset-0 top-14 z-20 bg-background/95 backdrop-blur p-4 animate-fade-in">
+        <div className="md:hidden fixed inset-0 top-14 z-20 bg-background/95 backdrop-blur p-4 animate-fade-in overflow-y-auto">
           <nav className="space-y-1">
-            {NAV.map(({ to, label, icon: Icon }) => (
-              <Link key={to} to={to} onClick={() => setMobileOpen(false)}
-                className="flex items-center gap-3 rounded-lg px-3 py-3 text-sm font-medium hover:bg-sidebar-accent">
-                <Icon className="h-4 w-4" /> {label}
-              </Link>
-            ))}
+            {items.map((n) => renderLink(n, () => setMobileOpen(false)))}
             <button onClick={handleLogout} className="w-full flex items-center gap-3 rounded-lg px-3 py-3 text-sm font-medium hover:bg-sidebar-accent text-left">
               <LogOut className="h-4 w-4" /> Déconnexion
             </button>
