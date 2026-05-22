@@ -1,0 +1,13 @@
+{
+  "functions": {
+    "app/server.ts": {
+      "runtime": "nodejs22.x"
+    }
+  },
+  "routes": [
+    {
+      "src": "/(.*)",
+      "dest": "/api/server"
+    }
+  ]
+}
