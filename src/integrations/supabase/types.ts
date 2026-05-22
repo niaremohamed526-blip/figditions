@@ -85,58 +85,163 @@ export type Database = {
       }
       estimations_cout: {
         Row: {
-          cout_couverture: number
-          cout_papier: number
-          cout_total: number
+          cout_conception_couverture_fcfa: number | null
+          cout_couverture_fcfa: number | null
+          cout_decoupe_fcfa: number | null
+          cout_emballage_fcfa: number | null
+          cout_encre_fcfa: number | null
+          cout_groupe_electrogene_fcfa: number | null
+          cout_isbn_fcfa: number | null
+          cout_livraison_fcfa: number | null
+          cout_mise_en_page_fcfa: number | null
+          cout_papier_fcfa: number | null
+          cout_reliure_fcfa: number | null
+          cout_setup_offset_fcfa: number | null
+          cout_total_fcfa: number | null
           created_at: string
-          droits_auteur: number
+          depot_legal: boolean | null
+          droits_auteur_fcfa: number | null
           entreprise_id: string
+          finition_couverture: string | null
+          format: string | null
           id: string
-          inclure_delestage: boolean
+          interieur_couleur: boolean | null
+          langue: string | null
           manuscrit_id: string | null
-          manuscrit_titre: string
-          marge_librairie: number
-          nombre_exemplaires: number
-          nombre_pages: number
-          prix_vente_suggere: number
-          surcout_delestage: number
-          type_couverture: Database["public"]["Enums"]["couverture_type"]
+          marge_imprimeur_fcfa: number | null
+          marge_librairie_fcfa: number | null
+          methode_impression: string | null
+          nom_estimation: string
+          nombre_pages: number | null
+          prix_vente_suggere_fcfa: number | null
+          qualite_papier: string | null
+          sous_total_postpress_fcfa: number | null
+          sous_total_prepress_fcfa: number | null
+          sous_total_production_fcfa: number | null
+          supplement_langue_nationale_fcfa: number | null
+          tirage: number | null
+          type_livre: string | null
+          type_reliure: string | null
         }
         Insert: {
-          cout_couverture: number
-          cout_papier: number
-          cout_total: number
+          cout_conception_couverture_fcfa?: number | null
+          cout_couverture_fcfa?: number | null
+          cout_decoupe_fcfa?: number | null
+          cout_emballage_fcfa?: number | null
+          cout_encre_fcfa?: number | null
+          cout_groupe_electrogene_fcfa?: number | null
+          cout_isbn_fcfa?: number | null
+          cout_livraison_fcfa?: number | null
+          cout_mise_en_page_fcfa?: number | null
+          cout_papier_fcfa?: number | null
+          cout_reliure_fcfa?: number | null
+          cout_setup_offset_fcfa?: number | null
+          cout_total_fcfa?: number | null
           created_at?: string
-          droits_auteur: number
+          depot_legal?: boolean | null
+          droits_auteur_fcfa?: number | null
           entreprise_id: string
+          finition_couverture?: string | null
+          format?: string | null
           id?: string
-          inclure_delestage?: boolean
+          interieur_couleur?: boolean | null
+          langue?: string | null
           manuscrit_id?: string | null
-          manuscrit_titre: string
-          marge_librairie: number
-          nombre_exemplaires: number
-          nombre_pages: number
-          prix_vente_suggere: number
-          surcout_delestage: number
-          type_couverture: Database["public"]["Enums"]["couverture_type"]
+          marge_imprimeur_fcfa?: number | null
+          marge_librairie_fcfa?: number | null
+          methode_impression?: string | null
+          nom_estimation: string
+          nombre_pages?: number | null
+          prix_vente_suggere_fcfa?: number | null
+          qualite_papier?: string | null
+          sous_total_postpress_fcfa?: number | null
+          sous_total_prepress_fcfa?: number | null
+          sous_total_production_fcfa?: number | null
+          supplement_langue_nationale_fcfa?: number | null
+          tirage?: number | null
+          type_livre?: string | null
+          type_reliure?: string | null
         }
         Update: {
-          cout_couverture?: number
-          cout_papier?: number
-          cout_total?: number
+          cout_conception_couverture_fcfa?: number | null
+          cout_couverture_fcfa?: number | null
+          cout_decoupe_fcfa?: number | null
+          cout_emballage_fcfa?: number | null
+          cout_encre_fcfa?: number | null
+          cout_groupe_electrogene_fcfa?: number | null
+          cout_isbn_fcfa?: number | null
+          cout_livraison_fcfa?: number | null
+          cout_mise_en_page_fcfa?: number | null
+          cout_papier_fcfa?: number | null
+          cout_reliure_fcfa?: number | null
+          cout_setup_offset_fcfa?: number | null
+          cout_total_fcfa?: number | null
           created_at?: string
-          droits_auteur?: number
+          depot_legal?: boolean | null
+          droits_auteur_fcfa?: number | null
           entreprise_id?: string
+          finition_couverture?: string | null
+          format?: string | null
           id?: string
-          inclure_delestage?: boolean
+          interieur_couleur?: boolean | null
+          langue?: string | null
           manuscrit_id?: string | null
-          manuscrit_titre?: string
-          marge_librairie?: number
-          nombre_exemplaires?: number
-          nombre_pages?: number
-          prix_vente_suggere?: number
-          surcout_delestage?: number
-          type_couverture?: Database["public"]["Enums"]["couverture_type"]
+          marge_imprimeur_fcfa?: number | null
+          marge_librairie_fcfa?: number | null
+          methode_impression?: string | null
+          nom_estimation?: string
+          nombre_pages?: number | null
+          prix_vente_suggere_fcfa?: number | null
+          qualite_papier?: string | null
+          sous_total_postpress_fcfa?: number | null
+          sous_total_prepress_fcfa?: number | null
+          sous_total_production_fcfa?: number | null
+          supplement_langue_nationale_fcfa?: number | null
+          tirage?: number | null
+          type_livre?: string | null
+          type_reliure?: string | null
+        }
+        Relationships: []
+      }
+      imprimeries: {
+        Row: {
+          adresse: string | null
+          created_at: string
+          description: string | null
+          email: string | null
+          est_partenaire: boolean | null
+          id: string
+          nom: string
+          site_web: string | null
+          specialites: string[] | null
+          telephone: string | null
+          types_impression: string[] | null
+        }
+        Insert: {
+          adresse?: string | null
+          created_at?: string
+          description?: string | null
+          email?: string | null
+          est_partenaire?: boolean | null
+          id?: string
+          nom: string
+          site_web?: string | null
+          specialites?: string[] | null
+          telephone?: string | null
+          types_impression?: string[] | null
+        }
+        Update: {
+          adresse?: string | null
+          created_at?: string
+          description?: string | null
+          email?: string | null
+          est_partenaire?: boolean | null
+          id?: string
+          nom?: string
+          site_web?: string | null
+          specialites?: string[] | null
+          telephone?: string | null
+          types_impression?: string[] | null
         }
         Relationships: []
       }
