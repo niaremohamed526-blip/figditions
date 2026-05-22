@@ -1,7 +1,7 @@
 import { Link, useRouterState, useNavigate } from "@tanstack/react-router";
 import { useState, type ReactNode } from "react";
 import {
-  LayoutDashboard, BookOpen, PenLine, Package, Wallet, FileText, Settings, LogOut, Menu, X, Calculator, Lock,
+  LayoutDashboard, BookOpen, PenLine, Package, Wallet, FileText, Settings, LogOut, Menu, X, Calculator, Lock, Factory,
 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth, useProfile, type AppRole } from "@/hooks/use-auth";
@@ -23,6 +23,7 @@ const NAV: NavItem[] = [
   { to: "/auteurs", label: "Auteurs", icon: PenLine, roles: ["admin", "editeur"] },
   { to: "/stocks", label: "Stocks", icon: Package, roles: ["admin", "commercial"] },
   { to: "/estimateur", label: "Estimateur", icon: Calculator, roles: ["admin", "editeur"] },
+  { to: "/imprimeries", label: "Imprimeries", icon: Factory, roles: ["admin", "editeur", "comptable", "commercial"] },
   { to: "/finances", label: "Finances", icon: Wallet, roles: ["admin", "comptable"], feature: "finances" },
   { to: "/contrats", label: "Contrats", icon: FileText, roles: ["admin"], feature: "contrats" },
   { to: "/parametres", label: "Paramètres", icon: Settings, roles: ["admin"] },
