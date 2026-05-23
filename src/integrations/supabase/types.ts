@@ -53,32 +53,83 @@ export type Database = {
         }
         Relationships: []
       }
+      contrats: {
+        Row: {
+          auteur_id: string | null
+          created_at: string
+          date_signature: string | null
+          duree: string
+          entreprise_id: string
+          id: string
+          manuscrit_id: string
+          notes: string | null
+          pourcentage_droits: number
+          statut: Database["public"]["Enums"]["contrat_statut"]
+        }
+        Insert: {
+          auteur_id?: string | null
+          created_at?: string
+          date_signature?: string | null
+          duree?: string
+          entreprise_id: string
+          id?: string
+          manuscrit_id: string
+          notes?: string | null
+          pourcentage_droits?: number
+          statut?: Database["public"]["Enums"]["contrat_statut"]
+        }
+        Update: {
+          auteur_id?: string | null
+          created_at?: string
+          date_signature?: string | null
+          duree?: string
+          entreprise_id?: string
+          id?: string
+          manuscrit_id?: string
+          notes?: string | null
+          pourcentage_droits?: number
+          statut?: Database["public"]["Enums"]["contrat_statut"]
+        }
+        Relationships: []
+      }
       entreprises: {
         Row: {
+          adresse: string | null
           created_at: string
+          email: string | null
           id: string
+          logo_url: string | null
           max_utilisateurs: number
           nom: string
           owner_id: string
           plan: string
+          telephone: string | null
           ville: string
         }
         Insert: {
+          adresse?: string | null
           created_at?: string
+          email?: string | null
           id?: string
+          logo_url?: string | null
           max_utilisateurs?: number
           nom: string
           owner_id: string
           plan?: string
+          telephone?: string | null
           ville?: string
         }
         Update: {
+          adresse?: string | null
           created_at?: string
+          email?: string | null
           id?: string
+          logo_url?: string | null
           max_utilisateurs?: number
           nom?: string
           owner_id?: string
           plan?: string
+          telephone?: string | null
           ville?: string
         }
         Relationships: []
@@ -485,6 +536,7 @@ export type Database = {
       current_entreprise_id: { Args: never; Returns: string }
     }
     Enums: {
+      contrat_statut: "brouillon" | "signe" | "expire"
       couverture_type: "Souple" | "Rigide"
       manuscrit_statut:
         | "recu"
@@ -622,6 +674,7 @@ export type CompositeTypes<
 export const Constants = {
   public: {
     Enums: {
+      contrat_statut: ["brouillon", "signe", "expire"],
       couverture_type: ["Souple", "Rigide"],
       manuscrit_statut: [
         "recu",
