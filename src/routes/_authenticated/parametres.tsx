@@ -2,7 +2,7 @@ import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { Check, X, Sparkles, UserPlus, Trash2, Loader2, Crown, Lock, Copy, Upload, Save, AlertTriangle, KeyRound, Building2 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
-import { useAuth, useProfile, type AppRole, type AppPlan } from "@/hooks/use-auth";
+import { useAuth, useProfile, notifyEntrepriseUpdated, type AppRole, type AppPlan } from "@/hooks/use-auth";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -236,6 +236,7 @@ function MaisonSection({ entreprise }: { entreprise: any }) {
     } as any).eq("id", entreprise.id);
     setSaving(false);
     if (error) return toast.error(error.message);
+    notifyEntrepriseUpdated();
     toast.success("Paramètres sauvegardés");
   };
 
@@ -248,9 +249,17 @@ function MaisonSection({ entreprise }: { entreprise: any }) {
     const { error: upErr } = await supabase.storage.from("logos").upload(path, file, { upsert: true });
     if (upErr) { setUploading(false); return toast.error(upErr.message); }
     const { data } = supabase.storage.from("logos").getPublicUrl(path);
-    setLogoUrl(data.publicUrl);
+    const newUrl = data.publicUrl;
+    setLogoUrl(newUrl);
+    // Persist immediately so the sidebar updates without waiting for "Save"
+    const { error: updErr } = await supabase
+      .from("entreprises")
+      .update({ logo_url: newUrl } as any)
+      .eq("id", entreprise.id);
     setUploading(false);
-    toast.success("Logo téléchargé — n'oubliez pas de sauvegarder");
+    if (updErr) return toast.error(updErr.message);
+    notifyEntrepriseUpdated();
+    toast.success("Logo mis à jour");
   };
 
   return (

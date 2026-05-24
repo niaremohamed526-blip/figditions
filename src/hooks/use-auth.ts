@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import type { Session, User } from "@supabase/supabase-js";
 import { supabase } from "@/integrations/supabase/client";
 
@@ -18,6 +18,10 @@ export interface Entreprise {
   plan: AppPlan;
   max_utilisateurs: number;
   owner_id: string;
+  logo_url?: string | null;
+  adresse?: string | null;
+  telephone?: string | null;
+  email?: string | null;
 }
 
 export function useAuth() {
@@ -41,27 +45,36 @@ export function useAuth() {
   return { session, user, loading };
 }
 
+export function notifyEntrepriseUpdated() {
+  if (typeof window !== "undefined") {
+    window.dispatchEvent(new CustomEvent("entreprise:updated"));
+  }
+}
+
 export function useProfile(userId: string | undefined) {
   const [profile, setProfile] = useState<Profile | null>(null);
   const [entreprise, setEntreprise] = useState<Entreprise | null>(null);
   const [loading, setLoading] = useState(true);
 
-  useEffect(() => {
+  const load = useCallback(async () => {
     if (!userId) { setLoading(false); return; }
-    let active = true;
-    (async () => {
-      const { data: p } = await supabase.from("profiles").select("*").eq("id", userId).maybeSingle();
-      if (!active) return;
-      setProfile(p as Profile | null);
-      if (p?.entreprise_id) {
-        const { data: e } = await supabase.from("entreprises").select("*").eq("id", p.entreprise_id).maybeSingle();
-        if (!active) return;
-        setEntreprise(e as Entreprise | null);
-      }
-      setLoading(false);
-    })();
-    return () => { active = false; };
+    const { data: p } = await supabase.from("profiles").select("*").eq("id", userId).maybeSingle();
+    setProfile(p as Profile | null);
+    if (p?.entreprise_id) {
+      const { data: e } = await supabase.from("entreprises").select("*").eq("id", p.entreprise_id).maybeSingle();
+      setEntreprise(e as Entreprise | null);
+    }
+    setLoading(false);
   }, [userId]);
 
-  return { profile, entreprise, loading };
+  useEffect(() => { load(); }, [load]);
+
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    const handler = () => load();
+    window.addEventListener("entreprise:updated", handler);
+    return () => window.removeEventListener("entreprise:updated", handler);
+  }, [load]);
+
+  return { profile, entreprise, loading, refresh: load };
 }
