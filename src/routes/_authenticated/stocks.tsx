@@ -27,6 +27,8 @@ import { Link } from "@tanstack/react-router";
 import { format as fmtDate, startOfMonth, subMonths } from "date-fns";
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid, Legend, LineChart, Line } from "recharts";
 import { AlertTriangle } from "lucide-react";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { StockInterneTab } from "@/components/stock-interne";
 
 export const Route = createFileRoute("/_authenticated/stocks")({
   component: StocksPage,
