@@ -881,11 +881,22 @@ function InviteModal({
   );
 }
 
-function PlansComparison({ currentPlan, canChange, entrepriseId }: { currentPlan: AppPlan; canChange: boolean; entrepriseId: string | null }) {
+function PlansComparison({ currentPlan, canChange, entrepriseId, onChoose }: {
+  currentPlan: AppPlan;
+  canChange: boolean;
+  entrepriseId: string | null;
+  onChoose: (target: "pro" | "business") => void;
+}) {
   const [updating, setUpdating] = useState<AppPlan | null>(null);
 
   const switchPlan = async (plan: AppPlan) => {
     if (!entrepriseId || plan === currentPlan) return;
+    // Paid plans go through PayDunya checkout
+    if (plan === "pro" || plan === "business") {
+      onChoose(plan);
+      return;
+    }
+    // Downgrade to starter: direct update
     setUpdating(plan);
     const max = PLANS[plan].maxUsers === Infinity ? 999 : PLANS[plan].maxUsers;
     const { error } = await supabase.from("entreprises").update({ plan, max_utilisateurs: max }).eq("id", entrepriseId);
