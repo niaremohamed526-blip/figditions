@@ -14,6 +14,54 @@ export type Database = {
   }
   public: {
     Tables: {
+      abonnements: {
+        Row: {
+          created_at: string
+          created_by: string | null
+          date_debut: string | null
+          date_fin: string | null
+          entreprise_id: string
+          id: string
+          montant_fcfa: number
+          paydunya_checkout_url: string | null
+          paydunya_token: string | null
+          periode: string
+          plan: string
+          statut: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          created_by?: string | null
+          date_debut?: string | null
+          date_fin?: string | null
+          entreprise_id: string
+          id?: string
+          montant_fcfa: number
+          paydunya_checkout_url?: string | null
+          paydunya_token?: string | null
+          periode: string
+          plan: string
+          statut?: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          created_by?: string | null
+          date_debut?: string | null
+          date_fin?: string | null
+          entreprise_id?: string
+          id?: string
+          montant_fcfa?: number
+          paydunya_checkout_url?: string | null
+          paydunya_token?: string | null
+          periode?: string
+          plan?: string
+          statut?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       auteurs: {
         Row: {
           created_at: string
@@ -94,6 +142,7 @@ export type Database = {
       }
       entreprises: {
         Row: {
+          abonnement_expire_le: string | null
           adresse: string | null
           created_at: string
           email: string | null
@@ -107,6 +156,7 @@ export type Database = {
           ville: string
         }
         Insert: {
+          abonnement_expire_le?: string | null
           adresse?: string | null
           created_at?: string
           email?: string | null
@@ -120,6 +170,7 @@ export type Database = {
           ville?: string
         }
         Update: {
+          abonnement_expire_le?: string | null
           adresse?: string | null
           created_at?: string
           email?: string | null
@@ -439,6 +490,56 @@ export type Database = {
             columns: ["stock_interne_id"]
             isOneToOne: false
             referencedRelation: "stock_interne"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      paiements: {
+        Row: {
+          abonnement_id: string
+          created_at: string
+          entreprise_id: string
+          id: string
+          methode: string | null
+          montant_fcfa: number
+          paydunya_reference: string | null
+          paydunya_token: string | null
+          payload: Json | null
+          statut: string
+          updated_at: string
+        }
+        Insert: {
+          abonnement_id: string
+          created_at?: string
+          entreprise_id: string
+          id?: string
+          methode?: string | null
+          montant_fcfa: number
+          paydunya_reference?: string | null
+          paydunya_token?: string | null
+          payload?: Json | null
+          statut?: string
+          updated_at?: string
+        }
+        Update: {
+          abonnement_id?: string
+          created_at?: string
+          entreprise_id?: string
+          id?: string
+          methode?: string | null
+          montant_fcfa?: number
+          paydunya_reference?: string | null
+          paydunya_token?: string | null
+          payload?: Json | null
+          statut?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "paiements_abonnement_id_fkey"
+            columns: ["abonnement_id"]
+            isOneToOne: false
+            referencedRelation: "abonnements"
             referencedColumns: ["id"]
           },
         ]
