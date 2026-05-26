@@ -263,7 +263,7 @@ function StocksPage() {
         </TabsContent>
 
         <TabsContent value="interne" className="space-y-6 mt-0">
-          <StockInterneTab />
+          <StockInterneTab entrepriseId={profile?.entreprise_id ?? null} userId={user?.id ?? null} />
         </TabsContent>
       </Tabs>
     </div>
