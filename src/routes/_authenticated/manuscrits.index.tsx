@@ -382,8 +382,8 @@ function EditorialAnalytics({ items }: { items: Manuscrit[] | null }) {
     });
   }, [items]);
 
-  const lectureAvg = stageAvg.find((s) => s.stage === "Lecture")?.days ?? 0;
-  const correctionAvg = stageAvg.find((s) => s.stage === "Correction")?.days ?? 0;
+  const lectureAvg = stageAvg.find((s) => s.stage === "Relecture")?.days ?? 0;
+  const correctionAvg = stageAvg.find((s) => s.stage === "Épreuve 1")?.days ?? 0;
 
   const now = new Date();
   const monthStart = startOfMonth(now);
