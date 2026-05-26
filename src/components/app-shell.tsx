@@ -125,6 +125,7 @@ export function AppShell({ children }: { children: ReactNode }) {
           <Link to="/dashboard" className="block flex-1 min-w-0">
             <Logo className="h-12 w-full" />
           </Link>
+          <NotificationBell entrepriseId={entreprise?.id} />
           <LangToggle lang={lang} setLang={setLang} />
         </div>
         <nav className="flex-1 px-3 py-6 space-y-1 overflow-y-auto">
@@ -144,7 +145,7 @@ export function AppShell({ children }: { children: ReactNode }) {
         </div>
       </aside>
 
-      {/* Mobile top bar: hamburger LEFT, logo center, lang right */}
+      {/* Mobile top bar: hamburger LEFT, logo center, bell + lang right */}
       <div className="md:hidden fixed top-0 left-0 right-0 z-30 bg-sidebar/95 backdrop-blur border-b border-border h-14 flex items-center justify-between px-3 gap-2">
         <button
           onClick={() => setMobileOpen(true)}
@@ -156,6 +157,7 @@ export function AppShell({ children }: { children: ReactNode }) {
         <Link to="/dashboard" className="flex-1 flex justify-center">
           <Logo className="h-9 w-auto" />
         </Link>
+        <NotificationBell entrepriseId={entreprise?.id} />
         <LangToggle lang={lang} setLang={setLang} />
       </div>
 
