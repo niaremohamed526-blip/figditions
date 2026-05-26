@@ -255,6 +255,62 @@ function EstimateurPage() {
     setToDelete(null);
   };
 
+  const confirmApply = async () => {
+    if (!toApply || !profile?.entreprise_id) return;
+    setApplying(true);
+    const mid = toApply.manuscrit_id!;
+    const tirage = Number(toApply.tirage) || 0;
+    const coutUnitaire = tirage > 0 ? toApply.cout_total_fcfa / tirage : 0;
+    const prixUnitaire = tirage > 0 ? toApply.prix_vente_suggere_fcfa / tirage : 0;
+
+    const { data: existing } = await (supabase as any)
+      .from("stock_interne").select("*").eq("manuscrit_id", mid).maybeSingle();
+
+    let error: any;
+    if (existing) {
+      ({ error } = await (supabase as any).from("stock_interne").update({
+        quantite_imprimee: (existing.quantite_imprimee ?? 0) + tirage,
+        quantite_disponible: (existing.quantite_disponible ?? 0) + tirage,
+        cout_unitaire_impression_fcfa: coutUnitaire,
+        prix_vente_direct_fcfa: prixUnitaire || existing.prix_vente_direct_fcfa,
+        date_impression: new Date().toISOString().slice(0, 10),
+      }).eq("id", existing.id));
+    } else {
+      ({ error } = await (supabase as any).from("stock_interne").insert({
+        entreprise_id: profile.entreprise_id,
+        manuscrit_id: mid,
+        quantite_imprimee: tirage,
+        quantite_disponible: tirage,
+        quantite_reservee: 0,
+        quantite_transferee_librairies: 0,
+        quantite_vendue_directement: 0,
+        quantite_exposee_evenements: 0,
+        seuil_alerte: 10,
+        cout_unitaire_impression_fcfa: coutUnitaire,
+        prix_vente_direct_fcfa: prixUnitaire,
+        date_impression: new Date().toISOString().slice(0, 10),
+      }));
+    }
+    // Trace du mouvement (impression reçue)
+    if (!error) {
+      await (supabase as any).from("mouvements_stock").insert({
+        entreprise_id: profile.entreprise_id,
+        manuscrit_id: mid,
+        type_mouvement: "ajustement",
+        quantite: tirage,
+        notes: `Impression issue de l'estimation « ${toApply.nom_estimation} »`,
+        effectue_par: user?.id ?? null,
+        date_mouvement: new Date().toISOString().slice(0, 10),
+      });
+    }
+    setApplying(false);
+    if (error) return toast.error(error.message);
+    toast.success(`✅ Stock interne mis à jour (+${tirage} ex.)`);
+    setToApply(null);
+  };
+
+
+
   const tirageRec = tirage < 500
     ? { color: "bg-blue-500/15 text-blue-300 border-blue-500/30", text: "💡 Impression numérique recommandée" }
     : tirage <= 1000
