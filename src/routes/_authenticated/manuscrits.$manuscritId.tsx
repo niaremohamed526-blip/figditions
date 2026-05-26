@@ -158,6 +158,16 @@ function ManuscritDetailPage() {
     loadPartages();
   };
 
+  const stats = useMemo(() => {
+    const list = partages ?? [];
+    const totalVues = list.reduce((s, p) => s + p.nombre_vues_actuel, 0);
+    const last = list.reduce<string | null>(
+      (acc, p) => (p.last_viewed_at && (!acc || p.last_viewed_at > acc) ? p.last_viewed_at : acc),
+      null,
+    );
+    return { liens: list.length, vues: totalVues, derniere: last };
+  }, [partages]);
+
   if (loading) return <div className="space-y-4"><Skeleton className="h-24 w-full" /><Skeleton className="h-64 w-full" /></div>;
   if (!m) return <p className="text-muted-foreground">Manuscrit introuvable.</p>;
 
