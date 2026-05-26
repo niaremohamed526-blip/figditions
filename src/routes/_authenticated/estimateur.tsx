@@ -1,8 +1,9 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useEffect, useMemo, useState } from "react";
+import { z } from "zod";
 import {
   Calculator, Save, Loader2, Trash2, Printer, Sparkles,
-  BookOpen, Settings2, Palette, ChevronDown, Info, Zap, Check,
+  BookOpen, Settings2, Palette, ChevronDown, Info, Zap, Check, PackagePlus,
 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth, useProfile } from "@/hooks/use-auth";
@@ -22,10 +23,14 @@ import { toast } from "sonner";
 import { fcfa } from "@/lib/format";
 import { cn } from "@/lib/utils";
 
+const searchSchema = z.object({ manuscrit: z.string().uuid().optional() });
+
 export const Route = createFileRoute("/_authenticated/estimateur")({
   component: EstimateurPage,
+  validateSearch: searchSchema,
   head: () => ({ meta: [{ title: "Estimateur de coûts — FIGDITIONS" }] }),
 });
+
 
 // --- Tarifs Bamako ---
 const PAPER_RATES: Record<string, number> = {
