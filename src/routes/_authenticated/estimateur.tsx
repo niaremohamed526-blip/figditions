@@ -124,12 +124,25 @@ function EstimateurPage() {
 
   useEffect(() => { if (profile?.entreprise_id) loadAll(); }, [profile?.entreprise_id]);
 
+  // Prefill depuis ?manuscrit=<id> (depuis Stock interne "Commander une impression")
+  useEffect(() => {
+    if (prefillManuscritId && manuscrits.length > 0) {
+      const exists = manuscrits.find((m) => m.id === prefillManuscritId);
+      if (exists) {
+        setManuscritId(prefillManuscritId);
+        toast.info(`📚 Pré-rempli pour « ${exists.titre} »`);
+      }
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [prefillManuscritId, manuscrits.length]);
+
   useEffect(() => {
     if (manuscritId === "none") return;
     const m = manuscrits.find((x) => x.id === manuscritId);
     if (m?.nombre_pages) setPages(m.nombre_pages);
     if (m && !nom) setNom(`Estimation - ${m.titre}`);
   }, [manuscritId, manuscrits]);
+
 
   // ------- CALCULATIONS -------
   const calc = useMemo(() => {
