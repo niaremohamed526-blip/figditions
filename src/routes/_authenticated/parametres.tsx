@@ -1,4 +1,4 @@
-import { createFileRoute, useNavigate } from "@tanstack/react-router";
+import { createFileRoute, useNavigate, useSearch } from "@tanstack/react-router";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { Check, X, Sparkles, UserPlus, Trash2, Loader2, Crown, Lock, Copy, Upload, Save, AlertTriangle, KeyRound, Building2 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
@@ -17,9 +17,18 @@ import {
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
 import { PLANS, planFor } from "@/lib/plans";
+import { UpgradePaymentModal } from "@/components/upgrade-payment-modal";
+import { PaymentResultModal } from "@/components/payment-result-modal";
+import { fcfa } from "@/lib/format";
+import { z } from "zod";
+
+const paramsSchema = z.object({
+  payment: z.enum(["success", "cancelled"]).optional(),
+}).partial();
 
 export const Route = createFileRoute("/_authenticated/parametres")({
   component: ParametresPage,
+  validateSearch: paramsSchema,
   head: () => ({ meta: [{ title: "Paramètres — FIGDITIONS" }] }),
 });
 
@@ -49,9 +58,27 @@ interface Invitation {
 
 function ParametresPage() {
   const { user } = useAuth();
-  const { profile, entreprise, loading: profileLoading } = useProfile(user?.id);
+  const { profile, entreprise, loading: profileLoading, refresh } = useProfile(user?.id);
   const plan = planFor(entreprise?.plan);
   const isAdmin = profile?.role === "admin";
+  const search = useSearch({ from: "/_authenticated/parametres" });
+  const navigate = useNavigate();
+  const [resultStatus, setResultStatus] = useState<"success" | "cancelled" | null>(null);
+  const [upgradeTarget, setUpgradeTarget] = useState<"pro" | "business" | null>(null);
+
+  useEffect(() => {
+    if (search.payment === "success" || search.payment === "cancelled") {
+      setResultStatus(search.payment);
+      // clear URL param + refresh profile to pick up new plan after webhook
+      navigate({ to: "/parametres", search: {}, replace: true });
+      if (search.payment === "success") {
+        // poll a couple of times for the webhook
+        const tries = [1500, 4000, 8000];
+        tries.forEach((d) => setTimeout(refresh, d));
+      }
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [search.payment]);
 
   if (profileLoading) {
     return <div className="space-y-4"><Skeleton className="h-32 w-full" /><Skeleton className="h-64 w-full" /></div>;
@@ -64,7 +91,14 @@ function ParametresPage() {
         <p className="text-muted-foreground mt-1">Gérez votre plan, votre équipe et vos préférences.</p>
       </header>
 
-      <PlanCard plan={plan.key} />
+      <ExpiryBanner entreprise={entreprise} onRenew={() => setUpgradeTarget((entreprise?.plan as "pro" | "business") || "pro")} />
+
+      <PlanCard
+        plan={plan.key}
+        entreprise={entreprise}
+        onUpgrade={(target) => setUpgradeTarget(target)}
+        isAdmin={isAdmin}
+      />
 
       <Tabs defaultValue={isAdmin ? "maison" : "compte"} className="w-full">
         <TabsList className="bg-card border border-border flex-wrap h-auto">
@@ -72,6 +106,7 @@ function ParametresPage() {
           {isAdmin && <TabsTrigger value="maison">Maison d'édition</TabsTrigger>}
           {isAdmin && <TabsTrigger value="equipe">Mon équipe</TabsTrigger>}
           <TabsTrigger value="plan" id="plan">Plans</TabsTrigger>
+          {isAdmin && <TabsTrigger value="paiements">Paiements</TabsTrigger>}
           <TabsTrigger value="danger" className="text-destructive">Zone dangereuse</TabsTrigger>
         </TabsList>
 
@@ -96,13 +131,60 @@ function ParametresPage() {
         )}
 
         <TabsContent value="plan" className="mt-6">
-          <PlansComparison currentPlan={plan.key} canChange={isAdmin} entrepriseId={profile?.entreprise_id ?? null} />
+          <PlansComparison
+            currentPlan={plan.key}
+            canChange={isAdmin}
+            entrepriseId={profile?.entreprise_id ?? null}
+            onChoose={(target) => setUpgradeTarget(target)}
+          />
         </TabsContent>
+
+        {isAdmin && (
+          <TabsContent value="paiements" className="mt-6">
+            <PaymentsHistory entrepriseId={profile?.entreprise_id ?? null} />
+          </TabsContent>
+        )}
 
         <TabsContent value="danger" className="mt-6">
           <DangerZone />
         </TabsContent>
       </Tabs>
+
+      {upgradeTarget && (
+        <UpgradePaymentModal
+          open={upgradeTarget !== null}
+          onOpenChange={(o) => !o && setUpgradeTarget(null)}
+          plan={upgradeTarget}
+        />
+      )}
+
+      <PaymentResultModal
+        status={resultStatus}
+        onClose={() => setResultStatus(null)}
+        onRetry={() => setUpgradeTarget((entreprise?.plan as "pro" | "business") || "pro")}
+      />
+    </div>
+  );
+}
+
+function ExpiryBanner({ entreprise, onRenew }: { entreprise: any; onRenew: () => void }) {
+  const expire = entreprise?.abonnement_expire_le;
+  if (!expire) return null;
+  const ms = new Date(expire).getTime() - Date.now();
+  const days = Math.ceil(ms / (1000 * 60 * 60 * 24));
+  if (days > 7 || days < 0) return null;
+  return (
+    <div className="rounded-xl border border-orange-500/30 bg-orange-500/10 p-4 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+      <div className="flex items-start gap-3">
+        <AlertTriangle className="h-5 w-5 text-orange-400 shrink-0 mt-0.5" />
+        <p className="text-sm text-orange-100">
+          Votre abonnement expire dans <span className="font-bold">{days} jour{days > 1 ? "s" : ""}</span>.
+          Renouvelez maintenant pour ne pas perdre l'accès à vos données.
+        </p>
+      </div>
+      <Button onClick={onRenew} className="bg-orange-500 text-white hover:bg-orange-600">
+        Renouveler maintenant
+      </Button>
     </div>
   );
 }
@@ -382,34 +464,153 @@ function DangerZone() {
   );
 }
 
-function PlanCard({ plan }: { plan: AppPlan }) {
+function PlanCard({ plan, entreprise, onUpgrade, isAdmin }: {
+  plan: AppPlan;
+  entreprise: any;
+  onUpgrade: (target: "pro" | "business") => void;
+  isAdmin: boolean;
+}) {
   const p = PLANS[plan];
+  const expire = entreprise?.abonnement_expire_le ? new Date(entreprise.abonnement_expire_le) : null;
+  const daysLeft = expire ? Math.ceil((expire.getTime() - Date.now()) / 86400000) : null;
+  const isPaid = plan !== "starter";
+  const isActive = !expire || (daysLeft !== null && daysLeft > 0);
+  const statusLabel = !isPaid ? "Gratuit" : isActive ? "Actif" : "Expiré";
+  const statusClass = !isPaid
+    ? "bg-muted text-muted-foreground border-border"
+    : isActive
+    ? "bg-emerald-500/15 text-emerald-400 border-emerald-500/30"
+    : "bg-destructive/15 text-destructive border-destructive/30";
+
+  // Time-used progress (if we have date_fin → approximate cycle length by periode)
+  const totalDays = expire ? (entreprise?.plan === "starter" ? 0 : 30) : 0;
+  const usedPct = daysLeft !== null && totalDays > 0
+    ? Math.min(100, Math.max(0, ((totalDays - daysLeft) / totalDays) * 100))
+    : 0;
+
   return (
-    <div className="rounded-2xl border border-border bg-card p-6 flex flex-col md:flex-row md:items-center justify-between gap-4">
-      <div className="flex items-center gap-4">
-        <div className={cn("h-12 w-12 rounded-xl border flex items-center justify-center", p.badgeClass)}>
-          <Crown className="h-6 w-6" />
-        </div>
-        <div>
-          <p className="text-xs uppercase tracking-wider text-muted-foreground">Mon plan actuel</p>
-          <div className="flex items-center gap-2 mt-1">
-            <h2 className="text-2xl font-bold">{p.label}</h2>
-            <span className={cn("text-xs font-semibold border rounded-full px-2 py-0.5", p.badgeClass)}>
-              {p.monthlyFcfa === 0 ? "Gratuit" : `${p.monthlyFcfa.toLocaleString("fr-FR")} FCFA / mois`}
-            </span>
+    <div className="rounded-2xl border border-border bg-card p-6 space-y-4">
+      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+        <div className="flex items-center gap-4">
+          <div className={cn("h-12 w-12 rounded-xl border flex items-center justify-center", p.badgeClass)}>
+            <Crown className="h-6 w-6" />
           </div>
-          <p className="text-sm text-muted-foreground mt-1">
-            {p.maxManuscrits === Infinity ? "Manuscrits illimités" : `Jusqu'à ${p.maxManuscrits} manuscrits`}
-            {" · "}
-            {p.maxUsers === Infinity ? "Utilisateurs illimités" : `${p.maxUsers} utilisateur${p.maxUsers > 1 ? "s" : ""}`}
-          </p>
+          <div>
+            <p className="text-xs uppercase tracking-wider text-muted-foreground">Mon plan actuel</p>
+            <div className="flex items-center gap-2 mt-1 flex-wrap">
+              <h2 className="text-2xl font-bold">{p.label}</h2>
+              <span className={cn("text-xs font-semibold border rounded-full px-2 py-0.5", p.badgeClass)}>
+                {p.monthlyFcfa === 0 ? "Gratuit" : `${fcfa(p.monthlyFcfa)} / mois`}
+              </span>
+              <span className={cn("text-xs font-semibold border rounded-full px-2 py-0.5", statusClass)}>{statusLabel}</span>
+            </div>
+            <p className="text-sm text-muted-foreground mt-1">
+              {p.maxManuscrits === Infinity ? "Manuscrits illimités" : `Jusqu'à ${p.maxManuscrits} manuscrits`}
+              {" · "}
+              {p.maxUsers === Infinity ? "Utilisateurs illimités" : `${p.maxUsers} utilisateur${p.maxUsers > 1 ? "s" : ""}`}
+            </p>
+            {expire && isPaid && (
+              <p className="text-xs text-muted-foreground mt-1">
+                Renouvellement le {expire.toLocaleDateString("fr-FR")}
+                {daysLeft !== null && daysLeft >= 0 && ` · Il reste ${daysLeft} jour${daysLeft > 1 ? "s" : ""}`}
+              </p>
+            )}
+          </div>
+        </div>
+        <div className="flex flex-col gap-2 items-stretch md:items-end">
+          {isAdmin && plan === "starter" && (
+            <>
+              <Button onClick={() => onUpgrade("pro")} className="bg-primary text-primary-foreground hover:bg-primary/90">
+                <Sparkles className="h-4 w-4" /> Passer au Pro
+              </Button>
+              <Button onClick={() => onUpgrade("business")} className="bg-[color:var(--gold)] text-background hover:bg-[color:var(--gold)]/90">
+                <Crown className="h-4 w-4" /> Passer au Business
+              </Button>
+            </>
+          )}
+          {isAdmin && plan === "pro" && (
+            <Button onClick={() => onUpgrade("business")} className="bg-[color:var(--gold)] text-background hover:bg-[color:var(--gold)]/90">
+              <Crown className="h-4 w-4" /> Passer au Business
+            </Button>
+          )}
+          {plan === "business" && (
+            <Button disabled className="opacity-60">
+              <Crown className="h-4 w-4" /> Plan maximum atteint ⭐
+            </Button>
+          )}
         </div>
       </div>
-      <a href="#plan" className="inline-flex">
-        <Button className="bg-primary text-primary-foreground hover:bg-primary/90">
-          <Sparkles className="h-4 w-4" /> Changer de plan
-        </Button>
-      </a>
+      {isPaid && expire && totalDays > 0 && (
+        <div>
+          <div className="h-1.5 rounded-full bg-muted overflow-hidden">
+            <div className="h-full bg-primary transition-all" style={{ width: `${usedPct}%` }} />
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
+
+function PaymentsHistory({ entrepriseId }: { entrepriseId: string | null }) {
+  const [rows, setRows] = useState<any[] | null>(null);
+  useEffect(() => {
+    if (!entrepriseId) return;
+    (async () => {
+      const { data } = await supabase
+        .from("paiements")
+        .select("id, created_at, montant_fcfa, methode, statut, abonnement_id, abonnements(plan, periode)")
+        .eq("entreprise_id", entrepriseId)
+        .order("created_at", { ascending: false })
+        .limit(50);
+      setRows((data as any[]) ?? []);
+    })();
+  }, [entrepriseId]);
+
+  if (!rows) return <Skeleton className="h-40 w-full" />;
+  if (rows.length === 0) {
+    return (
+      <div className="rounded-xl border border-border bg-card p-8 text-center text-sm text-muted-foreground">
+        Aucun paiement enregistré pour le moment.
+      </div>
+    );
+  }
+  const statutClass = (s: string) =>
+    s === "succes" ? "bg-emerald-500/15 text-emerald-400 border-emerald-500/30"
+    : s === "echec" ? "bg-destructive/15 text-destructive border-destructive/30"
+    : "bg-orange-500/15 text-orange-400 border-orange-500/30";
+  const methodeLabel = (m: string) =>
+    m === "orange_money" ? "Orange Money" : m === "carte_bancaire" ? "Carte Bancaire" : (m || "—");
+
+  return (
+    <div className="rounded-xl border border-border bg-card overflow-x-auto">
+      <table className="w-full text-sm">
+        <thead className="text-xs uppercase text-muted-foreground bg-background/40">
+          <tr>
+            <th className="text-left p-3">Date</th>
+            <th className="text-left p-3">Plan</th>
+            <th className="text-left p-3">Période</th>
+            <th className="text-right p-3">Montant</th>
+            <th className="text-left p-3">Méthode</th>
+            <th className="text-left p-3">Statut</th>
+          </tr>
+        </thead>
+        <tbody>
+          {rows.map((r) => (
+            <tr key={r.id} className="border-t border-border">
+              <td className="p-3">{new Date(r.created_at).toLocaleDateString("fr-FR")}</td>
+              <td className="p-3 capitalize">{r.abonnements?.plan ?? "—"}</td>
+              <td className="p-3 capitalize">{r.abonnements?.periode ?? "—"}</td>
+              <td className="p-3 text-right font-medium">{fcfa(r.montant_fcfa)}</td>
+              <td className="p-3">{methodeLabel(r.methode)}</td>
+              <td className="p-3">
+                <span className={cn("text-xs font-semibold border rounded-full px-2 py-0.5", statutClass(r.statut))}>
+                  {r.statut === "succes" ? "Succès" : r.statut === "echec" ? "Échec" : "En attente"}
+                </span>
+              </td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
     </div>
   );
 }
@@ -680,11 +881,22 @@ function InviteModal({
   );
 }
 
-function PlansComparison({ currentPlan, canChange, entrepriseId }: { currentPlan: AppPlan; canChange: boolean; entrepriseId: string | null }) {
+function PlansComparison({ currentPlan, canChange, entrepriseId, onChoose }: {
+  currentPlan: AppPlan;
+  canChange: boolean;
+  entrepriseId: string | null;
+  onChoose: (target: "pro" | "business") => void;
+}) {
   const [updating, setUpdating] = useState<AppPlan | null>(null);
 
   const switchPlan = async (plan: AppPlan) => {
     if (!entrepriseId || plan === currentPlan) return;
+    // Paid plans go through PayDunya checkout
+    if (plan === "pro" || plan === "business") {
+      onChoose(plan);
+      return;
+    }
+    // Downgrade to starter: direct update
     setUpdating(plan);
     const max = PLANS[plan].maxUsers === Infinity ? 999 : PLANS[plan].maxUsers;
     const { error } = await supabase.from("entreprises").update({ plan, max_utilisateurs: max }).eq("id", entrepriseId);
