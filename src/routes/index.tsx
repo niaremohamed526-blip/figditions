@@ -1,10 +1,15 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
-import { Menu, X, Star, BookOpen, Users, Package, Wallet, FileText, Calculator, Twitter, Linkedin, Facebook, ArrowRight, Check } from "lucide-react";
+import {
+  Menu, X, Star, BookOpen, Users, Package, Wallet, FileText, Calculator,
+  Twitter, Linkedin, Facebook, Instagram, Youtube, ArrowRight, Check,
+  Factory, Shield, BarChart3, Store,
+} from "lucide-react";
 import { Logo } from "@/components/logo";
 import { useI18n } from "@/hooks/use-i18n";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
+import figuiraLogo from "@/assets/figuira-logo.jpg";
 
 export const Route = createFileRoute("/")({
   component: Landing,
@@ -21,13 +26,50 @@ export const Route = createFileRoute("/")({
 function Landing() {
   return (
     <div className="min-h-screen bg-background text-foreground overflow-x-hidden">
+      <BrandHeader />
       <Navbar />
       <Hero />
       <Features />
+      <Partners />
       <HowItWorks />
       <Pricing />
       <CtaBanner />
       <Footer />
+    </div>
+  );
+}
+
+function BrandHeader() {
+  const { t } = useI18n();
+  return (
+    <div className="w-full flex flex-col items-center justify-center pt-8 pb-4 px-4 animate-brand-in">
+      <Logo
+        className="h-20 md:h-[120px] w-auto"
+        // gold drop-shadow per spec
+        // eslint-disable-next-line react/forbid-dom-props
+      />
+      <p
+        className="mt-3 text-[color:var(--gold)] text-center font-semibold uppercase"
+        style={{ fontSize: "14px", letterSpacing: "3px" }}
+      >
+        <span className="hidden sm:inline">{t("La plateforme éditoriale de l'Afrique de l'Ouest", "The publishing platform of West Africa")}</span>
+        <span
+          className="sm:hidden"
+          style={{ fontSize: "11px", letterSpacing: "2px" }}
+        >
+          {t("La plateforme éditoriale de l'Afrique de l'Ouest", "The publishing platform of West Africa")}
+        </span>
+      </p>
+      <style>{`
+        @keyframes brand-in {
+          from { opacity: 0; transform: scale(0.8); }
+          to { opacity: 1; transform: scale(1); }
+        }
+        .animate-brand-in { animation: brand-in 0.8s ease both; }
+        .animate-brand-in img {
+          filter: drop-shadow(0px 0px 20px rgba(212,175,55,0.4));
+        }
+      `}</style>
     </div>
   );
 }
@@ -46,12 +88,12 @@ function Navbar() {
 
   return (
     <header className={cn(
-      "fixed top-0 inset-x-0 z-50 transition-all duration-300",
+      "sticky top-0 inset-x-0 z-50 transition-all duration-300",
       scrolled ? "bg-background/70 backdrop-blur-xl border-b border-border" : "bg-transparent"
     )}>
-      <nav className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 md:h-20 flex items-center justify-between">
+      <nav className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-14 md:h-16 flex items-center justify-between">
         <Link to="/" className="flex items-center gap-2">
-          <Logo className="h-9 md:h-10 w-auto" />
+          <Logo className="h-8 md:h-9 w-auto" />
         </Link>
 
         <div className="hidden md:flex items-center gap-3">
@@ -107,28 +149,11 @@ function Hero() {
     document.getElementById("features")?.scrollIntoView({ behavior: "smooth" });
   };
   return (
-    <section className="relative min-h-screen flex items-center justify-center pt-24 pb-16 px-4 overflow-hidden">
-      {/* Animated gradient background */}
+    <section className="relative flex items-center justify-center pt-12 pb-20 px-4 overflow-hidden">
       <div className="absolute inset-0 -z-10">
         <div className="absolute inset-0 bg-gradient-to-br from-[#0A1628] via-[#0D2137] to-[#0A1628]" />
         <div className="absolute inset-0 opacity-40"
              style={{ backgroundImage: "radial-gradient(circle at 20% 30%, oklch(0.78 0.17 165 / 0.25), transparent 50%), radial-gradient(circle at 80% 70%, oklch(0.78 0.13 88 / 0.18), transparent 55%)" }} />
-        <div className="absolute inset-0 opacity-[0.07]"
-             style={{ backgroundImage: "linear-gradient(rgba(255,255,255,0.5) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.5) 1px, transparent 1px)", backgroundSize: "60px 60px" }} />
-        {/* Floating particles */}
-        {Array.from({ length: 18 }).map((_, i) => (
-          <span key={i}
-            className="absolute rounded-full bg-primary/40 animate-float-particle"
-            style={{
-              width: `${4 + (i % 4)}px`,
-              height: `${4 + (i % 4)}px`,
-              left: `${(i * 53) % 100}%`,
-              top: `${(i * 37) % 100}%`,
-              animationDelay: `${(i * 0.4) % 6}s`,
-              animationDuration: `${8 + (i % 6)}s`,
-            }}
-          />
-        ))}
       </div>
 
       <div className="max-w-5xl mx-auto text-center animate-fade-up">
@@ -167,14 +192,6 @@ function Hero() {
           </p>
         </div>
       </div>
-
-      <style>{`
-        @keyframes float-particle {
-          0%, 100% { transform: translateY(0) translateX(0); opacity: 0.4; }
-          50% { transform: translateY(-30px) translateX(15px); opacity: 0.8; }
-        }
-        .animate-float-particle { animation: float-particle var(--d, 10s) ease-in-out infinite; }
-      `}</style>
     </section>
   );
 }
@@ -182,12 +199,15 @@ function Hero() {
 function Features() {
   const { t } = useI18n();
   const items = [
-    { icon: BookOpen, fr: "Gestion des manuscrits", en: "Manuscript management", dfr: "Suivez chaque livre de la réception à la publication", den: "Track every book from reception to publication" },
-    { icon: Users, fr: "Gestion des auteurs", en: "Author management", dfr: "Centralisez les informations et droits de vos auteurs", den: "Centralize your authors information and royalties" },
-    { icon: Package, fr: "Suivi des stocks", en: "Stock tracking", dfr: "Suivez vos dépôts dans toutes les librairies de Bamako", den: "Track your deposits across all Bamako bookstores" },
-    { icon: Wallet, fr: "Finances & Royalties", en: "Finances & Royalties", dfr: "Calculez et payez les droits d'auteur automatiquement", den: "Calculate and pay author royalties automatically" },
-    { icon: FileText, fr: "Contrats OHADA", en: "OHADA Contracts", dfr: "Générez des contrats légaux conformes au droit malien", den: "Generate legal contracts compliant with Malian law" },
-    { icon: Calculator, fr: "Estimateur de coûts", en: "Cost estimator", dfr: "Calculez le coût d'impression exact en FCFA à Bamako", den: "Calculate exact printing costs in FCFA in Bamako" },
+    { icon: BookOpen, fr: "Gestion des manuscrits", en: "Manuscript management", dfr: "Suivez chaque livre à travers 10 étapes éditoriales, de la réception à la publication", den: "Track every book through 10 editorial stages, from reception to publication" },
+    { icon: Users, fr: "Gestion des auteurs", en: "Author management", dfr: "Centralisez les informations, contrats et droits de vos auteurs en un seul endroit", den: "Centralize information, contracts and royalties of your authors in one place" },
+    { icon: Factory, fr: "Stock interne", en: "Internal stock", dfr: "Gérez votre entrepôt, suivez chaque exemplaire imprimé et automatisez les mouvements de stock", den: "Manage your warehouse, track every printed copy and automate stock movements" },
+    { icon: Store, fr: "Stock externe", en: "External stock", dfr: "Suivez vos dépôts dans toutes les librairies de Bamako avec alertes de stock bas", den: "Track your deposits across all Bamako bookstores with low-stock alerts" },
+    { icon: Wallet, fr: "Finances & Royalties", en: "Finances & Royalties", dfr: "Calculez et suivez les droits d'auteur automatiquement en FCFA", den: "Calculate and track author royalties automatically in FCFA" },
+    { icon: FileText, fr: "Contrats OHADA", en: "OHADA Contracts", dfr: "Générez des contrats légaux conformes au droit malien en quelques clics", den: "Generate legal contracts compliant with Malian law in a few clicks" },
+    { icon: Calculator, fr: "Estimateur de coûts", en: "Cost estimator", dfr: "Calculez le coût d'impression exact en FCFA avec recommandation offset vs numérique", den: "Calculate exact printing costs in FCFA with offset vs digital recommendation" },
+    { icon: Shield, fr: "Partage PDF sécurisé", en: "Secure PDF sharing", dfr: "Partagez vos manuscrits avec des filigranes personnalisés et un nombre de vues limité", den: "Share manuscripts with custom watermarks and limited view counts" },
+    { icon: BarChart3, fr: "Analytiques avancées", en: "Advanced analytics", dfr: "Tableaux de bord complets pour piloter votre maison d'édition avec des données en temps réel", den: "Complete dashboards to manage your publishing house with real-time data" },
   ];
   return (
     <section id="features" className="py-24 px-4 bg-background relative">
@@ -201,7 +221,7 @@ function Features() {
         <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-5">
           {items.map((f, i) => (
             <RevealOnScroll key={i} delay={i * 80}>
-              <div className="group h-full rounded-2xl border border-border bg-card p-6 transition-all duration-300 hover:border-primary/50 hover:-translate-y-1 hover:shadow-glow">
+              <div className="group h-full rounded-2xl border border-border bg-[#0D2137] p-6 transition-all duration-300 hover:border-[color:var(--gold)] hover:-translate-y-1 hover:shadow-[0_0_24px_-4px_var(--gold)]">
                 <div className="h-12 w-12 rounded-xl bg-primary/15 text-primary flex items-center justify-center group-hover:bg-primary group-hover:text-primary-foreground transition-colors">
                   <f.icon className="h-6 w-6" />
                 </div>
@@ -216,16 +236,104 @@ function Features() {
   );
 }
 
+function Partners() {
+  const { t } = useI18n();
+  const socials = [
+    { Icon: Facebook, href: "https://www.facebook.com/figuira", label: "Facebook" },
+    { Icon: Linkedin, href: "https://www.linkedin.com/in/figuira-éditions-113118301/", label: "LinkedIn" },
+    { Icon: Instagram, href: "https://www.instagram.com/figuiraeditions2", label: "Instagram" },
+    { Icon: Youtube, href: "https://www.youtube.com/@figuira-editions9737", label: "YouTube" },
+  ];
+  return (
+    <section id="partners" className="py-[60px] px-4 bg-[#0D2137]">
+      <div className="max-w-7xl mx-auto">
+        <div className="text-center mb-12">
+          <h2 className="text-3xl md:text-5xl font-bold tracking-tight">
+            🤝 {t("Ils nous font confiance", "They trust us")}
+          </h2>
+          <p className="mt-3 text-muted-foreground max-w-2xl mx-auto">
+            {t(
+              "FIGDITIONS est fier de collaborer avec les meilleures maisons d'édition africaines",
+              "FIGDITIONS is proud to collaborate with the best African publishing houses"
+            )}
+          </p>
+        </div>
+
+        <RevealOnScroll>
+          <div className="max-w-2xl mx-auto rounded-2xl border-2 border-[color:var(--gold)] bg-[#0A1628] p-8 md:p-10 text-center relative shadow-[0_0_40px_-10px_var(--gold)]">
+            <div className="absolute -top-3 left-1/2 -translate-x-1/2">
+              <span className="text-xs font-bold px-3 py-1 rounded-full bg-[color:var(--gold)] text-background shadow-glow">
+                {t("Partenaire officiel ⭐", "Official partner ⭐")}
+              </span>
+            </div>
+
+            <a
+              href="https://figuiraeditions.org"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-block mt-4 transition-transform duration-300 hover:scale-105 hover:drop-shadow-[0_0_24px_rgba(212,175,55,0.6)]"
+            >
+              <img src={figuiraLogo} alt="Figuira Editions" style={{ height: "80px", width: "auto" }} className="mx-auto" />
+            </a>
+
+            <h3 className="mt-5 text-xl font-bold text-white tracking-wide">FIGUIRA ÉDITIONS</h3>
+            <p className="mt-1 text-sm font-semibold text-primary">
+              {t("En collaboration avec FIGDITIONS", "In collaboration with FIGDITIONS")}
+            </p>
+            <p className="mt-4 text-sm text-muted-foreground leading-relaxed max-w-lg mx-auto">
+              {t(
+                "Maison d'édition malienne fondée en 2019 par Fatoumata Keïta. Spécialisée dans la littérature générale et la jeunesse bilingue (français-langues nationales). Plus de 25 titres publiés par an.",
+                "Malian publishing house founded in 2019 by Fatoumata Keïta. Specialized in general literature and bilingual youth (French-national languages). Over 25 titles published per year."
+              )}
+            </p>
+
+            <div className="mt-5 flex items-center justify-center gap-3">
+              {socials.map(({ Icon, href, label }) => (
+                <a
+                  key={label}
+                  href={href}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  aria-label={label}
+                  className="h-10 w-10 rounded-full border border-border flex items-center justify-center text-muted-foreground hover:text-[color:var(--gold)] hover:border-[color:var(--gold)] transition-colors"
+                >
+                  <Icon className="h-4 w-4" />
+                </a>
+              ))}
+            </div>
+
+            <a href="https://figuiraeditions.org" target="_blank" rel="noopener noreferrer" className="inline-block mt-6">
+              <Button
+                variant="outline"
+                className="border-[color:var(--gold)] text-[color:var(--gold)] hover:bg-[color:var(--gold)] hover:text-background"
+              >
+                {t("Visiter le site", "Visit the site")} <ArrowRight className="ml-2 h-4 w-4" />
+              </Button>
+            </a>
+          </div>
+        </RevealOnScroll>
+
+        <p className="mt-8 text-center text-sm text-muted-foreground">
+          {t("Vous êtes une maison d'édition ? Rejoignez nos partenaires.", "Are you a publishing house? Join our partners.")}{" "}
+          <a href="mailto:contact@figditions.com" className="text-[color:var(--gold)] hover:underline font-semibold">
+            {t("Nous contacter", "Contact us")}
+          </a>
+        </p>
+      </div>
+    </section>
+  );
+}
+
 function HowItWorks() {
   const { t } = useI18n();
   const steps = [
-    { emoji: "🏢", fr: "Créez votre compte", en: "Create your account", dfr: "Inscrivez votre maison d'édition en 2 minutes", den: "Register your publishing house in 2 minutes" },
-    { emoji: "📥", fr: "Ajoutez vos données", en: "Add your data", dfr: "Importez vos auteurs, manuscrits et stocks existants", den: "Import your existing authors, manuscripts and stocks" },
-    { emoji: "📊", fr: "Gérez tout en un endroit", en: "Manage everything", dfr: "Utilisez le tableau de bord pour tout piloter", den: "Use the dashboard to manage everything" },
-    { emoji: "💸", fr: "Développez votre maison", en: "Grow your house", dfr: "Prenez de meilleures décisions grâce aux données", den: "Make better decisions with your data" },
+    { emoji: "🏢", fr: "Créez votre compte", en: "Create your account", dfr: "Inscrivez votre maison d'édition en 2 minutes et invitez votre équipe", den: "Register your publishing house in 2 minutes and invite your team" },
+    { emoji: "📥", fr: "Gérez vos manuscrits", en: "Manage your manuscripts", dfr: "Suivez chaque livre à travers les 10 étapes éditoriales avec votre équipe", den: "Track every book through the 10 editorial stages with your team" },
+    { emoji: "📦", fr: "Contrôlez vos stocks", en: "Control your stocks", dfr: "Gérez votre entrepôt interne et vos dépôts dans les librairies de Bamako", den: "Manage your internal warehouse and your deposits in Bamako bookstores" },
+    { emoji: "💸", fr: "Pilotez vos finances", en: "Pilot your finances", dfr: "Suivez vos ventes, calculez les droits d'auteur et analysez vos performances", den: "Track your sales, calculate royalties and analyze your performance" },
   ];
   return (
-    <section className="py-24 px-4 bg-gradient-to-b from-background to-[#0D2137]">
+    <section className="py-24 px-4 bg-gradient-to-b from-[#0D2137] to-background">
       <div className="max-w-7xl mx-auto">
         <div className="text-center mb-16">
           <h2 className="text-3xl md:text-5xl font-bold tracking-tight">{t("Comment ça marche ?", "How it works?")}</h2>
@@ -262,13 +370,16 @@ function Pricing() {
       subtitle: t("Pour démarrer votre maison d'édition", "To start your publishing house"),
       monthly: 0, yearly: 0,
       features: [
-        { ok: true, fr: "1 compte utilisateur", en: "1 user account" },
-        { ok: true, fr: "Jusqu'à 5 manuscrits", en: "Up to 5 manuscripts" },
+        { ok: true, fr: "Tableau de bord", en: "Dashboard" },
+        { ok: true, fr: "Jusqu'à 5 manuscrits (10 étapes éditoriales)", en: "Up to 5 manuscripts (10 editorial stages)" },
+        { ok: true, fr: "Gestion des auteurs", en: "Author management" },
+        { ok: true, fr: "Stock interne basique", en: "Basic internal stock" },
         { ok: true, fr: "Suivi des stocks (2 librairies max)", en: "Stock tracking (2 bookstores max)" },
-        { ok: true, fr: "Estimateur de coûts", en: "Cost estimator" },
-        { ok: false, fr: "Générateur de contrats", en: "Contract generator" },
-        { ok: false, fr: "Module finances & royalties", en: "Finances & royalties" },
-        { ok: false, fr: "Export ePub", en: "ePub export" },
+        { ok: true, fr: "Estimateur de coûts FCFA", en: "FCFA cost estimator" },
+        { ok: false, fr: "Contrats OHADA", en: "OHADA contracts" },
+        { ok: false, fr: "Finances & Royalties", en: "Finances & Royalties" },
+        { ok: false, fr: "Partage PDF sécurisé", en: "Secure PDF sharing" },
+        { ok: false, fr: "Analytiques avancées", en: "Advanced analytics" },
         { ok: false, fr: "Support prioritaire", en: "Priority support" },
       ],
       cta: t("Commencer gratuitement", "Get started for free"),
@@ -283,13 +394,15 @@ function Pricing() {
       subtitle: t("Pour les maisons d'édition en croissance", "For growing publishing houses"),
       monthly: 20000, yearly: 200000,
       features: [
-        { ok: true, fr: "Jusqu'à 3 comptes utilisateurs", en: "Up to 3 user accounts" },
+        { ok: true, fr: "Tout ce qui est dans Starter", en: "Everything in Starter" },
         { ok: true, fr: "Manuscrits illimités", en: "Unlimited manuscripts" },
-        { ok: true, fr: "Stocks illimités", en: "Unlimited stocks" },
-        { ok: true, fr: "Estimateur de coûts", en: "Cost estimator" },
-        { ok: true, fr: "Générateur de contrats OHADA", en: "OHADA contract generator" },
-        { ok: true, fr: "Module finances & royalties", en: "Finances & royalties" },
-        { ok: true, fr: "Export PDF", en: "PDF export" },
+        { ok: true, fr: "Stock interne complet", en: "Complete internal stock" },
+        { ok: true, fr: "Stocks illimités (librairies)", en: "Unlimited stocks (bookstores)" },
+        { ok: true, fr: "Contrats OHADA + PDF", en: "OHADA contracts + PDF" },
+        { ok: true, fr: "Finances & Royalties complètes", en: "Full Finances & Royalties" },
+        { ok: true, fr: "Partage PDF sécurisé (10 liens/mois)", en: "Secure PDF sharing (10 links/month)" },
+        { ok: true, fr: "Analytiques avancées", en: "Advanced analytics" },
+        { ok: true, fr: "Répertoire des imprimeries", en: "Print directory" },
         { ok: false, fr: "Export ePub", en: "ePub export" },
         { ok: false, fr: "Support prioritaire", en: "Priority support" },
       ],
@@ -306,16 +419,14 @@ function Pricing() {
       subtitle: t("Pour les grandes maisons d'édition", "For large publishing houses"),
       monthly: 50000, yearly: 500000,
       features: [
+        { ok: true, fr: "Tout ce qui est dans Pro", en: "Everything in Pro" },
         { ok: true, fr: "Utilisateurs illimités", en: "Unlimited users" },
-        { ok: true, fr: "Manuscrits illimités", en: "Unlimited manuscripts" },
-        { ok: true, fr: "Stocks illimités", en: "Unlimited stocks" },
-        { ok: true, fr: "Estimateur de coûts", en: "Cost estimator" },
-        { ok: true, fr: "Générateur de contrats OHADA", en: "OHADA contract generator" },
-        { ok: true, fr: "Module finances & royalties", en: "Finances & royalties" },
-        { ok: true, fr: "Export PDF + ePub", en: "PDF + ePub export" },
+        { ok: true, fr: "Partage PDF illimité", en: "Unlimited PDF sharing" },
+        { ok: true, fr: "Export ePub", en: "ePub export" },
         { ok: true, fr: "Assistant subventions", en: "Grants assistant" },
         { ok: true, fr: "Branding personnalisé", en: "Custom branding" },
-        { ok: true, fr: "Support prioritaire", en: "Priority support" },
+        { ok: true, fr: "Support prioritaire 24/7", en: "Priority support 24/7" },
+        { ok: true, fr: "Accès API", en: "API access" },
       ],
       cta: t("Choisir Business", "Choose Business"),
       ctaVariant: "default" as const,
@@ -441,7 +552,7 @@ function CtaBanner() {
             {t("Rejoignez les éditeurs africains qui font confiance à FIGDITIONS", "Join African publishers who trust FIGDITIONS")}
           </p>
           <Link to="/signup" className="inline-block mt-8">
-            <Button size="lg" className="bg-primary text-primary-foreground hover:bg-primary/90 shadow-glow h-13 text-base px-8 h-12">
+            <Button size="lg" className="bg-primary text-primary-foreground hover:bg-primary/90 shadow-glow text-base px-8 h-12">
               {t("Commencer gratuitement", "Get started for free")} <ArrowRight className="ml-2 h-4 w-4" />
             </Button>
           </Link>
@@ -453,20 +564,43 @@ function CtaBanner() {
 
 function Footer() {
   const { t } = useI18n();
+  const scrollTo = (id: string) => (e: React.MouseEvent) => {
+    e.preventDefault();
+    document.getElementById(id)?.scrollIntoView({ behavior: "smooth" });
+  };
   return (
     <footer className="border-t border-border bg-card/40 py-12 px-4">
-      <div className="max-w-7xl mx-auto grid md:grid-cols-3 gap-8 items-start">
+      <div className="max-w-7xl mx-auto grid md:grid-cols-4 gap-8 items-start">
         <div>
           <Logo className="h-10 w-auto" />
           <p className="mt-3 text-sm text-muted-foreground max-w-xs">
             {t("La plateforme éditoriale de l'Afrique de l'Ouest", "The publishing platform of West Africa")}
           </p>
         </div>
-        <div className="flex md:justify-center gap-6 text-sm">
-          <Link to="/login" className="text-muted-foreground hover:text-primary">{t("Connexion", "Sign in")}</Link>
-          <Link to="/signup" className="text-muted-foreground hover:text-primary">{t("Inscription", "Sign up")}</Link>
-          <a href="mailto:contact@figditions.com" className="text-muted-foreground hover:text-primary">Contact</a>
+
+        <div>
+          <h4 className="text-sm font-semibold mb-3">{t("Navigation", "Navigation")}</h4>
+          <ul className="space-y-2 text-sm">
+            <li><a href="#features" onClick={scrollTo("features")} className="text-muted-foreground hover:text-primary">{t("Fonctionnalités", "Features")}</a></li>
+            <li><a href="#pricing" onClick={scrollTo("pricing")} className="text-muted-foreground hover:text-primary">{t("Tarifs", "Pricing")}</a></li>
+            <li><a href="#partners" onClick={scrollTo("partners")} className="text-muted-foreground hover:text-primary">{t("Partenaires", "Partners")}</a></li>
+            <li><a href="mailto:contact@figditions.com" className="text-muted-foreground hover:text-primary">Contact</a></li>
+          </ul>
         </div>
+
+        <div>
+          <h4 className="text-sm font-semibold mb-3">{t("Partenaires", "Partners")}</h4>
+          <a
+            href="https://figuiraeditions.org"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="inline-flex items-center gap-2 hover:opacity-80 transition-opacity"
+          >
+            <img src={figuiraLogo} alt="Figuira Editions" style={{ height: "40px", width: "auto" }} />
+            <span className="text-sm text-muted-foreground">Figuira Editions</span>
+          </a>
+        </div>
+
         <div className="flex md:justify-end gap-3">
           {[Twitter, Linkedin, Facebook].map((Icon, i) => (
             <a key={i} href="#" aria-label="social" className="h-10 w-10 rounded-full border border-border flex items-center justify-center text-muted-foreground hover:text-primary hover:border-primary transition-colors">
@@ -475,8 +609,9 @@ function Footer() {
           ))}
         </div>
       </div>
-      <div className="max-w-7xl mx-auto mt-8 pt-6 border-t border-border text-center text-xs text-muted-foreground">
-        © 2025 FIGDITIONS. {t("Tous droits réservés.", "All rights reserved.")}
+      <div className="max-w-7xl mx-auto mt-8 pt-6 border-t border-border text-center text-xs text-muted-foreground space-y-1">
+        <p>© 2025 FIGDITIONS. {t("Tous droits réservés.", "All rights reserved.")}</p>
+        <p>{t("Conçu pour l'Afrique de l'Ouest 🌍", "Designed for West Africa 🌍")}</p>
       </div>
     </footer>
   );
