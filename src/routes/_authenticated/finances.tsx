@@ -470,3 +470,117 @@ function VenteSheet({
     </Sheet>
   );
 }
+
+function FinancesAnalytics({ ventes, manuscrits, aMap, mMap }: { ventes: Vente[] | null; manuscrits: Manuscrit[]; aMap: Record<string, string>; mMap: Record<string, Manuscrit> }) {
+  const [range, setRange] = useState<DateRange>(defaultRange());
+  const [sortKey, setSortKey] = useState<"copies" | "revenue">("copies");
+  if (ventes === null) return <Skeleton className="h-24 w-full" />;
+  const filtered = ventes.filter((v) => inRange(v.date_vente, range));
+
+  const now = new Date();
+  const thisMonthKey = format(startOfMonth(now), "yyyy-MM");
+  const lastMonthKey = format(startOfMonth(subMonths(now, 1)), "yyyy-MM");
+  const thisMonth = ventes.filter((v) => v.date_vente?.startsWith(thisMonthKey)).reduce((a, x) => a + Number(x.montant_total_fcfa || 0), 0);
+  const lastMonth = ventes.filter((v) => v.date_vente?.startsWith(lastMonthKey)).reduce((a, x) => a + Number(x.montant_total_fcfa || 0), 0);
+  const growth = lastMonth > 0 ? Math.round(((thisMonth - lastMonth) / lastMonth) * 100) : 0;
+
+  const months: { key: string; label: string; revenue: number; cumul: number }[] = [];
+  for (let i = 5; i >= 0; i--) {
+    const d = startOfMonth(subMonths(now, i));
+    months.push({ key: format(d, "yyyy-MM"), label: format(d, "MMM"), revenue: 0, cumul: 0 });
+  }
+  const mMap2 = new Map(months.map((m) => [m.key, m]));
+  filtered.forEach((v) => { const b = mMap2.get(v.date_vente?.slice(0, 7)); if (b) b.revenue += Number(v.montant_total_fcfa || 0); });
+  let cum = 0; months.forEach((m) => { cum += m.revenue; m.cumul = cum; });
+  const best = months.reduce((a, b) => (b.revenue > a.revenue ? b : a), months[0] ?? { revenue: 0, label: "—" } as any);
+  const avg = Math.round(months.reduce((a, b) => a + b.revenue, 0) / Math.max(months.length, 1));
+
+  const rankings: BookRanking[] = [...filtered.reduce((map, v) => {
+    const m = mMap[v.manuscrit_id]; if (!m) return map;
+    const e = map.get(v.manuscrit_id) ?? { manuscritId: v.manuscrit_id, titre: m.titre, auteur: m.auteur, copies: 0, revenue: 0 };
+    e.copies += Number(v.quantite_vendue || 0); e.revenue += Number(v.montant_total_fcfa || 0);
+    map.set(v.manuscrit_id, e); return map;
+  }, new Map<string, BookRanking>()).values()].sort((a, b) => (sortKey === "copies" ? b.copies - a.copies : b.revenue - a.revenue));
+
+  const royaltiesByAuthor = new Map<string, { name: string; paid: number; pending: number }>();
+  filtered.forEach((v) => {
+    const aid = v.auteur_id ?? mMap[v.manuscrit_id]?.auteur_id ?? "_";
+    const name = aMap[aid] ?? mMap[v.manuscrit_id]?.auteur ?? "Inconnu";
+    const e = royaltiesByAuthor.get(aid) ?? { name, paid: 0, pending: 0 };
+    const dr = Number(v.droits_auteur_fcfa || 0);
+    if (v.statut_paiement === "paye") e.paid += dr; else e.pending += dr;
+    royaltiesByAuthor.set(aid, e);
+  });
+
+  return (
+    <AnalyticsSection title="📊 Analytiques financières" range={range} setRange={setRange}>
+      <div className="grid grid-cols-2 md:grid-cols-5 gap-3">
+        <FCard label="Ce mois" value={fcfa(thisMonth)} />
+        <FCard label="Mois dernier" value={fcfa(lastMonth)} />
+        <FCard label="Croissance MoM" value={`${growth > 0 ? "+" : ""}${growth}%`} accent={growth >= 0 ? "primary" : "danger"} icon={growth >= 0 ? <ArrowUp className="h-4 w-4" /> : <ArrowDown className="h-4 w-4" />} />
+        <FCard label="Meilleur mois" value={`${best.label} · ${fcfa(best.revenue)}`} accent="gold" />
+        <FCard label="Moyenne mensuelle" value={fcfa(avg)} />
+      </div>
+      <div className="rounded-xl border border-border bg-background/40 p-5">
+        <h3 className="font-semibold mb-3">💹 Évolution du chiffre d'affaires</h3>
+        <div className="h-64">
+          {months.every((m) => m.revenue === 0) ? <EmptyChart /> : (
+            <ResponsiveContainer width="100%" height="100%">
+              <ComposedChart data={months}>
+                <CartesianGrid strokeDasharray="3 3" stroke="#1E3A5F" />
+                <XAxis dataKey="label" stroke="#94A3B8" fontSize={12} />
+                <YAxis stroke="#94A3B8" fontSize={12} tickFormatter={(v) => `${(v/1000).toFixed(0)}k`} />
+                <Tooltip contentStyle={{ background: "#0D2137", border: "1px solid #1E3A5F", borderRadius: 8 }} formatter={(v: number) => fcfa(v)} />
+                <Legend />
+                <Bar dataKey="revenue" name="Mensuel" fill="#00C896" radius={[6, 6, 0, 0]} />
+                <Line type="monotone" dataKey="cumul" name="Cumulé" stroke="#D4AF37" strokeWidth={2} />
+              </ComposedChart>
+            </ResponsiveContainer>
+          )}
+        </div>
+      </div>
+      <div className="rounded-xl border border-border bg-background/40 p-5">
+        <div className="flex flex-wrap items-center justify-between gap-2 mb-3">
+          <h3 className="font-semibold">🏆 Livres les plus vendus</h3>
+          <div className="flex gap-1.5">
+            <button onClick={() => setSortKey("copies")} className={`text-xs px-3 py-1 rounded-md border ${sortKey === "copies" ? "bg-primary text-primary-foreground border-primary" : "border-border"}`}>Exemplaires</button>
+            <button onClick={() => setSortKey("revenue")} className={`text-xs px-3 py-1 rounded-md border ${sortKey === "revenue" ? "bg-primary text-primary-foreground border-primary" : "border-border"}`}>Revenu</button>
+          </div>
+        </div>
+        <BestSellingBooks books={rankings} limit={5} />
+      </div>
+      <div className="rounded-xl border border-border bg-background/40 p-5">
+        <h3 className="font-semibold mb-3">✍️ Suivi des droits d'auteur</h3>
+        {royaltiesByAuthor.size === 0 ? <EmptyChart label="Aucun droit d'auteur sur cette période" /> : (
+          <div className="space-y-3">
+            {[...royaltiesByAuthor.values()].map((r) => {
+              const total = r.paid + r.pending;
+              const paidPct = total > 0 ? (r.paid / total) * 100 : 0;
+              return (
+                <div key={r.name} className="space-y-1.5">
+                  <div className="flex items-center justify-between text-sm">
+                    <span className="font-medium">{r.name}</span>
+                    <span className="text-xs text-muted-foreground">
+                      <span className="text-primary">{fcfa(r.paid)}</span> / <span className="text-orange-400">{fcfa(r.pending)}</span>
+                    </span>
+                  </div>
+                  <Progress value={paidPct} className="h-2" />
+                </div>
+              );
+            })}
+          </div>
+        )}
+      </div>
+    </AnalyticsSection>
+  );
+}
+
+function FCard({ label, value, accent, icon }: { label: string; value: string; accent?: "primary" | "gold" | "danger"; icon?: React.ReactNode }) {
+  const color = accent === "gold" ? "text-[color:var(--gold)]" : accent === "primary" ? "text-primary" : accent === "danger" ? "text-red-400" : "text-foreground";
+  return (
+    <div className="rounded-xl border border-border bg-background/40 p-4">
+      <p className="text-xs uppercase tracking-wide text-muted-foreground">{label}</p>
+      <p className={cn("mt-1 text-lg font-bold truncate flex items-center gap-1", color)}>{icon}{value}</p>
+    </div>
+  );
+}
