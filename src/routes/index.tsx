@@ -79,7 +79,7 @@ function TopBar() {
   const { t, lang, setLang } = useI18n();
   return (
     <div className="w-full border-b border-border/40 bg-background/80 backdrop-blur-sm">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-11 flex items-center justify-start gap-3">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-11 flex items-center justify-end gap-3">
         <LangToggle lang={lang} setLang={setLang} />
         <Link to="/login">
           <Button variant="ghost" size="sm" className="text-muted-foreground hover:text-foreground h-8 px-3">
