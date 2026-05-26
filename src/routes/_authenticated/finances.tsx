@@ -1,8 +1,12 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useEffect, useMemo, useState } from "react";
 import { Plus, Wallet, TrendingUp, ShoppingBag, Clock, Loader2, Check } from "lucide-react";
-import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, PieChart, Pie, Cell, Legend } from "recharts";
+import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, PieChart, Pie, Cell, Legend, ComposedChart, Line, CartesianGrid } from "recharts";
 import { format, subMonths, startOfMonth } from "date-fns";
+import { AnalyticsSection, defaultRange, inRange, EmptyChart, type DateRange } from "@/components/analytics-section";
+import { BestSellingBooks, type BookRanking } from "@/components/best-selling-books";
+import { TrendingDown, ArrowUp, ArrowDown } from "lucide-react";
+import { Progress } from "@/components/ui/progress";
 import { fr } from "date-fns/locale";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth, useProfile } from "@/hooks/use-auth";
