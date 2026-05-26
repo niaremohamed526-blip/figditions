@@ -22,6 +22,7 @@ import { Route as AuthenticatedEstimateurRouteImport } from './routes/_authentic
 import { Route as AuthenticatedDashboardRouteImport } from './routes/_authenticated/dashboard'
 import { Route as AuthenticatedContratsRouteImport } from './routes/_authenticated/contrats'
 import { Route as AuthenticatedAuteursRouteImport } from './routes/_authenticated/auteurs'
+import { Route as AuthenticatedManuscritsManuscritIdRouteImport } from './routes/_authenticated/manuscrits.$manuscritId'
 import { Route as AuthenticatedContratsContratIdRouteImport } from './routes/_authenticated/contrats.$contratId'
 import { Route as AuthenticatedAuteursAuteurIdRouteImport } from './routes/_authenticated/auteurs.$auteurId'
 
@@ -90,6 +91,12 @@ const AuthenticatedAuteursRoute = AuthenticatedAuteursRouteImport.update({
   path: '/auteurs',
   getParentRoute: () => AuthenticatedRoute,
 } as any)
+const AuthenticatedManuscritsManuscritIdRoute =
+  AuthenticatedManuscritsManuscritIdRouteImport.update({
+    id: '/$manuscritId',
+    path: '/$manuscritId',
+    getParentRoute: () => AuthenticatedManuscritsRoute,
+  } as any)
 const AuthenticatedContratsContratIdRoute =
   AuthenticatedContratsContratIdRouteImport.update({
     id: '/$contratId',
@@ -113,11 +120,12 @@ export interface FileRoutesByFullPath {
   '/estimateur': typeof AuthenticatedEstimateurRoute
   '/finances': typeof AuthenticatedFinancesRoute
   '/imprimeries': typeof AuthenticatedImprimeriesRoute
-  '/manuscrits': typeof AuthenticatedManuscritsRoute
+  '/manuscrits': typeof AuthenticatedManuscritsRouteWithChildren
   '/parametres': typeof AuthenticatedParametresRoute
   '/stocks': typeof AuthenticatedStocksRoute
   '/auteurs/$auteurId': typeof AuthenticatedAuteursAuteurIdRoute
   '/contrats/$contratId': typeof AuthenticatedContratsContratIdRoute
+  '/manuscrits/$manuscritId': typeof AuthenticatedManuscritsManuscritIdRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -129,11 +137,12 @@ export interface FileRoutesByTo {
   '/estimateur': typeof AuthenticatedEstimateurRoute
   '/finances': typeof AuthenticatedFinancesRoute
   '/imprimeries': typeof AuthenticatedImprimeriesRoute
-  '/manuscrits': typeof AuthenticatedManuscritsRoute
+  '/manuscrits': typeof AuthenticatedManuscritsRouteWithChildren
   '/parametres': typeof AuthenticatedParametresRoute
   '/stocks': typeof AuthenticatedStocksRoute
   '/auteurs/$auteurId': typeof AuthenticatedAuteursAuteurIdRoute
   '/contrats/$contratId': typeof AuthenticatedContratsContratIdRoute
+  '/manuscrits/$manuscritId': typeof AuthenticatedManuscritsManuscritIdRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -147,11 +156,12 @@ export interface FileRoutesById {
   '/_authenticated/estimateur': typeof AuthenticatedEstimateurRoute
   '/_authenticated/finances': typeof AuthenticatedFinancesRoute
   '/_authenticated/imprimeries': typeof AuthenticatedImprimeriesRoute
-  '/_authenticated/manuscrits': typeof AuthenticatedManuscritsRoute
+  '/_authenticated/manuscrits': typeof AuthenticatedManuscritsRouteWithChildren
   '/_authenticated/parametres': typeof AuthenticatedParametresRoute
   '/_authenticated/stocks': typeof AuthenticatedStocksRoute
   '/_authenticated/auteurs/$auteurId': typeof AuthenticatedAuteursAuteurIdRoute
   '/_authenticated/contrats/$contratId': typeof AuthenticatedContratsContratIdRoute
+  '/_authenticated/manuscrits/$manuscritId': typeof AuthenticatedManuscritsManuscritIdRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -170,6 +180,7 @@ export interface FileRouteTypes {
     | '/stocks'
     | '/auteurs/$auteurId'
     | '/contrats/$contratId'
+    | '/manuscrits/$manuscritId'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -186,6 +197,7 @@ export interface FileRouteTypes {
     | '/stocks'
     | '/auteurs/$auteurId'
     | '/contrats/$contratId'
+    | '/manuscrits/$manuscritId'
   id:
     | '__root__'
     | '/'
@@ -203,6 +215,7 @@ export interface FileRouteTypes {
     | '/_authenticated/stocks'
     | '/_authenticated/auteurs/$auteurId'
     | '/_authenticated/contrats/$contratId'
+    | '/_authenticated/manuscrits/$manuscritId'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -305,6 +318,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedAuteursRouteImport
       parentRoute: typeof AuthenticatedRoute
     }
+    '/_authenticated/manuscrits/$manuscritId': {
+      id: '/_authenticated/manuscrits/$manuscritId'
+      path: '/$manuscritId'
+      fullPath: '/manuscrits/$manuscritId'
+      preLoaderRoute: typeof AuthenticatedManuscritsManuscritIdRouteImport
+      parentRoute: typeof AuthenticatedManuscritsRoute
+    }
     '/_authenticated/contrats/$contratId': {
       id: '/_authenticated/contrats/$contratId'
       path: '/$contratId'
@@ -346,6 +366,21 @@ const AuthenticatedContratsRouteWithChildren =
     AuthenticatedContratsRouteChildren,
   )
 
+interface AuthenticatedManuscritsRouteChildren {
+  AuthenticatedManuscritsManuscritIdRoute: typeof AuthenticatedManuscritsManuscritIdRoute
+}
+
+const AuthenticatedManuscritsRouteChildren: AuthenticatedManuscritsRouteChildren =
+  {
+    AuthenticatedManuscritsManuscritIdRoute:
+      AuthenticatedManuscritsManuscritIdRoute,
+  }
+
+const AuthenticatedManuscritsRouteWithChildren =
+  AuthenticatedManuscritsRoute._addFileChildren(
+    AuthenticatedManuscritsRouteChildren,
+  )
+
 interface AuthenticatedRouteChildren {
   AuthenticatedAuteursRoute: typeof AuthenticatedAuteursRouteWithChildren
   AuthenticatedContratsRoute: typeof AuthenticatedContratsRouteWithChildren
@@ -353,7 +388,7 @@ interface AuthenticatedRouteChildren {
   AuthenticatedEstimateurRoute: typeof AuthenticatedEstimateurRoute
   AuthenticatedFinancesRoute: typeof AuthenticatedFinancesRoute
   AuthenticatedImprimeriesRoute: typeof AuthenticatedImprimeriesRoute
-  AuthenticatedManuscritsRoute: typeof AuthenticatedManuscritsRoute
+  AuthenticatedManuscritsRoute: typeof AuthenticatedManuscritsRouteWithChildren
   AuthenticatedParametresRoute: typeof AuthenticatedParametresRoute
   AuthenticatedStocksRoute: typeof AuthenticatedStocksRoute
 }
@@ -365,7 +400,7 @@ const AuthenticatedRouteChildren: AuthenticatedRouteChildren = {
   AuthenticatedEstimateurRoute: AuthenticatedEstimateurRoute,
   AuthenticatedFinancesRoute: AuthenticatedFinancesRoute,
   AuthenticatedImprimeriesRoute: AuthenticatedImprimeriesRoute,
-  AuthenticatedManuscritsRoute: AuthenticatedManuscritsRoute,
+  AuthenticatedManuscritsRoute: AuthenticatedManuscritsRouteWithChildren,
   AuthenticatedParametresRoute: AuthenticatedParametresRoute,
   AuthenticatedStocksRoute: AuthenticatedStocksRoute,
 }
@@ -383,3 +418,13 @@ const rootRouteChildren: RootRouteChildren = {
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
+
+import type { getRouter } from './router.tsx'
+import type { startInstance } from './start.ts'
+declare module '@tanstack/react-start' {
+  interface Register {
+    ssr: true
+    router: Awaited<ReturnType<typeof getRouter>>
+    config: Awaited<ReturnType<typeof startInstance.getOptions>>
+  }
+}
