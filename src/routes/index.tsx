@@ -9,6 +9,7 @@ import { Logo } from "@/components/logo";
 import { useI18n } from "@/hooks/use-i18n";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
+import { CookieBanner } from "@/components/cookie-banner";
 import figuiraLogo from "@/assets/figuira-logo.jpg";
 
 export const Route = createFileRoute("/")({
@@ -36,6 +37,7 @@ function Landing() {
       <Pricing />
       <CtaBanner />
       <Footer />
+      <CookieBanner />
     </div>
   );
 }
@@ -588,7 +590,16 @@ function Footer() {
             <li><a href="#features" onClick={scrollTo("features")} className="text-muted-foreground hover:text-primary">{t("Fonctionnalités", "Features")}</a></li>
             <li><a href="#pricing" onClick={scrollTo("pricing")} className="text-muted-foreground hover:text-primary">{t("Tarifs", "Pricing")}</a></li>
             <li><a href="#partners" onClick={scrollTo("partners")} className="text-muted-foreground hover:text-primary">{t("Partenaires", "Partners")}</a></li>
-            <li><a href="mailto:contact@figditions.com" className="text-muted-foreground hover:text-primary">Contact</a></li>
+            <li><Link to="/a-propos" className="text-muted-foreground hover:text-primary">{t("À propos", "About")}</Link></li>
+            <li><a href="mailto:Figditions@gmail.com" className="text-muted-foreground hover:text-primary">Contact</a></li>
+          </ul>
+        </div>
+
+        <div>
+          <h4 className="text-sm font-semibold mb-3">{t("Légal", "Legal")}</h4>
+          <ul className="space-y-2 text-sm">
+            <li><Link to="/politique-de-confidentialite" className="text-muted-foreground hover:text-primary">{t("Politique de confidentialité", "Privacy Policy")}</Link></li>
+            <li><Link to="/conditions-utilisation" className="text-muted-foreground hover:text-primary">{t("Conditions d'utilisation", "Terms of Service")}</Link></li>
           </ul>
         </div>
 
