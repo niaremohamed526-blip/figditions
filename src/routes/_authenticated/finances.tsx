@@ -170,7 +170,7 @@ function FinancesInner({ entrepriseId }: { entrepriseId: string | null }) {
         <StatCard icon={ShoppingBag} label="Exemplaires vendus" value={String(totals.copies)} />
       </div>
 
-      <FinancesAnalytics ventes={ventes} manuscrits={manuscrits} aMap={aMap} mMap={mMap} />
+      
 
       <div className="grid lg:grid-cols-2 gap-4">
         <div className="rounded-xl border border-border bg-card p-6">
