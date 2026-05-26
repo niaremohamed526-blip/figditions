@@ -350,26 +350,7 @@ function StockForm({
       : await supabase.from("stocks").insert({ ...payload, entreprise_id: entrepriseId });
 
     if (error) { setLoading(false); return toast.error(error.message); }
-
-    // Auto-create a vente record if new sales were registered
-    if (deltaVendus > 0 && Number(form.prix_unitaire_fcfa) > 0) {
-      const auteur_id = manuscrits.find((m) => m.id === form.manuscrit_id)?.auteur_id ?? null;
-      const venteMontant = deltaVendus * Number(form.prix_unitaire_fcfa);
-      const venteDroits = venteMontant * 0.1;
-      const { error: vErr } = await (supabase as any).from("ventes").insert({
-        entreprise_id: entrepriseId,
-        manuscrit_id: form.manuscrit_id,
-        auteur_id,
-        quantite_vendue: deltaVendus,
-        prix_unitaire_fcfa: Number(form.prix_unitaire_fcfa),
-        montant_total_fcfa: venteMontant,
-        montant: venteMontant,
-        droits_auteur_fcfa: venteDroits,
-        statut_paiement: "en_attente",
-        date_vente: format(new Date(), "yyyy-MM-dd"),
-      });
-      if (vErr) toast.error("Vente non enregistrée: " + vErr.message);
-    }
+    // Vente auto-créée par trigger SQL `stocks_vente_delta` quand exemplaires_vendus augmente.
 
     setLoading(false);
     toast.success(existing ? "Stock mis à jour" : "Dépôt ajouté");
