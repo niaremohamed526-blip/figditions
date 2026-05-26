@@ -134,27 +134,97 @@ export function AppShell({ children }: { children: ReactNode }) {
         </div>
       </aside>
 
-      <div className="md:hidden fixed top-0 left-0 right-0 z-30 bg-sidebar/95 backdrop-blur border-b border-border h-14 flex items-center justify-between px-4 gap-2">
-        <Link to="/dashboard"><Logo className="h-10 w-auto" /></Link>
-        <div className="flex items-center gap-2">
-          <LangToggle lang={lang} setLang={setLang} />
-          <button onClick={() => setMobileOpen((o) => !o)} className="p-2">
-            {mobileOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
-          </button>
-        </div>
+      {/* Mobile top bar: hamburger LEFT, logo center, lang right */}
+      <div className="md:hidden fixed top-0 left-0 right-0 z-30 bg-sidebar/95 backdrop-blur border-b border-border h-14 flex items-center justify-between px-3 gap-2">
+        <button
+          onClick={() => setMobileOpen(true)}
+          className="p-2 -ml-1 rounded-md hover:bg-sidebar-accent"
+          aria-label="Menu"
+        >
+          <Menu className="h-5 w-5" />
+        </button>
+        <Link to="/dashboard" className="flex-1 flex justify-center">
+          <Logo className="h-9 w-auto" />
+        </Link>
+        <LangToggle lang={lang} setLang={setLang} />
       </div>
-      {mobileOpen && (
-        <div className="md:hidden fixed inset-0 top-14 z-20 bg-background/95 backdrop-blur p-4 animate-fade-in overflow-y-auto">
-          <nav className="space-y-1">
-            {items.map((n) => renderLink(n, () => setMobileOpen(false)))}
-            <button onClick={handleLogout} className="w-full flex items-center gap-3 rounded-lg px-3 py-3 text-sm font-medium hover:bg-sidebar-accent text-left">
-              <LogOut className="h-4 w-4" /> {t("Déconnexion", "Logout")}
-            </button>
-          </nav>
-        </div>
-      )}
 
-      <main className="flex-1 min-w-0 pt-14 md:pt-0">
+      {/* Mobile sidebar drawer (slide from left + dark overlay) */}
+      <div
+        className={cn(
+          "md:hidden fixed inset-0 z-40 transition-opacity duration-300",
+          mobileOpen ? "opacity-100 pointer-events-auto" : "opacity-0 pointer-events-none",
+        )}
+        onClick={() => setMobileOpen(false)}
+      >
+        <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" />
+        <aside
+          onClick={(e) => e.stopPropagation()}
+          className={cn(
+            "absolute left-0 top-0 bottom-0 w-72 max-w-[85vw] bg-sidebar border-r border-border flex flex-col transition-transform duration-300 ease-out",
+            mobileOpen ? "translate-x-0" : "-translate-x-full",
+          )}
+        >
+          <div className="px-3 py-5 border-b border-border flex items-center justify-between gap-2">
+            <Link to="/dashboard" onClick={() => setMobileOpen(false)} className="block flex-1 min-w-0">
+              <Logo className="h-10 w-auto" />
+            </Link>
+            <button onClick={() => setMobileOpen(false)} className="p-2 rounded-md hover:bg-sidebar-accent" aria-label="Fermer">
+              <X className="h-5 w-5" />
+            </button>
+          </div>
+          <nav className="flex-1 px-3 py-4 space-y-1 overflow-y-auto">
+            {items.map((n) => renderLink(n, () => setMobileOpen(false)))}
+          </nav>
+          <div className="border-t border-border p-4">
+            <div className="flex items-center gap-3">
+              <CompanyAvatar />
+              <div className="flex-1 min-w-0">
+                <p className="text-sm font-medium truncate">{companyName || t("Maison d'édition", "Publisher")}</p>
+                <p className="text-xs text-muted-foreground truncate">{profile?.full_name ?? user?.email}</p>
+              </div>
+              <button onClick={handleLogout} className="text-muted-foreground hover:text-foreground" title={t("Déconnexion", "Logout")}>
+                <LogOut className="h-4 w-4" />
+              </button>
+            </div>
+          </div>
+        </aside>
+      </div>
+
+      {/* Mobile bottom tab bar */}
+      <nav className="md:hidden fixed bottom-0 left-0 right-0 z-30 bg-sidebar/95 backdrop-blur border-t border-border h-16 flex items-stretch justify-around pb-[env(safe-area-inset-bottom)]">
+        {[
+          { to: "/dashboard", icon: LayoutDashboard, labelFr: "Accueil", labelEn: "Home" },
+          { to: "/manuscrits", icon: BookOpen, labelFr: "Livres", labelEn: "Books" },
+          { to: "/stocks", icon: Package, labelFr: "Stocks", labelEn: "Stocks" },
+          { to: "/finances", icon: Wallet, labelFr: "Finances", labelEn: "Finance" },
+        ].map((tab) => {
+          const active = path === tab.to || path.startsWith(tab.to + "/");
+          const Icon = tab.icon;
+          return (
+            <Link
+              key={tab.to}
+              to={tab.to}
+              className={cn(
+                "flex-1 flex flex-col items-center justify-center gap-0.5 text-[10px] font-medium transition-colors",
+                active ? "text-primary" : "text-muted-foreground hover:text-foreground",
+              )}
+            >
+              <Icon className="h-5 w-5" />
+              <span>{lang === "fr" ? tab.labelFr : tab.labelEn}</span>
+            </Link>
+          );
+        })}
+        <button
+          onClick={() => setMobileOpen(true)}
+          className="flex-1 flex flex-col items-center justify-center gap-0.5 text-[10px] font-medium text-muted-foreground hover:text-foreground"
+        >
+          <Menu className="h-5 w-5" />
+          <span>{t("Plus", "More")}</span>
+        </button>
+      </nav>
+
+      <main className="flex-1 min-w-0 pt-14 md:pt-0 pb-20 md:pb-0">
         <div className="px-4 md:px-8 py-6 md:py-8 max-w-7xl mx-auto animate-fade-in">
           {children}
         </div>
