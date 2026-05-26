@@ -124,7 +124,7 @@ function Navbar() {
       "sticky top-0 inset-x-0 z-50 transition-all duration-300",
       scrolled ? "bg-background/70 backdrop-blur-xl border-b border-border" : "bg-transparent"
     )}>
-      <nav className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-14 md:h-16 flex items-center justify-between">
+      <nav className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-14 md:h-16 flex items-center">
         <div className="hidden md:flex items-center gap-1">
           {navLinks.map((link) => (
             <button
@@ -135,20 +135,6 @@ function Navbar() {
               {t(link.fr, link.en)}
             </button>
           ))}
-        </div>
-
-        <div className="hidden md:flex items-center gap-3">
-          <LangToggle lang={lang} setLang={setLang} />
-          <Link to="/login">
-            <Button variant="outline" className="border-border hover:border-primary hover:text-primary">
-              {t("Se connecter", "Sign in")}
-            </Button>
-          </Link>
-          <Link to="/signup">
-            <Button className="bg-primary text-primary-foreground hover:bg-primary/90 shadow-glow-sm">
-              {t("Commencer gratuitement", "Get started free")}
-            </Button>
-          </Link>
         </div>
 
         <button className="md:hidden p-2 ml-auto" onClick={() => setOpen(!open)} aria-label="Menu">
