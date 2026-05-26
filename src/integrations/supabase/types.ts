@@ -494,6 +494,42 @@ export type Database = {
           },
         ]
       }
+      notifications: {
+        Row: {
+          created_at: string
+          entreprise_id: string
+          id: string
+          lien: string | null
+          lu: boolean
+          message: string
+          metadata: Json | null
+          titre: string
+          type: string
+        }
+        Insert: {
+          created_at?: string
+          entreprise_id: string
+          id?: string
+          lien?: string | null
+          lu?: boolean
+          message: string
+          metadata?: Json | null
+          titre: string
+          type: string
+        }
+        Update: {
+          created_at?: string
+          entreprise_id?: string
+          id?: string
+          lien?: string | null
+          lu?: boolean
+          message?: string
+          metadata?: Json | null
+          titre?: string
+          type?: string
+        }
+        Relationships: []
+      }
       paiements: {
         Row: {
           abonnement_id: string
@@ -837,6 +873,17 @@ export type Database = {
     }
     Functions: {
       current_entreprise_id: { Args: never; Returns: string }
+      fn_notify: {
+        Args: {
+          p_entreprise: string
+          p_lien?: string
+          p_message: string
+          p_metadata?: Json
+          p_titre: string
+          p_type: string
+        }
+        Returns: undefined
+      }
     }
     Enums: {
       contrat_statut: "brouillon" | "signe" | "expire"
