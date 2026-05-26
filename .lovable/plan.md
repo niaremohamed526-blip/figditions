@@ -1,53 +1,58 @@
-# Plan
+# FIGDITIONS — Audit & interconnexion complète
 
-## Part 1 — Manuscript statuses (10 stages)
+Cette opération est très large (11 chantiers, ~25 fichiers touchés). Je propose de la livrer en **4 phases atomiques**, validées une par une, plutôt que tout en un seul commit risqué.
 
-### Database migration
-- Map enum `manuscrit_statut`: rename `lecture`→`relecture`, `correction`→`epreuve_1`; add `epreuve_2`, `epreuve_3`, `epreuve_4`, `echantillon`. Keep `recu`, `maquette`, `impression`, `publie`.
-- Reorder so progression matches: recu, relecture, epreuve_1..4, maquette, echantillon, impression, publie.
-- Postgres can't drop/rename enum values cleanly while in use → safest path: create new enum `manuscrit_statut_v2`, `ALTER TABLE manuscrits ALTER COLUMN statut TYPE manuscrit_statut_v2 USING (CASE statut::text WHEN 'lecture' THEN 'relecture' WHEN 'correction' THEN 'epreuve_1' ELSE statut::text END)::manuscrit_statut_v2`, drop old enum, rename v2 → `manuscrit_statut`.
+## Phase 1 — Fondations temps réel & état global
 
-### Code updates
-- `src/components/status-badge.tsx`: rewrite MAP with 10 entries + colors specified; update `STATUT_OPTIONS` ordered list.
-- Add helper `STATUT_PROGRESSION` (ordered array) used by stepper + analytics.
-- Build new `src/components/status-stepper.tsx`: horizontal on `md+`, vertical on mobile; completed (✓ #00C896), current (pulse #D4AF37), upcoming (#1E3A5F outline); shows "Étape X sur 10".
-- Embed stepper in `manuscrits.$manuscritId.tsx`.
-- Update dashboard donut, manuscrits filter/select dropdowns, analytics stage-duration chart, finances/auteurs/contrats references — they all read from `STATUT_OPTIONS` so most adapt automatically; verify each file.
+1. **Realtime Supabase** : activer la publication sur `manuscrits`, `auteurs`, `contrats`, `stocks`, `stock_interne`, `mouvements_stock`, `ventes`, `abonnements`, `paiements`, `notifications` (via migration `ALTER PUBLICATION supabase_realtime ADD TABLE ...` + `REPLICA IDENTITY FULL`).
+2. **Contexte global** `AppStateProvider` (React Context + React Query) exposant : `user`, `entreprise` (plan live), `stats` (compteurs dashboard), `notifications`. Monté dans `_authenticated.tsx`.
+3. **Hook `useRealtimeInvalidate`** : un seul channel par table → invalide les `queryKey` correspondantes. Évite la duplication d'abonnements.
+4. Migration des pages existantes (dashboard, manuscrits, auteurs, stocks, finances, contrats, parametres) vers `useQuery` avec `queryKey` standardisées (`['manuscrits', entrepriseId]`, etc.).
 
-## Part 2 — Internal stock
+## Phase 2 — Cascades métier (triggers Postgres)
 
-### Database migration (same file as Part 1)
-- Create `stock_interne` and `mouvements_stock` tables per spec.
-- Enable RLS, add `ent ...` policies using `current_entreprise_id()` (matches existing convention; the spec's policy subquery is equivalent).
-- Trigger `BEFORE INSERT` on both tables to default `entreprise_id := current_entreprise_id()` when null.
+Plutôt qu'orchestrer côté client (fragile), j'implémente les règles critiques en **triggers SQL** — atomiques par construction :
 
-### UI: convert `stocks.tsx` into tabbed page
-- Tab 1 "🏪 Stock Externe" = existing content extracted into `<StockExterne />` component (no behavior change).
-- Tab 2 "🏭 Stock Interne" = new `<StockInterne />` component containing:
-  - 4 summary cards (total stock, transferred, sold direct + revenue, low-stock alerts pulsing red).
-  - Collapsible red low-stock alert panel.
-  - Inventory table (published books) with color-coded `disponible` cell + action buttons.
-  - Slide-in drawers using `<Sheet>`:
-    - "Nouveau stock reçu" → upserts `stock_interne` row, inserts `mouvements_stock(type='impression')`.
-    - "Enregistrer un mouvement" → applies quantity math per type, side-effects:
-      - `transfert_librairie`: also insert into existing `stocks` table for destination bookstore.
-      - `vente_directe`: also insert into `ventes` with `prix_vente_direct_fcfa`.
-      - `perte`: confirm dialog.
-      - `ajustement`: require note, set absolute value.
-    - Low-stock toast after every movement.
-  - History modal: header summary + chronological timeline (icon, signed qty, destination, user, datetime) + Recharts line chart of stock over time with red `seuil_alerte` reference line.
-- Extend existing `InventoryAnalytics` with: distribution stacked bar (per book: % librairies/direct/événements/restant), top rotation list (days printing→sold out), total stock value metric card.
+- `trg_manuscrit_publie` : à `UPDATE statut='publie'`, crée `stock_interne` si absent.
+- `trg_mouvement_transfert` : sur `INSERT mouvements_stock type='transfert'`, décrémente `stock_interne.quantite_disponible`, upsert `stocks` (destination), incrémente `exemplaires_deposes`.
+- `trg_mouvement_retour` : effet inverse.
+- `trg_stock_vente` : sur `UPDATE stocks.exemplaires_vendus` (delta>0), `INSERT ventes` avec prix, qté, droits = pourcentage contrat ou 10%.
+- `trg_stock_interne_vente_directe` : idem sur `quantite_vendue_directement`.
+- `trg_manuscrit_delete` : `auteur_id`/`manuscrit_id` orphelins → flag `est_orphelin` (nouvelles colonnes nullables sur `contrats`, `stocks`, `ventes`).
+- `trg_auteur_delete` : `manuscrits.auteur_id = NULL`.
+- Fonction `pourcentage_droits_pour(manuscrit_id, auteur_id)` lue par `trg_stock_vente`.
 
-### Tech notes
-- All FCFA via `fcfa()`. French copy. Dark theme tokens. Recharts for charts. shadcn Sheet/Dialog/Tabs.
-- Mouvement effectue_par = `auth.uid()` via insert from client.
-- Author/user-name resolution for history: join `profiles.full_name` via separate query keyed by user ids in the movements list.
+Toutes les RLS existantes sont préservées (triggers en `SECURITY DEFINER` avec `search_path=public`).
 
-## Files touched
-- new `supabase/migrations/<ts>_status_and_internal_stock.sql`
-- edit `src/components/status-badge.tsx`
-- new `src/components/status-stepper.tsx`
-- edit `src/routes/_authenticated/manuscrits.$manuscritId.tsx`
-- edit `src/routes/_authenticated/stocks.tsx` (tabs + extract external + add internal)
-- new `src/components/stock-interne.tsx` (+ subcomponents inline or split if large)
-- verify (likely no change) dashboard / manuscrits.index / analytics-using files
+## Phase 3 — Notifications & feed d'activité
+
+- Nouvelle table `notifications` (id, entreprise_id, type, titre, message, lien, lu, created_at) + RLS scoped `entreprise_id`.
+- Nouvelle table `activites` (feed dashboard, 10 derniers événements).
+- Triggers : stock bas, vente, contrat signé, royalty payée, manuscrit publié → insèrent dans `notifications` + `activites`.
+- Job côté serverFn (appelé au mount du dashboard, throttle 1×/h) : génère les notifs « contrat expirant <30j », « royalty en attente >30j », « abonnement <7j ».
+- UI : `<NotificationBell />` dans le navbar (badge non-lu, dropdown, mark-all-read, navigation au clic).
+
+## Phase 4 — Limites de plan & polish
+
+- `usePlanLimits()` lit `entreprise.plan` en live (realtime sur `entreprises`). Vérifie à chaque action critique (ajout manuscrit, librairie, etc.).
+- Webhook PayDunya déjà en place → ajoute `entreprises.plan` UPDATE + broadcast realtime → toutes les pages bloquées se débloquent sans refresh.
+- Estimateur ↔ stock interne : bouton « Utiliser cette estimation » sur l'estimateur ; bouton « Commander une impression » dans l'alerte stock bas → ouvre estimateur prérempli (query params).
+- Toast global `🔄 Données mises à jour automatiquement` débouncé (5s) sur chaque invalidation realtime déclenchée par un autre user/onglet.
+
+## Détails techniques
+
+- **Tables nouvelles** : `notifications`, `activites`.
+- **Colonnes nouvelles** : `contrats.est_orphelin`, `stocks.est_orphelin`, `ventes.est_orphelin` (booleans, default false).
+- **Fonctions/triggers SQL** : ~10 fonctions PL/pgSQL.
+- **Fichiers TSX nouveaux** : `src/lib/app-state.tsx`, `src/hooks/use-realtime.ts`, `src/hooks/use-plan-limits.ts`, `src/components/notification-bell.tsx`, `src/components/activity-feed.tsx`.
+- **Fichiers TSX modifiés** : `_authenticated.tsx`, `app-shell.tsx`, `dashboard.tsx`, `manuscrits.*.tsx`, `auteurs.*.tsx`, `stocks.tsx`, `stock-interne.tsx`, `finances.tsx`, `contrats.tsx`, `estimateur.tsx`, `parametres.tsx`.
+
+## Risques & garde-fous
+
+- Les triggers de cascade peuvent **doubler les ventes** si la page écrit elle-même dans `ventes`. Je dois auditer chaque appel `supabase.from('ventes').insert(...)` existant et le **retirer** au profit du trigger. Pareil pour les UPSERT stocks↔stock_interne.
+- Realtime sur 10 tables = beaucoup de réseau. Je limite à un canal partagé par table avec filtres `entreprise_id=eq.X`.
+- La migration `ALTER PUBLICATION` doit être idempotente (`IF NOT EXISTS` via DO block).
+
+## Question avant de démarrer
+
+Vu l'ampleur, **veux-tu que je livre Phase 1+2 en un commit** (fondations + cascades SQL — la base nécessaire à tout le reste), puis Phase 3 et 4 séparément ? Ou tout d'un coup au risque d'un debug long si quelque chose casse ?
