@@ -27,6 +27,7 @@ import { Route as ApiPublicPaydunyaWebhookRouteImport } from './routes/api/publi
 import { Route as AuthenticatedManuscritsManuscritIdRouteImport } from './routes/_authenticated/manuscrits.$manuscritId'
 import { Route as AuthenticatedContratsContratIdRouteImport } from './routes/_authenticated/contrats.$contratId'
 import { Route as AuthenticatedAuteursAuteurIdRouteImport } from './routes/_authenticated/auteurs.$auteurId'
+import { Route as ApiPublicHooksCheckRemindersRouteImport } from './routes/api/public/hooks/check-reminders'
 
 const SignupRoute = SignupRouteImport.update({
   id: '/signup',
@@ -123,6 +124,12 @@ const AuthenticatedAuteursAuteurIdRoute =
     path: '/$auteurId',
     getParentRoute: () => AuthenticatedAuteursRoute,
   } as any)
+const ApiPublicHooksCheckRemindersRoute =
+  ApiPublicHooksCheckRemindersRouteImport.update({
+    id: '/api/public/hooks/check-reminders',
+    path: '/api/public/hooks/check-reminders',
+    getParentRoute: () => rootRouteImport,
+  } as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
@@ -142,6 +149,7 @@ export interface FileRoutesByFullPath {
   '/manuscrits/$manuscritId': typeof AuthenticatedManuscritsManuscritIdRoute
   '/api/public/paydunya-webhook': typeof ApiPublicPaydunyaWebhookRoute
   '/manuscrits/': typeof AuthenticatedManuscritsIndexRoute
+  '/api/public/hooks/check-reminders': typeof ApiPublicHooksCheckRemindersRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -161,6 +169,7 @@ export interface FileRoutesByTo {
   '/manuscrits/$manuscritId': typeof AuthenticatedManuscritsManuscritIdRoute
   '/api/public/paydunya-webhook': typeof ApiPublicPaydunyaWebhookRoute
   '/manuscrits': typeof AuthenticatedManuscritsIndexRoute
+  '/api/public/hooks/check-reminders': typeof ApiPublicHooksCheckRemindersRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -182,6 +191,7 @@ export interface FileRoutesById {
   '/_authenticated/manuscrits/$manuscritId': typeof AuthenticatedManuscritsManuscritIdRoute
   '/api/public/paydunya-webhook': typeof ApiPublicPaydunyaWebhookRoute
   '/_authenticated/manuscrits/': typeof AuthenticatedManuscritsIndexRoute
+  '/api/public/hooks/check-reminders': typeof ApiPublicHooksCheckRemindersRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -203,6 +213,7 @@ export interface FileRouteTypes {
     | '/manuscrits/$manuscritId'
     | '/api/public/paydunya-webhook'
     | '/manuscrits/'
+    | '/api/public/hooks/check-reminders'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -222,6 +233,7 @@ export interface FileRouteTypes {
     | '/manuscrits/$manuscritId'
     | '/api/public/paydunya-webhook'
     | '/manuscrits'
+    | '/api/public/hooks/check-reminders'
   id:
     | '__root__'
     | '/'
@@ -242,6 +254,7 @@ export interface FileRouteTypes {
     | '/_authenticated/manuscrits/$manuscritId'
     | '/api/public/paydunya-webhook'
     | '/_authenticated/manuscrits/'
+    | '/api/public/hooks/check-reminders'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -251,6 +264,7 @@ export interface RootRouteChildren {
   SignupRoute: typeof SignupRoute
   LectureTokenRoute: typeof LectureTokenRoute
   ApiPublicPaydunyaWebhookRoute: typeof ApiPublicPaydunyaWebhookRoute
+  ApiPublicHooksCheckRemindersRoute: typeof ApiPublicHooksCheckRemindersRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -381,6 +395,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedAuteursAuteurIdRouteImport
       parentRoute: typeof AuthenticatedAuteursRoute
     }
+    '/api/public/hooks/check-reminders': {
+      id: '/api/public/hooks/check-reminders'
+      path: '/api/public/hooks/check-reminders'
+      fullPath: '/api/public/hooks/check-reminders'
+      preLoaderRoute: typeof ApiPublicHooksCheckRemindersRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
@@ -446,6 +467,7 @@ const rootRouteChildren: RootRouteChildren = {
   SignupRoute: SignupRoute,
   LectureTokenRoute: LectureTokenRoute,
   ApiPublicPaydunyaWebhookRoute: ApiPublicPaydunyaWebhookRoute,
+  ApiPublicHooksCheckRemindersRoute: ApiPublicHooksCheckRemindersRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)

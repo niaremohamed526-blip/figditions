@@ -16,6 +16,7 @@ import { AnalyticsSection, defaultRange, inRange, EmptyChart, type DateRange } f
 import { BestSellingBooks, type BookRanking } from "@/components/best-selling-books";
 import { fcfa } from "@/lib/format";
 import { useRealtimeTable } from "@/hooks/use-realtime";
+import { ActivityFeed } from "@/components/activity-feed";
 
 export const Route = createFileRoute("/_authenticated/dashboard")({
   component: DashboardPage,
@@ -284,6 +285,8 @@ function DashboardPage() {
           </div>
           <BestSellingBooks books={bookRankings} limit={3} />
         </div>
+
+        <ActivityFeed entrepriseId={profile?.entreprise_id ?? null} limit={10} />
 
         <div className="rounded-xl border border-border bg-background/40 p-5">
           <h3 className="font-semibold mb-3 flex items-center gap-2"><Activity className="h-4 w-4 text-primary" /> 🕐 Activité récente</h3>
