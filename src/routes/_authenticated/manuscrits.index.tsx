@@ -410,8 +410,8 @@ function EditorialAnalytics({ items }: { items: Manuscrit[] | null }) {
   return (
     <AnalyticsSection title="📊 Analytiques éditoriales" range={range} setRange={setRange}>
       <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-        <MiniCard label="Lecture (moy.)" value={`${lectureAvg} j`} />
-        <MiniCard label="Correction (moy.)" value={`${correctionAvg} j`} />
+        <MiniCard label="Relecture (moy.)" value={`${lectureAvg} j`} />
+        <MiniCard label="Épreuve 1 (moy.)" value={`${correctionAvg} j`} />
         <MiniCard label="Publiés ce mois" value={String(publishedThisMonth)} />
         <MiniCard label="Publiés cette année" value={String(publishedThisYear)} />
       </div>
