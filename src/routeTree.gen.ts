@@ -16,13 +16,13 @@ import { Route as IndexRouteImport } from './routes/index'
 import { Route as LectureTokenRouteImport } from './routes/lecture.$token'
 import { Route as AuthenticatedStocksRouteImport } from './routes/_authenticated/stocks'
 import { Route as AuthenticatedParametresRouteImport } from './routes/_authenticated/parametres'
-import { Route as AuthenticatedManuscritsRouteImport } from './routes/_authenticated/manuscrits'
 import { Route as AuthenticatedImprimeriesRouteImport } from './routes/_authenticated/imprimeries'
 import { Route as AuthenticatedFinancesRouteImport } from './routes/_authenticated/finances'
 import { Route as AuthenticatedEstimateurRouteImport } from './routes/_authenticated/estimateur'
 import { Route as AuthenticatedDashboardRouteImport } from './routes/_authenticated/dashboard'
 import { Route as AuthenticatedContratsRouteImport } from './routes/_authenticated/contrats'
 import { Route as AuthenticatedAuteursRouteImport } from './routes/_authenticated/auteurs'
+import { Route as AuthenticatedManuscritsIndexRouteImport } from './routes/_authenticated/manuscrits.index'
 import { Route as AuthenticatedManuscritsManuscritIdRouteImport } from './routes/_authenticated/manuscrits.$manuscritId'
 import { Route as AuthenticatedContratsContratIdRouteImport } from './routes/_authenticated/contrats.$contratId'
 import { Route as AuthenticatedAuteursAuteurIdRouteImport } from './routes/_authenticated/auteurs.$auteurId'
@@ -61,11 +61,6 @@ const AuthenticatedParametresRoute = AuthenticatedParametresRouteImport.update({
   path: '/parametres',
   getParentRoute: () => AuthenticatedRoute,
 } as any)
-const AuthenticatedManuscritsRoute = AuthenticatedManuscritsRouteImport.update({
-  id: '/manuscrits',
-  path: '/manuscrits',
-  getParentRoute: () => AuthenticatedRoute,
-} as any)
 const AuthenticatedImprimeriesRoute =
   AuthenticatedImprimeriesRouteImport.update({
     id: '/imprimeries',
@@ -97,11 +92,17 @@ const AuthenticatedAuteursRoute = AuthenticatedAuteursRouteImport.update({
   path: '/auteurs',
   getParentRoute: () => AuthenticatedRoute,
 } as any)
+const AuthenticatedManuscritsIndexRoute =
+  AuthenticatedManuscritsIndexRouteImport.update({
+    id: '/manuscrits/',
+    path: '/manuscrits/',
+    getParentRoute: () => AuthenticatedRoute,
+  } as any)
 const AuthenticatedManuscritsManuscritIdRoute =
   AuthenticatedManuscritsManuscritIdRouteImport.update({
-    id: '/$manuscritId',
-    path: '/$manuscritId',
-    getParentRoute: () => AuthenticatedManuscritsRoute,
+    id: '/manuscrits/$manuscritId',
+    path: '/manuscrits/$manuscritId',
+    getParentRoute: () => AuthenticatedRoute,
   } as any)
 const AuthenticatedContratsContratIdRoute =
   AuthenticatedContratsContratIdRouteImport.update({
@@ -126,13 +127,13 @@ export interface FileRoutesByFullPath {
   '/estimateur': typeof AuthenticatedEstimateurRoute
   '/finances': typeof AuthenticatedFinancesRoute
   '/imprimeries': typeof AuthenticatedImprimeriesRoute
-  '/manuscrits': typeof AuthenticatedManuscritsRouteWithChildren
   '/parametres': typeof AuthenticatedParametresRoute
   '/stocks': typeof AuthenticatedStocksRoute
   '/lecture/$token': typeof LectureTokenRoute
   '/auteurs/$auteurId': typeof AuthenticatedAuteursAuteurIdRoute
   '/contrats/$contratId': typeof AuthenticatedContratsContratIdRoute
   '/manuscrits/$manuscritId': typeof AuthenticatedManuscritsManuscritIdRoute
+  '/manuscrits/': typeof AuthenticatedManuscritsIndexRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -144,13 +145,13 @@ export interface FileRoutesByTo {
   '/estimateur': typeof AuthenticatedEstimateurRoute
   '/finances': typeof AuthenticatedFinancesRoute
   '/imprimeries': typeof AuthenticatedImprimeriesRoute
-  '/manuscrits': typeof AuthenticatedManuscritsRouteWithChildren
   '/parametres': typeof AuthenticatedParametresRoute
   '/stocks': typeof AuthenticatedStocksRoute
   '/lecture/$token': typeof LectureTokenRoute
   '/auteurs/$auteurId': typeof AuthenticatedAuteursAuteurIdRoute
   '/contrats/$contratId': typeof AuthenticatedContratsContratIdRoute
   '/manuscrits/$manuscritId': typeof AuthenticatedManuscritsManuscritIdRoute
+  '/manuscrits': typeof AuthenticatedManuscritsIndexRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -164,13 +165,13 @@ export interface FileRoutesById {
   '/_authenticated/estimateur': typeof AuthenticatedEstimateurRoute
   '/_authenticated/finances': typeof AuthenticatedFinancesRoute
   '/_authenticated/imprimeries': typeof AuthenticatedImprimeriesRoute
-  '/_authenticated/manuscrits': typeof AuthenticatedManuscritsRouteWithChildren
   '/_authenticated/parametres': typeof AuthenticatedParametresRoute
   '/_authenticated/stocks': typeof AuthenticatedStocksRoute
   '/lecture/$token': typeof LectureTokenRoute
   '/_authenticated/auteurs/$auteurId': typeof AuthenticatedAuteursAuteurIdRoute
   '/_authenticated/contrats/$contratId': typeof AuthenticatedContratsContratIdRoute
   '/_authenticated/manuscrits/$manuscritId': typeof AuthenticatedManuscritsManuscritIdRoute
+  '/_authenticated/manuscrits/': typeof AuthenticatedManuscritsIndexRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -184,13 +185,13 @@ export interface FileRouteTypes {
     | '/estimateur'
     | '/finances'
     | '/imprimeries'
-    | '/manuscrits'
     | '/parametres'
     | '/stocks'
     | '/lecture/$token'
     | '/auteurs/$auteurId'
     | '/contrats/$contratId'
     | '/manuscrits/$manuscritId'
+    | '/manuscrits/'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -202,13 +203,13 @@ export interface FileRouteTypes {
     | '/estimateur'
     | '/finances'
     | '/imprimeries'
-    | '/manuscrits'
     | '/parametres'
     | '/stocks'
     | '/lecture/$token'
     | '/auteurs/$auteurId'
     | '/contrats/$contratId'
     | '/manuscrits/$manuscritId'
+    | '/manuscrits'
   id:
     | '__root__'
     | '/'
@@ -221,13 +222,13 @@ export interface FileRouteTypes {
     | '/_authenticated/estimateur'
     | '/_authenticated/finances'
     | '/_authenticated/imprimeries'
-    | '/_authenticated/manuscrits'
     | '/_authenticated/parametres'
     | '/_authenticated/stocks'
     | '/lecture/$token'
     | '/_authenticated/auteurs/$auteurId'
     | '/_authenticated/contrats/$contratId'
     | '/_authenticated/manuscrits/$manuscritId'
+    | '/_authenticated/manuscrits/'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -289,13 +290,6 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedParametresRouteImport
       parentRoute: typeof AuthenticatedRoute
     }
-    '/_authenticated/manuscrits': {
-      id: '/_authenticated/manuscrits'
-      path: '/manuscrits'
-      fullPath: '/manuscrits'
-      preLoaderRoute: typeof AuthenticatedManuscritsRouteImport
-      parentRoute: typeof AuthenticatedRoute
-    }
     '/_authenticated/imprimeries': {
       id: '/_authenticated/imprimeries'
       path: '/imprimeries'
@@ -338,12 +332,19 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedAuteursRouteImport
       parentRoute: typeof AuthenticatedRoute
     }
+    '/_authenticated/manuscrits/': {
+      id: '/_authenticated/manuscrits/'
+      path: '/manuscrits'
+      fullPath: '/manuscrits/'
+      preLoaderRoute: typeof AuthenticatedManuscritsIndexRouteImport
+      parentRoute: typeof AuthenticatedRoute
+    }
     '/_authenticated/manuscrits/$manuscritId': {
       id: '/_authenticated/manuscrits/$manuscritId'
-      path: '/$manuscritId'
+      path: '/manuscrits/$manuscritId'
       fullPath: '/manuscrits/$manuscritId'
       preLoaderRoute: typeof AuthenticatedManuscritsManuscritIdRouteImport
-      parentRoute: typeof AuthenticatedManuscritsRoute
+      parentRoute: typeof AuthenticatedRoute
     }
     '/_authenticated/contrats/$contratId': {
       id: '/_authenticated/contrats/$contratId'
@@ -386,21 +387,6 @@ const AuthenticatedContratsRouteWithChildren =
     AuthenticatedContratsRouteChildren,
   )
 
-interface AuthenticatedManuscritsRouteChildren {
-  AuthenticatedManuscritsManuscritIdRoute: typeof AuthenticatedManuscritsManuscritIdRoute
-}
-
-const AuthenticatedManuscritsRouteChildren: AuthenticatedManuscritsRouteChildren =
-  {
-    AuthenticatedManuscritsManuscritIdRoute:
-      AuthenticatedManuscritsManuscritIdRoute,
-  }
-
-const AuthenticatedManuscritsRouteWithChildren =
-  AuthenticatedManuscritsRoute._addFileChildren(
-    AuthenticatedManuscritsRouteChildren,
-  )
-
 interface AuthenticatedRouteChildren {
   AuthenticatedAuteursRoute: typeof AuthenticatedAuteursRouteWithChildren
   AuthenticatedContratsRoute: typeof AuthenticatedContratsRouteWithChildren
@@ -408,9 +394,10 @@ interface AuthenticatedRouteChildren {
   AuthenticatedEstimateurRoute: typeof AuthenticatedEstimateurRoute
   AuthenticatedFinancesRoute: typeof AuthenticatedFinancesRoute
   AuthenticatedImprimeriesRoute: typeof AuthenticatedImprimeriesRoute
-  AuthenticatedManuscritsRoute: typeof AuthenticatedManuscritsRouteWithChildren
   AuthenticatedParametresRoute: typeof AuthenticatedParametresRoute
   AuthenticatedStocksRoute: typeof AuthenticatedStocksRoute
+  AuthenticatedManuscritsManuscritIdRoute: typeof AuthenticatedManuscritsManuscritIdRoute
+  AuthenticatedManuscritsIndexRoute: typeof AuthenticatedManuscritsIndexRoute
 }
 
 const AuthenticatedRouteChildren: AuthenticatedRouteChildren = {
@@ -420,9 +407,11 @@ const AuthenticatedRouteChildren: AuthenticatedRouteChildren = {
   AuthenticatedEstimateurRoute: AuthenticatedEstimateurRoute,
   AuthenticatedFinancesRoute: AuthenticatedFinancesRoute,
   AuthenticatedImprimeriesRoute: AuthenticatedImprimeriesRoute,
-  AuthenticatedManuscritsRoute: AuthenticatedManuscritsRouteWithChildren,
   AuthenticatedParametresRoute: AuthenticatedParametresRoute,
   AuthenticatedStocksRoute: AuthenticatedStocksRoute,
+  AuthenticatedManuscritsManuscritIdRoute:
+    AuthenticatedManuscritsManuscritIdRoute,
+  AuthenticatedManuscritsIndexRoute: AuthenticatedManuscritsIndexRoute,
 }
 
 const AuthenticatedRouteWithChildren = AuthenticatedRoute._addFileChildren(
@@ -439,3 +428,13 @@ const rootRouteChildren: RootRouteChildren = {
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
+
+import type { getRouter } from './router.tsx'
+import type { startInstance } from './start.ts'
+declare module '@tanstack/react-start' {
+  interface Register {
+    ssr: true
+    router: Awaited<ReturnType<typeof getRouter>>
+    config: Awaited<ReturnType<typeof startInstance.getOptions>>
+  }
+}

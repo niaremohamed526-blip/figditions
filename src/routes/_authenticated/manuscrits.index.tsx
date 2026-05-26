@@ -21,7 +21,7 @@ import { toast } from "sonner";
 import { planFor } from "@/lib/plans";
 import { UpgradeModal } from "@/components/upgrade-modal";
 
-export const Route = createFileRoute("/_authenticated/manuscrits")({
+export const Route = createFileRoute("/_authenticated/manuscrits/")({
   component: ManuscritsPage,
   head: () => ({ meta: [{ title: "Manuscrits — FIGDITIONS" }] }),
 });
