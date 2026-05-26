@@ -79,7 +79,7 @@ function TopBar() {
   const { t, lang, setLang } = useI18n();
   return (
     <div className="w-full border-b border-border/40 bg-background/80 backdrop-blur-sm">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-11 flex items-center justify-start gap-3">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-11 flex items-center justify-end gap-3">
         <LangToggle lang={lang} setLang={setLang} />
         <Link to="/login">
           <Button variant="ghost" size="sm" className="text-muted-foreground hover:text-foreground h-8 px-3">
@@ -108,35 +108,12 @@ function Navbar() {
     return () => window.removeEventListener("scroll", onScroll);
   }, []);
 
-  const scrollTo = (id: string) => {
-    setOpen(false);
-    document.getElementById(id)?.scrollIntoView({ behavior: "smooth" });
-  };
-
-  const navLinks = [
-    { id: "features", fr: "Fonctionnalités", en: "Features" },
-    { id: "pricing", fr: "Tarifs", en: "Pricing" },
-    { id: "partners", fr: "Partenaires", en: "Partners" },
-  ];
-
   return (
     <header className={cn(
       "sticky top-0 inset-x-0 z-50 transition-all duration-300",
       scrolled ? "bg-background/70 backdrop-blur-xl border-b border-border" : "bg-transparent"
     )}>
       <nav className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-14 md:h-16 flex items-center">
-        <div className="hidden md:flex items-center gap-1">
-          {navLinks.map((link) => (
-            <button
-              key={link.id}
-              onClick={() => scrollTo(link.id)}
-              className="px-3 py-1.5 text-sm font-medium text-muted-foreground hover:text-foreground transition-colors"
-            >
-              {t(link.fr, link.en)}
-            </button>
-          ))}
-        </div>
-
         <button className="md:hidden p-2 ml-auto" onClick={() => setOpen(!open)} aria-label="Menu">
           {open ? <X className="h-6 w-6" /> : <Menu className="h-6 w-6" />}
         </button>
@@ -144,24 +121,13 @@ function Navbar() {
 
       {open && (
         <div className="md:hidden bg-background/95 backdrop-blur-xl border-b border-border px-4 py-4 space-y-3 animate-fade-in">
-          {navLinks.map((link) => (
-            <button
-              key={link.id}
-              onClick={() => scrollTo(link.id)}
-              className="block w-full text-left px-3 py-2 text-sm font-medium text-muted-foreground hover:text-foreground transition-colors"
-            >
-              {t(link.fr, link.en)}
-            </button>
-          ))}
-          <div className="border-t border-border pt-3 space-y-3">
-            <LangToggle lang={lang} setLang={setLang} />
-            <Link to="/login" onClick={() => setOpen(false)} className="block">
-              <Button variant="outline" className="w-full">{t("Se connecter", "Sign in")}</Button>
-            </Link>
-            <Link to="/signup" onClick={() => setOpen(false)} className="block">
-              <Button className="w-full bg-primary text-primary-foreground">{t("Commencer gratuitement", "Get started free")}</Button>
-            </Link>
-          </div>
+          <LangToggle lang={lang} setLang={setLang} />
+          <Link to="/login" onClick={() => setOpen(false)} className="block">
+            <Button variant="outline" className="w-full">{t("Se connecter", "Sign in")}</Button>
+          </Link>
+          <Link to="/signup" onClick={() => setOpen(false)} className="block">
+            <Button className="w-full bg-primary text-primary-foreground">{t("Commencer gratuitement", "Get started free")}</Button>
+          </Link>
         </div>
       )}
     </header>
