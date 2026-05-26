@@ -1,6 +1,9 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useEffect, useMemo, useState } from "react";
 import { Plus, Search, PenLine, Loader2, Pencil, Trash2, Mail, Phone, Smartphone } from "lucide-react";
+import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid, Legend } from "recharts";
+import { format, startOfMonth, subMonths } from "date-fns";
+import { fr } from "date-fns/locale";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth, useProfile } from "@/hooks/use-auth";
 import { Input } from "@/components/ui/input";
@@ -14,6 +17,8 @@ import {
   AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
 import { toast } from "sonner";
+import { AnalyticsSection, defaultRange, inRange, EmptyChart, type DateRange } from "@/components/analytics-section";
+import { fcfa } from "@/lib/format";
 
 export const Route = createFileRoute("/_authenticated/auteurs")({
   component: AuteursPage,
@@ -94,6 +99,8 @@ function AuteursPage() {
           <Plus className="h-4 w-4 mr-2" /> Ajouter un auteur
         </Button>
       </header>
+
+      <AuthorAnalytics auteurs={items ?? []} entrepriseId={profile?.entreprise_id ?? null} />
 
       <div className="relative max-w-md">
         <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
@@ -285,5 +292,135 @@ function AuteurForm({
         {loading ? <Loader2 className="h-4 w-4 animate-spin" /> : (existing ? "Enregistrer les modifications" : "Ajouter l'auteur")}
       </Button>
     </form>
+  );
+}
+
+type AuthorRow = { id: string; nom_complet: string; manuscripts: number; copies: number; revenue: number; paid: number; pending: number };
+
+function AuthorAnalytics({ auteurs, entrepriseId }: { auteurs: Auteur[]; entrepriseId: string | null }) {
+  const [range, setRange] = useState<DateRange>(defaultRange());
+  const [ventes, setVentes] = useState<any[] | null>(null);
+  const [manuscrits, setManuscrits] = useState<any[]>([]);
+  const [sortKey, setSortKey] = useState<"copies" | "revenue" | "paid" | "pending" | "manuscripts">("revenue");
+
+  useEffect(() => {
+    if (!entrepriseId) return;
+    (async () => {
+      const [v, m] = await Promise.all([
+        supabase.from("ventes").select("auteur_id, manuscrit_id, quantite_vendue, montant_total_fcfa, droits_auteur_fcfa, statut_paiement, date_vente"),
+        supabase.from("manuscrits").select("id, auteur, auteur_id"),
+      ]);
+      setVentes(v.data ?? []);
+      setManuscrits(m.data ?? []);
+    })();
+  }, [entrepriseId]);
+
+  const filteredV = useMemo(() => (ventes ?? []).filter((v) => inRange(v.date_vente, range)), [ventes, range]);
+
+  const rows = useMemo<AuthorRow[]>(() => {
+    const map = new Map<string, AuthorRow>();
+    auteurs.forEach((a) => map.set(a.id, { id: a.id, nom_complet: a.nom_complet, manuscripts: 0, copies: 0, revenue: 0, paid: 0, pending: 0 }));
+    manuscrits.forEach((m) => {
+      if (m.auteur_id && map.has(m.auteur_id)) map.get(m.auteur_id)!.manuscripts += 1;
+      else {
+        const match = auteurs.find((a) => a.nom_complet.toLowerCase() === (m.auteur ?? "").toLowerCase());
+        if (match) map.get(match.id)!.manuscripts += 1;
+      }
+    });
+    filteredV.forEach((v) => {
+      let aid = v.auteur_id;
+      if (!aid) {
+        const m = manuscrits.find((x) => x.id === v.manuscrit_id);
+        aid = m?.auteur_id;
+      }
+      const row = aid ? map.get(aid) : undefined;
+      if (!row) return;
+      row.copies += Number(v.quantite_vendue || 0);
+      row.revenue += Number(v.montant_total_fcfa || 0);
+      const dr = Number(v.droits_auteur_fcfa || 0);
+      if (v.statut_paiement === "paye") row.paid += dr; else row.pending += dr;
+    });
+    return [...map.values()].sort((a, b) => (b[sortKey] as number) - (a[sortKey] as number));
+  }, [auteurs, manuscrits, filteredV, sortKey]);
+
+  const royaltyMonths = useMemo(() => {
+    const buckets: { label: string; key: string; paid: number; pending: number }[] = [];
+    for (let i = 5; i >= 0; i--) {
+      const d = startOfMonth(subMonths(new Date(), i));
+      buckets.push({ key: format(d, "yyyy-MM"), label: format(d, "MMM", { locale: fr }), paid: 0, pending: 0 });
+    }
+    const map = new Map(buckets.map((b) => [b.key, b]));
+    filteredV.forEach((v) => {
+      const b = map.get(v.date_vente?.slice(0, 7));
+      if (!b) return;
+      const dr = Number(v.droits_auteur_fcfa || 0);
+      if (v.statut_paiement === "paye") b.paid += dr; else b.pending += dr;
+    });
+    return buckets;
+  }, [filteredV]);
+
+  if (ventes === null) return <Skeleton className="h-24 w-full" />;
+
+  const medals = ["🥇", "🥈", "🥉"];
+  const sortBtn = (key: typeof sortKey, label: string) => (
+    <button onClick={() => setSortKey(key)} className={`text-left ${sortKey === key ? "text-primary" : ""}`}>
+      {label} {sortKey === key && "↓"}
+    </button>
+  );
+
+  return (
+    <AnalyticsSection title="📊 Analytiques auteurs" range={range} setRange={setRange}>
+      <div className="rounded-xl border border-border bg-background/40 overflow-hidden">
+        <div className="overflow-x-auto">
+          <table className="w-full text-sm">
+            <thead className="bg-muted/30 text-muted-foreground">
+              <tr className="text-left">
+                <th className="px-3 py-2 font-medium w-12">#</th>
+                <th className="px-3 py-2 font-medium">Auteur</th>
+                <th className="px-3 py-2 font-medium text-center">{sortBtn("manuscripts", "Manuscrits")}</th>
+                <th className="px-3 py-2 font-medium text-right">{sortBtn("copies", "Vendus")}</th>
+                <th className="px-3 py-2 font-medium text-right">{sortBtn("revenue", "Revenu")}</th>
+                <th className="px-3 py-2 font-medium text-right">{sortBtn("paid", "Royalties payées")}</th>
+                <th className="px-3 py-2 font-medium text-right">{sortBtn("pending", "En attente")}</th>
+              </tr>
+            </thead>
+            <tbody>
+              {rows.length === 0 ? (
+                <tr><td colSpan={7}><EmptyChart label="Aucune donnée auteur" /></td></tr>
+              ) : rows.map((r, i) => (
+                <tr key={r.id} className="border-t border-border">
+                  <td className="px-3 py-2">{i < 3 ? medals[i] : i + 1}</td>
+                  <td className="px-3 py-2 font-medium">{r.nom_complet}</td>
+                  <td className="px-3 py-2 text-center">{r.manuscripts}</td>
+                  <td className="px-3 py-2 text-right">{r.copies}</td>
+                  <td className="px-3 py-2 text-right font-semibold">{fcfa(r.revenue)}</td>
+                  <td className="px-3 py-2 text-right text-primary">{fcfa(r.paid)}</td>
+                  <td className="px-3 py-2 text-right text-orange-400">{fcfa(r.pending)}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <div className="rounded-xl border border-border bg-background/40 p-5">
+        <h3 className="font-semibold mb-3">💰 Droits d'auteur (6 derniers mois)</h3>
+        <div className="h-64">
+          {royaltyMonths.every((b) => b.paid === 0 && b.pending === 0) ? <EmptyChart /> : (
+            <ResponsiveContainer width="100%" height="100%">
+              <BarChart data={royaltyMonths}>
+                <CartesianGrid strokeDasharray="3 3" stroke="#1E3A5F" />
+                <XAxis dataKey="label" stroke="#94A3B8" fontSize={12} />
+                <YAxis stroke="#94A3B8" fontSize={12} tickFormatter={(v) => `${(v/1000).toFixed(0)}k`} />
+                <Tooltip contentStyle={{ background: "#0D2137", border: "1px solid #1E3A5F", borderRadius: 8 }} formatter={(v: number) => fcfa(v)} />
+                <Legend />
+                <Bar dataKey="paid" name="Payées" stackId="a" fill="#00C896" radius={[0, 0, 0, 0]} />
+                <Bar dataKey="pending" name="En attente" stackId="a" fill="#F59E0B" radius={[6, 6, 0, 0]} />
+              </BarChart>
+            </ResponsiveContainer>
+          )}
+        </div>
+      </div>
+    </AnalyticsSection>
   );
 }

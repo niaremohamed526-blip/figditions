@@ -1,6 +1,9 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useEffect, useMemo, useState } from "react";
 import { Plus, Search, BookOpen, Loader2, Pencil, Trash2 } from "lucide-react";
+import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid } from "recharts";
+import { differenceInDays, format, startOfMonth, subMonths, startOfYear } from "date-fns";
+import { fr } from "date-fns/locale";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth, useProfile } from "@/hooks/use-auth";
 import { Input } from "@/components/ui/input";
@@ -20,6 +23,7 @@ import {
 import { toast } from "sonner";
 import { planFor } from "@/lib/plans";
 import { UpgradeModal } from "@/components/upgrade-modal";
+import { AnalyticsSection, defaultRange, inRange, EmptyChart, type DateRange } from "@/components/analytics-section";
 
 export const Route = createFileRoute("/_authenticated/manuscrits/")({
   component: ManuscritsPage,
@@ -105,6 +109,8 @@ function ManuscritsPage() {
           <Plus className="h-4 w-4 mr-2" /> Nouveau manuscrit
         </Button>
       </header>
+
+      <EditorialAnalytics items={items} />
 
       <div className="flex flex-col sm:flex-row gap-3">
         <div className="relative flex-1">
@@ -350,5 +356,115 @@ function ManuscritForm({
         {loading ? <Loader2 className="h-4 w-4 animate-spin" /> : (existing ? "Enregistrer les modifications" : "Enregistrer")}
       </Button>
     </form>
+  );
+}
+
+const STAGE_ORDER = ["recu","lecture","correction","maquette","impression","publie"] as const;
+const STAGE_LABEL: Record<string,string> = { recu:"Reçu", lecture:"Lecture", correction:"Correction", maquette:"Maquette", impression:"Impression", publie:"Publié" };
+
+function EditorialAnalytics({ items }: { items: Manuscrit[] | null }) {
+  const [range, setRange] = useState<DateRange>(defaultRange());
+
+  const filtered = useMemo(() => (items ?? []).filter((m) => inRange(m.created_at, range)), [items, range]);
+
+  const stageAvg = useMemo(() => {
+    // approx: time spent in each stage based on created_at -> now for non-published
+    // We don't have history; approximate using same created_at delta distribution by current statut
+    const groups: Record<string, number[]> = {};
+    (items ?? []).forEach((m) => {
+      const days = differenceInDays(new Date(), new Date(m.created_at));
+      groups[m.statut] = groups[m.statut] ?? [];
+      groups[m.statut].push(days);
+    });
+    return STAGE_ORDER.map((s) => {
+      const arr = groups[s] ?? [];
+      const avg = arr.length ? Math.round(arr.reduce((a, b) => a + b, 0) / arr.length) : 0;
+      return { stage: STAGE_LABEL[s], days: avg };
+    });
+  }, [items]);
+
+  const lectureAvg = stageAvg.find((s) => s.stage === "Lecture")?.days ?? 0;
+  const correctionAvg = stageAvg.find((s) => s.stage === "Correction")?.days ?? 0;
+
+  const now = new Date();
+  const monthStart = startOfMonth(now);
+  const yearStart = startOfYear(now);
+  const publishedThisMonth = (items ?? []).filter((m) => m.statut === "publie" && new Date(m.created_at) >= monthStart).length;
+  const publishedThisYear = (items ?? []).filter((m) => m.statut === "publie" && new Date(m.created_at) >= yearStart).length;
+
+  const perMonth = useMemo(() => {
+    const buckets: { label: string; key: string; count: number }[] = [];
+    for (let i = 5; i >= 0; i--) {
+      const d = startOfMonth(subMonths(new Date(), i));
+      buckets.push({ key: format(d, "yyyy-MM"), label: format(d, "MMM", { locale: fr }), count: 0 });
+    }
+    const map = new Map(buckets.map((b) => [b.key, b]));
+    filtered.forEach((m) => {
+      const b = map.get(m.created_at.slice(0, 7));
+      if (b) b.count += 1;
+    });
+    return buckets;
+  }, [filtered]);
+
+  if (!items) return <Skeleton className="h-24 w-full" />;
+
+  return (
+    <AnalyticsSection title="📊 Analytiques éditoriales" range={range} setRange={setRange}>
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+        <MiniCard label="Lecture (moy.)" value={`${lectureAvg} j`} />
+        <MiniCard label="Correction (moy.)" value={`${correctionAvg} j`} />
+        <MiniCard label="Publiés ce mois" value={String(publishedThisMonth)} />
+        <MiniCard label="Publiés cette année" value={String(publishedThisYear)} />
+      </div>
+      <div className="grid lg:grid-cols-2 gap-4">
+        <div className="rounded-xl border border-border bg-background/40 p-5">
+          <h3 className="font-semibold mb-3">⏱️ Temps moyen par étape éditoriale</h3>
+          <div className="h-64">
+            {stageAvg.every((s) => s.days === 0) ? <EmptyChart /> : (
+              <ResponsiveContainer width="100%" height="100%">
+                <BarChart data={stageAvg} layout="vertical" margin={{ left: 20 }}>
+                  <defs>
+                    <linearGradient id="stageGrad" x1="0" y1="0" x2="1" y2="0">
+                      <stop offset="0%" stopColor="#00C896" />
+                      <stop offset="100%" stopColor="#D4AF37" />
+                    </linearGradient>
+                  </defs>
+                  <CartesianGrid strokeDasharray="3 3" stroke="#1E3A5F" />
+                  <XAxis type="number" stroke="#94A3B8" fontSize={12} />
+                  <YAxis type="category" dataKey="stage" stroke="#94A3B8" fontSize={12} width={90} />
+                  <Tooltip contentStyle={{ background: "#0D2137", border: "1px solid #1E3A5F", borderRadius: 8 }} formatter={(v: number) => `${v} jours`} />
+                  <Bar dataKey="days" fill="url(#stageGrad)" radius={[0, 6, 6, 0]} />
+                </BarChart>
+              </ResponsiveContainer>
+            )}
+          </div>
+        </div>
+        <div className="rounded-xl border border-border bg-background/40 p-5">
+          <h3 className="font-semibold mb-3">📅 Manuscrits ajoutés par mois</h3>
+          <div className="h-64">
+            {perMonth.every((b) => b.count === 0) ? <EmptyChart /> : (
+              <ResponsiveContainer width="100%" height="100%">
+                <BarChart data={perMonth}>
+                  <CartesianGrid strokeDasharray="3 3" stroke="#1E3A5F" />
+                  <XAxis dataKey="label" stroke="#94A3B8" fontSize={12} />
+                  <YAxis stroke="#94A3B8" fontSize={12} allowDecimals={false} />
+                  <Tooltip contentStyle={{ background: "#0D2137", border: "1px solid #1E3A5F", borderRadius: 8 }} />
+                  <Bar dataKey="count" fill="#00C896" radius={[6, 6, 0, 0]} />
+                </BarChart>
+              </ResponsiveContainer>
+            )}
+          </div>
+        </div>
+      </div>
+    </AnalyticsSection>
+  );
+}
+
+function MiniCard({ label, value }: { label: string; value: string }) {
+  return (
+    <div className="rounded-xl border border-border bg-background/40 p-4">
+      <p className="text-xs uppercase tracking-wide text-muted-foreground">{label}</p>
+      <p className="mt-1 text-2xl font-bold tabular-nums">{value}</p>
+    </div>
   );
 }

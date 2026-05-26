@@ -22,6 +22,11 @@ import { cn } from "@/lib/utils";
 import { fcfa } from "@/lib/format";
 import { planFor } from "@/lib/plans";
 import { UpgradeModal } from "@/components/upgrade-modal";
+import { AnalyticsSection, defaultRange, inRange, EmptyChart, type DateRange } from "@/components/analytics-section";
+import { Link } from "@tanstack/react-router";
+import { format as fmtDate, startOfMonth, subMonths } from "date-fns";
+import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid, Legend, LineChart, Line } from "recharts";
+import { AlertTriangle } from "lucide-react";
 
 export const Route = createFileRoute("/_authenticated/stocks")({
   component: StocksPage,
@@ -133,6 +138,8 @@ function StocksPage() {
         <SummaryCard icon={<Store />} label="Librairies" value={String(totals.librairies)} />
         <SummaryCard icon={<Wallet />} label="Chiffre d'affaires" value={fcfa(totals.ca)} accent="gold" />
       </div>
+
+      <InventoryAnalytics stocks={items ?? []} titreMap={titreMap} />
 
       <div className="relative max-w-md">
         <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
@@ -436,5 +443,122 @@ function Row({ icon, label, children }: { icon: React.ReactNode; label: string; 
       <span className="text-muted-foreground inline-flex items-center gap-2"><span className="text-primary">{icon}</span>{label}</span>
       {children}
     </div>
+  );
+}
+
+function InventoryAnalytics({ stocks, titreMap }: { stocks: Stock[]; titreMap: Record<string, string> }) {
+  const [range, setRange] = useState<DateRange>(defaultRange());
+  const [ventes, setVentes] = useState<any[]>([]);
+
+  useEffect(() => {
+    (async () => {
+      const { data } = await supabase.from("ventes").select("manuscrit_id, quantite_vendue, date_vente");
+      setVentes(data ?? []);
+    })();
+  }, []);
+
+  const totalCirc = stocks.reduce((s, x) => s + (x.exemplaires_deposes ?? 0), 0);
+  const totalVendus = stocks.reduce((s, x) => s + (x.exemplaires_vendus ?? 0), 0);
+  const sellThrough = totalCirc > 0 ? Math.round((totalVendus / totalCirc) * 100) : 0;
+  const lowStock = stocks.filter((s) => (s.exemplaires_restants ?? 0) > 0 && (s.exemplaires_restants ?? 0) < 3);
+  const critical = stocks.filter((s) => (s.exemplaires_restants ?? 0) <= 3);
+
+  const byStore = useMemo(() => {
+    const map = new Map<string, { name: string; deposited: number; remaining: number }>();
+    stocks.forEach((s) => {
+      const name = s.librairie_nom?.trim() || "—";
+      const e = map.get(name) ?? { name, deposited: 0, remaining: 0 };
+      e.deposited += s.exemplaires_deposes ?? 0;
+      e.remaining += s.exemplaires_restants ?? 0;
+      map.set(name, e);
+    });
+    return [...map.values()].slice(0, 10);
+  }, [stocks]);
+
+  const salesEvolution = useMemo(() => {
+    const months: string[] = [];
+    for (let i = 5; i >= 0; i--) months.push(fmtDate(startOfMonth(subMonths(new Date(), i)), "yyyy-MM"));
+    const byManuscript = new Map<string, Record<string, number>>();
+    ventes.filter((v) => inRange(v.date_vente, range)).forEach((v) => {
+      const k = v.date_vente?.slice(0, 7);
+      if (!months.includes(k)) return;
+      const m = byManuscript.get(v.manuscrit_id) ?? {};
+      m[k] = (m[k] ?? 0) + Number(v.quantite_vendue || 0);
+      byManuscript.set(v.manuscrit_id, m);
+    });
+    const data = months.map((m) => {
+      const row: any = { label: fmtDate(new Date(m + "-01"), "MMM") };
+      byManuscript.forEach((counts, mid) => { row[titreMap[mid] ?? mid.slice(0, 6)] = counts[m] ?? 0; });
+      return row;
+    });
+    const titles = [...byManuscript.keys()].map((id) => titreMap[id] ?? id.slice(0, 6));
+    return { data, titles };
+  }, [ventes, range, titreMap]);
+
+  const colors = ["#00C896", "#D4AF37", "#3B82F6", "#F59E0B", "#8B5CF6", "#EC4899"];
+
+  return (
+    <AnalyticsSection title="📊 Analytiques stocks" range={range} setRange={setRange}>
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+        <SummaryCard icon={<BookOpen />} label="En circulation" value={String(totalCirc)} />
+        <SummaryCard icon={<ShoppingBag />} label="Vendus (total)" value={String(totalVendus)} accent="primary" />
+        <SummaryCard icon={<TrendingUp />} label="Taux de vente" value={`${sellThrough}%`} accent="gold" />
+        <SummaryCard icon={<AlertTriangle />} label="Stock faible" value={String(lowStock.length)} />
+      </div>
+
+      <div className="grid lg:grid-cols-2 gap-4">
+        <div className="rounded-xl border border-border bg-background/40 p-5">
+          <h3 className="font-semibold mb-3">📦 Stock par librairie</h3>
+          <div className="h-64">
+            {byStore.length === 0 ? <EmptyChart /> : (
+              <ResponsiveContainer width="100%" height="100%">
+                <BarChart data={byStore}>
+                  <CartesianGrid strokeDasharray="3 3" stroke="#1E3A5F" />
+                  <XAxis dataKey="name" stroke="#94A3B8" fontSize={11} angle={-20} textAnchor="end" height={60} />
+                  <YAxis stroke="#94A3B8" fontSize={12} />
+                  <Tooltip contentStyle={{ background: "#0D2137", border: "1px solid #1E3A5F", borderRadius: 8 }} />
+                  <Legend />
+                  <Bar dataKey="deposited" name="Déposés" fill="#3B82F6" radius={[6, 6, 0, 0]} />
+                  <Bar dataKey="remaining" name="Restants" fill="#00C896" radius={[6, 6, 0, 0]} />
+                </BarChart>
+              </ResponsiveContainer>
+            )}
+          </div>
+        </div>
+        <div className="rounded-xl border border-border bg-background/40 p-5">
+          <h3 className="font-semibold mb-3">📉 Évolution des ventes par livre</h3>
+          <div className="h-64">
+            {salesEvolution.titles.length === 0 ? <EmptyChart /> : (
+              <ResponsiveContainer width="100%" height="100%">
+                <LineChart data={salesEvolution.data}>
+                  <CartesianGrid strokeDasharray="3 3" stroke="#1E3A5F" />
+                  <XAxis dataKey="label" stroke="#94A3B8" fontSize={12} />
+                  <YAxis stroke="#94A3B8" fontSize={12} allowDecimals={false} />
+                  <Tooltip contentStyle={{ background: "#0D2137", border: "1px solid #1E3A5F", borderRadius: 8 }} />
+                  <Legend />
+                  {salesEvolution.titles.map((t, i) => <Line key={t} type="monotone" dataKey={t} stroke={colors[i % colors.length]} strokeWidth={2} />)}
+                </LineChart>
+              </ResponsiveContainer>
+            )}
+          </div>
+        </div>
+      </div>
+
+      {critical.length > 0 && (
+        <div className="space-y-2">
+          <h3 className="font-semibold flex items-center gap-2"><AlertTriangle className="h-4 w-4 text-red-400" /> Alertes de stock critique</h3>
+          {critical.map((s) => (
+            <div key={s.id} className="flex items-center justify-between gap-3 p-3 rounded-lg border border-red-500/30 bg-red-500/10">
+              <p className="text-sm">
+                ⚠️ Stock critique: <span className="font-semibold">{titreMap[s.manuscrit_id] ?? "—"}</span> à {s.librairie_nom ?? "—"} — Plus que {s.exemplaires_restants} exemplaire(s)
+              </p>
+              <Link to="/imprimeries" className="text-xs px-3 py-1.5 rounded-md bg-primary text-primary-foreground hover:bg-primary/90 whitespace-nowrap">
+                Contacter l'imprimeur
+              </Link>
+            </div>
+          ))}
+        </div>
+      )}
+    </AnalyticsSection>
   );
 }
