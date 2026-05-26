@@ -13,6 +13,7 @@ import { Route as SignupRouteImport } from './routes/signup'
 import { Route as LoginRouteImport } from './routes/login'
 import { Route as AuthenticatedRouteImport } from './routes/_authenticated'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as LectureTokenRouteImport } from './routes/lecture.$token'
 import { Route as AuthenticatedStocksRouteImport } from './routes/_authenticated/stocks'
 import { Route as AuthenticatedParametresRouteImport } from './routes/_authenticated/parametres'
 import { Route as AuthenticatedManuscritsRouteImport } from './routes/_authenticated/manuscrits'
@@ -43,6 +44,11 @@ const AuthenticatedRoute = AuthenticatedRouteImport.update({
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const LectureTokenRoute = LectureTokenRouteImport.update({
+  id: '/lecture/$token',
+  path: '/lecture/$token',
   getParentRoute: () => rootRouteImport,
 } as any)
 const AuthenticatedStocksRoute = AuthenticatedStocksRouteImport.update({
@@ -123,6 +129,7 @@ export interface FileRoutesByFullPath {
   '/manuscrits': typeof AuthenticatedManuscritsRouteWithChildren
   '/parametres': typeof AuthenticatedParametresRoute
   '/stocks': typeof AuthenticatedStocksRoute
+  '/lecture/$token': typeof LectureTokenRoute
   '/auteurs/$auteurId': typeof AuthenticatedAuteursAuteurIdRoute
   '/contrats/$contratId': typeof AuthenticatedContratsContratIdRoute
   '/manuscrits/$manuscritId': typeof AuthenticatedManuscritsManuscritIdRoute
@@ -140,6 +147,7 @@ export interface FileRoutesByTo {
   '/manuscrits': typeof AuthenticatedManuscritsRouteWithChildren
   '/parametres': typeof AuthenticatedParametresRoute
   '/stocks': typeof AuthenticatedStocksRoute
+  '/lecture/$token': typeof LectureTokenRoute
   '/auteurs/$auteurId': typeof AuthenticatedAuteursAuteurIdRoute
   '/contrats/$contratId': typeof AuthenticatedContratsContratIdRoute
   '/manuscrits/$manuscritId': typeof AuthenticatedManuscritsManuscritIdRoute
@@ -159,6 +167,7 @@ export interface FileRoutesById {
   '/_authenticated/manuscrits': typeof AuthenticatedManuscritsRouteWithChildren
   '/_authenticated/parametres': typeof AuthenticatedParametresRoute
   '/_authenticated/stocks': typeof AuthenticatedStocksRoute
+  '/lecture/$token': typeof LectureTokenRoute
   '/_authenticated/auteurs/$auteurId': typeof AuthenticatedAuteursAuteurIdRoute
   '/_authenticated/contrats/$contratId': typeof AuthenticatedContratsContratIdRoute
   '/_authenticated/manuscrits/$manuscritId': typeof AuthenticatedManuscritsManuscritIdRoute
@@ -178,6 +187,7 @@ export interface FileRouteTypes {
     | '/manuscrits'
     | '/parametres'
     | '/stocks'
+    | '/lecture/$token'
     | '/auteurs/$auteurId'
     | '/contrats/$contratId'
     | '/manuscrits/$manuscritId'
@@ -195,6 +205,7 @@ export interface FileRouteTypes {
     | '/manuscrits'
     | '/parametres'
     | '/stocks'
+    | '/lecture/$token'
     | '/auteurs/$auteurId'
     | '/contrats/$contratId'
     | '/manuscrits/$manuscritId'
@@ -213,6 +224,7 @@ export interface FileRouteTypes {
     | '/_authenticated/manuscrits'
     | '/_authenticated/parametres'
     | '/_authenticated/stocks'
+    | '/lecture/$token'
     | '/_authenticated/auteurs/$auteurId'
     | '/_authenticated/contrats/$contratId'
     | '/_authenticated/manuscrits/$manuscritId'
@@ -223,6 +235,7 @@ export interface RootRouteChildren {
   AuthenticatedRoute: typeof AuthenticatedRouteWithChildren
   LoginRoute: typeof LoginRoute
   SignupRoute: typeof SignupRoute
+  LectureTokenRoute: typeof LectureTokenRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -253,6 +266,13 @@ declare module '@tanstack/react-router' {
       path: '/'
       fullPath: '/'
       preLoaderRoute: typeof IndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/lecture/$token': {
+      id: '/lecture/$token'
+      path: '/lecture/$token'
+      fullPath: '/lecture/$token'
+      preLoaderRoute: typeof LectureTokenRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/_authenticated/stocks': {
@@ -414,6 +434,7 @@ const rootRouteChildren: RootRouteChildren = {
   AuthenticatedRoute: AuthenticatedRouteWithChildren,
   LoginRoute: LoginRoute,
   SignupRoute: SignupRoute,
+  LectureTokenRoute: LectureTokenRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
