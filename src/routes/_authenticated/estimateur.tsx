@@ -80,12 +80,16 @@ interface Estimation {
 function EstimateurPage() {
   const { user } = useAuth();
   const { profile } = useProfile(user?.id);
+  const { manuscrit: prefillManuscritId } = Route.useSearch();
 
   const [manuscrits, setManuscrits] = useState<Manuscrit[]>([]);
   const [history, setHistory] = useState<Estimation[] | null>(null);
   const [toDelete, setToDelete] = useState<Estimation | null>(null);
+  const [toApply, setToApply] = useState<Estimation | null>(null);
+  const [applying, setApplying] = useState(false);
   const [compareIds, setCompareIds] = useState<string[]>([]);
   const [saving, setSaving] = useState(false);
+
 
   // Form state
   const [nom, setNom] = useState("");
