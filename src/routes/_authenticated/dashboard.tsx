@@ -16,6 +16,7 @@ import { AnalyticsSection, defaultRange, inRange, EmptyChart, type DateRange } f
 import { BestSellingBooks, type BookRanking } from "@/components/best-selling-books";
 import { fcfa } from "@/lib/format";
 import { useRealtimeTable } from "@/hooks/use-realtime";
+import { ActivityFeed } from "@/components/activity-feed";
 
 export const Route = createFileRoute("/_authenticated/dashboard")({
   component: DashboardPage,
