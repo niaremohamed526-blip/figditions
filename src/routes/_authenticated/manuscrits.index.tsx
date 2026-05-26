@@ -359,8 +359,7 @@ function ManuscritForm({
   );
 }
 
-const STAGE_ORDER = ["recu","lecture","correction","maquette","impression","publie"] as const;
-const STAGE_LABEL: Record<string,string> = { recu:"Reçu", lecture:"Lecture", correction:"Correction", maquette:"Maquette", impression:"Impression", publie:"Publié" };
+import { STATUT_PROGRESSION as STAGE_ORDER, STATUT_LABEL as STAGE_LABEL } from "@/components/status-badge";
 
 function EditorialAnalytics({ items }: { items: Manuscrit[] | null }) {
   const [range, setRange] = useState<DateRange>(defaultRange());
@@ -383,8 +382,8 @@ function EditorialAnalytics({ items }: { items: Manuscrit[] | null }) {
     });
   }, [items]);
 
-  const lectureAvg = stageAvg.find((s) => s.stage === "Lecture")?.days ?? 0;
-  const correctionAvg = stageAvg.find((s) => s.stage === "Correction")?.days ?? 0;
+  const lectureAvg = stageAvg.find((s) => s.stage === "Relecture")?.days ?? 0;
+  const correctionAvg = stageAvg.find((s) => s.stage === "Épreuve 1")?.days ?? 0;
 
   const now = new Date();
   const monthStart = startOfMonth(now);
@@ -411,8 +410,8 @@ function EditorialAnalytics({ items }: { items: Manuscrit[] | null }) {
   return (
     <AnalyticsSection title="📊 Analytiques éditoriales" range={range} setRange={setRange}>
       <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-        <MiniCard label="Lecture (moy.)" value={`${lectureAvg} j`} />
-        <MiniCard label="Correction (moy.)" value={`${correctionAvg} j`} />
+        <MiniCard label="Relecture (moy.)" value={`${lectureAvg} j`} />
+        <MiniCard label="Épreuve 1 (moy.)" value={`${correctionAvg} j`} />
         <MiniCard label="Publiés ce mois" value={String(publishedThisMonth)} />
         <MiniCard label="Publiés cette année" value={String(publishedThisYear)} />
       </div>

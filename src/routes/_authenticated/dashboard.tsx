@@ -10,7 +10,7 @@ import { fr } from "date-fns/locale";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth, useProfile } from "@/hooks/use-auth";
 import { AnimatedCounter } from "@/components/animated-counter";
-import { StatusBadge } from "@/components/status-badge";
+import { STATUT_PROGRESSION, STATUT_LABEL, STATUT_COLOR } from "@/components/status-badge";
 import { Skeleton } from "@/components/ui/skeleton";
 import { AnalyticsSection, defaultRange, inRange, EmptyChart, type DateRange } from "@/components/analytics-section";
 import { BestSellingBooks, type BookRanking } from "@/components/best-selling-books";
@@ -27,9 +27,7 @@ interface Auteur { id: string; nom_complet: string; }
 interface Stock { id: string; manuscrit_id: string; librairie_nom: string | null; exemplaires_vendus: number; exemplaires_restants: number; prix_unitaire_fcfa: number | null; created_at: string; }
 interface Contrat { id: string; created_at: string; statut: string; manuscrit_id: string; }
 
-const STATUTS = ["recu","lecture","correction","maquette","impression","publie"] as const;
-const STATUT_LABEL: Record<string,string> = { recu:"Reçu", lecture:"Lecture", correction:"Correction", maquette:"Maquette", impression:"Impression", publie:"Publié" };
-const STATUT_COLOR: Record<string,string> = { recu:"#94A3B8", lecture:"#3B82F6", correction:"#F59E0B", maquette:"#F97316", impression:"#8B5CF6", publie:"#00C896" };
+const STATUTS = STATUT_PROGRESSION;
 
 function DashboardPage() {
   const { user } = useAuth();

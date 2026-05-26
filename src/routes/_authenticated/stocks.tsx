@@ -27,6 +27,8 @@ import { Link } from "@tanstack/react-router";
 import { format as fmtDate, startOfMonth, subMonths } from "date-fns";
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid, Legend, LineChart, Line } from "recharts";
 import { AlertTriangle } from "lucide-react";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { StockInterneTab } from "@/components/stock-interne";
 
 export const Route = createFileRoute("/_authenticated/stocks")({
   component: StocksPage,
@@ -124,22 +126,33 @@ function StocksPage() {
       <header className="flex flex-wrap items-end justify-between gap-4">
         <div>
           <h1 className="text-3xl font-bold tracking-tight">Stocks</h1>
-          <p className="text-muted-foreground mt-1">Suivez vos dépôts dans les librairies de Bamako.</p>
+          <p className="text-muted-foreground mt-1">Gérez votre entrepôt interne et vos dépôts en librairie.</p>
         </div>
-        <Button onClick={openNew} className="bg-primary text-primary-foreground hover:bg-primary/90">
-          <Plus className="h-4 w-4 mr-2" /> Ajouter un dépôt
-        </Button>
       </header>
 
-      <div className="grid grid-cols-2 lg:grid-cols-5 gap-3">
-        <SummaryCard icon={<BookOpen />} label="En circulation" value={String(totals.deposes)} />
-        <SummaryCard icon={<ShoppingBag />} label="Vendus" value={String(totals.vendus)} accent="primary" />
-        <SummaryCard icon={<TrendingUp />} label="Restants" value={String(totals.restants)} />
-        <SummaryCard icon={<Store />} label="Librairies" value={String(totals.librairies)} />
-        <SummaryCard icon={<Wallet />} label="Chiffre d'affaires" value={fcfa(totals.ca)} accent="gold" />
-      </div>
+      <Tabs defaultValue="externe" className="space-y-6">
+        <TabsList className="bg-card border border-border">
+          <TabsTrigger value="externe">🏪 Stock Externe</TabsTrigger>
+          <TabsTrigger value="interne">🏭 Stock Interne</TabsTrigger>
+        </TabsList>
 
-      <InventoryAnalytics stocks={items ?? []} titreMap={titreMap} />
+        <TabsContent value="externe" className="space-y-6 mt-0">
+          <div className="flex justify-end">
+            <Button onClick={openNew} className="bg-primary text-primary-foreground hover:bg-primary/90">
+              <Plus className="h-4 w-4 mr-2" /> Ajouter un dépôt
+            </Button>
+          </div>
+
+          <div className="grid grid-cols-2 lg:grid-cols-5 gap-3">
+            <SummaryCard icon={<BookOpen />} label="En circulation" value={String(totals.deposes)} />
+            <SummaryCard icon={<ShoppingBag />} label="Vendus" value={String(totals.vendus)} accent="primary" />
+            <SummaryCard icon={<TrendingUp />} label="Restants" value={String(totals.restants)} />
+            <SummaryCard icon={<Store />} label="Librairies" value={String(totals.librairies)} />
+            <SummaryCard icon={<Wallet />} label="Chiffre d'affaires" value={fcfa(totals.ca)} accent="gold" />
+          </div>
+
+          <InventoryAnalytics stocks={items ?? []} titreMap={titreMap} />
+
 
       <div className="relative max-w-md">
         <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />

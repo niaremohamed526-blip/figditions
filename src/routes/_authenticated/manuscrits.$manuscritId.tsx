@@ -21,6 +21,7 @@ import {
   Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
 } from "@/components/ui/select";
 import { toast } from "sonner";
+import { StatusStepper } from "@/components/status-stepper";
 
 const MAX_PDF_BYTES = 10 * 1024 * 1024;
 const fmtSize = (b: number) => b < 1024 * 1024 ? `${(b / 1024).toFixed(0)} KB` : `${(b / 1024 / 1024).toFixed(2)} MB`;
@@ -180,6 +181,14 @@ function ManuscritDetailPage() {
         <h1 className="text-3xl font-bold">{m.titre}</h1>
         <p className="text-muted-foreground mt-1">{m.auteur}{m.genre ? ` · ${m.genre}` : ""}{m.langue ? ` · ${m.langue}` : ""}</p>
       </div>
+
+      {/* Progression */}
+      <section className="rounded-xl border border-border bg-card p-5">
+        <h2 className="font-semibold mb-4">📈 Progression éditoriale</h2>
+        <StatusStepper statut={m.statut} />
+      </section>
+
+
 
       {/* PDF Source */}
       <section className="rounded-xl border border-border bg-card p-5">
