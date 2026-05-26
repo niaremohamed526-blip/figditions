@@ -15,8 +15,16 @@ const MAP: Record<string, { label: string; cls: string }> = {
 
 export function StatusBadge({ statut }: { statut: string }) {
   const s = MAP[statut] ?? { label: statut, cls: "bg-muted text-muted-foreground border-border" };
+  const isActive = statut === "impression";
   return (
-    <span className={cn("inline-flex items-center rounded-full border px-2.5 py-0.5 text-xs font-medium", s.cls)}>
+    <span
+      key={statut}
+      className={cn(
+        "inline-flex items-center rounded-full border px-2.5 py-0.5 text-xs font-medium animate-[fade-in_0.3s_ease-out_both]",
+        s.cls,
+        isActive && "badge-pulse",
+      )}
+    >
       {s.label}
     </span>
   );
