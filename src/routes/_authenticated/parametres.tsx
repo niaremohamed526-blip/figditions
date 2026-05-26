@@ -28,6 +28,7 @@ const paramsSchema = z.object({
 
 export const Route = createFileRoute("/_authenticated/parametres")({
   component: ParametresPage,
+  validateSearch: paramsSchema,
   head: () => ({ meta: [{ title: "Paramètres — FIGDITIONS" }] }),
 });
 
