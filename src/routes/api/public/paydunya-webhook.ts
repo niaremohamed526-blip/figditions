@@ -46,6 +46,14 @@ export const Route = createFileRoute("/api/public/paydunya-webhook")({
             return new Response("Subscription not found", { status: 404 });
           }
 
+          // Idempotency: refuse to re-activate an already-active subscription.
+          // Prevents replay attacks where a tenant member resubmits an old token
+          // to extend their plan for free.
+          if (ab.statut === "actif" && confirmed.status === "completed") {
+            return new Response("Already processed", { status: 200 });
+          }
+
+
           if (confirmed.status === "completed") {
             const now = new Date();
             const end = new Date(now);
