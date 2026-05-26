@@ -1,8 +1,8 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import {
-  ArrowLeft, Lock, Plus, Copy, Power, Trash2, Upload, Loader2, FileText,
-  BarChart3, Eye,
+  ArrowLeft, Lock, Plus, Copy, Power, Trash2, Loader2, FileText,
+  BarChart3, Eye, CloudUpload, AlertTriangle, CheckCircle2,
 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth, useProfile } from "@/hooks/use-auth";
@@ -11,11 +11,21 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Badge } from "@/components/ui/badge";
+import { Progress } from "@/components/ui/progress";
+import {
+  AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent,
+  AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet";
 import {
   Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
 } from "@/components/ui/select";
 import { toast } from "sonner";
+
+const MAX_PDF_BYTES = 10 * 1024 * 1024;
+const fmtSize = (b: number) => b < 1024 * 1024 ? `${(b / 1024).toFixed(0)} KB` : `${(b / 1024 / 1024).toFixed(2)} MB`;
+
+interface PdfMeta { name: string; size: number; updated_at: string }
 
 export const Route = createFileRoute("/_authenticated/manuscrits/$manuscritId")({
   component: ManuscritDetailPage,
@@ -43,6 +53,11 @@ function ManuscritDetailPage() {
   const [partages, setPartages] = useState<Partage[] | null>(null);
   const [sheetOpen, setSheetOpen] = useState(false);
   const [uploading, setUploading] = useState(false);
+  const [progress, setProgress] = useState(0);
+  const [pdfMeta, setPdfMeta] = useState<PdfMeta | null>(null);
+  const [dragOver, setDragOver] = useState(false);
+  const [confirmDelete, setConfirmDelete] = useState(false);
+  const inputRef = useRef<HTMLInputElement>(null);
 
   const loadManuscrit = async () => {
     setLoading(true);
@@ -63,30 +78,63 @@ function ManuscritDetailPage() {
 
   useEffect(() => { loadManuscrit(); loadPartages(); }, [manuscritId]);
 
-  const stats = useMemo(() => {
-    const list = partages ?? [];
-    const totalVues = list.reduce((s, p) => s + p.nombre_vues_actuel, 0);
-    const last = list.reduce<string | null>(
-      (acc, p) => (p.last_viewed_at && (!acc || p.last_viewed_at > acc) ? p.last_viewed_at : acc),
-      null,
-    );
-    return { liens: list.length, vues: totalVues, derniere: last };
-  }, [partages]);
+  useEffect(() => {
+    const fetchMeta = async () => {
+      if (!m?.pdf_path) { setPdfMeta(null); return; }
+      const folder = m.pdf_path.substring(0, m.pdf_path.lastIndexOf("/"));
+      const name = m.pdf_path.substring(m.pdf_path.lastIndexOf("/") + 1);
+      const { data } = await supabase.storage.from("manuscrits").list(folder);
+      const f = data?.find((x) => x.name === name);
+      if (f) setPdfMeta({
+        name,
+        size: (f.metadata as any)?.size ?? 0,
+        updated_at: (f as any).updated_at ?? (f as any).created_at ?? "",
+      });
+    };
+    fetchMeta();
+  }, [m?.pdf_path]);
 
-  const onUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (!file || !m || !profile?.entreprise_id) return;
+  const doUpload = async (file: File) => {
+    if (!m || !profile?.entreprise_id) return;
     if (file.type !== "application/pdf") { toast.error("Seuls les fichiers PDF sont acceptés"); return; }
+    if (file.size > MAX_PDF_BYTES) { toast.error("Ce fichier dépasse la limite de 10 MB"); return; }
     setUploading(true);
-    const path = `${profile.entreprise_id}/${m.id}.pdf`;
+    setProgress(5);
+    const tick = setInterval(() => setProgress((p) => (p < 90 ? p + 5 : p)), 200);
+    const path = `${profile.entreprise_id}/${m.id}/manuscript.pdf`;
     const { error: upErr } = await supabase.storage
       .from("manuscrits").upload(path, file, { upsert: true, contentType: "application/pdf" });
-    if (upErr) { setUploading(false); toast.error(upErr.message); return; }
+    clearInterval(tick);
+    if (upErr) { setUploading(false); setProgress(0); toast.error("Échec de l'upload. Veuillez réessayer."); return; }
+    setProgress(95);
     const { error: updErr } = await supabase
       .from("manuscrits").update({ pdf_path: path }).eq("id", m.id);
-    setUploading(false);
+    setProgress(100);
+    setTimeout(() => { setUploading(false); setProgress(0); }, 400);
     if (updErr) return toast.error(updErr.message);
-    toast.success("PDF téléversé avec succès");
+    toast.success("✅ PDF uploadé avec succès");
+    loadManuscrit();
+  };
+
+  const onFileInput = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const f = e.target.files?.[0];
+    if (f) doUpload(f);
+    e.target.value = "";
+  };
+  const onDrop = (e: React.DragEvent) => {
+    e.preventDefault(); setDragOver(false);
+    const f = e.dataTransfer.files?.[0];
+    if (f) doUpload(f);
+  };
+
+  const deletePdf = async () => {
+    if (!m?.pdf_path) return;
+    const { error: rmErr } = await supabase.storage.from("manuscrits").remove([m.pdf_path]);
+    if (rmErr) return toast.error(rmErr.message);
+    const { error } = await supabase.from("manuscrits").update({ pdf_path: null }).eq("id", m.id);
+    if (error) return toast.error(error.message);
+    toast.success("PDF supprimé");
+    setConfirmDelete(false);
     loadManuscrit();
   };
 
@@ -110,6 +158,16 @@ function ManuscritDetailPage() {
     loadPartages();
   };
 
+  const stats = useMemo(() => {
+    const list = partages ?? [];
+    const totalVues = list.reduce((s, p) => s + p.nombre_vues_actuel, 0);
+    const last = list.reduce<string | null>(
+      (acc, p) => (p.last_viewed_at && (!acc || p.last_viewed_at > acc) ? p.last_viewed_at : acc),
+      null,
+    );
+    return { liens: list.length, vues: totalVues, derniere: last };
+  }, [partages]);
+
   if (loading) return <div className="space-y-4"><Skeleton className="h-24 w-full" /><Skeleton className="h-64 w-full" /></div>;
   if (!m) return <p className="text-muted-foreground">Manuscrit introuvable.</p>;
 
@@ -125,32 +183,85 @@ function ManuscritDetailPage() {
 
       {/* PDF Source */}
       <section className="rounded-xl border border-border bg-card p-5">
-        <div className="flex items-center gap-3 mb-3">
-          <FileText className="h-5 w-5 text-primary" />
-          <h2 className="font-semibold">Fichier PDF</h2>
+        <div className="flex items-center gap-3 mb-4">
+          <FileText className="h-5 w-5" style={{ color: "#00C896" }} />
+          <h2 className="font-semibold">📄 Fichier du manuscrit</h2>
         </div>
-        {m.pdf_path ? (
-          <div className="flex items-center justify-between gap-3 flex-wrap">
-            <p className="text-sm text-muted-foreground">PDF téléversé. Vous pouvez le remplacer à tout moment.</p>
-            <label className="inline-flex">
-              <input type="file" accept="application/pdf" className="hidden" onChange={onUpload} />
-              <Button asChild variant="outline" size="sm" disabled={uploading}>
-                <span>{uploading ? <Loader2 className="h-4 w-4 animate-spin" /> : <Upload className="h-4 w-4" />} Remplacer</span>
+
+        <input
+          ref={inputRef}
+          type="file"
+          accept="application/pdf,.pdf"
+          className="hidden"
+          onChange={onFileInput}
+        />
+
+        {uploading ? (
+          <div className="rounded-lg border border-border bg-background/30 p-6">
+            <div className="flex items-center gap-3 mb-3">
+              <Loader2 className="h-5 w-5 animate-spin" style={{ color: "#00C896" }} />
+              <p className="text-sm font-medium">Chargement... {progress}%</p>
+            </div>
+            <Progress value={progress} className="h-2" />
+          </div>
+        ) : m.pdf_path && pdfMeta ? (
+          <div className="rounded-lg border border-border bg-background/30 p-4 flex items-center gap-4 flex-wrap">
+            <div className="h-12 w-12 rounded-lg flex items-center justify-center" style={{ background: "rgba(0,200,150,0.12)" }}>
+              <FileText className="h-6 w-6" style={{ color: "#00C896" }} />
+            </div>
+            <div className="flex-1 min-w-[180px]">
+              <p className="font-medium truncate">{pdfMeta.name}</p>
+              <p className="text-xs text-muted-foreground mt-0.5">
+                {fmtSize(pdfMeta.size)}
+                {pdfMeta.updated_at && ` · Uploadé le ${new Date(pdfMeta.updated_at).toLocaleDateString("fr-FR")}`}
+              </p>
+            </div>
+            <div className="flex gap-2">
+              <Button variant="outline" size="sm" onClick={() => inputRef.current?.click()}>
+                <CloudUpload className="h-4 w-4" /> Remplacer le PDF
               </Button>
-            </label>
+              <Button variant="outline" size="sm" className="text-destructive border-destructive/40 hover:bg-destructive/10" onClick={() => setConfirmDelete(true)}>
+                <Trash2 className="h-4 w-4" /> Supprimer le PDF
+              </Button>
+            </div>
           </div>
         ) : (
-          <div className="flex items-center justify-between gap-3 flex-wrap">
-            <p className="text-sm text-muted-foreground">Aucun PDF. Téléversez-en un pour activer le partage sécurisé.</p>
-            <label className="inline-flex">
-              <input type="file" accept="application/pdf" className="hidden" onChange={onUpload} />
-              <Button asChild className="bg-primary text-primary-foreground hover:bg-primary/90" disabled={uploading}>
-                <span>{uploading ? <Loader2 className="h-4 w-4 animate-spin" /> : <Upload className="h-4 w-4" />} Téléverser un PDF</span>
-              </Button>
-            </label>
+          <div
+            role="button"
+            tabIndex={0}
+            onClick={() => inputRef.current?.click()}
+            onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") inputRef.current?.click(); }}
+            onDragOver={(e) => { e.preventDefault(); setDragOver(true); }}
+            onDragLeave={() => setDragOver(false)}
+            onDrop={onDrop}
+            className="rounded-lg p-10 text-center cursor-pointer transition-colors"
+            style={{
+              border: `2px dashed #00C896`,
+              background: dragOver ? "rgba(0,200,150,0.08)" : "transparent",
+            }}
+          >
+            <CloudUpload className="h-12 w-12 mx-auto mb-3" style={{ color: "#00C896" }} />
+            <p className="font-medium">Glissez votre PDF ici ou cliquez pour sélectionner</p>
+            <p className="text-xs text-muted-foreground mt-1">Format accepté: PDF · Taille max: 10 MB</p>
           </div>
         )}
+
+        {m.pdf_path && pdfMeta && !uploading && (
+          <p className="mt-3 text-xs flex items-center gap-1.5" style={{ color: "#00C896" }}>
+            <CheckCircle2 className="h-3.5 w-3.5" /> PDF uploadé avec succès
+          </p>
+        )}
       </section>
+
+      {!m.pdf_path && (
+        <div
+          className="rounded-lg p-3 text-sm flex items-start gap-2"
+          style={{ background: "rgba(212,175,55,0.1)", border: "1px solid rgba(212,175,55,0.3)", color: "#D4AF37" }}
+        >
+          <AlertTriangle className="h-4 w-4 mt-0.5 shrink-0" />
+          <span>⚠️ Uploadez d'abord un PDF pour pouvoir créer des liens de partage sécurisés</span>
+        </div>
+      )}
 
       {/* Secure share */}
       <section className="rounded-xl border border-border bg-card p-5">
@@ -269,6 +380,23 @@ function ManuscritDetailPage() {
           />
         </SheetContent>
       </Sheet>
+
+      <AlertDialog open={confirmDelete} onOpenChange={setConfirmDelete}>
+        <AlertDialogContent className="bg-card border-border">
+          <AlertDialogHeader>
+            <AlertDialogTitle>Supprimer le PDF ?</AlertDialogTitle>
+            <AlertDialogDescription>
+              Cette action est irréversible. Le fichier sera retiré du stockage et les liens existants ne fonctionneront plus.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Annuler</AlertDialogCancel>
+            <AlertDialogAction onClick={deletePdf} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">
+              Supprimer
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }
