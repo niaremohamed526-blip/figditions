@@ -665,9 +665,35 @@ function EstimateurPage() {
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
+
+      <AlertDialog open={!!toApply} onOpenChange={(o) => !o && setToApply(null)}>
+        <AlertDialogContent className="bg-card border-border">
+          <AlertDialogHeader>
+            <AlertDialogTitle>Utiliser cette estimation ?</AlertDialogTitle>
+            <AlertDialogDescription>
+              {toApply && (
+                <>
+                  <strong>{toApply.tirage?.toLocaleString("fr-FR")} exemplaires</strong> seront ajoutés au stock interne du manuscrit lié,
+                  avec un coût unitaire de <strong>{fcfa(toApply.tirage ? toApply.cout_total_fcfa / toApply.tirage : 0)}</strong>
+                  {" "}et un prix de vente direct suggéré de <strong>{fcfa(toApply.tirage ? toApply.prix_vente_suggere_fcfa / toApply.tirage : 0)}</strong>.
+                  Une trace sera ajoutée dans l'historique des mouvements.
+                </>
+              )}
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel disabled={applying}>Annuler</AlertDialogCancel>
+            <AlertDialogAction disabled={applying} onClick={(e) => { e.preventDefault(); confirmApply(); }}
+              className="bg-primary text-primary-foreground hover:bg-primary/90">
+              {applying ? <Loader2 className="h-4 w-4 animate-spin" /> : "Ajouter au stock"}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }
+
 
 // ---------- helpers ----------
 function Group({ title, icon, open, onToggle, children }: { title: string; icon: React.ReactNode; open: boolean; onToggle: () => void; children: React.ReactNode }) {
