@@ -10,7 +10,10 @@
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as SignupRouteImport } from './routes/signup'
+import { Route as PolitiqueDeConfidentialiteRouteImport } from './routes/politique-de-confidentialite'
 import { Route as LoginRouteImport } from './routes/login'
+import { Route as ConditionsUtilisationRouteImport } from './routes/conditions-utilisation'
+import { Route as AProposRouteImport } from './routes/a-propos'
 import { Route as AuthenticatedRouteImport } from './routes/_authenticated'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as LectureTokenRouteImport } from './routes/lecture.$token'
@@ -34,9 +37,25 @@ const SignupRoute = SignupRouteImport.update({
   path: '/signup',
   getParentRoute: () => rootRouteImport,
 } as any)
+const PolitiqueDeConfidentialiteRoute =
+  PolitiqueDeConfidentialiteRouteImport.update({
+    id: '/politique-de-confidentialite',
+    path: '/politique-de-confidentialite',
+    getParentRoute: () => rootRouteImport,
+  } as any)
 const LoginRoute = LoginRouteImport.update({
   id: '/login',
   path: '/login',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ConditionsUtilisationRoute = ConditionsUtilisationRouteImport.update({
+  id: '/conditions-utilisation',
+  path: '/conditions-utilisation',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AProposRoute = AProposRouteImport.update({
+  id: '/a-propos',
+  path: '/a-propos',
   getParentRoute: () => rootRouteImport,
 } as any)
 const AuthenticatedRoute = AuthenticatedRouteImport.update({
@@ -133,7 +152,10 @@ const ApiPublicHooksCheckRemindersRoute =
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/a-propos': typeof AProposRoute
+  '/conditions-utilisation': typeof ConditionsUtilisationRoute
   '/login': typeof LoginRoute
+  '/politique-de-confidentialite': typeof PolitiqueDeConfidentialiteRoute
   '/signup': typeof SignupRoute
   '/auteurs': typeof AuthenticatedAuteursRouteWithChildren
   '/contrats': typeof AuthenticatedContratsRouteWithChildren
@@ -153,7 +175,10 @@ export interface FileRoutesByFullPath {
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/a-propos': typeof AProposRoute
+  '/conditions-utilisation': typeof ConditionsUtilisationRoute
   '/login': typeof LoginRoute
+  '/politique-de-confidentialite': typeof PolitiqueDeConfidentialiteRoute
   '/signup': typeof SignupRoute
   '/auteurs': typeof AuthenticatedAuteursRouteWithChildren
   '/contrats': typeof AuthenticatedContratsRouteWithChildren
@@ -175,7 +200,10 @@ export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
   '/_authenticated': typeof AuthenticatedRouteWithChildren
+  '/a-propos': typeof AProposRoute
+  '/conditions-utilisation': typeof ConditionsUtilisationRoute
   '/login': typeof LoginRoute
+  '/politique-de-confidentialite': typeof PolitiqueDeConfidentialiteRoute
   '/signup': typeof SignupRoute
   '/_authenticated/auteurs': typeof AuthenticatedAuteursRouteWithChildren
   '/_authenticated/contrats': typeof AuthenticatedContratsRouteWithChildren
@@ -197,7 +225,10 @@ export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths:
     | '/'
+    | '/a-propos'
+    | '/conditions-utilisation'
     | '/login'
+    | '/politique-de-confidentialite'
     | '/signup'
     | '/auteurs'
     | '/contrats'
@@ -217,7 +248,10 @@ export interface FileRouteTypes {
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
+    | '/a-propos'
+    | '/conditions-utilisation'
     | '/login'
+    | '/politique-de-confidentialite'
     | '/signup'
     | '/auteurs'
     | '/contrats'
@@ -238,7 +272,10 @@ export interface FileRouteTypes {
     | '__root__'
     | '/'
     | '/_authenticated'
+    | '/a-propos'
+    | '/conditions-utilisation'
     | '/login'
+    | '/politique-de-confidentialite'
     | '/signup'
     | '/_authenticated/auteurs'
     | '/_authenticated/contrats'
@@ -260,7 +297,10 @@ export interface FileRouteTypes {
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   AuthenticatedRoute: typeof AuthenticatedRouteWithChildren
+  AProposRoute: typeof AProposRoute
+  ConditionsUtilisationRoute: typeof ConditionsUtilisationRoute
   LoginRoute: typeof LoginRoute
+  PolitiqueDeConfidentialiteRoute: typeof PolitiqueDeConfidentialiteRoute
   SignupRoute: typeof SignupRoute
   LectureTokenRoute: typeof LectureTokenRoute
   ApiPublicPaydunyaWebhookRoute: typeof ApiPublicPaydunyaWebhookRoute
@@ -276,11 +316,32 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof SignupRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/politique-de-confidentialite': {
+      id: '/politique-de-confidentialite'
+      path: '/politique-de-confidentialite'
+      fullPath: '/politique-de-confidentialite'
+      preLoaderRoute: typeof PolitiqueDeConfidentialiteRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/login': {
       id: '/login'
       path: '/login'
       fullPath: '/login'
       preLoaderRoute: typeof LoginRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/conditions-utilisation': {
+      id: '/conditions-utilisation'
+      path: '/conditions-utilisation'
+      fullPath: '/conditions-utilisation'
+      preLoaderRoute: typeof ConditionsUtilisationRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/a-propos': {
+      id: '/a-propos'
+      path: '/a-propos'
+      fullPath: '/a-propos'
+      preLoaderRoute: typeof AProposRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/_authenticated': {
@@ -463,7 +524,10 @@ const AuthenticatedRouteWithChildren = AuthenticatedRoute._addFileChildren(
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AuthenticatedRoute: AuthenticatedRouteWithChildren,
+  AProposRoute: AProposRoute,
+  ConditionsUtilisationRoute: ConditionsUtilisationRoute,
   LoginRoute: LoginRoute,
+  PolitiqueDeConfidentialiteRoute: PolitiqueDeConfidentialiteRoute,
   SignupRoute: SignupRoute,
   LectureTokenRoute: LectureTokenRoute,
   ApiPublicPaydunyaWebhookRoute: ApiPublicPaydunyaWebhookRoute,
@@ -472,13 +536,3 @@ const rootRouteChildren: RootRouteChildren = {
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
-
-import type { getRouter } from './router.tsx'
-import type { startInstance } from './start.ts'
-declare module '@tanstack/react-start' {
-  interface Register {
-    ssr: true
-    router: Awaited<ReturnType<typeof getRouter>>
-    config: Awaited<ReturnType<typeof startInstance.getOptions>>
-  }
-}
