@@ -42,6 +42,7 @@
   --shadow-glow-sm: 0 0 12px 0 oklch(0.78 0.17 165 / 0.25);
   --animate-fade-in: fade-in 0.5s ease-out both;
   --animate-fade-up: fade-up 0.5s ease-out both;
+  --animate-page-in: page-in 0.3s ease-out both;
 
   @keyframes fade-in {
     from { opacity: 0; }
@@ -51,7 +52,24 @@
     from { opacity: 0; transform: translateY(12px); }
     to { opacity: 1; transform: translateY(0); }
   }
+  @keyframes page-in {
+    from { opacity: 0; transform: translateY(20px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
 }
+
+/* Custom scrollbars */
+* {
+  scrollbar-width: thin;
+  scrollbar-color: oklch(0.32 0.05 250) transparent;
+}
+*::-webkit-scrollbar { width: 6px; height: 6px; }
+*::-webkit-scrollbar-track { background: transparent; }
+*::-webkit-scrollbar-thumb {
+  background: oklch(0.32 0.05 250);
+  border-radius: 3px;
+}
+*::-webkit-scrollbar-thumb:hover { background: oklch(0.78 0.17 165); }
 
 /* Dark theme by default (Figditions) */
 :root {

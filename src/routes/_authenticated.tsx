@@ -1,4 +1,4 @@
-import { createFileRoute, Outlet, Navigate } from "@tanstack/react-router";
+import { createFileRoute, Outlet, Navigate, useRouterState } from "@tanstack/react-router";
 import { useAuth } from "@/hooks/use-auth";
 import { AppShell } from "@/components/app-shell";
 
@@ -8,6 +8,7 @@ export const Route = createFileRoute("/_authenticated")({
 
 function AuthLayout() {
   const { user, loading } = useAuth();
+  const pathname = useRouterState({ select: (s) => s.location.pathname });
   if (loading) {
     return (
       <div className="min-h-screen gradient-bg flex items-center justify-center">
@@ -16,5 +17,11 @@ function AuthLayout() {
     );
   }
   if (!user) return <Navigate to="/login" />;
-  return <AppShell><Outlet /></AppShell>;
+  return (
+    <AppShell>
+      <div key={pathname} className="animate-page-in">
+        <Outlet />
+      </div>
+    </AppShell>
+  );
 }

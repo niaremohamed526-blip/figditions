@@ -10,6 +10,7 @@ import {
 import { useEffect } from "react";
 import { Toaster } from "@/components/ui/sonner";
 import { supabase } from "@/integrations/supabase/client";
+import { RouteProgress } from "@/components/route-progress";
 
 import appCss from "../styles.css?url";
 
@@ -91,11 +92,13 @@ function RootComponent() {
   useEffect(() => {
     const { data: { subscription } } = supabase.auth.onAuthStateChange(() => {
       router.invalidate();
+      queryClient.invalidateQueries();
     });
     return () => subscription.unsubscribe();
-  }, [router]);
+  }, [router, queryClient]);
   return (
     <QueryClientProvider client={queryClient}>
+      <RouteProgress />
       <Outlet />
       <Toaster richColors theme="dark" position="top-right" />
     </QueryClientProvider>
