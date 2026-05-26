@@ -22,6 +22,11 @@ import { cn } from "@/lib/utils";
 import { fcfa } from "@/lib/format";
 import { planFor } from "@/lib/plans";
 import { UpgradeModal } from "@/components/upgrade-modal";
+import { AnalyticsSection, defaultRange, inRange, EmptyChart, type DateRange } from "@/components/analytics-section";
+import { Link } from "@tanstack/react-router";
+import { format as fmtDate, startOfMonth, subMonths } from "date-fns";
+import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid, Legend, LineChart, Line } from "recharts";
+import { AlertTriangle } from "lucide-react";
 
 export const Route = createFileRoute("/_authenticated/stocks")({
   component: StocksPage,
