@@ -359,8 +359,7 @@ function ManuscritForm({
   );
 }
 
-const STAGE_ORDER = ["recu","lecture","correction","maquette","impression","publie"] as const;
-const STAGE_LABEL: Record<string,string> = { recu:"Reçu", lecture:"Lecture", correction:"Correction", maquette:"Maquette", impression:"Impression", publie:"Publié" };
+import { STATUT_PROGRESSION as STAGE_ORDER, STATUT_LABEL as STAGE_LABEL } from "@/components/status-badge";
 
 function EditorialAnalytics({ items }: { items: Manuscrit[] | null }) {
   const [range, setRange] = useState<DateRange>(defaultRange());
