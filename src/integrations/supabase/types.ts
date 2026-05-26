@@ -884,6 +884,10 @@ export type Database = {
         }
         Returns: undefined
       }
+      pourcentage_droits_pour: {
+        Args: { p_auteur: string; p_manuscrit: string }
+        Returns: number
+      }
     }
     Enums: {
       contrat_statut: "brouillon" | "signe" | "expire"
