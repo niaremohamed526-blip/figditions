@@ -203,8 +203,9 @@ export function StockInterneTab({ entrepriseId, userId }: { entrepriseId: string
                   </div>
                   <div className="flex gap-2">
                     <Button asChild size="sm" variant="outline">
-                      <Link to="/estimateur">Commander une impression</Link>
+                      <Link to="/estimateur" search={{ manuscrit: s.manuscrit_id }}>Commander une impression</Link>
                     </Button>
+
                     <Button size="sm" variant="outline" onClick={() => openMouvement(s.manuscrit_id)}>
                       Transférer depuis librairie
                     </Button>
