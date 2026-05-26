@@ -626,12 +626,22 @@ function EstimateurPage() {
                         <td className="px-4 py-3 text-right font-mono font-semibold text-[color:var(--gold)]">{fcfa(e.prix_vente_suggere_fcfa)}</td>
                         <td className="px-4 py-3 text-muted-foreground hidden sm:table-cell">{new Date(e.created_at).toLocaleDateString("fr-FR")}</td>
                         <td className="px-4 py-3 text-right">
-                          <Button size="icon" variant="ghost"
-                            className="h-8 w-8 opacity-0 group-hover:opacity-100 transition-opacity hover:bg-destructive/15 hover:text-destructive"
-                            onClick={() => setToDelete(e)} title="Supprimer">
-                            <Trash2 className="h-4 w-4" />
-                          </Button>
+                          <div className="flex items-center justify-end gap-1">
+                            {e.manuscrit_id && (
+                              <Button size="sm" variant="outline" className="h-8 gap-1.5"
+                                onClick={() => setToApply(e)} title="Utiliser cette estimation pour le stock interne">
+                                <PackagePlus className="h-3.5 w-3.5" />
+                                <span className="hidden md:inline">Utiliser</span>
+                              </Button>
+                            )}
+                            <Button size="icon" variant="ghost"
+                              className="h-8 w-8 hover:bg-destructive/15 hover:text-destructive"
+                              onClick={() => setToDelete(e)} title="Supprimer">
+                              <Trash2 className="h-4 w-4" />
+                            </Button>
+                          </div>
                         </td>
+
                       </tr>
                     );
                   })}
