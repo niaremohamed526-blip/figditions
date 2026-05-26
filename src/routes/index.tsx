@@ -576,7 +576,7 @@ function Footer() {
   };
   return (
     <footer className="border-t border-border bg-card/40 py-12 px-4">
-      <div className="max-w-7xl mx-auto grid md:grid-cols-4 gap-8 items-start">
+      <div className="max-w-7xl mx-auto grid sm:grid-cols-2 lg:grid-cols-5 gap-8 items-start">
         <div>
           <Logo className="h-10 w-auto" />
           <p className="mt-3 text-sm text-muted-foreground max-w-xs">
