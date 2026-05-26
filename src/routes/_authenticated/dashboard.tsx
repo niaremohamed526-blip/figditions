@@ -15,6 +15,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { AnalyticsSection, defaultRange, inRange, EmptyChart, type DateRange } from "@/components/analytics-section";
 import { BestSellingBooks, type BookRanking } from "@/components/best-selling-books";
 import { fcfa } from "@/lib/format";
+import { useRealtimeTable } from "@/hooks/use-realtime";
 
 export const Route = createFileRoute("/_authenticated/dashboard")({
   component: DashboardPage,
@@ -39,9 +40,9 @@ function DashboardPage() {
   const [contrats, setContrats] = useState<Contrat[]>([]);
   const [range, setRange] = useState<DateRange>(defaultRange());
 
-  useEffect(() => {
-    if (!profile?.entreprise_id) return;
-    (async () => {
+  const reload = useMemo(() => {
+    return async () => {
+      if (!profile?.entreprise_id) return;
       const [m, v, a, s, c] = await Promise.all([
         supabase.from("manuscrits").select("id, titre, auteur, auteur_id, genre, statut, created_at").order("created_at", { ascending: false }),
         supabase.from("ventes").select("*").order("date_vente", { ascending: false }),
@@ -54,8 +55,18 @@ function DashboardPage() {
       setAuteurs((a.data ?? []) as Auteur[]);
       setStocks((s.data ?? []) as Stock[]);
       setContrats((c.data ?? []) as Contrat[]);
-    })();
+    };
   }, [profile?.entreprise_id]);
+
+  useEffect(() => { reload(); }, [reload]);
+
+  // Realtime: any change on these tables → reload everything
+  useRealtimeTable("manuscrits", profile?.entreprise_id, reload);
+  useRealtimeTable("ventes", profile?.entreprise_id, reload);
+  useRealtimeTable("stocks", profile?.entreprise_id, reload);
+  useRealtimeTable("stock_interne", profile?.entreprise_id, reload);
+  useRealtimeTable("contrats", profile?.entreprise_id, reload);
+  useRealtimeTable("auteurs", profile?.entreprise_id, reload);
 
   const mMap = useMemo(() => Object.fromEntries((manuscrits ?? []).map((m) => [m.id, m])), [manuscrits]);
   const aMap = useMemo(() => Object.fromEntries(auteurs.map((a) => [a.id, a.nom_complet])), [auteurs]);
