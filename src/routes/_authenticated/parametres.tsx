@@ -1,4 +1,4 @@
-import { createFileRoute, useNavigate } from "@tanstack/react-router";
+import { createFileRoute, useNavigate, useSearch } from "@tanstack/react-router";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { Check, X, Sparkles, UserPlus, Trash2, Loader2, Crown, Lock, Copy, Upload, Save, AlertTriangle, KeyRound, Building2 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
@@ -17,6 +17,14 @@ import {
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
 import { PLANS, planFor } from "@/lib/plans";
+import { UpgradePaymentModal } from "@/components/upgrade-payment-modal";
+import { PaymentResultModal } from "@/components/payment-result-modal";
+import { fcfa } from "@/lib/format";
+import { z } from "zod";
+
+const paramsSchema = z.object({
+  payment: z.enum(["success", "cancelled"]).optional(),
+}).partial();
 
 export const Route = createFileRoute("/_authenticated/parametres")({
   component: ParametresPage,
