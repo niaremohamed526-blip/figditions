@@ -100,6 +100,8 @@ function AuteursPage() {
         </Button>
       </header>
 
+      <AuthorAnalytics auteurs={items ?? []} entrepriseId={profile?.entreprise_id ?? null} />
+
       <div className="relative max-w-md">
         <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
         <Input placeholder="Rechercher par nom…" value={q} onChange={(e) => setQ(e.target.value)} className="pl-9 bg-card" />
