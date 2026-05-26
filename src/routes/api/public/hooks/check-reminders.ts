@@ -18,10 +18,15 @@ export const Route = createFileRoute("/api/public/hooks/check-reminders")({
   server: {
     handlers: {
       POST: async ({ request }) => {
-        const apikey = request.headers.get("apikey");
-        if (!apikey || apikey !== process.env.SUPABASE_PUBLISHABLE_KEY) {
+        // Authenticate with a dedicated server-only cron secret. The previous
+        // check used SUPABASE_PUBLISHABLE_KEY which is shipped in the client
+        // bundle and therefore not a secret.
+        const apikey = request.headers.get("apikey") ?? request.headers.get("authorization")?.replace(/^Bearer\s+/i, "");
+        const expected = process.env.CRON_SECRET;
+        if (!expected || !apikey || apikey !== expected) {
           return new Response("Unauthorized", { status: 401 });
         }
+
 
         const now = new Date();
         const in7d = new Date(now.getTime() + 7 * 86400_000);
