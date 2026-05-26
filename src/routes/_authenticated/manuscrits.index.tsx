@@ -1,6 +1,9 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useEffect, useMemo, useState } from "react";
 import { Plus, Search, BookOpen, Loader2, Pencil, Trash2 } from "lucide-react";
+import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid } from "recharts";
+import { differenceInDays, format, startOfMonth, subMonths, startOfYear } from "date-fns";
+import { fr } from "date-fns/locale";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth, useProfile } from "@/hooks/use-auth";
 import { Input } from "@/components/ui/input";
@@ -20,6 +23,7 @@ import {
 import { toast } from "sonner";
 import { planFor } from "@/lib/plans";
 import { UpgradeModal } from "@/components/upgrade-modal";
+import { AnalyticsSection, defaultRange, inRange, EmptyChart, type DateRange } from "@/components/analytics-section";
 
 export const Route = createFileRoute("/_authenticated/manuscrits/")({
   component: ManuscritsPage,
