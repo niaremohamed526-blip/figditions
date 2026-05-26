@@ -379,6 +379,70 @@ export type Database = {
           },
         ]
       }
+      mouvements_stock: {
+        Row: {
+          created_at: string
+          date_mouvement: string
+          destination: string | null
+          effectue_par: string | null
+          entreprise_id: string
+          id: string
+          manuscrit_id: string
+          notes: string | null
+          quantite: number
+          stock_interne_id: string | null
+          type_mouvement: string
+        }
+        Insert: {
+          created_at?: string
+          date_mouvement?: string
+          destination?: string | null
+          effectue_par?: string | null
+          entreprise_id: string
+          id?: string
+          manuscrit_id: string
+          notes?: string | null
+          quantite: number
+          stock_interne_id?: string | null
+          type_mouvement: string
+        }
+        Update: {
+          created_at?: string
+          date_mouvement?: string
+          destination?: string | null
+          effectue_par?: string | null
+          entreprise_id?: string
+          id?: string
+          manuscrit_id?: string
+          notes?: string | null
+          quantite?: number
+          stock_interne_id?: string | null
+          type_mouvement?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "mouvements_stock_entreprise_id_fkey"
+            columns: ["entreprise_id"]
+            isOneToOne: false
+            referencedRelation: "entreprises"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "mouvements_stock_manuscrit_id_fkey"
+            columns: ["manuscrit_id"]
+            isOneToOne: false
+            referencedRelation: "manuscrits"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "mouvements_stock_stock_interne_id_fkey"
+            columns: ["stock_interne_id"]
+            isOneToOne: false
+            referencedRelation: "stock_interne"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       pdf_partages: {
         Row: {
           created_at: string
@@ -470,6 +534,78 @@ export type Database = {
             columns: ["entreprise_id"]
             isOneToOne: false
             referencedRelation: "entreprises"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      stock_interne: {
+        Row: {
+          cout_unitaire_impression_fcfa: number
+          created_at: string
+          date_impression: string | null
+          derniere_mise_a_jour: string
+          emplacement: string | null
+          entreprise_id: string
+          id: string
+          manuscrit_id: string
+          prix_vente_direct_fcfa: number
+          quantite_disponible: number
+          quantite_exposee_evenements: number
+          quantite_imprimee: number
+          quantite_reservee: number
+          quantite_transferee_librairies: number
+          quantite_vendue_directement: number
+          seuil_alerte: number
+        }
+        Insert: {
+          cout_unitaire_impression_fcfa?: number
+          created_at?: string
+          date_impression?: string | null
+          derniere_mise_a_jour?: string
+          emplacement?: string | null
+          entreprise_id: string
+          id?: string
+          manuscrit_id: string
+          prix_vente_direct_fcfa?: number
+          quantite_disponible?: number
+          quantite_exposee_evenements?: number
+          quantite_imprimee?: number
+          quantite_reservee?: number
+          quantite_transferee_librairies?: number
+          quantite_vendue_directement?: number
+          seuil_alerte?: number
+        }
+        Update: {
+          cout_unitaire_impression_fcfa?: number
+          created_at?: string
+          date_impression?: string | null
+          derniere_mise_a_jour?: string
+          emplacement?: string | null
+          entreprise_id?: string
+          id?: string
+          manuscrit_id?: string
+          prix_vente_direct_fcfa?: number
+          quantite_disponible?: number
+          quantite_exposee_evenements?: number
+          quantite_imprimee?: number
+          quantite_reservee?: number
+          quantite_transferee_librairies?: number
+          quantite_vendue_directement?: number
+          seuil_alerte?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "stock_interne_entreprise_id_fkey"
+            columns: ["entreprise_id"]
+            isOneToOne: false
+            referencedRelation: "entreprises"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "stock_interne_manuscrit_id_fkey"
+            columns: ["manuscrit_id"]
+            isOneToOne: false
+            referencedRelation: "manuscrits"
             referencedColumns: ["id"]
           },
         ]
@@ -606,9 +742,13 @@ export type Database = {
       couverture_type: "Souple" | "Rigide"
       manuscrit_statut:
         | "recu"
-        | "lecture"
-        | "correction"
+        | "relecture"
+        | "epreuve_1"
+        | "epreuve_2"
+        | "epreuve_3"
+        | "epreuve_4"
         | "maquette"
+        | "echantillon"
         | "impression"
         | "publie"
       mobile_money_operateur: "Orange Money" | "Moov Money"
@@ -744,9 +884,13 @@ export const Constants = {
       couverture_type: ["Souple", "Rigide"],
       manuscrit_statut: [
         "recu",
-        "lecture",
-        "correction",
+        "relecture",
+        "epreuve_1",
+        "epreuve_2",
+        "epreuve_3",
+        "epreuve_4",
         "maquette",
+        "echantillon",
         "impression",
         "publie",
       ],
