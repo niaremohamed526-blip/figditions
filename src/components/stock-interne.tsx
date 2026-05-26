@@ -672,34 +672,8 @@ function MouvementForm({
       date_mouvement: format(form.date_mouvement, "yyyy-MM-dd"),
     });
 
-    // Side-effects: external stock & ventes
-    if (form.type === "transfert_librairie" && form.destination) {
-      await supabase.from("stocks").insert({
-        entreprise_id: entrepriseId,
-        manuscrit_id: form.manuscrit_id,
-        librairie_nom: form.destination,
-        exemplaires_deposes: form.quantite,
-        exemplaires_vendus: 0,
-        exemplaires_restants: form.quantite,
-        exemplaires_total: form.quantite,
-        prix_unitaire_fcfa: Number(currentStock.prix_vente_direct_fcfa) || 0,
-      });
-    }
-    if (form.type === "vente_directe" && Number(currentStock.prix_vente_direct_fcfa) > 0) {
-      const montant = form.quantite * Number(currentStock.prix_vente_direct_fcfa);
-      await (supabase as any).from("ventes").insert({
-        entreprise_id: entrepriseId,
-        manuscrit_id: form.manuscrit_id,
-        auteur_id: book?.auteur_id ?? null,
-        quantite_vendue: form.quantite,
-        prix_unitaire_fcfa: Number(currentStock.prix_vente_direct_fcfa),
-        montant_total_fcfa: montant,
-        montant,
-        droits_auteur_fcfa: montant * 0.1,
-        statut_paiement: "en_attente",
-        date_vente: format(form.date_mouvement, "yyyy-MM-dd"),
-      });
-    }
+    // Cascades (insertion stocks librairie + vente directe) gérées par
+    // trigger SQL `mouvement_cascade` sur mouvements_stock.
 
     // Low-stock toast
     const newAvail = updates.quantite_disponible ?? currentStock.quantite_disponible;
