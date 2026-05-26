@@ -53,6 +53,11 @@ function ManuscritDetailPage() {
   const [partages, setPartages] = useState<Partage[] | null>(null);
   const [sheetOpen, setSheetOpen] = useState(false);
   const [uploading, setUploading] = useState(false);
+  const [progress, setProgress] = useState(0);
+  const [pdfMeta, setPdfMeta] = useState<PdfMeta | null>(null);
+  const [dragOver, setDragOver] = useState(false);
+  const [confirmDelete, setConfirmDelete] = useState(false);
+  const inputRef = useRef<HTMLInputElement>(null);
 
   const loadManuscrit = async () => {
     setLoading(true);
@@ -73,30 +78,63 @@ function ManuscritDetailPage() {
 
   useEffect(() => { loadManuscrit(); loadPartages(); }, [manuscritId]);
 
-  const stats = useMemo(() => {
-    const list = partages ?? [];
-    const totalVues = list.reduce((s, p) => s + p.nombre_vues_actuel, 0);
-    const last = list.reduce<string | null>(
-      (acc, p) => (p.last_viewed_at && (!acc || p.last_viewed_at > acc) ? p.last_viewed_at : acc),
-      null,
-    );
-    return { liens: list.length, vues: totalVues, derniere: last };
-  }, [partages]);
+  useEffect(() => {
+    const fetchMeta = async () => {
+      if (!m?.pdf_path) { setPdfMeta(null); return; }
+      const folder = m.pdf_path.substring(0, m.pdf_path.lastIndexOf("/"));
+      const name = m.pdf_path.substring(m.pdf_path.lastIndexOf("/") + 1);
+      const { data } = await supabase.storage.from("manuscrits").list(folder);
+      const f = data?.find((x) => x.name === name);
+      if (f) setPdfMeta({
+        name,
+        size: (f.metadata as any)?.size ?? 0,
+        updated_at: (f as any).updated_at ?? (f as any).created_at ?? "",
+      });
+    };
+    fetchMeta();
+  }, [m?.pdf_path]);
 
-  const onUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (!file || !m || !profile?.entreprise_id) return;
+  const doUpload = async (file: File) => {
+    if (!m || !profile?.entreprise_id) return;
     if (file.type !== "application/pdf") { toast.error("Seuls les fichiers PDF sont acceptés"); return; }
+    if (file.size > MAX_PDF_BYTES) { toast.error("Ce fichier dépasse la limite de 10 MB"); return; }
     setUploading(true);
-    const path = `${profile.entreprise_id}/${m.id}.pdf`;
+    setProgress(5);
+    const tick = setInterval(() => setProgress((p) => (p < 90 ? p + 5 : p)), 200);
+    const path = `${profile.entreprise_id}/${m.id}/manuscript.pdf`;
     const { error: upErr } = await supabase.storage
       .from("manuscrits").upload(path, file, { upsert: true, contentType: "application/pdf" });
-    if (upErr) { setUploading(false); toast.error(upErr.message); return; }
+    clearInterval(tick);
+    if (upErr) { setUploading(false); setProgress(0); toast.error("Échec de l'upload. Veuillez réessayer."); return; }
+    setProgress(95);
     const { error: updErr } = await supabase
       .from("manuscrits").update({ pdf_path: path }).eq("id", m.id);
-    setUploading(false);
+    setProgress(100);
+    setTimeout(() => { setUploading(false); setProgress(0); }, 400);
     if (updErr) return toast.error(updErr.message);
-    toast.success("PDF téléversé avec succès");
+    toast.success("✅ PDF uploadé avec succès");
+    loadManuscrit();
+  };
+
+  const onFileInput = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const f = e.target.files?.[0];
+    if (f) doUpload(f);
+    e.target.value = "";
+  };
+  const onDrop = (e: React.DragEvent) => {
+    e.preventDefault(); setDragOver(false);
+    const f = e.dataTransfer.files?.[0];
+    if (f) doUpload(f);
+  };
+
+  const deletePdf = async () => {
+    if (!m?.pdf_path) return;
+    const { error: rmErr } = await supabase.storage.from("manuscrits").remove([m.pdf_path]);
+    if (rmErr) return toast.error(rmErr.message);
+    const { error } = await supabase.from("manuscrits").update({ pdf_path: null }).eq("id", m.id);
+    if (error) return toast.error(error.message);
+    toast.success("PDF supprimé");
+    setConfirmDelete(false);
     loadManuscrit();
   };
 
