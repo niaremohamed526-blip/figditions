@@ -9,6 +9,9 @@ import { useI18n, type Lang } from "@/hooks/use-i18n";
 import { cn } from "@/lib/utils";
 import { Logo } from "@/components/logo";
 import { planFor } from "@/lib/plans";
+import { NotificationBell } from "@/components/notification-bell";
+import { useRealtimeTable } from "@/hooks/use-realtime";
+import { notifyEntrepriseUpdated } from "@/hooks/use-auth";
 
 type NavItem = {
   to: string;
@@ -57,6 +60,13 @@ export function AppShell({ children }: { children: ReactNode }) {
   const path = useRouterState({ select: (s) => s.location.pathname });
   const navigate = useNavigate();
   const [mobileOpen, setMobileOpen] = useState(false);
+
+  // Realtime: when the entreprise row changes (plan upgrade via webhook,
+  // settings update, etc.) refresh profile+entreprise so locked pages
+  // unlock immediately without refresh.
+  useRealtimeTable("entreprises", entreprise?.id ?? null, () => {
+    notifyEntrepriseUpdated();
+  }, "id");
 
   const handleLogout = async () => {
     await supabase.auth.signOut();
