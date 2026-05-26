@@ -142,4 +142,67 @@
     background: linear-gradient(90deg, transparent, var(--color-primary), transparent);
     opacity: 0.8;
   }
+  .glow-card:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 12px 40px -8px oklch(0.78 0.17 165 / 0.35);
+  }
+
+  /* Interactive primitives */
+  .btn-press { transition: transform 120ms ease; }
+  .btn-press:active { transform: scale(0.97); }
+
+  .hover-lift { transition: transform 200ms ease, box-shadow 200ms ease; }
+  .hover-lift:hover { transform: translateY(-2px); }
+
+  /* Table row stagger fade-up — apply to <tr> or list items */
+  .stagger-rows > * {
+    opacity: 0;
+    animation: fade-up 0.4s ease-out forwards;
+  }
+  .stagger-rows > *:nth-child(1) { animation-delay: 0ms; }
+  .stagger-rows > *:nth-child(2) { animation-delay: 40ms; }
+  .stagger-rows > *:nth-child(3) { animation-delay: 80ms; }
+  .stagger-rows > *:nth-child(4) { animation-delay: 120ms; }
+  .stagger-rows > *:nth-child(5) { animation-delay: 160ms; }
+  .stagger-rows > *:nth-child(6) { animation-delay: 200ms; }
+  .stagger-rows > *:nth-child(7) { animation-delay: 240ms; }
+  .stagger-rows > *:nth-child(8) { animation-delay: 280ms; }
+  .stagger-rows > *:nth-child(9) { animation-delay: 320ms; }
+  .stagger-rows > *:nth-child(n+10) { animation-delay: 360ms; }
+
+  /* Pulse for active/printing badges */
+  .badge-pulse {
+    position: relative;
+  }
+  .badge-pulse::after {
+    content: "";
+    position: absolute; inset: 0;
+    border-radius: inherit;
+    box-shadow: 0 0 0 0 var(--color-primary);
+    animation: badge-pulse 1.8s ease-out infinite;
+  }
+  @keyframes badge-pulse {
+    0%   { box-shadow: 0 0 0 0 oklch(0.78 0.17 165 / 0.55); }
+    100% { box-shadow: 0 0 0 10px oklch(0.78 0.17 165 / 0); }
+  }
+
+  /* Input shake on error */
+  .shake { animation: shake 350ms cubic-bezier(.36,.07,.19,.97) both; }
+  @keyframes shake {
+    10%, 90% { transform: translateX(-2px); }
+    20%, 80% { transform: translateX(3px); }
+    30%, 50%, 70% { transform: translateX(-5px); }
+    40%, 60% { transform: translateX(5px); }
+  }
+}
+
+/* Apply button press globally for clear feedback */
+button:not(:disabled):active { transform: scale(0.98); }
+button { transition: transform 100ms ease, background-color 200ms ease, color 200ms ease, border-color 200ms ease; }
+
+/* Focus rings for a11y */
+:focus-visible {
+  outline: 2px solid var(--color-primary);
+  outline-offset: 2px;
+  border-radius: 4px;
 }
