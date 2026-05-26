@@ -16,8 +16,9 @@ export function useRealtimeTable(
 
   useEffect(() => {
     if (!entrepriseId) return;
+    const uniq = Math.random().toString(36).slice(2, 10);
     const channel = supabase
-      .channel(`rt:${table}:${entrepriseId}`)
+      .channel(`rt:${table}:${entrepriseId}:${uniq}`)
       .on(
         "postgres_changes",
         {
