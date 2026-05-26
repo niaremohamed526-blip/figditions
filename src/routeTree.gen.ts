@@ -23,6 +23,7 @@ import { Route as AuthenticatedDashboardRouteImport } from './routes/_authentica
 import { Route as AuthenticatedContratsRouteImport } from './routes/_authenticated/contrats'
 import { Route as AuthenticatedAuteursRouteImport } from './routes/_authenticated/auteurs'
 import { Route as AuthenticatedManuscritsIndexRouteImport } from './routes/_authenticated/manuscrits.index'
+import { Route as ApiPublicPaydunyaWebhookRouteImport } from './routes/api/public/paydunya-webhook'
 import { Route as AuthenticatedManuscritsManuscritIdRouteImport } from './routes/_authenticated/manuscrits.$manuscritId'
 import { Route as AuthenticatedContratsContratIdRouteImport } from './routes/_authenticated/contrats.$contratId'
 import { Route as AuthenticatedAuteursAuteurIdRouteImport } from './routes/_authenticated/auteurs.$auteurId'
@@ -98,6 +99,12 @@ const AuthenticatedManuscritsIndexRoute =
     path: '/manuscrits/',
     getParentRoute: () => AuthenticatedRoute,
   } as any)
+const ApiPublicPaydunyaWebhookRoute =
+  ApiPublicPaydunyaWebhookRouteImport.update({
+    id: '/api/public/paydunya-webhook',
+    path: '/api/public/paydunya-webhook',
+    getParentRoute: () => rootRouteImport,
+  } as any)
 const AuthenticatedManuscritsManuscritIdRoute =
   AuthenticatedManuscritsManuscritIdRouteImport.update({
     id: '/manuscrits/$manuscritId',
@@ -133,6 +140,7 @@ export interface FileRoutesByFullPath {
   '/auteurs/$auteurId': typeof AuthenticatedAuteursAuteurIdRoute
   '/contrats/$contratId': typeof AuthenticatedContratsContratIdRoute
   '/manuscrits/$manuscritId': typeof AuthenticatedManuscritsManuscritIdRoute
+  '/api/public/paydunya-webhook': typeof ApiPublicPaydunyaWebhookRoute
   '/manuscrits/': typeof AuthenticatedManuscritsIndexRoute
 }
 export interface FileRoutesByTo {
@@ -151,6 +159,7 @@ export interface FileRoutesByTo {
   '/auteurs/$auteurId': typeof AuthenticatedAuteursAuteurIdRoute
   '/contrats/$contratId': typeof AuthenticatedContratsContratIdRoute
   '/manuscrits/$manuscritId': typeof AuthenticatedManuscritsManuscritIdRoute
+  '/api/public/paydunya-webhook': typeof ApiPublicPaydunyaWebhookRoute
   '/manuscrits': typeof AuthenticatedManuscritsIndexRoute
 }
 export interface FileRoutesById {
@@ -171,6 +180,7 @@ export interface FileRoutesById {
   '/_authenticated/auteurs/$auteurId': typeof AuthenticatedAuteursAuteurIdRoute
   '/_authenticated/contrats/$contratId': typeof AuthenticatedContratsContratIdRoute
   '/_authenticated/manuscrits/$manuscritId': typeof AuthenticatedManuscritsManuscritIdRoute
+  '/api/public/paydunya-webhook': typeof ApiPublicPaydunyaWebhookRoute
   '/_authenticated/manuscrits/': typeof AuthenticatedManuscritsIndexRoute
 }
 export interface FileRouteTypes {
@@ -191,6 +201,7 @@ export interface FileRouteTypes {
     | '/auteurs/$auteurId'
     | '/contrats/$contratId'
     | '/manuscrits/$manuscritId'
+    | '/api/public/paydunya-webhook'
     | '/manuscrits/'
   fileRoutesByTo: FileRoutesByTo
   to:
@@ -209,6 +220,7 @@ export interface FileRouteTypes {
     | '/auteurs/$auteurId'
     | '/contrats/$contratId'
     | '/manuscrits/$manuscritId'
+    | '/api/public/paydunya-webhook'
     | '/manuscrits'
   id:
     | '__root__'
@@ -228,6 +240,7 @@ export interface FileRouteTypes {
     | '/_authenticated/auteurs/$auteurId'
     | '/_authenticated/contrats/$contratId'
     | '/_authenticated/manuscrits/$manuscritId'
+    | '/api/public/paydunya-webhook'
     | '/_authenticated/manuscrits/'
   fileRoutesById: FileRoutesById
 }
@@ -237,6 +250,7 @@ export interface RootRouteChildren {
   LoginRoute: typeof LoginRoute
   SignupRoute: typeof SignupRoute
   LectureTokenRoute: typeof LectureTokenRoute
+  ApiPublicPaydunyaWebhookRoute: typeof ApiPublicPaydunyaWebhookRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -339,6 +353,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedManuscritsIndexRouteImport
       parentRoute: typeof AuthenticatedRoute
     }
+    '/api/public/paydunya-webhook': {
+      id: '/api/public/paydunya-webhook'
+      path: '/api/public/paydunya-webhook'
+      fullPath: '/api/public/paydunya-webhook'
+      preLoaderRoute: typeof ApiPublicPaydunyaWebhookRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/_authenticated/manuscrits/$manuscritId': {
       id: '/_authenticated/manuscrits/$manuscritId'
       path: '/manuscrits/$manuscritId'
@@ -424,6 +445,7 @@ const rootRouteChildren: RootRouteChildren = {
   LoginRoute: LoginRoute,
   SignupRoute: SignupRoute,
   LectureTokenRoute: LectureTokenRoute,
+  ApiPublicPaydunyaWebhookRoute: ApiPublicPaydunyaWebhookRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)

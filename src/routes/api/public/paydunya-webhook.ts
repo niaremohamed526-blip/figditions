@@ -66,7 +66,7 @@ export const Route = createFileRoute("/api/public/paydunya-webhook")({
               .update({
                 statut: "succes",
                 paydunya_reference: String(confirmed.raw.receipt_url ?? token),
-                payload: confirmed.raw,
+                payload: confirmed.raw as unknown as any,
               })
               .eq("paydunya_token", token);
 
@@ -85,7 +85,7 @@ export const Route = createFileRoute("/api/public/paydunya-webhook")({
               .eq("id", ab.id);
             await supabaseAdmin
               .from("paiements")
-              .update({ statut: "echec", payload: confirmed.raw })
+              .update({ statut: "echec", payload: confirmed.raw as unknown as any })
               .eq("paydunya_token", token);
           }
 
