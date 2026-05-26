@@ -10,7 +10,7 @@ import { fr } from "date-fns/locale";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth, useProfile } from "@/hooks/use-auth";
 import { AnimatedCounter } from "@/components/animated-counter";
-import { StatusBadge, STATUT_PROGRESSION, STATUT_LABEL, STATUT_COLOR } from "@/components/status-badge";
+import { STATUT_PROGRESSION, STATUT_LABEL, STATUT_COLOR } from "@/components/status-badge";
 import { Skeleton } from "@/components/ui/skeleton";
 import { AnalyticsSection, defaultRange, inRange, EmptyChart, type DateRange } from "@/components/analytics-section";
 import { BestSellingBooks, type BookRanking } from "@/components/best-selling-books";
