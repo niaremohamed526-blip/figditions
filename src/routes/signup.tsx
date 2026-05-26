@@ -22,6 +22,7 @@ function SignupPage() {
     entreprise_nom: "",
     ville: "Bamako",
   });
+  const [acceptedTerms, setAcceptedTerms] = useState(false);
   const [loading, setLoading] = useState(false);
 
   const onChange = (k: string) => (e: React.ChangeEvent<HTMLInputElement>) =>
@@ -29,6 +30,10 @@ function SignupPage() {
 
   const onSubmit = async (e: FormEvent) => {
     e.preventDefault();
+    if (!acceptedTerms) {
+      toast.error("Vous devez accepter les conditions d'utilisation et la politique de confidentialité");
+      return;
+    }
     setLoading(true);
     const { error } = await supabase.auth.signUp({
       email: form.email,
@@ -83,7 +88,27 @@ function SignupPage() {
               <Label>Ville</Label>
               <Input required value={form.ville} onChange={onChange("ville")} className="bg-background/50" />
             </div>
-            <Button type="submit" disabled={loading}
+            <label className="flex items-start gap-2.5 text-xs text-muted-foreground cursor-pointer select-none pt-1">
+              <input
+                type="checkbox"
+                required
+                checked={acceptedTerms}
+                onChange={(e) => setAcceptedTerms(e.target.checked)}
+                className="mt-0.5 h-4 w-4 rounded border-border accent-primary cursor-pointer shrink-0"
+              />
+              <span>
+                J'accepte les{" "}
+                <Link to="/conditions-utilisation" target="_blank" className="text-primary hover:underline">
+                  Conditions d'Utilisation
+                </Link>{" "}
+                et la{" "}
+                <Link to="/politique-de-confidentialite" target="_blank" className="text-primary hover:underline">
+                  Politique de Confidentialité
+                </Link>{" "}
+                de FIGDITIONS
+              </span>
+            </label>
+            <Button type="submit" disabled={loading || !acceptedTerms}
               className="w-full bg-primary text-primary-foreground hover:bg-primary/90 font-semibold h-11">
               {loading ? <Loader2 className="h-4 w-4 animate-spin" /> : "Créer mon compte"}
             </Button>

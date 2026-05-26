@@ -20,6 +20,7 @@ import { PLANS, planFor } from "@/lib/plans";
 import { UpgradePaymentModal } from "@/components/upgrade-payment-modal";
 import { PaymentResultModal } from "@/components/payment-result-modal";
 import { fcfa } from "@/lib/format";
+import { SecurityCard } from "@/components/security-card";
 import { z } from "zod";
 
 const paramsSchema = z.object({
@@ -110,8 +111,9 @@ function ParametresPage() {
           <TabsTrigger value="danger" className="text-destructive">Zone dangereuse</TabsTrigger>
         </TabsList>
 
-        <TabsContent value="compte" className="mt-6">
+        <TabsContent value="compte" className="mt-6 space-y-6">
           <AccountSection profile={profile} email={user?.email ?? ""} entrepriseName={entreprise?.nom ?? ""} role={profile?.role ?? "admin"} />
+          <SecurityCard />
         </TabsContent>
 
         {isAdmin && (
