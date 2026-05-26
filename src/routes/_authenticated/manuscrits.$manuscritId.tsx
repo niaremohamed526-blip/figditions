@@ -380,6 +380,23 @@ function ManuscritDetailPage() {
           />
         </SheetContent>
       </Sheet>
+
+      <AlertDialog open={confirmDelete} onOpenChange={setConfirmDelete}>
+        <AlertDialogContent className="bg-card border-border">
+          <AlertDialogHeader>
+            <AlertDialogTitle>Supprimer le PDF ?</AlertDialogTitle>
+            <AlertDialogDescription>
+              Cette action est irréversible. Le fichier sera retiré du stockage et les liens existants ne fonctionneront plus.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Annuler</AlertDialogCancel>
+            <AlertDialogAction onClick={deletePdf} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">
+              Supprimer
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }
