@@ -182,6 +182,15 @@ function ManuscritsPage() {
                         <Button
                           size="icon" variant="ghost"
                           className="h-8 w-8 hover:bg-primary/15 hover:text-primary"
+                          asChild title="Ouvrir"
+                        >
+                          <a href={`/manuscrits/${m.id}`}>
+                            <BookOpen className="h-4 w-4" />
+                          </a>
+                        </Button>
+                        <Button
+                          size="icon" variant="ghost"
+                          className="h-8 w-8 hover:bg-primary/15 hover:text-primary"
                           onClick={() => openEdit(m)}
                           title="Modifier"
                         >
@@ -197,6 +206,7 @@ function ManuscritsPage() {
                         </Button>
                       </div>
                     </td>
+
                   </tr>
                 ))}
               </tbody>

@@ -339,6 +339,7 @@ export type Database = {
           id: string
           langue: string | null
           nombre_pages: number | null
+          pdf_path: string | null
           statut: Database["public"]["Enums"]["manuscrit_statut"]
           titre: string
         }
@@ -351,6 +352,7 @@ export type Database = {
           id?: string
           langue?: string | null
           nombre_pages?: number | null
+          pdf_path?: string | null
           statut?: Database["public"]["Enums"]["manuscrit_statut"]
           titre: string
         }
@@ -363,6 +365,7 @@ export type Database = {
           id?: string
           langue?: string | null
           nombre_pages?: number | null
+          pdf_path?: string | null
           statut?: Database["public"]["Enums"]["manuscrit_statut"]
           titre?: string
         }
@@ -372,6 +375,69 @@ export type Database = {
             columns: ["entreprise_id"]
             isOneToOne: false
             referencedRelation: "entreprises"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      pdf_partages: {
+        Row: {
+          created_at: string
+          created_by: string | null
+          email_lecteur: string | null
+          entreprise_id: string
+          entreprise_lecteur: string | null
+          est_actif: boolean
+          id: string
+          last_viewed_at: string | null
+          manuscrit_id: string
+          nom_lecteur: string
+          nombre_vues_actuel: number
+          nombre_vues_max: number
+          token: string
+        }
+        Insert: {
+          created_at?: string
+          created_by?: string | null
+          email_lecteur?: string | null
+          entreprise_id: string
+          entreprise_lecteur?: string | null
+          est_actif?: boolean
+          id?: string
+          last_viewed_at?: string | null
+          manuscrit_id: string
+          nom_lecteur: string
+          nombre_vues_actuel?: number
+          nombre_vues_max?: number
+          token?: string
+        }
+        Update: {
+          created_at?: string
+          created_by?: string | null
+          email_lecteur?: string | null
+          entreprise_id?: string
+          entreprise_lecteur?: string | null
+          est_actif?: boolean
+          id?: string
+          last_viewed_at?: string | null
+          manuscrit_id?: string
+          nom_lecteur?: string
+          nombre_vues_actuel?: number
+          nombre_vues_max?: number
+          token?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "pdf_partages_entreprise_id_fkey"
+            columns: ["entreprise_id"]
+            isOneToOne: false
+            referencedRelation: "entreprises"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "pdf_partages_manuscrit_id_fkey"
+            columns: ["manuscrit_id"]
+            isOneToOne: false
+            referencedRelation: "manuscrits"
             referencedColumns: ["id"]
           },
         ]
