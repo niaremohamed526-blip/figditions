@@ -183,32 +183,85 @@ function ManuscritDetailPage() {
 
       {/* PDF Source */}
       <section className="rounded-xl border border-border bg-card p-5">
-        <div className="flex items-center gap-3 mb-3">
-          <FileText className="h-5 w-5 text-primary" />
-          <h2 className="font-semibold">Fichier PDF</h2>
+        <div className="flex items-center gap-3 mb-4">
+          <FileText className="h-5 w-5" style={{ color: "#00C896" }} />
+          <h2 className="font-semibold">📄 Fichier du manuscrit</h2>
         </div>
-        {m.pdf_path ? (
-          <div className="flex items-center justify-between gap-3 flex-wrap">
-            <p className="text-sm text-muted-foreground">PDF téléversé. Vous pouvez le remplacer à tout moment.</p>
-            <label className="inline-flex">
-              <input type="file" accept="application/pdf" className="hidden" onChange={onUpload} />
-              <Button asChild variant="outline" size="sm" disabled={uploading}>
-                <span>{uploading ? <Loader2 className="h-4 w-4 animate-spin" /> : <Upload className="h-4 w-4" />} Remplacer</span>
+
+        <input
+          ref={inputRef}
+          type="file"
+          accept="application/pdf,.pdf"
+          className="hidden"
+          onChange={onFileInput}
+        />
+
+        {uploading ? (
+          <div className="rounded-lg border border-border bg-background/30 p-6">
+            <div className="flex items-center gap-3 mb-3">
+              <Loader2 className="h-5 w-5 animate-spin" style={{ color: "#00C896" }} />
+              <p className="text-sm font-medium">Chargement... {progress}%</p>
+            </div>
+            <Progress value={progress} className="h-2" />
+          </div>
+        ) : m.pdf_path && pdfMeta ? (
+          <div className="rounded-lg border border-border bg-background/30 p-4 flex items-center gap-4 flex-wrap">
+            <div className="h-12 w-12 rounded-lg flex items-center justify-center" style={{ background: "rgba(0,200,150,0.12)" }}>
+              <FileText className="h-6 w-6" style={{ color: "#00C896" }} />
+            </div>
+            <div className="flex-1 min-w-[180px]">
+              <p className="font-medium truncate">{pdfMeta.name}</p>
+              <p className="text-xs text-muted-foreground mt-0.5">
+                {fmtSize(pdfMeta.size)}
+                {pdfMeta.updated_at && ` · Uploadé le ${new Date(pdfMeta.updated_at).toLocaleDateString("fr-FR")}`}
+              </p>
+            </div>
+            <div className="flex gap-2">
+              <Button variant="outline" size="sm" onClick={() => inputRef.current?.click()}>
+                <CloudUpload className="h-4 w-4" /> Remplacer le PDF
               </Button>
-            </label>
+              <Button variant="outline" size="sm" className="text-destructive border-destructive/40 hover:bg-destructive/10" onClick={() => setConfirmDelete(true)}>
+                <Trash2 className="h-4 w-4" /> Supprimer le PDF
+              </Button>
+            </div>
           </div>
         ) : (
-          <div className="flex items-center justify-between gap-3 flex-wrap">
-            <p className="text-sm text-muted-foreground">Aucun PDF. Téléversez-en un pour activer le partage sécurisé.</p>
-            <label className="inline-flex">
-              <input type="file" accept="application/pdf" className="hidden" onChange={onUpload} />
-              <Button asChild className="bg-primary text-primary-foreground hover:bg-primary/90" disabled={uploading}>
-                <span>{uploading ? <Loader2 className="h-4 w-4 animate-spin" /> : <Upload className="h-4 w-4" />} Téléverser un PDF</span>
-              </Button>
-            </label>
+          <div
+            role="button"
+            tabIndex={0}
+            onClick={() => inputRef.current?.click()}
+            onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") inputRef.current?.click(); }}
+            onDragOver={(e) => { e.preventDefault(); setDragOver(true); }}
+            onDragLeave={() => setDragOver(false)}
+            onDrop={onDrop}
+            className="rounded-lg p-10 text-center cursor-pointer transition-colors"
+            style={{
+              border: `2px dashed #00C896`,
+              background: dragOver ? "rgba(0,200,150,0.08)" : "transparent",
+            }}
+          >
+            <CloudUpload className="h-12 w-12 mx-auto mb-3" style={{ color: "#00C896" }} />
+            <p className="font-medium">Glissez votre PDF ici ou cliquez pour sélectionner</p>
+            <p className="text-xs text-muted-foreground mt-1">Format accepté: PDF · Taille max: 10 MB</p>
           </div>
         )}
+
+        {m.pdf_path && pdfMeta && !uploading && (
+          <p className="mt-3 text-xs flex items-center gap-1.5" style={{ color: "#00C896" }}>
+            <CheckCircle2 className="h-3.5 w-3.5" /> PDF uploadé avec succès
+          </p>
+        )}
       </section>
+
+      {!m.pdf_path && (
+        <div
+          className="rounded-lg p-3 text-sm flex items-start gap-2"
+          style={{ background: "rgba(212,175,55,0.1)", border: "1px solid rgba(212,175,55,0.3)", color: "#D4AF37" }}
+        >
+          <AlertTriangle className="h-4 w-4 mt-0.5 shrink-0" />
+          <span>⚠️ Uploadez d'abord un PDF pour pouvoir créer des liens de partage sécurisés</span>
+        </div>
+      )}
 
       {/* Secure share */}
       <section className="rounded-xl border border-border bg-card p-5">
