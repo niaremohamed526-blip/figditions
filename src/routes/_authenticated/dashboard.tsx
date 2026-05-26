@@ -286,6 +286,8 @@ function DashboardPage() {
           <BestSellingBooks books={bookRankings} limit={3} />
         </div>
 
+        <ActivityFeed entrepriseId={profile?.entreprise_id ?? null} limit={10} />
+
         <div className="rounded-xl border border-border bg-background/40 p-5">
           <h3 className="font-semibold mb-3 flex items-center gap-2"><Activity className="h-4 w-4 text-primary" /> 🕐 Activité récente</h3>
           {activity.length === 0 ? (
