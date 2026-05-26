@@ -1,8 +1,9 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useEffect, useMemo, useState } from "react";
+import { z } from "zod";
 import {
   Calculator, Save, Loader2, Trash2, Printer, Sparkles,
-  BookOpen, Settings2, Palette, ChevronDown, Info, Zap, Check,
+  BookOpen, Settings2, Palette, ChevronDown, Info, Zap, Check, PackagePlus,
 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth, useProfile } from "@/hooks/use-auth";
@@ -22,10 +23,14 @@ import { toast } from "sonner";
 import { fcfa } from "@/lib/format";
 import { cn } from "@/lib/utils";
 
+const searchSchema = z.object({ manuscrit: z.string().uuid().optional() });
+
 export const Route = createFileRoute("/_authenticated/estimateur")({
   component: EstimateurPage,
+  validateSearch: searchSchema,
   head: () => ({ meta: [{ title: "Estimateur de coûts — FIGDITIONS" }] }),
 });
+
 
 // --- Tarifs Bamako ---
 const PAPER_RATES: Record<string, number> = {
@@ -75,12 +80,16 @@ interface Estimation {
 function EstimateurPage() {
   const { user } = useAuth();
   const { profile } = useProfile(user?.id);
+  const { manuscrit: prefillManuscritId } = Route.useSearch();
 
   const [manuscrits, setManuscrits] = useState<Manuscrit[]>([]);
   const [history, setHistory] = useState<Estimation[] | null>(null);
   const [toDelete, setToDelete] = useState<Estimation | null>(null);
+  const [toApply, setToApply] = useState<Estimation | null>(null);
+  const [applying, setApplying] = useState(false);
   const [compareIds, setCompareIds] = useState<string[]>([]);
   const [saving, setSaving] = useState(false);
+
 
   // Form state
   const [nom, setNom] = useState("");
@@ -115,12 +124,25 @@ function EstimateurPage() {
 
   useEffect(() => { if (profile?.entreprise_id) loadAll(); }, [profile?.entreprise_id]);
 
+  // Prefill depuis ?manuscrit=<id> (depuis Stock interne "Commander une impression")
+  useEffect(() => {
+    if (prefillManuscritId && manuscrits.length > 0) {
+      const exists = manuscrits.find((m) => m.id === prefillManuscritId);
+      if (exists) {
+        setManuscritId(prefillManuscritId);
+        toast.info(`📚 Pré-rempli pour « ${exists.titre} »`);
+      }
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [prefillManuscritId, manuscrits.length]);
+
   useEffect(() => {
     if (manuscritId === "none") return;
     const m = manuscrits.find((x) => x.id === manuscritId);
     if (m?.nombre_pages) setPages(m.nombre_pages);
     if (m && !nom) setNom(`Estimation - ${m.titre}`);
   }, [manuscritId, manuscrits]);
+
 
   // ------- CALCULATIONS -------
   const calc = useMemo(() => {
@@ -232,6 +254,62 @@ function EstimateurPage() {
     setCompareIds((c) => c.filter((id) => id !== toDelete.id));
     setToDelete(null);
   };
+
+  const confirmApply = async () => {
+    if (!toApply || !profile?.entreprise_id) return;
+    setApplying(true);
+    const mid = toApply.manuscrit_id!;
+    const tirage = Number(toApply.tirage) || 0;
+    const coutUnitaire = tirage > 0 ? toApply.cout_total_fcfa / tirage : 0;
+    const prixUnitaire = tirage > 0 ? toApply.prix_vente_suggere_fcfa / tirage : 0;
+
+    const { data: existing } = await (supabase as any)
+      .from("stock_interne").select("*").eq("manuscrit_id", mid).maybeSingle();
+
+    let error: any;
+    if (existing) {
+      ({ error } = await (supabase as any).from("stock_interne").update({
+        quantite_imprimee: (existing.quantite_imprimee ?? 0) + tirage,
+        quantite_disponible: (existing.quantite_disponible ?? 0) + tirage,
+        cout_unitaire_impression_fcfa: coutUnitaire,
+        prix_vente_direct_fcfa: prixUnitaire || existing.prix_vente_direct_fcfa,
+        date_impression: new Date().toISOString().slice(0, 10),
+      }).eq("id", existing.id));
+    } else {
+      ({ error } = await (supabase as any).from("stock_interne").insert({
+        entreprise_id: profile.entreprise_id,
+        manuscrit_id: mid,
+        quantite_imprimee: tirage,
+        quantite_disponible: tirage,
+        quantite_reservee: 0,
+        quantite_transferee_librairies: 0,
+        quantite_vendue_directement: 0,
+        quantite_exposee_evenements: 0,
+        seuil_alerte: 10,
+        cout_unitaire_impression_fcfa: coutUnitaire,
+        prix_vente_direct_fcfa: prixUnitaire,
+        date_impression: new Date().toISOString().slice(0, 10),
+      }));
+    }
+    // Trace du mouvement (impression reçue)
+    if (!error) {
+      await (supabase as any).from("mouvements_stock").insert({
+        entreprise_id: profile.entreprise_id,
+        manuscrit_id: mid,
+        type_mouvement: "ajustement",
+        quantite: tirage,
+        notes: `Impression issue de l'estimation « ${toApply.nom_estimation} »`,
+        effectue_par: user?.id ?? null,
+        date_mouvement: new Date().toISOString().slice(0, 10),
+      });
+    }
+    setApplying(false);
+    if (error) return toast.error(error.message);
+    toast.success(`✅ Stock interne mis à jour (+${tirage} ex.)`);
+    setToApply(null);
+  };
+
+
 
   const tirageRec = tirage < 500
     ? { color: "bg-blue-500/15 text-blue-300 border-blue-500/30", text: "💡 Impression numérique recommandée" }
@@ -548,12 +626,22 @@ function EstimateurPage() {
                         <td className="px-4 py-3 text-right font-mono font-semibold text-[color:var(--gold)]">{fcfa(e.prix_vente_suggere_fcfa)}</td>
                         <td className="px-4 py-3 text-muted-foreground hidden sm:table-cell">{new Date(e.created_at).toLocaleDateString("fr-FR")}</td>
                         <td className="px-4 py-3 text-right">
-                          <Button size="icon" variant="ghost"
-                            className="h-8 w-8 opacity-0 group-hover:opacity-100 transition-opacity hover:bg-destructive/15 hover:text-destructive"
-                            onClick={() => setToDelete(e)} title="Supprimer">
-                            <Trash2 className="h-4 w-4" />
-                          </Button>
+                          <div className="flex items-center justify-end gap-1">
+                            {e.manuscrit_id && (
+                              <Button size="sm" variant="outline" className="h-8 gap-1.5"
+                                onClick={() => setToApply(e)} title="Utiliser cette estimation pour le stock interne">
+                                <PackagePlus className="h-3.5 w-3.5" />
+                                <span className="hidden md:inline">Utiliser</span>
+                              </Button>
+                            )}
+                            <Button size="icon" variant="ghost"
+                              className="h-8 w-8 hover:bg-destructive/15 hover:text-destructive"
+                              onClick={() => setToDelete(e)} title="Supprimer">
+                              <Trash2 className="h-4 w-4" />
+                            </Button>
+                          </div>
                         </td>
+
                       </tr>
                     );
                   })}
@@ -577,9 +665,35 @@ function EstimateurPage() {
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
+
+      <AlertDialog open={!!toApply} onOpenChange={(o) => !o && setToApply(null)}>
+        <AlertDialogContent className="bg-card border-border">
+          <AlertDialogHeader>
+            <AlertDialogTitle>Utiliser cette estimation ?</AlertDialogTitle>
+            <AlertDialogDescription>
+              {toApply && (
+                <>
+                  <strong>{toApply.tirage?.toLocaleString("fr-FR")} exemplaires</strong> seront ajoutés au stock interne du manuscrit lié,
+                  avec un coût unitaire de <strong>{fcfa(toApply.tirage ? toApply.cout_total_fcfa / toApply.tirage : 0)}</strong>
+                  {" "}et un prix de vente direct suggéré de <strong>{fcfa(toApply.tirage ? toApply.prix_vente_suggere_fcfa / toApply.tirage : 0)}</strong>.
+                  Une trace sera ajoutée dans l'historique des mouvements.
+                </>
+              )}
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel disabled={applying}>Annuler</AlertDialogCancel>
+            <AlertDialogAction disabled={applying} onClick={(e) => { e.preventDefault(); confirmApply(); }}
+              className="bg-primary text-primary-foreground hover:bg-primary/90">
+              {applying ? <Loader2 className="h-4 w-4 animate-spin" /> : "Ajouter au stock"}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }
+
 
 // ---------- helpers ----------
 function Group({ title, icon, open, onToggle, children }: { title: string; icon: React.ReactNode; open: boolean; onToggle: () => void; children: React.ReactNode }) {
