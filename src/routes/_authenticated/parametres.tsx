@@ -58,9 +58,27 @@ interface Invitation {
 
 function ParametresPage() {
   const { user } = useAuth();
-  const { profile, entreprise, loading: profileLoading } = useProfile(user?.id);
+  const { profile, entreprise, loading: profileLoading, refresh } = useProfile(user?.id);
   const plan = planFor(entreprise?.plan);
   const isAdmin = profile?.role === "admin";
+  const search = useSearch({ from: "/_authenticated/parametres" });
+  const navigate = useNavigate();
+  const [resultStatus, setResultStatus] = useState<"success" | "cancelled" | null>(null);
+  const [upgradeTarget, setUpgradeTarget] = useState<"pro" | "business" | null>(null);
+
+  useEffect(() => {
+    if (search.payment === "success" || search.payment === "cancelled") {
+      setResultStatus(search.payment);
+      // clear URL param + refresh profile to pick up new plan after webhook
+      navigate({ to: "/parametres", search: {}, replace: true });
+      if (search.payment === "success") {
+        // poll a couple of times for the webhook
+        const tries = [1500, 4000, 8000];
+        tries.forEach((d) => setTimeout(refresh, d));
+      }
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [search.payment]);
 
   if (profileLoading) {
     return <div className="space-y-4"><Skeleton className="h-32 w-full" /><Skeleton className="h-64 w-full" /></div>;
@@ -73,7 +91,14 @@ function ParametresPage() {
         <p className="text-muted-foreground mt-1">Gérez votre plan, votre équipe et vos préférences.</p>
       </header>
 
-      <PlanCard plan={plan.key} />
+      <ExpiryBanner entreprise={entreprise} onRenew={() => setUpgradeTarget((entreprise?.plan as "pro" | "business") || "pro")} />
+
+      <PlanCard
+        plan={plan.key}
+        entreprise={entreprise}
+        onUpgrade={(target) => setUpgradeTarget(target)}
+        isAdmin={isAdmin}
+      />
 
       <Tabs defaultValue={isAdmin ? "maison" : "compte"} className="w-full">
         <TabsList className="bg-card border border-border flex-wrap h-auto">
@@ -81,6 +106,7 @@ function ParametresPage() {
           {isAdmin && <TabsTrigger value="maison">Maison d'édition</TabsTrigger>}
           {isAdmin && <TabsTrigger value="equipe">Mon équipe</TabsTrigger>}
           <TabsTrigger value="plan" id="plan">Plans</TabsTrigger>
+          {isAdmin && <TabsTrigger value="paiements">Paiements</TabsTrigger>}
           <TabsTrigger value="danger" className="text-destructive">Zone dangereuse</TabsTrigger>
         </TabsList>
 
@@ -105,13 +131,60 @@ function ParametresPage() {
         )}
 
         <TabsContent value="plan" className="mt-6">
-          <PlansComparison currentPlan={plan.key} canChange={isAdmin} entrepriseId={profile?.entreprise_id ?? null} />
+          <PlansComparison
+            currentPlan={plan.key}
+            canChange={isAdmin}
+            entrepriseId={profile?.entreprise_id ?? null}
+            onChoose={(target) => setUpgradeTarget(target)}
+          />
         </TabsContent>
+
+        {isAdmin && (
+          <TabsContent value="paiements" className="mt-6">
+            <PaymentsHistory entrepriseId={profile?.entreprise_id ?? null} />
+          </TabsContent>
+        )}
 
         <TabsContent value="danger" className="mt-6">
           <DangerZone />
         </TabsContent>
       </Tabs>
+
+      {upgradeTarget && (
+        <UpgradePaymentModal
+          open={upgradeTarget !== null}
+          onOpenChange={(o) => !o && setUpgradeTarget(null)}
+          plan={upgradeTarget}
+        />
+      )}
+
+      <PaymentResultModal
+        status={resultStatus}
+        onClose={() => setResultStatus(null)}
+        onRetry={() => setUpgradeTarget((entreprise?.plan as "pro" | "business") || "pro")}
+      />
+    </div>
+  );
+}
+
+function ExpiryBanner({ entreprise, onRenew }: { entreprise: any; onRenew: () => void }) {
+  const expire = entreprise?.abonnement_expire_le;
+  if (!expire) return null;
+  const ms = new Date(expire).getTime() - Date.now();
+  const days = Math.ceil(ms / (1000 * 60 * 60 * 24));
+  if (days > 7 || days < 0) return null;
+  return (
+    <div className="rounded-xl border border-orange-500/30 bg-orange-500/10 p-4 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+      <div className="flex items-start gap-3">
+        <AlertTriangle className="h-5 w-5 text-orange-400 shrink-0 mt-0.5" />
+        <p className="text-sm text-orange-100">
+          Votre abonnement expire dans <span className="font-bold">{days} jour{days > 1 ? "s" : ""}</span>.
+          Renouvelez maintenant pour ne pas perdre l'accès à vos données.
+        </p>
+      </div>
+      <Button onClick={onRenew} className="bg-orange-500 text-white hover:bg-orange-600">
+        Renouveler maintenant
+      </Button>
     </div>
   );
 }
