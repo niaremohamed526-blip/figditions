@@ -156,14 +156,10 @@ export const pollConversion = createServerFn({ method: "POST" })
     if (job.status !== "finished") return row;
 
     // Download exports & upload to our bucket
-    const updates: Record<string, unknown> = {
-      statut: "termine",
-      completed_at: new Date().toISOString(),
-      duree_conversion_secondes: Math.max(
-        1,
-        Math.round((Date.now() - new Date(row.created_at as string).getTime()) / 1000),
-      ),
-    };
+    let epub_path: string | null = null;
+    let mobi_path: string | null = null;
+    let taille_epub_kb: number | null = null;
+    let taille_mobi_kb: number | null = null;
 
     for (const fmt of row.formats_cibles as CCFormat[]) {
       const f = exportedFileFor(job, fmt);
@@ -180,22 +176,34 @@ export const pollConversion = createServerFn({ method: "POST" })
         });
       if (upErr) throw new Error(upErr.message);
       if (fmt === "epub") {
-        updates.epub_path = destPath;
-        updates.taille_epub_kb = Math.round(buf.byteLength / 1024);
+        epub_path = destPath;
+        taille_epub_kb = Math.round(buf.byteLength / 1024);
       } else {
-        updates.mobi_path = destPath;
-        updates.taille_mobi_kb = Math.round(buf.byteLength / 1024);
+        mobi_path = destPath;
+        taille_mobi_kb = Math.round(buf.byteLength / 1024);
       }
     }
 
     const { data: updated, error: uErr } = await supabaseAdmin
       .from("conversions")
-      .update(updates)
+      .update({
+        statut: "termine",
+        completed_at: new Date().toISOString(),
+        duree_conversion_secondes: Math.max(
+          1,
+          Math.round((Date.now() - new Date(row.created_at as string).getTime()) / 1000),
+        ),
+        epub_path,
+        mobi_path,
+        taille_epub_kb,
+        taille_mobi_kb,
+      })
       .eq("id", row.id)
       .select()
       .single();
     if (uErr) throw new Error(uErr.message);
     return updated;
+
   });
 
 export const listConversions = createServerFn({ method: "GET" })
