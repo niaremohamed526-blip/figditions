@@ -8,6 +8,7 @@ export interface PlanLimits {
   maxUsers: number;
   contrats: boolean;
   finances: boolean;
+  conversions: boolean;
   exportPdf: boolean;
   exportEpub: boolean;
   prioritySupport: boolean;
