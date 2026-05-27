@@ -1,7 +1,7 @@
 import { Link, useRouterState, useNavigate } from "@tanstack/react-router";
 import { useState, type ReactNode } from "react";
 import {
-  LayoutDashboard, BookOpen, PenLine, Package, Wallet, FileText, Settings, LogOut, Menu, X, Calculator, Lock, Factory,
+  LayoutDashboard, BookOpen, PenLine, Package, Wallet, FileText, Settings, LogOut, Menu, X, Calculator, Lock, Factory, RefreshCw,
 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth, useProfile, type AppRole } from "@/hooks/use-auth";
@@ -19,7 +19,7 @@ type NavItem = {
   labelEn: string;
   icon: typeof LayoutDashboard;
   roles: AppRole[];
-  feature?: "contrats" | "finances";
+  feature?: "contrats" | "finances" | "conversions";
 };
 
 const NAV: NavItem[] = [
@@ -29,10 +29,12 @@ const NAV: NavItem[] = [
   { to: "/stocks", labelFr: "Stocks", labelEn: "Stock Tracking", icon: Package, roles: ["admin", "commercial"] },
   { to: "/estimateur", labelFr: "Estimateur", labelEn: "Cost Estimator", icon: Calculator, roles: ["admin", "editeur"] },
   { to: "/imprimeries", labelFr: "Imprimeries", labelEn: "Print Directory", icon: Factory, roles: ["admin", "editeur", "comptable", "commercial"] },
+  { to: "/conversions", labelFr: "Conversions", labelEn: "Conversions", icon: RefreshCw, roles: ["admin", "editeur"], feature: "conversions" },
   { to: "/finances", labelFr: "Finances", labelEn: "Finances", icon: Wallet, roles: ["admin", "comptable"], feature: "finances" },
   { to: "/contrats", labelFr: "Contrats", labelEn: "Contracts", icon: FileText, roles: ["admin"], feature: "contrats" },
   { to: "/parametres", labelFr: "Paramètres", labelEn: "Settings", icon: Settings, roles: ["admin"] },
 ];
+
 
 function LangToggle({ lang, setLang }: { lang: Lang; setLang: (l: Lang) => void }) {
   return (
