@@ -140,6 +140,96 @@ export type Database = {
         }
         Relationships: []
       }
+      conversions: {
+        Row: {
+          annee_publication: number | null
+          auteur: string
+          cloudconvert_job_id: string | null
+          completed_at: string | null
+          couverture_path: string | null
+          created_at: string
+          created_by: string | null
+          description: string | null
+          duree_conversion_secondes: number | null
+          editeur: string | null
+          entreprise_id: string
+          epub_path: string | null
+          erreur_message: string | null
+          fichier_source_path: string | null
+          format_source: string
+          formats_cibles: string[]
+          id: string
+          isbn: string | null
+          langue: string | null
+          manuscrit_id: string | null
+          mobi_path: string | null
+          statut: string
+          taille_epub_kb: number | null
+          taille_mobi_kb: number | null
+          taille_source_kb: number
+          titre: string
+          updated_at: string
+        }
+        Insert: {
+          annee_publication?: number | null
+          auteur: string
+          cloudconvert_job_id?: string | null
+          completed_at?: string | null
+          couverture_path?: string | null
+          created_at?: string
+          created_by?: string | null
+          description?: string | null
+          duree_conversion_secondes?: number | null
+          editeur?: string | null
+          entreprise_id: string
+          epub_path?: string | null
+          erreur_message?: string | null
+          fichier_source_path?: string | null
+          format_source: string
+          formats_cibles?: string[]
+          id?: string
+          isbn?: string | null
+          langue?: string | null
+          manuscrit_id?: string | null
+          mobi_path?: string | null
+          statut?: string
+          taille_epub_kb?: number | null
+          taille_mobi_kb?: number | null
+          taille_source_kb?: number
+          titre: string
+          updated_at?: string
+        }
+        Update: {
+          annee_publication?: number | null
+          auteur?: string
+          cloudconvert_job_id?: string | null
+          completed_at?: string | null
+          couverture_path?: string | null
+          created_at?: string
+          created_by?: string | null
+          description?: string | null
+          duree_conversion_secondes?: number | null
+          editeur?: string | null
+          entreprise_id?: string
+          epub_path?: string | null
+          erreur_message?: string | null
+          fichier_source_path?: string | null
+          format_source?: string
+          formats_cibles?: string[]
+          id?: string
+          isbn?: string | null
+          langue?: string | null
+          manuscrit_id?: string | null
+          mobi_path?: string | null
+          statut?: string
+          taille_epub_kb?: number | null
+          taille_mobi_kb?: number | null
+          taille_source_kb?: number
+          titre?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       entreprises: {
         Row: {
           abonnement_expire_le: string | null
