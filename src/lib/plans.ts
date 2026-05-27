@@ -8,6 +8,7 @@ export interface PlanLimits {
   maxUsers: number;
   contrats: boolean;
   finances: boolean;
+  conversions: boolean;
   exportPdf: boolean;
   exportEpub: boolean;
   prioritySupport: boolean;
@@ -28,6 +29,7 @@ export const PLANS: Record<AppPlan, PlanLimits> = {
     contrats: false,
     finances: false,
     exportPdf: false,
+    conversions: false,
     exportEpub: false,
     prioritySupport: false,
     branding: false,
@@ -45,6 +47,7 @@ export const PLANS: Record<AppPlan, PlanLimits> = {
     contrats: true,
     finances: true,
     exportPdf: true,
+    conversions: false,
     exportEpub: false,
     prioritySupport: false,
     branding: false,
@@ -62,6 +65,7 @@ export const PLANS: Record<AppPlan, PlanLimits> = {
     contrats: true,
     finances: true,
     exportPdf: true,
+    conversions: true,
     exportEpub: true,
     prioritySupport: true,
     branding: true,
