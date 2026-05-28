@@ -428,7 +428,7 @@ function Pricing() {
         { ok: true, fr: "Tout ce qui est dans Pro", en: "Everything in Pro" },
         { ok: true, fr: "Utilisateurs illimités", en: "Unlimited users" },
         { ok: true, fr: "Partage PDF illimité", en: "Unlimited PDF sharing" },
-        { ok: true, fr: "Export ePub", en: "ePub export" },
+        { ok: true, fr: "Conversion ePub & MOBI illimitée (Kindle, Apple Books)", en: "Unlimited ePub & MOBI conversion (Kindle, Apple Books)" },
         { ok: true, fr: "Assistant subventions", en: "Grants assistant" },
         { ok: true, fr: "Branding personnalisé", en: "Custom branding" },
         { ok: true, fr: "Support prioritaire 24/7", en: "Priority support 24/7" },
