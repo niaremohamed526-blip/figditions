@@ -2,10 +2,12 @@ import { createFileRoute, Link } from "@tanstack/react-router";
 import { useEffect, useMemo, useRef, useState } from "react";
 import {
   ArrowLeft, Lock, Plus, Copy, Power, Trash2, Loader2, FileText,
-  BarChart3, Eye, CloudUpload, AlertTriangle, CheckCircle2,
+  BarChart3, Eye, CloudUpload, AlertTriangle, CheckCircle2, Sparkles, RefreshCw,
 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth, useProfile } from "@/hooks/use-auth";
+import { planFor } from "@/lib/plans";
+import { UpgradeModal } from "@/components/upgrade-modal";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
