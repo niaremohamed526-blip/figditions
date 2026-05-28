@@ -409,7 +409,7 @@ function Pricing() {
         { ok: true, fr: "Partage PDF sécurisé (10 liens/mois)", en: "Secure PDF sharing (10 links/month)" },
         { ok: true, fr: "Analytiques avancées", en: "Advanced analytics" },
         { ok: true, fr: "Répertoire des imprimeries", en: "Print directory" },
-        { ok: false, fr: "Export ePub", en: "ePub export" },
+        { ok: false, fr: "Conversion ePub & MOBI", en: "ePub & MOBI conversion" },
         { ok: false, fr: "Support prioritaire", en: "Priority support" },
       ],
       cta: t("Choisir Pro", "Choose Pro"),
