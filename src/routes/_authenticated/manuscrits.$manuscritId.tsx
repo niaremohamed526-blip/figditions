@@ -463,6 +463,13 @@ function ManuscritDetailPage() {
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
+
+      <UpgradeModal
+        open={upgradeOpen}
+        onOpenChange={setUpgradeOpen}
+        title="Conversion ebook réservée au plan Business"
+        description="Convertissez vos manuscrits en ePub et MOBI prêts pour Amazon Kindle, Apple Books et Google Play Books. Passez au plan Business pour débloquer."
+      />
     </div>
   );
 }
