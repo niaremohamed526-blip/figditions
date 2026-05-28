@@ -192,6 +192,59 @@ function ManuscritDetailPage() {
         <StatusStepper statut={m.statut} />
       </section>
 
+      {/* Quick convert to ebook */}
+      {m.pdf_path && (
+        <section
+          className="rounded-xl border p-5 flex flex-col md:flex-row md:items-center md:justify-between gap-4"
+          style={{
+            borderColor: "rgba(212,175,55,0.35)",
+            background:
+              "linear-gradient(135deg, rgba(212,175,55,0.08), rgba(0,200,150,0.06))",
+          }}
+        >
+          <div className="flex items-start gap-3">
+            <div
+              className="h-11 w-11 rounded-lg flex items-center justify-center shrink-0"
+              style={{ background: "rgba(212,175,55,0.15)" }}
+            >
+              <Sparkles className="h-5 w-5" style={{ color: "#D4AF37" }} />
+            </div>
+            <div>
+              <h2 className="font-semibold flex items-center gap-2">
+                Convertir en ebook (ePub / MOBI)
+                <span
+                  className="text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-full"
+                  style={{
+                    background: "rgba(212,175,55,0.15)",
+                    color: "#D4AF37",
+                    border: "1px solid rgba(212,175,55,0.35)",
+                  }}
+                >
+                  Business
+                </span>
+              </h2>
+              <p className="text-sm text-muted-foreground mt-1 max-w-xl">
+                Transformez ce manuscrit en ebook prêt pour Amazon Kindle, Apple Books et Google Play Books.
+              </p>
+            </div>
+          </div>
+          {plan.conversions ? (
+            <Button asChild className="bg-[color:var(--gold)] text-background hover:bg-[color:var(--gold)]/90">
+              <Link to="/conversions">
+                <RefreshCw className="h-4 w-4" /> Convertir maintenant
+              </Link>
+            </Button>
+          ) : (
+            <Button
+              onClick={() => setUpgradeOpen(true)}
+              variant="outline"
+              className="border-[color:var(--gold)]/60 text-[color:var(--gold)] hover:bg-[color:var(--gold)]/10"
+            >
+              <Lock className="h-4 w-4" /> Débloquer (Business)
+            </Button>
+          )}
+        </section>
+      )}
 
 
       {/* PDF Source */}
