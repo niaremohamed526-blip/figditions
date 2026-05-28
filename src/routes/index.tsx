@@ -213,6 +213,7 @@ function Features() {
     { icon: FileText, fr: "Contrats OHADA", en: "OHADA Contracts", dfr: "Générez des contrats légaux conformes au droit malien en quelques clics", den: "Generate legal contracts compliant with Malian law in a few clicks" },
     { icon: Calculator, fr: "Estimateur de coûts", en: "Cost estimator", dfr: "Calculez le coût d'impression exact en FCFA avec recommandation offset vs numérique", den: "Calculate exact printing costs in FCFA with offset vs digital recommendation" },
     { icon: Shield, fr: "Partage PDF sécurisé", en: "Secure PDF sharing", dfr: "Partagez vos manuscrits avec des filigranes personnalisés et un nombre de vues limité", den: "Share manuscripts with custom watermarks and limited view counts" },
+    { icon: Sparkles, fr: "Conversion ePub & MOBI", en: "ePub & MOBI conversion", dfr: "Convertissez vos manuscrits en ebooks prêts pour Amazon Kindle, Apple Books et Google Play Books", den: "Convert your manuscripts into ebooks ready for Amazon Kindle, Apple Books and Google Play Books" },
     { icon: BarChart3, fr: "Analytiques avancées", en: "Advanced analytics", dfr: "Tableaux de bord complets pour piloter votre maison d'édition avec des données en temps réel", den: "Complete dashboards to manage your publishing house with real-time data" },
   ];
   return (
