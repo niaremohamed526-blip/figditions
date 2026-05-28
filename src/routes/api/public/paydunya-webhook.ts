@@ -43,7 +43,8 @@ export const Route = createFileRoute("/api/public/paydunya-webhook")({
             .maybeSingle();
           if (findErr || !ab) {
             console.error("paydunya-webhook: abonnement not found", findErr);
-            return new Response("Subscription not found", { status: 404 });
+            // Return a generic 200 to avoid leaking which tokens are valid.
+            return new Response("ok", { status: 200 });
           }
 
           // Idempotency: refuse to re-activate an already-active subscription.
