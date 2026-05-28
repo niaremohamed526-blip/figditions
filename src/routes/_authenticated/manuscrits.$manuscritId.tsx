@@ -50,7 +50,9 @@ interface Partage {
 function ManuscritDetailPage() {
   const { manuscritId } = Route.useParams();
   const { user } = useAuth();
-  const { profile } = useProfile(user?.id);
+  const { profile, entreprise } = useProfile(user?.id);
+  const plan = planFor(entreprise?.plan);
+  const [upgradeOpen, setUpgradeOpen] = useState(false);
   const [m, setM] = useState<Manuscrit | null>(null);
   const [loading, setLoading] = useState(true);
   const [partages, setPartages] = useState<Partage[] | null>(null);
