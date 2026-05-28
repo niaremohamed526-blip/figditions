@@ -3,7 +3,7 @@ import { useEffect, useState } from "react";
 import {
   Menu, X, Star, BookOpen, Users, Package, Wallet, FileText, Calculator,
   Twitter, Linkedin, Facebook, Instagram, Youtube, ArrowRight, Check,
-  Factory, Shield, BarChart3, Store,
+  Factory, Shield, BarChart3, Store, Sparkles,
 } from "lucide-react";
 import { Logo } from "@/components/logo";
 import { useI18n } from "@/hooks/use-i18n";
@@ -213,6 +213,7 @@ function Features() {
     { icon: FileText, fr: "Contrats OHADA", en: "OHADA Contracts", dfr: "Générez des contrats légaux conformes au droit malien en quelques clics", den: "Generate legal contracts compliant with Malian law in a few clicks" },
     { icon: Calculator, fr: "Estimateur de coûts", en: "Cost estimator", dfr: "Calculez le coût d'impression exact en FCFA avec recommandation offset vs numérique", den: "Calculate exact printing costs in FCFA with offset vs digital recommendation" },
     { icon: Shield, fr: "Partage PDF sécurisé", en: "Secure PDF sharing", dfr: "Partagez vos manuscrits avec des filigranes personnalisés et un nombre de vues limité", den: "Share manuscripts with custom watermarks and limited view counts" },
+    { icon: Sparkles, fr: "Conversion ePub & MOBI", en: "ePub & MOBI conversion", dfr: "Convertissez vos manuscrits en ebooks prêts pour Amazon Kindle, Apple Books et Google Play Books", den: "Convert your manuscripts into ebooks ready for Amazon Kindle, Apple Books and Google Play Books" },
     { icon: BarChart3, fr: "Analytiques avancées", en: "Advanced analytics", dfr: "Tableaux de bord complets pour piloter votre maison d'édition avec des données en temps réel", den: "Complete dashboards to manage your publishing house with real-time data" },
   ];
   return (
@@ -409,7 +410,7 @@ function Pricing() {
         { ok: true, fr: "Partage PDF sécurisé (10 liens/mois)", en: "Secure PDF sharing (10 links/month)" },
         { ok: true, fr: "Analytiques avancées", en: "Advanced analytics" },
         { ok: true, fr: "Répertoire des imprimeries", en: "Print directory" },
-        { ok: false, fr: "Export ePub", en: "ePub export" },
+        { ok: false, fr: "Conversion ePub & MOBI", en: "ePub & MOBI conversion" },
         { ok: false, fr: "Support prioritaire", en: "Priority support" },
       ],
       cta: t("Choisir Pro", "Choose Pro"),
@@ -428,7 +429,7 @@ function Pricing() {
         { ok: true, fr: "Tout ce qui est dans Pro", en: "Everything in Pro" },
         { ok: true, fr: "Utilisateurs illimités", en: "Unlimited users" },
         { ok: true, fr: "Partage PDF illimité", en: "Unlimited PDF sharing" },
-        { ok: true, fr: "Export ePub", en: "ePub export" },
+        { ok: true, fr: "Conversion ePub & MOBI illimitée (Kindle, Apple Books)", en: "Unlimited ePub & MOBI conversion (Kindle, Apple Books)" },
         { ok: true, fr: "Assistant subventions", en: "Grants assistant" },
         { ok: true, fr: "Branding personnalisé", en: "Custom branding" },
         { ok: true, fr: "Support prioritaire 24/7", en: "Priority support 24/7" },

@@ -2,10 +2,12 @@ import { createFileRoute, Link } from "@tanstack/react-router";
 import { useEffect, useMemo, useRef, useState } from "react";
 import {
   ArrowLeft, Lock, Plus, Copy, Power, Trash2, Loader2, FileText,
-  BarChart3, Eye, CloudUpload, AlertTriangle, CheckCircle2,
+  BarChart3, Eye, CloudUpload, AlertTriangle, CheckCircle2, Sparkles, RefreshCw,
 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth, useProfile } from "@/hooks/use-auth";
+import { planFor } from "@/lib/plans";
+import { UpgradeModal } from "@/components/upgrade-modal";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -48,7 +50,9 @@ interface Partage {
 function ManuscritDetailPage() {
   const { manuscritId } = Route.useParams();
   const { user } = useAuth();
-  const { profile } = useProfile(user?.id);
+  const { profile, entreprise } = useProfile(user?.id);
+  const plan = planFor(entreprise?.plan);
+  const [upgradeOpen, setUpgradeOpen] = useState(false);
   const [m, setM] = useState<Manuscrit | null>(null);
   const [loading, setLoading] = useState(true);
   const [partages, setPartages] = useState<Partage[] | null>(null);
@@ -188,6 +192,59 @@ function ManuscritDetailPage() {
         <StatusStepper statut={m.statut} />
       </section>
 
+      {/* Quick convert to ebook */}
+      {m.pdf_path && (
+        <section
+          className="rounded-xl border p-5 flex flex-col md:flex-row md:items-center md:justify-between gap-4"
+          style={{
+            borderColor: "rgba(212,175,55,0.35)",
+            background:
+              "linear-gradient(135deg, rgba(212,175,55,0.08), rgba(0,200,150,0.06))",
+          }}
+        >
+          <div className="flex items-start gap-3">
+            <div
+              className="h-11 w-11 rounded-lg flex items-center justify-center shrink-0"
+              style={{ background: "rgba(212,175,55,0.15)" }}
+            >
+              <Sparkles className="h-5 w-5" style={{ color: "#D4AF37" }} />
+            </div>
+            <div>
+              <h2 className="font-semibold flex items-center gap-2">
+                Convertir en ebook (ePub / MOBI)
+                <span
+                  className="text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-full"
+                  style={{
+                    background: "rgba(212,175,55,0.15)",
+                    color: "#D4AF37",
+                    border: "1px solid rgba(212,175,55,0.35)",
+                  }}
+                >
+                  Business
+                </span>
+              </h2>
+              <p className="text-sm text-muted-foreground mt-1 max-w-xl">
+                Transformez ce manuscrit en ebook prêt pour Amazon Kindle, Apple Books et Google Play Books.
+              </p>
+            </div>
+          </div>
+          {plan.conversions ? (
+            <Button asChild className="bg-[color:var(--gold)] text-background hover:bg-[color:var(--gold)]/90">
+              <Link to="/conversions">
+                <RefreshCw className="h-4 w-4" /> Convertir maintenant
+              </Link>
+            </Button>
+          ) : (
+            <Button
+              onClick={() => setUpgradeOpen(true)}
+              variant="outline"
+              className="border-[color:var(--gold)]/60 text-[color:var(--gold)] hover:bg-[color:var(--gold)]/10"
+            >
+              <Lock className="h-4 w-4" /> Débloquer (Business)
+            </Button>
+          )}
+        </section>
+      )}
 
 
       {/* PDF Source */}
@@ -406,6 +463,13 @@ function ManuscritDetailPage() {
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
+
+      <UpgradeModal
+        open={upgradeOpen}
+        onOpenChange={setUpgradeOpen}
+        title="Conversion ebook réservée au plan Business"
+        description="Convertissez vos manuscrits en ePub et MOBI prêts pour Amazon Kindle, Apple Books et Google Play Books. Passez au plan Business pour débloquer."
+      />
     </div>
   );
 }
