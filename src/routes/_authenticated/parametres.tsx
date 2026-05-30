@@ -629,13 +629,20 @@ function TeamSection({ entrepriseId, currentUserId, plan }: { entrepriseId: stri
   const [invitations, setInvitations] = useState<Invitation[]>([]);
   const [inviteOpen, setInviteOpen] = useState(false);
   const [toRemove, setToRemove] = useState<Member | null>(null);
+  const [editingMember, setEditingMember] = useState<Member | null>(null);
+  const [editingInvite, setEditingInvite] = useState<Invitation | null>(null);
+
+  const removeMemberFn = useServerFn(removeMember);
+  const updateMemberFn = useServerFn(updateMemberPermissions);
+  const updateInviteFn = useServerFn(updateInvitationPermissions);
+  const resendFn = useServerFn(resendInvitation);
 
   const load = async () => {
     if (!entrepriseId) return;
     setMembers(null);
     const [{ data: profs }, { data: invs }] = await Promise.all([
       supabase.from("profiles").select("*").eq("entreprise_id", entrepriseId),
-      supabase.from("invitations").select("*").eq("statut", "en_attente").order("created_at", { ascending: false }),
+      supabase.from("invitations").select("*").eq("entreprise_id", entrepriseId).eq("statut", "en_attente").order("created_at", { ascending: false }),
     ]);
     setMembers((profs ?? []) as Member[]);
     setInvitations((invs ?? []) as Invitation[]);
@@ -645,14 +652,6 @@ function TeamSection({ entrepriseId, currentUserId, plan }: { entrepriseId: stri
   const totalSeats = (members?.length ?? 0) + invitations.length;
   const atLimit = totalSeats >= p.maxUsers;
 
-  const changeRole = async (m: Member, role: AppRole) => {
-    if (m.id === currentUserId) return toast.error("Vous ne pouvez pas modifier votre propre rôle");
-    const { error } = await supabase.from("profiles").update({ role }).eq("id", m.id);
-    if (error) return toast.error(error.message);
-    toast.success("Rôle mis à jour");
-    setMembers((prev) => prev?.map((x) => x.id === m.id ? { ...x, role } : x) ?? prev);
-  };
-
   const cancelInvite = async (inv: Invitation) => {
     const { error } = await supabase.from("invitations").delete().eq("id", inv.id);
     if (error) return toast.error(error.message);
@@ -661,9 +660,19 @@ function TeamSection({ entrepriseId, currentUserId, plan }: { entrepriseId: stri
   };
 
   const copyInviteLink = (inv: Invitation) => {
-    const link = `${window.location.origin}/signup?invite=${inv.token}`;
+    const link = `${window.location.origin}/rejoindre/${inv.token}`;
     navigator.clipboard.writeText(link);
     toast.success("Lien d'invitation copié");
+  };
+
+  const resendInvite = async (inv: Invitation) => {
+    try {
+      const r = await resendFn({ data: { id: inv.id } });
+      toast.success("Invitation renouvelée pour 7 jours");
+      setInvitations((prev) => prev.map((x) => x.id === inv.id ? { ...x, expires_at: r.expires_at } : x));
+    } catch (e) {
+      toast.error(e instanceof Error ? e.message : "Erreur");
+    }
   };
 
   return (
@@ -675,8 +684,7 @@ function TeamSection({ entrepriseId, currentUserId, plan }: { entrepriseId: stri
         </div>
         {p.maxUsers <= 1 ? (
           <div className="text-sm text-muted-foreground flex items-center gap-2">
-            <Lock className="h-4 w-4 text-[color:var(--gold)]" />
-            Passez au plan Pro pour inviter votre équipe
+            <Lock className="h-4 w-4 text-[color:var(--gold)]" /> Passez au plan Pro pour inviter votre équipe
           </div>
         ) : atLimit ? (
           <div className="text-sm text-muted-foreground">
@@ -697,53 +705,60 @@ function TeamSection({ entrepriseId, currentUserId, plan }: { entrepriseId: stri
             <table className="w-full text-sm">
               <thead className="bg-muted/30 text-muted-foreground">
                 <tr className="text-left">
-                  <th className="px-4 py-3 font-medium">Nom</th>
+                  <th className="px-4 py-3 font-medium">Membre</th>
                   <th className="px-4 py-3 font-medium">Rôle</th>
+                  <th className="px-4 py-3 font-medium">Pages autorisées</th>
                   <th className="px-4 py-3 font-medium">Statut</th>
-                  <th className="px-4 py-3 font-medium hidden sm:table-cell">Ajouté</th>
-                  <th className="px-4 py-3 font-medium w-20 text-right">Actions</th>
+                  <th className="px-4 py-3 font-medium w-28 text-right">Actions</th>
                 </tr>
               </thead>
               <tbody>
                 {members.map((m) => {
                   const isYou = m.id === currentUserId;
+                  const isAdminRow = m.role === "admin";
                   const initial = (m.full_name || "?").charAt(0).toUpperCase();
+                  const perms = (m.permissions ?? {}) as Record<string, boolean>;
                   return (
                     <tr key={m.id} className="border-t border-border">
                       <td className="px-4 py-3">
                         <div className="flex items-center gap-3">
-                          <div className="h-8 w-8 rounded-full bg-primary/20 text-primary flex items-center justify-center font-semibold text-xs">
+                          <div className="h-9 w-9 rounded-full bg-primary/20 text-primary flex items-center justify-center font-semibold text-xs">
                             {initial}
                           </div>
-                          <span className="font-medium">{m.full_name}</span>
-                          {isYou && <span className="text-xs font-semibold bg-primary/15 text-primary border border-primary/30 rounded-full px-2 py-0.5">Vous</span>}
+                          <div>
+                            <div className="font-medium flex items-center gap-1.5">
+                              {m.full_name}
+                              {isYou && <span className="text-[10px] font-semibold bg-primary/15 text-primary border border-primary/30 rounded-full px-1.5">Vous</span>}
+                            </div>
+                            {m.role_label && <div className="text-xs text-muted-foreground">{m.role_label}</div>}
+                          </div>
                         </div>
                       </td>
                       <td className="px-4 py-3">
-                        {isYou ? (
-                          <span className="text-muted-foreground">{ROLE_LABELS[m.role]}</span>
+                        <span className={cn("text-xs font-semibold border rounded-full px-2 py-0.5", isAdminRow ? "bg-[color:var(--gold)]/15 text-[color:var(--gold)] border-[color:var(--gold)]/30" : "bg-muted text-muted-foreground border-border")}>
+                          {ROLE_LABELS[m.role] ?? m.role}
+                        </span>
+                      </td>
+                      <td className="px-4 py-3">
+                        {isAdminRow ? (
+                          <span className="text-xs text-muted-foreground">Toutes les pages</span>
                         ) : (
-                          <Select value={m.role} onValueChange={(v) => changeRole(m, v as AppRole)}>
-                            <SelectTrigger className="h-8 w-36"><SelectValue /></SelectTrigger>
-                            <SelectContent>
-                              {(Object.keys(ROLE_LABELS) as AppRole[]).map((r) => (
-                                <SelectItem key={r} value={r}>{ROLE_LABELS[r]}</SelectItem>
-                              ))}
-                            </SelectContent>
-                          </Select>
+                          <PermissionBadges perms={perms} />
                         )}
                       </td>
                       <td className="px-4 py-3">
-                        <span className="text-xs font-semibold bg-primary/15 text-primary border border-primary/30 rounded-full px-2 py-0.5">Actif</span>
-                      </td>
-                      <td className="px-4 py-3 text-muted-foreground hidden sm:table-cell">
-                        {m.created_at ? new Date(m.created_at).toLocaleDateString("fr-FR") : "—"}
+                        <span className="text-xs font-semibold bg-emerald-500/15 text-emerald-400 border border-emerald-500/30 rounded-full px-2 py-0.5">Actif</span>
                       </td>
                       <td className="px-4 py-3 text-right">
-                        {!isYou && (
-                          <Button size="icon" variant="ghost" className="h-8 w-8 hover:bg-destructive/15 hover:text-destructive" onClick={() => setToRemove(m)}>
-                            <Trash2 className="h-4 w-4" />
-                          </Button>
+                        {!isYou && !isAdminRow && (
+                          <div className="flex items-center justify-end gap-1">
+                            <Button size="icon" variant="ghost" className="h-8 w-8" onClick={() => setEditingMember(m)} title="Modifier les permissions">
+                              <Settings2 className="h-4 w-4" />
+                            </Button>
+                            <Button size="icon" variant="ghost" className="h-8 w-8 hover:bg-destructive/15 hover:text-destructive" onClick={() => setToRemove(m)} title="Retirer">
+                              <Trash2 className="h-4 w-4" />
+                            </Button>
+                          </div>
                         )}
                       </td>
                     </tr>
@@ -763,42 +778,71 @@ function TeamSection({ entrepriseId, currentUserId, plan }: { entrepriseId: stri
               <thead className="bg-muted/30 text-muted-foreground">
                 <tr className="text-left">
                   <th className="px-4 py-3 font-medium">Email</th>
-                  <th className="px-4 py-3 font-medium">Rôle</th>
-                  <th className="px-4 py-3 font-medium hidden sm:table-cell">Expire le</th>
-                  <th className="px-4 py-3 font-medium w-32 text-right">Actions</th>
+                  <th className="px-4 py-3 font-medium">Pages autorisées</th>
+                  <th className="px-4 py-3 font-medium hidden sm:table-cell">Expire dans</th>
+                  <th className="px-4 py-3 font-medium w-40 text-right">Actions</th>
                 </tr>
               </thead>
               <tbody>
-                {invitations.map((inv) => (
-                  <tr key={inv.id} className="border-t border-border">
-                    <td className="px-4 py-3 font-medium">{inv.email}</td>
-                    <td className="px-4 py-3 text-muted-foreground">{ROLE_LABELS[inv.role as AppRole] ?? inv.role}</td>
-                    <td className="px-4 py-3 text-muted-foreground hidden sm:table-cell">
-                      {new Date(inv.expires_at).toLocaleDateString("fr-FR")}
-                    </td>
-                    <td className="px-4 py-3 text-right">
-                      <div className="flex items-center justify-end gap-1">
-                        <Button size="icon" variant="ghost" className="h-8 w-8" onClick={() => copyInviteLink(inv)} title="Copier le lien">
-                          <Copy className="h-4 w-4" />
-                        </Button>
-                        <Button size="icon" variant="ghost" className="h-8 w-8 hover:bg-destructive/15 hover:text-destructive" onClick={() => cancelInvite(inv)} title="Annuler">
-                          <Trash2 className="h-4 w-4" />
-                        </Button>
-                      </div>
-                    </td>
-                  </tr>
-                ))}
+                {invitations.map((inv) => {
+                  const days = Math.max(0, Math.ceil((new Date(inv.expires_at).getTime() - Date.now()) / 86400000));
+                  return (
+                    <tr key={inv.id} className="border-t border-border">
+                      <td className="px-4 py-3">
+                        <div className="font-medium">{inv.email}</div>
+                        {inv.role_label && <div className="text-xs text-muted-foreground">{inv.role_label}</div>}
+                      </td>
+                      <td className="px-4 py-3">
+                        <PermissionBadges perms={(inv.permissions ?? {}) as Record<string, boolean>} />
+                      </td>
+                      <td className="px-4 py-3 text-muted-foreground hidden sm:table-cell">{days} jour{days > 1 ? "s" : ""}</td>
+                      <td className="px-4 py-3 text-right">
+                        <div className="flex items-center justify-end gap-1">
+                          <Button size="icon" variant="ghost" className="h-8 w-8" onClick={() => setEditingInvite(inv)} title="Modifier"><Settings2 className="h-4 w-4" /></Button>
+                          <Button size="icon" variant="ghost" className="h-8 w-8" onClick={() => copyInviteLink(inv)} title="Copier le lien"><Copy className="h-4 w-4" /></Button>
+                          <Button size="icon" variant="ghost" className="h-8 w-8" onClick={() => resendInvite(inv)} title="Renouveler"><RotateCw className="h-4 w-4" /></Button>
+                          <Button size="icon" variant="ghost" className="h-8 w-8 hover:bg-destructive/15 hover:text-destructive" onClick={() => cancelInvite(inv)} title="Annuler"><Trash2 className="h-4 w-4" /></Button>
+                        </div>
+                      </td>
+                    </tr>
+                  );
+                })}
               </tbody>
             </table>
           </div>
         </div>
       )}
 
-      <InviteModal
-        open={inviteOpen}
-        onOpenChange={setInviteOpen}
-        entrepriseId={entrepriseId}
-        onCreated={load}
+      <InviteModal open={inviteOpen} onOpenChange={setInviteOpen} entrepriseId={entrepriseId} onCreated={load} />
+
+      <PermissionsEditorModal
+        open={!!editingMember}
+        onOpenChange={(o) => !o && setEditingMember(null)}
+        title="Modifier les permissions"
+        initial={editingMember?.permissions as Permissions | undefined}
+        initialLabel={editingMember?.role_label ?? ""}
+        onSave={async (perms, label) => {
+          if (!editingMember) return;
+          await updateMemberFn({ data: { member_id: editingMember.id, permissions: perms as Record<string, boolean>, role_label: label || null } });
+          toast.success("Permissions mises à jour");
+          setEditingMember(null);
+          load();
+        }}
+      />
+
+      <PermissionsEditorModal
+        open={!!editingInvite}
+        onOpenChange={(o) => !o && setEditingInvite(null)}
+        title="Modifier l'invitation"
+        initial={editingInvite?.permissions as Permissions | undefined}
+        initialLabel={editingInvite?.role_label ?? ""}
+        onSave={async (perms) => {
+          if (!editingInvite) return;
+          await updateInviteFn({ data: { id: editingInvite.id, permissions: perms as Record<string, boolean> } });
+          toast.success("Invitation mise à jour");
+          setEditingInvite(null);
+          load();
+        }}
       />
 
       <AlertDialog open={!!toRemove} onOpenChange={(o) => !o && setToRemove(null)}>
@@ -806,7 +850,7 @@ function TeamSection({ entrepriseId, currentUserId, plan }: { entrepriseId: stri
           <AlertDialogHeader>
             <AlertDialogTitle>Retirer ce membre ?</AlertDialogTitle>
             <AlertDialogDescription>
-              {toRemove?.full_name} n'aura plus accès à votre maison d'édition. Cette action est irréversible.
+              Êtes-vous sûr de vouloir retirer {toRemove?.full_name} de votre équipe ? Cette action est irréversible.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
@@ -815,10 +859,13 @@ function TeamSection({ entrepriseId, currentUserId, plan }: { entrepriseId: stri
               onClick={async (e) => {
                 e.preventDefault();
                 if (!toRemove) return;
-                const { error } = await supabase.from("profiles").update({ entreprise_id: null }).eq("id", toRemove.id);
-                if (error) return toast.error(error.message);
-                toast.success("Membre retiré");
-                setMembers((prev) => prev?.filter((x) => x.id !== toRemove.id) ?? prev);
+                try {
+                  await removeMemberFn({ data: { member_id: toRemove.id } });
+                  toast.success("Membre retiré");
+                  setMembers((prev) => prev?.filter((x) => x.id !== toRemove.id) ?? prev);
+                } catch (err) {
+                  toast.error(err instanceof Error ? err.message : "Erreur");
+                }
                 setToRemove(null);
               }}
               className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
@@ -832,58 +879,220 @@ function TeamSection({ entrepriseId, currentUserId, plan }: { entrepriseId: stri
   );
 }
 
-function InviteModal({
-  open, onOpenChange, entrepriseId, onCreated,
-}: { open: boolean; onOpenChange: (o: boolean) => void; entrepriseId: string | null; onCreated: () => void }) {
-  const [email, setEmail] = useState("");
-  const [role, setRole] = useState<AppRole>("editeur");
-  const [loading, setLoading] = useState(false);
+function PermissionBadges({ perms }: { perms: Record<string, boolean> }) {
+  const active = PAGES.filter((p) => perms[p.key]);
+  if (active.length === 0) return <span className="text-xs text-muted-foreground italic">Aucun accès</span>;
+  return (
+    <div className="flex flex-wrap gap-1">
+      {active.slice(0, 6).map((p) => (
+        <span key={p.key} title={p.label} className="inline-flex items-center gap-1 text-[11px] bg-primary/10 text-primary border border-primary/20 rounded-md px-1.5 py-0.5">
+          <span>{p.emoji}</span>
+          <span className="hidden md:inline">{p.label}</span>
+        </span>
+      ))}
+      {active.length > 6 && <span className="text-[11px] text-muted-foreground">+{active.length - 6}</span>}
+    </div>
+  );
+}
 
-  const submit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!entrepriseId) return;
-    setLoading(true);
-    const { error } = await supabase.from("invitations").insert({
-      entreprise_id: entrepriseId,
-      email,
-      role,
-    });
-    setLoading(false);
-    if (error) return toast.error(error.message);
-    toast.success("Invitation envoyée");
-    setEmail(""); setRole("editeur");
-    onOpenChange(false);
-    onCreated();
+function PermissionTogglesList({ perms, setPerms }: { perms: Permissions; setPerms: (p: Permissions) => void }) {
+  const toggle = (k: PermissionKey) => { if (k !== "dashboard") setPerms({ ...perms, [k]: !perms[k] }); };
+  return (
+    <div className="space-y-3">
+      <div className="flex flex-wrap gap-2">
+        {PRESETS.map((preset) => (
+          <Button key={preset.label} type="button" size="sm" variant="outline" onClick={() => setPerms(applyPreset(perms, preset.keys))}>{preset.label}</Button>
+        ))}
+        <Button type="button" size="sm" variant="outline" onClick={() => setPerms(fullPermissions())}>Tout activer</Button>
+        <Button type="button" size="sm" variant="outline" onClick={() => setPerms(defaultInvitationPermissions())}>Tout désactiver</Button>
+      </div>
+      <div className="rounded-xl border border-border divide-y divide-border">
+        {PAGES.filter((p) => !p.adminOnly).map((page) => {
+          const checked = !!perms[page.key];
+          const locked = page.key === "dashboard";
+          return (
+            <button
+              key={page.key}
+              type="button"
+              onClick={() => toggle(page.key)}
+              disabled={locked}
+              className={cn("w-full flex items-center gap-3 p-3 text-left hover:bg-muted/30 transition-colors", locked && "opacity-80 cursor-not-allowed")}
+            >
+              <span className="text-xl">{page.emoji}</span>
+              <div className="flex-1 min-w-0">
+                <div className="font-medium text-sm">{page.label}</div>
+                <div className="text-xs text-muted-foreground">{page.description}</div>
+              </div>
+              <div className={cn("relative h-6 w-11 rounded-full transition-colors", checked ? "bg-primary" : "bg-muted")}>
+                <div className={cn("absolute top-0.5 h-5 w-5 rounded-full bg-background shadow transition-transform", checked ? "translate-x-[22px]" : "translate-x-0.5")} />
+              </div>
+            </button>
+          );
+        })}
+      </div>
+    </div>
+  );
+}
+
+function PermissionsEditorModal({
+  open, onOpenChange, title, initial, initialLabel, onSave,
+}: {
+  open: boolean; onOpenChange: (o: boolean) => void; title: string;
+  initial?: Permissions; initialLabel?: string;
+  onSave: (perms: Permissions, label?: string) => Promise<void>;
+}) {
+  const [perms, setPerms] = useState<Permissions>(defaultInvitationPermissions());
+  const [label, setLabel] = useState("");
+  const [saving, setSaving] = useState(false);
+
+  useEffect(() => {
+    if (open) {
+      setPerms({ ...defaultInvitationPermissions(), ...(initial ?? {}), dashboard: true });
+      setLabel(initialLabel ?? "");
+    }
+  }, [open, initial, initialLabel]);
+
+  const submit = async () => {
+    setSaving(true);
+    try {
+      await onSave({ ...perms, dashboard: true, parametres: false }, label);
+    } catch (e) {
+      toast.error(e instanceof Error ? e.message : "Erreur");
+    } finally { setSaving(false); }
   };
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="bg-card border-border">
-        <DialogHeader><DialogTitle>Inviter un membre</DialogTitle></DialogHeader>
-        <form onSubmit={submit} className="space-y-4">
+      <DialogContent className="bg-card border-border max-w-2xl max-h-[85vh] overflow-hidden flex flex-col">
+        <DialogHeader>
+          <DialogTitle>{title}</DialogTitle>
+          <DialogDescription>Activez les pages auxquelles ce membre aura accès.</DialogDescription>
+        </DialogHeader>
+        <div className="flex-1 overflow-y-auto space-y-4 pr-1">
           <div className="space-y-2">
-            <Label>Email</Label>
-            <Input type="email" required value={email} onChange={(e) => setEmail(e.target.value)} placeholder="collaborateur@exemple.com" />
+            <Label>Libellé du rôle (optionnel)</Label>
+            <Input value={label} onChange={(e) => setLabel(e.target.value)} placeholder="ex: Correctrice, Commercial..." />
           </div>
-          <div className="space-y-2">
-            <Label>Rôle</Label>
-            <Select value={role} onValueChange={(v) => setRole(v as AppRole)}>
-              <SelectTrigger><SelectValue /></SelectTrigger>
-              <SelectContent>
-                <SelectItem value="admin">Admin — accès complet</SelectItem>
-                <SelectItem value="editeur">Éditeur — manuscrits et auteurs</SelectItem>
-                <SelectItem value="comptable">Comptable — finances</SelectItem>
-                <SelectItem value="commercial">Commercial — stocks</SelectItem>
-              </SelectContent>
-            </Select>
+          <PermissionTogglesList perms={perms} setPerms={setPerms} />
+        </div>
+        <DialogFooter>
+          <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>Annuler</Button>
+          <Button onClick={submit} disabled={saving} className="bg-primary text-primary-foreground hover:bg-primary/90">
+            {saving ? <Loader2 className="h-4 w-4 animate-spin" /> : "Enregistrer"}
+          </Button>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
+  );
+}
+
+function InviteModal({
+  open, onOpenChange, entrepriseId, onCreated,
+}: { open: boolean; onOpenChange: (o: boolean) => void; entrepriseId: string | null; onCreated: () => void }) {
+  const [step, setStep] = useState<1 | 2>(1);
+  const [fullName, setFullName] = useState("");
+  const [email, setEmail] = useState("");
+  const [roleLabel, setRoleLabel] = useState("");
+  const [perms, setPerms] = useState<Permissions>(defaultInvitationPermissions());
+  const [loading, setLoading] = useState(false);
+  const [createdLink, setCreatedLink] = useState<string | null>(null);
+
+  const create = useServerFn(createInvitation);
+
+  useEffect(() => {
+    if (open) {
+      setStep(1); setFullName(""); setEmail(""); setRoleLabel("");
+      setPerms(defaultInvitationPermissions());
+      setCreatedLink(null);
+    }
+  }, [open]);
+
+  const next = () => {
+    if (!email.trim()) return toast.error("Email requis");
+    setStep(2);
+  };
+
+  const submit = async () => {
+    if (!entrepriseId) return;
+    setLoading(true);
+    try {
+      const r = await create({
+        data: {
+          email: email.trim(),
+          full_name: fullName.trim() || null,
+          role_label: roleLabel.trim() || null,
+          permissions: { ...perms, dashboard: true, parametres: false } as Record<string, boolean>,
+        },
+      });
+      const link = `${window.location.origin}/rejoindre/${r.token}`;
+      setCreatedLink(link);
+      toast.success("Invitation envoyée !");
+      onCreated();
+    } catch (e) {
+      toast.error(e instanceof Error ? e.message : "Erreur");
+    } finally { setLoading(false); }
+  };
+
+  return (
+    <Dialog open={open} onOpenChange={onOpenChange}>
+      <DialogContent className="bg-card border-border max-w-2xl max-h-[85vh] overflow-hidden flex flex-col">
+        <DialogHeader>
+          <DialogTitle>Inviter un membre</DialogTitle>
+          <DialogDescription>
+            {createdLink ? "Partagez le lien d'invitation."
+              : step === 1 ? "Étape 1/2 — Informations du membre"
+              : "Étape 2/2 — Accès aux pages"}
+          </DialogDescription>
+        </DialogHeader>
+
+        {createdLink ? (
+          <div className="space-y-4">
+            <div className="rounded-xl border border-emerald-500/30 bg-emerald-500/10 p-4 text-sm text-emerald-200">
+              ✅ L'invitation a été créée et expire dans 7 jours.
+            </div>
+            <div className="space-y-2">
+              <Label>Lien d'invitation</Label>
+              <div className="flex gap-2">
+                <Input readOnly value={createdLink} className="font-mono text-xs" />
+                <Button onClick={() => { navigator.clipboard.writeText(createdLink); toast.success("Lien copié"); }}>
+                  <Copy className="h-4 w-4" /> Copier
+                </Button>
+              </div>
+            </div>
+            <DialogFooter>
+              <Button onClick={() => onOpenChange(false)}>Fermer</Button>
+            </DialogFooter>
           </div>
-          <DialogFooter>
-            <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>Annuler</Button>
-            <Button type="submit" disabled={loading} className="bg-primary text-primary-foreground hover:bg-primary/90">
-              {loading ? <Loader2 className="h-4 w-4 animate-spin" /> : "Envoyer l'invitation"}
-            </Button>
-          </DialogFooter>
-        </form>
+        ) : step === 1 ? (
+          <div className="space-y-4 flex-1 overflow-y-auto pr-1">
+            <div className="space-y-2">
+              <Label>Nom complet (optionnel)</Label>
+              <Input value={fullName} onChange={(e) => setFullName(e.target.value)} placeholder="Ex : Aminata Diarra" />
+            </div>
+            <div className="space-y-2">
+              <Label>Email <span className="text-destructive">*</span></Label>
+              <Input type="email" required value={email} onChange={(e) => setEmail(e.target.value)} placeholder="collaborateur@exemple.com" />
+            </div>
+            <div className="space-y-2">
+              <Label>Libellé du rôle (optionnel)</Label>
+              <Input value={roleLabel} onChange={(e) => setRoleLabel(e.target.value)} placeholder="ex : Correctrice, Commercial..." />
+            </div>
+            <DialogFooter>
+              <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>Annuler</Button>
+              <Button onClick={next} className="bg-primary text-primary-foreground hover:bg-primary/90">Suivant</Button>
+            </DialogFooter>
+          </div>
+        ) : (
+          <div className="flex-1 overflow-y-auto space-y-4 pr-1">
+            <PermissionTogglesList perms={perms} setPerms={setPerms} />
+            <DialogFooter>
+              <Button type="button" variant="outline" onClick={() => setStep(1)}>Retour</Button>
+              <Button onClick={submit} disabled={loading} className="bg-primary text-primary-foreground hover:bg-primary/90">
+                {loading ? <Loader2 className="h-4 w-4 animate-spin" /> : "Envoyer l'invitation"}
+              </Button>
+            </DialogFooter>
+          </div>
+        )}
       </DialogContent>
     </Dialog>
   );
