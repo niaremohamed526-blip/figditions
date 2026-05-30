@@ -3,7 +3,7 @@ import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Loader2, Lock, Smartphone, CreditCard, ShieldCheck, RotateCcw, Sparkles, AlertTriangle } from "lucide-react";
+import { Loader2, Lock, Smartphone, CreditCard, ShieldCheck, RotateCcw, Sparkles } from "lucide-react";
 import { useServerFn } from "@tanstack/react-start";
 import { createPaymentInvoice, getPaydunyaModeFn } from "@/lib/paiements.functions";
 import { toast } from "sonner";
@@ -41,18 +41,15 @@ export function UpgradePaymentModal({ open, onOpenChange, plan, defaultPeriode =
   const [methode, setMethode] = useState<Methode>("orange_money");
   const [phone, setPhone] = useState("");
   const [loading, setLoading] = useState(false);
-  const [mode, setMode] = useState<"test" | "live">("test");
 
   const createInvoice = useServerFn(createPaymentInvoice);
-  const getMode = useServerFn(getPaydunyaModeFn);
 
   useEffect(() => {
     if (!open) return;
     setPeriode(defaultPeriode);
     setMethode("orange_money");
     setPhone("");
-    getMode({}).then((r) => setMode(r.mode)).catch(() => setMode("test"));
-  }, [open, defaultPeriode, getMode]);
+  }, [open, defaultPeriode]);
 
   const amount = periode === "mensuel" ? planDef.monthlyFcfa : planDef.yearlyFcfa;
   const annualSavings = useMemo(() => planDef.monthlyFcfa * 12 - planDef.yearlyFcfa, [planDef]);
@@ -94,12 +91,12 @@ export function UpgradePaymentModal({ open, onOpenChange, plan, defaultPeriode =
             <p className="text-sm text-muted-foreground">Débloquez toutes les fonctionnalités</p>
           </div>
 
-          {mode === "test" && (
-            <div className="mb-4 flex items-start gap-2 rounded-lg border border-yellow-500/30 bg-yellow-500/10 p-3 text-xs text-yellow-200">
-              <AlertTriangle className="h-4 w-4 shrink-0 mt-0.5" />
-              <span>Mode test activé — Aucun vrai paiement ne sera effectué.</span>
-            </div>
-          )}
+          <div className="mb-4 flex items-center justify-center gap-1.5 rounded-lg border border-emerald-500/30 bg-emerald-500/10 p-2.5 text-xs text-emerald-300">
+            <ShieldCheck className="h-4 w-4" />
+            <span className="font-medium">Paiement sécurisé par PayDunya</span>
+          </div>
+
+
 
           {/* Plan summary */}
           <div className="rounded-xl border border-border bg-background/40 p-4 mb-5">
