@@ -443,8 +443,11 @@ export type Database = {
           email: string
           entreprise_id: string
           expires_at: string
+          full_name: string | null
           id: string
+          permissions: Json
           role: string
+          role_label: string | null
           statut: string
           token: string
         }
@@ -453,8 +456,11 @@ export type Database = {
           email: string
           entreprise_id: string
           expires_at?: string
+          full_name?: string | null
           id?: string
+          permissions?: Json
           role?: string
+          role_label?: string | null
           statut?: string
           token?: string
         }
@@ -463,8 +469,11 @@ export type Database = {
           email?: string
           entreprise_id?: string
           expires_at?: string
+          full_name?: string | null
           id?: string
+          permissions?: Json
           role?: string
+          role_label?: string | null
           statut?: string
           token?: string
         }
@@ -739,21 +748,27 @@ export type Database = {
           entreprise_id: string | null
           full_name: string
           id: string
+          permissions: Json
           role: string
+          role_label: string | null
         }
         Insert: {
           created_at?: string
           entreprise_id?: string | null
           full_name: string
           id: string
+          permissions?: Json
           role?: string
+          role_label?: string | null
         }
         Update: {
           created_at?: string
           entreprise_id?: string | null
           full_name?: string
           id?: string
+          permissions?: Json
           role?: string
+          role_label?: string | null
         }
         Relationships: [
           {
