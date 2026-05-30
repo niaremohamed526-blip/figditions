@@ -4,7 +4,7 @@ import {
   LayoutDashboard, BookOpen, PenLine, Package, Wallet, FileText, Settings, LogOut, Menu, X, Calculator, Lock, Factory, RefreshCw,
 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
-import { useAuth, useProfile, type AppRole } from "@/hooks/use-auth";
+import { useAuth, useProfile } from "@/hooks/use-auth";
 import { useI18n, type Lang } from "@/hooks/use-i18n";
 import { cn } from "@/lib/utils";
 import { Logo } from "@/components/logo";
@@ -12,27 +12,28 @@ import { planFor } from "@/lib/plans";
 import { NotificationBell } from "@/components/notification-bell";
 import { useRealtimeTable } from "@/hooks/use-realtime";
 import { notifyEntrepriseUpdated } from "@/hooks/use-auth";
+import type { PermissionKey } from "@/lib/permissions";
 
 type NavItem = {
   to: string;
   labelFr: string;
   labelEn: string;
   icon: typeof LayoutDashboard;
-  roles: AppRole[];
+  permission: PermissionKey | "stocks_any";
   feature?: "contrats" | "finances" | "conversions";
 };
 
 const NAV: NavItem[] = [
-  { to: "/dashboard", labelFr: "Tableau de bord", labelEn: "Dashboard", icon: LayoutDashboard, roles: ["admin", "editeur", "comptable", "commercial"] },
-  { to: "/manuscrits", labelFr: "Manuscrits", labelEn: "Manuscripts", icon: BookOpen, roles: ["admin", "editeur"] },
-  { to: "/auteurs", labelFr: "Auteurs", labelEn: "Authors", icon: PenLine, roles: ["admin", "editeur"] },
-  { to: "/stocks", labelFr: "Stocks", labelEn: "Stock Tracking", icon: Package, roles: ["admin", "commercial"] },
-  { to: "/estimateur", labelFr: "Estimateur", labelEn: "Cost Estimator", icon: Calculator, roles: ["admin", "editeur"] },
-  { to: "/imprimeries", labelFr: "Imprimeries", labelEn: "Print Directory", icon: Factory, roles: ["admin", "editeur", "comptable", "commercial"] },
-  { to: "/conversions", labelFr: "Conversions", labelEn: "Conversions", icon: RefreshCw, roles: ["admin", "editeur"], feature: "conversions" },
-  { to: "/finances", labelFr: "Finances", labelEn: "Finances", icon: Wallet, roles: ["admin", "comptable"], feature: "finances" },
-  { to: "/contrats", labelFr: "Contrats", labelEn: "Contracts", icon: FileText, roles: ["admin"], feature: "contrats" },
-  { to: "/parametres", labelFr: "Paramètres", labelEn: "Settings", icon: Settings, roles: ["admin"] },
+  { to: "/dashboard", labelFr: "Tableau de bord", labelEn: "Dashboard", icon: LayoutDashboard, permission: "dashboard" },
+  { to: "/manuscrits", labelFr: "Manuscrits", labelEn: "Manuscripts", icon: BookOpen, permission: "manuscrits" },
+  { to: "/auteurs", labelFr: "Auteurs", labelEn: "Authors", icon: PenLine, permission: "auteurs" },
+  { to: "/stocks", labelFr: "Stocks", labelEn: "Stock Tracking", icon: Package, permission: "stocks_any" },
+  { to: "/estimateur", labelFr: "Estimateur", labelEn: "Cost Estimator", icon: Calculator, permission: "estimateur" },
+  { to: "/imprimeries", labelFr: "Imprimeries", labelEn: "Print Directory", icon: Factory, permission: "imprimeries" },
+  { to: "/conversions", labelFr: "Conversions", labelEn: "Conversions", icon: RefreshCw, permission: "conversions", feature: "conversions" },
+  { to: "/finances", labelFr: "Finances", labelEn: "Finances", icon: Wallet, permission: "finances", feature: "finances" },
+  { to: "/contrats", labelFr: "Contrats", labelEn: "Contracts", icon: FileText, permission: "contrats", feature: "contrats" },
+  { to: "/parametres", labelFr: "Paramètres", labelEn: "Settings", icon: Settings, permission: "parametres" },
 ];
 
 
@@ -63,9 +64,6 @@ export function AppShell({ children }: { children: ReactNode }) {
   const navigate = useNavigate();
   const [mobileOpen, setMobileOpen] = useState(false);
 
-  // Realtime: when the entreprise row changes (plan upgrade via webhook,
-  // settings update, etc.) refresh profile+entreprise so locked pages
-  // unlock immediately without refresh.
   useRealtimeTable("entreprises", entreprise?.id ?? null, () => {
     notifyEntrepriseUpdated();
   }, "id");
@@ -75,10 +73,18 @@ export function AppShell({ children }: { children: ReactNode }) {
     navigate({ to: "/login" });
   };
 
-  const role: AppRole = profile?.role ?? "admin";
+  const isAdmin = profile?.role === "admin";
+  const perms = profile?.permissions ?? {};
   const plan = planFor(entreprise?.plan);
+
+  const hasPermission = (n: NavItem) => {
+    if (isAdmin) return true;
+    if (n.permission === "stocks_any") return !!(perms.stocks_interne || perms.stocks_externe);
+    return !!perms[n.permission];
+  };
+
   const items = NAV
-    .filter((n) => n.roles.includes(role))
+    .filter(hasPermission)
     .map((n) => ({ ...n, locked: n.feature ? !plan[n.feature] : false }));
 
   const companyName = entreprise?.nom ?? "";
@@ -120,6 +126,19 @@ export function AppShell({ children }: { children: ReactNode }) {
     )
   );
 
+  // Mobile bottom tabs: filter by what user can access (max 4 visible)
+  const mobileTabsAll = [
+    { to: "/dashboard", icon: LayoutDashboard, labelFr: "Accueil", labelEn: "Home", permission: "dashboard" as PermissionKey | "stocks_any" },
+    { to: "/manuscrits", icon: BookOpen, labelFr: "Livres", labelEn: "Books", permission: "manuscrits" as PermissionKey | "stocks_any" },
+    { to: "/stocks", icon: Package, labelFr: "Stocks", labelEn: "Stocks", permission: "stocks_any" as PermissionKey | "stocks_any" },
+    { to: "/finances", icon: Wallet, labelFr: "Finances", labelEn: "Finance", permission: "finances" as PermissionKey | "stocks_any" },
+  ];
+  const mobileTabs = mobileTabsAll.filter((tab) => {
+    if (isAdmin) return true;
+    if (tab.permission === "stocks_any") return !!(perms.stocks_interne || perms.stocks_externe);
+    return !!perms[tab.permission as PermissionKey];
+  });
+
   return (
     <div className="min-h-screen gradient-bg flex">
       <aside className="hidden md:flex w-64 flex-col bg-sidebar border-r border-border sticky top-0 h-screen">
@@ -147,7 +166,6 @@ export function AppShell({ children }: { children: ReactNode }) {
         </div>
       </aside>
 
-      {/* Mobile top bar: hamburger LEFT, logo center, bell + lang right */}
       <div className="md:hidden fixed top-0 left-0 right-0 z-30 bg-sidebar/95 backdrop-blur border-b border-border h-14 flex items-center justify-between px-3 gap-2">
         <button
           onClick={() => setMobileOpen(true)}
@@ -163,7 +181,6 @@ export function AppShell({ children }: { children: ReactNode }) {
         <LangToggle lang={lang} setLang={setLang} />
       </div>
 
-      {/* Mobile sidebar drawer (slide from left + dark overlay) */}
       <div
         className={cn(
           "md:hidden fixed inset-0 z-40 transition-opacity duration-300",
@@ -205,14 +222,8 @@ export function AppShell({ children }: { children: ReactNode }) {
         </aside>
       </div>
 
-      {/* Mobile bottom tab bar */}
       <nav className="md:hidden fixed bottom-0 left-0 right-0 z-30 bg-sidebar/95 backdrop-blur border-t border-border h-16 flex items-stretch justify-around pb-[env(safe-area-inset-bottom)]">
-        {[
-          { to: "/dashboard", icon: LayoutDashboard, labelFr: "Accueil", labelEn: "Home" },
-          { to: "/manuscrits", icon: BookOpen, labelFr: "Livres", labelEn: "Books" },
-          { to: "/stocks", icon: Package, labelFr: "Stocks", labelEn: "Stocks" },
-          { to: "/finances", icon: Wallet, labelFr: "Finances", labelEn: "Finance" },
-        ].map((tab) => {
+        {mobileTabs.map((tab) => {
           const active = path === tab.to || path.startsWith(tab.to + "/");
           const Icon = tab.icon;
           return (
