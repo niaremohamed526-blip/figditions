@@ -38,6 +38,7 @@ const ROLE_LABELS: Record<AppRole, string> = {
   editeur: "Éditeur",
   comptable: "Comptable",
   commercial: "Commercial",
+  membre: "Membre",
 };
 
 interface Member {
@@ -46,6 +47,8 @@ interface Member {
   role: AppRole;
   email?: string;
   created_at?: string;
+  permissions?: Record<string, boolean>;
+  role_label?: string | null;
 }
 interface Invitation {
   id: string;
@@ -55,6 +58,9 @@ interface Invitation {
   token: string;
   created_at: string;
   expires_at: string;
+  permissions?: Record<string, boolean>;
+  full_name?: string | null;
+  role_label?: string | null;
 }
 
 function ParametresPage() {
