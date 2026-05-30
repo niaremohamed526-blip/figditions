@@ -32,6 +32,12 @@ export const getSourceUploadUrl = createServerFn({ method: "POST" })
   )
   .handler(async ({ data, context }) => {
     const entId = await getEntrepriseId(context.supabase, context.userId);
+    // Plan gate also on upload URL to short-circuit unauthorized usage.
+    const { data: ent } = await supabaseAdmin
+      .from("entreprises").select("plan").eq("id", entId).single();
+    if (!ent || ent.plan !== "business") {
+      throw new Error("Cette fonctionnalité est réservée au plan Business");
+    }
     const path = `${entId}/sources/${crypto.randomUUID()}.${data.extension}`;
     const { data: signed, error } = await supabaseAdmin.storage
       .from("conversions")
@@ -58,6 +64,21 @@ export const createAndStartConversion = createServerFn({ method: "POST" })
   )
   .handler(async ({ data, context }) => {
     const entId = await getEntrepriseId(context.supabase, context.userId);
+
+    // SECURITY: prevent cross-tenant path injection — file paths MUST live under the caller's tenant prefix.
+    if (!data.fichier_source_path.startsWith(`${entId}/`)) {
+      throw new Error("Accès refusé");
+    }
+    if (data.couverture_path && !data.couverture_path.startsWith(`${entId}/`)) {
+      throw new Error("Accès refusé");
+    }
+
+    // PLAN GATE: conversions are reserved for Business plan.
+    const { data: ent } = await supabaseAdmin
+      .from("entreprises").select("plan").eq("id", entId).single();
+    if (!ent || ent.plan !== "business") {
+      throw new Error("Cette fonctionnalité est réservée au plan Business");
+    }
 
     // Sign source URL for CloudConvert (1h)
     const { data: signed, error: sErr } = await supabaseAdmin.storage

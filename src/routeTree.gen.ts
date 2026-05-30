@@ -16,6 +16,7 @@ import { Route as ConditionsUtilisationRouteImport } from './routes/conditions-u
 import { Route as AProposRouteImport } from './routes/a-propos'
 import { Route as AuthenticatedRouteImport } from './routes/_authenticated'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as RejoindreTokenRouteImport } from './routes/rejoindre.$token'
 import { Route as LectureTokenRouteImport } from './routes/lecture.$token'
 import { Route as AuthenticatedStocksRouteImport } from './routes/_authenticated/stocks'
 import { Route as AuthenticatedParametresRouteImport } from './routes/_authenticated/parametres'
@@ -66,6 +67,11 @@ const AuthenticatedRoute = AuthenticatedRouteImport.update({
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const RejoindreTokenRoute = RejoindreTokenRouteImport.update({
+  id: '/rejoindre/$token',
+  path: '/rejoindre/$token',
   getParentRoute: () => rootRouteImport,
 } as any)
 const LectureTokenRoute = LectureTokenRouteImport.update({
@@ -174,6 +180,7 @@ export interface FileRoutesByFullPath {
   '/parametres': typeof AuthenticatedParametresRoute
   '/stocks': typeof AuthenticatedStocksRoute
   '/lecture/$token': typeof LectureTokenRoute
+  '/rejoindre/$token': typeof RejoindreTokenRoute
   '/auteurs/$auteurId': typeof AuthenticatedAuteursAuteurIdRoute
   '/contrats/$contratId': typeof AuthenticatedContratsContratIdRoute
   '/manuscrits/$manuscritId': typeof AuthenticatedManuscritsManuscritIdRoute
@@ -198,6 +205,7 @@ export interface FileRoutesByTo {
   '/parametres': typeof AuthenticatedParametresRoute
   '/stocks': typeof AuthenticatedStocksRoute
   '/lecture/$token': typeof LectureTokenRoute
+  '/rejoindre/$token': typeof RejoindreTokenRoute
   '/auteurs/$auteurId': typeof AuthenticatedAuteursAuteurIdRoute
   '/contrats/$contratId': typeof AuthenticatedContratsContratIdRoute
   '/manuscrits/$manuscritId': typeof AuthenticatedManuscritsManuscritIdRoute
@@ -224,6 +232,7 @@ export interface FileRoutesById {
   '/_authenticated/parametres': typeof AuthenticatedParametresRoute
   '/_authenticated/stocks': typeof AuthenticatedStocksRoute
   '/lecture/$token': typeof LectureTokenRoute
+  '/rejoindre/$token': typeof RejoindreTokenRoute
   '/_authenticated/auteurs/$auteurId': typeof AuthenticatedAuteursAuteurIdRoute
   '/_authenticated/contrats/$contratId': typeof AuthenticatedContratsContratIdRoute
   '/_authenticated/manuscrits/$manuscritId': typeof AuthenticatedManuscritsManuscritIdRoute
@@ -250,6 +259,7 @@ export interface FileRouteTypes {
     | '/parametres'
     | '/stocks'
     | '/lecture/$token'
+    | '/rejoindre/$token'
     | '/auteurs/$auteurId'
     | '/contrats/$contratId'
     | '/manuscrits/$manuscritId'
@@ -274,6 +284,7 @@ export interface FileRouteTypes {
     | '/parametres'
     | '/stocks'
     | '/lecture/$token'
+    | '/rejoindre/$token'
     | '/auteurs/$auteurId'
     | '/contrats/$contratId'
     | '/manuscrits/$manuscritId'
@@ -299,6 +310,7 @@ export interface FileRouteTypes {
     | '/_authenticated/parametres'
     | '/_authenticated/stocks'
     | '/lecture/$token'
+    | '/rejoindre/$token'
     | '/_authenticated/auteurs/$auteurId'
     | '/_authenticated/contrats/$contratId'
     | '/_authenticated/manuscrits/$manuscritId'
@@ -316,6 +328,7 @@ export interface RootRouteChildren {
   PolitiqueDeConfidentialiteRoute: typeof PolitiqueDeConfidentialiteRoute
   SignupRoute: typeof SignupRoute
   LectureTokenRoute: typeof LectureTokenRoute
+  RejoindreTokenRoute: typeof RejoindreTokenRoute
   ApiPublicPaydunyaWebhookRoute: typeof ApiPublicPaydunyaWebhookRoute
   ApiPublicHooksCheckRemindersRoute: typeof ApiPublicHooksCheckRemindersRoute
 }
@@ -369,6 +382,13 @@ declare module '@tanstack/react-router' {
       path: '/'
       fullPath: '/'
       preLoaderRoute: typeof IndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/rejoindre/$token': {
+      id: '/rejoindre/$token'
+      path: '/rejoindre/$token'
+      fullPath: '/rejoindre/$token'
+      preLoaderRoute: typeof RejoindreTokenRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/lecture/$token': {
@@ -552,6 +572,7 @@ const rootRouteChildren: RootRouteChildren = {
   PolitiqueDeConfidentialiteRoute: PolitiqueDeConfidentialiteRoute,
   SignupRoute: SignupRoute,
   LectureTokenRoute: LectureTokenRoute,
+  RejoindreTokenRoute: RejoindreTokenRoute,
   ApiPublicPaydunyaWebhookRoute: ApiPublicPaydunyaWebhookRoute,
   ApiPublicHooksCheckRemindersRoute: ApiPublicHooksCheckRemindersRoute,
 }
