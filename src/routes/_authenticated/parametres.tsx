@@ -1,6 +1,7 @@
 import { createFileRoute, useNavigate, useSearch } from "@tanstack/react-router";
 import { useEffect, useMemo, useRef, useState } from "react";
-import { Check, X, Sparkles, UserPlus, Trash2, Loader2, Crown, Lock, Copy, Upload, Save, AlertTriangle, KeyRound, Building2 } from "lucide-react";
+import { Check, X, Sparkles, UserPlus, Trash2, Loader2, Crown, Lock, Copy, Upload, Save, AlertTriangle, KeyRound, Building2, Settings2, RotateCw } from "lucide-react";
+import { useServerFn } from "@tanstack/react-start";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth, useProfile, notifyEntrepriseUpdated, type AppRole, type AppPlan } from "@/hooks/use-auth";
 import { Button } from "@/components/ui/button";
@@ -21,6 +22,14 @@ import { UpgradePaymentModal } from "@/components/upgrade-payment-modal";
 import { PaymentResultModal } from "@/components/payment-result-modal";
 import { fcfa } from "@/lib/format";
 import { SecurityCard } from "@/components/security-card";
+import {
+  PAGES, PRESETS, applyPreset, defaultInvitationPermissions, fullPermissions,
+  type Permissions, type PermissionKey,
+} from "@/lib/permissions";
+import {
+  createInvitation, resendInvitation, updateInvitationPermissions,
+  updateMemberPermissions, removeMember,
+} from "@/lib/invitations.functions";
 import { z } from "zod";
 
 const paramsSchema = z.object({
