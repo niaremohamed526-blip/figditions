@@ -726,7 +726,7 @@ function TeamSection({ entrepriseId, currentUserId, plan }: { entrepriseId: stri
                   const isYou = m.id === currentUserId;
                   const isAdminRow = m.role === "admin";
                   const initial = (m.full_name || "?").charAt(0).toUpperCase();
-                  const perms = (m.permissions ?? {}) as Record<string, boolean>;
+                  const perms = (m.permissions ?? {}) as Permissions;
                   return (
                     <tr key={m.id} className="border-t border-border">
                       <td className="px-4 py-3">
@@ -802,7 +802,7 @@ function TeamSection({ entrepriseId, currentUserId, plan }: { entrepriseId: stri
                         {inv.role_label && <div className="text-xs text-muted-foreground">{inv.role_label}</div>}
                       </td>
                       <td className="px-4 py-3">
-                        <PermissionBadges perms={(inv.permissions ?? {}) as Record<string, boolean>} />
+                        <PermissionBadges perms={(inv.permissions ?? {}) as Permissions} />
                       </td>
                       <td className="px-4 py-3 text-muted-foreground hidden sm:table-cell">{days} jour{days > 1 ? "s" : ""}</td>
                       <td className="px-4 py-3 text-right">
@@ -832,7 +832,7 @@ function TeamSection({ entrepriseId, currentUserId, plan }: { entrepriseId: stri
         initialLabel={editingMember?.role_label ?? ""}
         onSave={async (perms, label) => {
           if (!editingMember) return;
-          await updateMemberFn({ data: { member_id: editingMember.id, permissions: perms as Record<string, boolean>, role_label: label || null } });
+          await updateMemberFn({ data: { member_id: editingMember.id, permissions: perms, role_label: label || null } });
           toast.success("Permissions mises à jour");
           setEditingMember(null);
           load();
@@ -847,7 +847,7 @@ function TeamSection({ entrepriseId, currentUserId, plan }: { entrepriseId: stri
         initialLabel={editingInvite?.role_label ?? ""}
         onSave={async (perms) => {
           if (!editingInvite) return;
-          await updateInviteFn({ data: { id: editingInvite.id, permissions: perms as Record<string, boolean> } });
+          await updateInviteFn({ data: { id: editingInvite.id, permissions: perms } });
           toast.success("Invitation mise à jour");
           setEditingInvite(null);
           load();
@@ -888,7 +888,7 @@ function TeamSection({ entrepriseId, currentUserId, plan }: { entrepriseId: stri
   );
 }
 
-function PermissionBadges({ perms }: { perms: Record<string, boolean> }) {
+function PermissionBadges({ perms }: { perms: Permissions }) {
   const active = PAGES.filter((p) => perms[p.key]);
   if (active.length === 0) return <span className="text-xs text-muted-foreground italic">Aucun accès</span>;
   return (
@@ -1030,7 +1030,7 @@ function InviteModal({
           email: email.trim(),
           full_name: fullName.trim() || null,
           role_label: roleLabel.trim() || null,
-          permissions: { ...perms, dashboard: true, parametres: false } as Record<string, boolean>,
+          permissions: { ...perms, dashboard: true, parametres: false },
         },
       });
       const link = `${window.location.origin}/rejoindre/${r.token}`;
