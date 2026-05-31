@@ -56,7 +56,7 @@ interface Member {
   role: AppRole;
   email?: string;
   created_at?: string;
-  permissions?: Record<string, boolean>;
+  permissions?: Permissions;
   role_label?: string | null;
 }
 interface Invitation {
@@ -67,7 +67,7 @@ interface Invitation {
   token: string;
   created_at: string;
   expires_at: string;
-  permissions?: Record<string, boolean>;
+  permissions?: Permissions;
   full_name?: string | null;
   role_label?: string | null;
 }
