@@ -104,8 +104,9 @@ export function useProfile(userId: string | undefined) {
   // Realtime: own profile updates (permissions changed by admin) and own entreprise updates
   useEffect(() => {
     if (!userId) return;
+    const uniq = Math.random().toString(36).slice(2, 10);
     const ch = supabase
-      .channel(`profile-${userId}`)
+      .channel(`profile-${userId}-${uniq}`)
       .on("postgres_changes", { event: "UPDATE", schema: "public", table: "profiles", filter: `id=eq.${userId}` }, () => load())
       .subscribe();
     return () => { supabase.removeChannel(ch); };
