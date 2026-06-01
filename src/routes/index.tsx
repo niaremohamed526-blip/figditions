@@ -110,12 +110,38 @@ function Navbar() {
     return () => window.removeEventListener("scroll", onScroll);
   }, []);
 
+  const navLinks = [
+    { to: "/a-propos", label: t("À propos", "About") },
+    { to: "/login", label: t("Se connecter", "Sign in") },
+  ];
+
   return (
     <header className={cn(
       "sticky top-0 inset-x-0 z-50 transition-all duration-300",
       scrolled ? "bg-background/70 backdrop-blur-xl border-b border-border" : "bg-transparent"
     )}>
-      <nav className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-14 md:h-16 flex items-center">
+      <nav className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-14 md:h-16 flex items-center justify-between">
+        <div className="hidden md:flex items-center gap-6">
+          {navLinks.map((link) => (
+            <Link
+              key={link.to}
+              to={link.to}
+              className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors"
+            >
+              {link.label}
+            </Link>
+          ))}
+        </div>
+
+        <div className="hidden md:flex items-center gap-3">
+          <LangToggle lang={lang} setLang={setLang} />
+          <Link to="/signup">
+            <Button size="sm" className="bg-primary text-primary-foreground hover:bg-primary/90 h-8 px-3">
+              {t("Commencer gratuitement", "Get started free")}
+            </Button>
+          </Link>
+        </div>
+
         <button className="md:hidden p-2 ml-auto" onClick={() => setOpen(!open)} aria-label="Menu">
           {open ? <X className="h-6 w-6" /> : <Menu className="h-6 w-6" />}
         </button>
@@ -123,6 +149,9 @@ function Navbar() {
 
       {open && (
         <div className="md:hidden bg-background/95 backdrop-blur-xl border-b border-border px-4 py-4 space-y-3 animate-fade-in">
+          <Link to="/a-propos" onClick={() => setOpen(false)} className="block text-sm font-medium text-muted-foreground hover:text-foreground py-2">
+            {t("À propos", "About")}
+          </Link>
           <LangToggle lang={lang} setLang={setLang} />
           <Link to="/login" onClick={() => setOpen(false)} className="block">
             <Button variant="outline" className="w-full">{t("Se connecter", "Sign in")}</Button>
