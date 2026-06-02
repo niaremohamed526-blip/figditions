@@ -1,15 +1,17 @@
 import { createFileRoute, Link, useNavigate, useParams } from "@tanstack/react-router";
-import { useEffect, useState, type FormEvent } from "react";
+import { useEffect, useMemo, useState, type FormEvent } from "react";
 import { useServerFn } from "@tanstack/react-start";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Logo } from "@/components/logo";
-import { Loader2, CheckCircle2, Lock, AlertTriangle } from "lucide-react";
+import { Loader2, CheckCircle2, Lock, AlertTriangle, Eye, EyeOff, Check } from "lucide-react";
 import { toast } from "sonner";
 import { getInvitationByToken, acceptInvitation } from "@/lib/invitations.functions";
 import { PAGES, type Permissions, pageLabel } from "@/lib/permissions";
+import { cn } from "@/lib/utils";
+
 
 export const Route = createFileRoute("/rejoindre/$token")({
   component: JoinPage,
