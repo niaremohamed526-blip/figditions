@@ -33,6 +33,23 @@ function JoinPage() {
   const [fullName, setFullName] = useState("");
   const [password, setPassword] = useState("");
   const [confirm, setConfirm] = useState("");
+  const [showPw, setShowPw] = useState(false);
+  const [showConfirm, setShowConfirm] = useState(false);
+  const [shake, setShake] = useState(false);
+  const [formError, setFormError] = useState<string | null>(null);
+
+  const strength = useMemo(() => {
+    if (password.length === 0) return { level: 0, label: "", color: "" };
+    const hasNum = /\d/.test(password);
+    const hasSpec = /[^A-Za-z0-9]/.test(password);
+    if (password.length < 8) return { level: 1, label: "Faible", color: "#ef4444" };
+    if (hasNum && hasSpec) return { level: 3, label: "Fort", color: "#22c55e" };
+    return { level: 2, label: "Moyen", color: "#f59e0b" };
+  }, [password]);
+
+  const passwordValid = password.length >= 8;
+  const matchValid = confirm.length > 0 && password === confirm;
+  const canSubmit = passwordValid && matchValid && !submitting;
 
   useEffect(() => {
     fetchInvite({ data: { token } })
@@ -44,11 +61,25 @@ function JoinPage() {
       .finally(() => setLoading(false));
   }, [token, fetchInvite]);
 
+  const triggerShake = () => {
+    setShake(true);
+    setTimeout(() => setShake(false), 500);
+  };
+
   const onSubmit = async (e: FormEvent) => {
     e.preventDefault();
     if (!invite?.valid) return;
-    if (password.length < 8) return toast.error("Mot de passe trop court (min 8 caractères)");
-    if (password !== confirm) return toast.error("Les mots de passe ne correspondent pas");
+    setFormError(null);
+    if (!passwordValid) {
+      setFormError("Le mot de passe doit contenir au moins 8 caractères.");
+      triggerShake();
+      return;
+    }
+    if (!matchValid) {
+      setFormError("Les mots de passe ne correspondent pas.");
+      triggerShake();
+      return;
+    }
     setSubmitting(true);
     const { data: existing } = await supabase.auth.getUser();
     try {
@@ -61,20 +92,37 @@ function JoinPage() {
             data: { full_name: fullName, invite_token: token },
           },
         });
-        if (error) throw new Error(error.message);
-        // ensure signed-in for accept call
+        if (error) {
+          const m = error.message.toLowerCase();
+          if (m.includes("already") || m.includes("registered") || m.includes("exists")) {
+            setFormError("Un compte existe déjà avec cet email. Connectez-vous directement.");
+          } else if (m.includes("weak") || m.includes("password")) {
+            setFormError("Mot de passe trop faible. Utilisez au moins 8 caractères.");
+          } else if (m.includes("network") || m.includes("fetch")) {
+            setFormError("Erreur de connexion. Réessayez.");
+          } else {
+            setFormError(error.message);
+          }
+          triggerShake();
+          setSubmitting(false);
+          return;
+        }
         const { error: sErr } = await supabase.auth.signInWithPassword({ email: invite.email, password });
         if (sErr) throw new Error(sErr.message);
       }
       await accept({ data: { token } });
-      toast.success("Bienvenue sur FIGDITIONS ! Votre compte a été créé.");
+      toast.success("Bienvenue sur FIGDITIONS !");
       navigate({ to: "/dashboard" });
     } catch (err) {
       const msg = err instanceof Error ? err.message : "Erreur lors de la création du compte";
+      setFormError(msg);
       toast.error(msg);
+      triggerShake();
       setSubmitting(false);
     }
   };
+
+
 
   if (loading) {
     return (
