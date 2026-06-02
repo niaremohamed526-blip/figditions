@@ -27,7 +27,6 @@ export const Route = createFileRoute("/")({
 function Landing() {
   return (
     <div className="min-h-screen bg-background text-foreground overflow-x-hidden">
-      <TopBar />
       <BrandHeader />
       <Navbar />
       <Hero />
@@ -41,6 +40,7 @@ function Landing() {
     </div>
   );
 }
+
 
 function BrandHeader() {
   const { t } = useI18n();
@@ -77,27 +77,6 @@ function BrandHeader() {
   );
 }
 
-function TopBar() {
-  const { t, lang, setLang } = useI18n();
-  return (
-    <div className="w-full border-b border-border/40 bg-background/80 backdrop-blur-sm">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-11 flex items-center justify-end gap-3">
-        <LangToggle lang={lang} setLang={setLang} />
-        <Link to="/login">
-          <Button variant="ghost" size="sm" className="text-muted-foreground hover:text-foreground h-8 px-3">
-            {t("Se connecter", "Sign in")}
-          </Button>
-        </Link>
-        <Link to="/signup">
-          <Button size="sm" className="bg-primary text-primary-foreground hover:bg-primary/90 h-8 px-3">
-            {t("Commencer gratuitement", "Get started free")}
-          </Button>
-        </Link>
-      </div>
-    </div>
-  );
-}
-
 function Navbar() {
   const { t, lang, setLang } = useI18n();
   const [scrolled, setScrolled] = useState(false);
@@ -110,33 +89,30 @@ function Navbar() {
     return () => window.removeEventListener("scroll", onScroll);
   }, []);
 
-  const navLinks = [
-    { to: "/a-propos", label: t("À propos", "About") },
-    { to: "/login", label: t("Se connecter", "Sign in") },
-  ];
-
   return (
     <header className={cn(
       "sticky top-0 inset-x-0 z-50 transition-all duration-300",
-      scrolled ? "bg-background/70 backdrop-blur-xl border-b border-border" : "bg-transparent"
+      scrolled ? "bg-[rgba(10,22,40,0.9)] backdrop-blur-xl border-b border-border" : "bg-transparent"
     )}>
-      <nav className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-14 md:h-16 flex items-center justify-between">
+      <nav className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-14 md:h-16 flex items-center justify-between gap-4">
         <div className="hidden md:flex items-center gap-6">
-          {navLinks.map((link) => (
-            <Link
-              key={link.to}
-              to={link.to}
-              className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors"
-            >
-              {link.label}
-            </Link>
-          ))}
+          <Link
+            to="/a-propos"
+            className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors"
+          >
+            {t("À propos", "About")}
+          </Link>
         </div>
 
-        <div className="hidden md:flex items-center gap-3">
+        <div className="hidden md:flex items-center gap-3 ml-auto">
           <LangToggle lang={lang} setLang={setLang} />
+          <Link to="/login">
+            <Button variant="outline" size="sm" className="h-9 px-4 border-border hover:border-primary hover:text-primary">
+              {t("Se connecter", "Sign in")}
+            </Button>
+          </Link>
           <Link to="/signup">
-            <Button size="sm" className="bg-primary text-primary-foreground hover:bg-primary/90 h-8 px-3">
+            <Button size="sm" className="bg-primary text-primary-foreground hover:bg-primary/90 h-9 px-4">
               {t("Commencer gratuitement", "Get started free")}
             </Button>
           </Link>
@@ -164,6 +140,7 @@ function Navbar() {
     </header>
   );
 }
+
 
 function LangToggle({ lang, setLang }: { lang: "fr" | "en"; setLang: (l: "fr" | "en") => void }) {
   return (
@@ -196,12 +173,12 @@ function Hero() {
           <span className="h-1.5 w-1.5 rounded-full bg-primary animate-pulse" />
           {t("Conçu à Bamako 🇲🇱", "Built in Bamako 🇲🇱")}
         </span>
-        <h1 className="text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-bold tracking-tight leading-[1.05]">
+        <h1 className="text-[32px] sm:text-[42px] md:text-[56px] font-bold tracking-tight leading-[1.2] break-words">
           {t("La plateforme tout-en-un pour les ", "The all-in-one platform for ")}
-          <span className="bg-gradient-to-r from-primary to-[color:var(--gold)] bg-clip-text text-transparent">
-            {t("maisons d'édition africaines", "African publishing houses")}
-          </span>
+          <span style={{ color: "#00C896" }}>{t("maisons d'édition", "African publishing")}</span>{" "}
+          <span style={{ color: "#D4AF37" }}>{t("africaines", "houses")}</span>
         </h1>
+
         <p className="mt-6 text-base sm:text-lg md:text-xl text-muted-foreground max-w-3xl mx-auto leading-relaxed">
           {t(
             "Gérez vos manuscrits, vos stocks, vos contrats et vos finances depuis un seul tableau de bord. Conçu pour Bamako, pensé pour l'Afrique.",
@@ -608,11 +585,21 @@ function Footer() {
     <footer className="border-t border-border bg-card/40 py-12 px-4">
       <div className="max-w-7xl mx-auto grid sm:grid-cols-2 lg:grid-cols-5 gap-8 items-start">
         <div>
-          <Logo className="h-10 w-auto" />
+          <Logo
+            className="h-[60px] w-auto"
+            style={{ filter: "brightness(1.5) drop-shadow(0px 0px 12px rgba(212,175,55,0.5))" }}
+          />
+          <p
+            className="mt-2 font-bold"
+            style={{ color: "#D4AF37", fontSize: "20px", letterSpacing: "3px" }}
+          >
+            FIGDITIONS
+          </p>
           <p className="mt-3 text-sm text-muted-foreground max-w-xs">
             {t("La plateforme éditoriale de l'Afrique de l'Ouest", "The publishing platform of West Africa")}
           </p>
         </div>
+
 
         <div>
           <h4 className="text-sm font-semibold mb-3">{t("Navigation", "Navigation")}</h4>

@@ -24,7 +24,9 @@ export function CookieBanner() {
   if (!visible) return null;
 
   return (
-    <div className="fixed inset-x-0 bottom-0 z-[60] px-4 pb-4 animate-fade-in print:hidden">
+    <div className="fixed inset-x-0 bottom-0 px-4 pb-4 print:hidden" style={{ zIndex: 9999, animation: "cookie-slide-up 0.4s ease-out" }}>
+      <style>{`@keyframes cookie-slide-up { from { transform: translateY(120%); opacity: 0; } to { transform: translateY(0); opacity: 1; } }`}</style>
+
       <div className="max-w-4xl mx-auto rounded-2xl bg-[#0D2137] border-t-2 border-[color:var(--gold)] shadow-2xl p-5 md:p-6 flex flex-col md:flex-row items-start md:items-center gap-4">
         <div className="h-10 w-10 rounded-xl bg-[color:var(--gold)]/15 text-[color:var(--gold)] flex items-center justify-center shrink-0">
           <Cookie className="h-5 w-5" />
