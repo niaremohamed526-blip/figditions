@@ -77,27 +77,6 @@ function BrandHeader() {
   );
 }
 
-function TopBar() {
-  const { t, lang, setLang } = useI18n();
-  return (
-    <div className="w-full border-b border-border/40 bg-background/80 backdrop-blur-sm">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-11 flex items-center justify-end gap-3">
-        <LangToggle lang={lang} setLang={setLang} />
-        <Link to="/login">
-          <Button variant="ghost" size="sm" className="text-muted-foreground hover:text-foreground h-8 px-3">
-            {t("Se connecter", "Sign in")}
-          </Button>
-        </Link>
-        <Link to="/signup">
-          <Button size="sm" className="bg-primary text-primary-foreground hover:bg-primary/90 h-8 px-3">
-            {t("Commencer gratuitement", "Get started free")}
-          </Button>
-        </Link>
-      </div>
-    </div>
-  );
-}
-
 function Navbar() {
   const { t, lang, setLang } = useI18n();
   const [scrolled, setScrolled] = useState(false);
@@ -110,33 +89,30 @@ function Navbar() {
     return () => window.removeEventListener("scroll", onScroll);
   }, []);
 
-  const navLinks = [
-    { to: "/a-propos", label: t("À propos", "About") },
-    { to: "/login", label: t("Se connecter", "Sign in") },
-  ];
-
   return (
     <header className={cn(
       "sticky top-0 inset-x-0 z-50 transition-all duration-300",
-      scrolled ? "bg-background/70 backdrop-blur-xl border-b border-border" : "bg-transparent"
+      scrolled ? "bg-[rgba(10,22,40,0.9)] backdrop-blur-xl border-b border-border" : "bg-transparent"
     )}>
-      <nav className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-14 md:h-16 flex items-center justify-between">
+      <nav className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-14 md:h-16 flex items-center justify-between gap-4">
         <div className="hidden md:flex items-center gap-6">
-          {navLinks.map((link) => (
-            <Link
-              key={link.to}
-              to={link.to}
-              className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors"
-            >
-              {link.label}
-            </Link>
-          ))}
+          <Link
+            to="/a-propos"
+            className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors"
+          >
+            {t("À propos", "About")}
+          </Link>
         </div>
 
-        <div className="hidden md:flex items-center gap-3">
+        <div className="hidden md:flex items-center gap-3 ml-auto">
           <LangToggle lang={lang} setLang={setLang} />
+          <Link to="/login">
+            <Button variant="outline" size="sm" className="h-9 px-4 border-border hover:border-primary hover:text-primary">
+              {t("Se connecter", "Sign in")}
+            </Button>
+          </Link>
           <Link to="/signup">
-            <Button size="sm" className="bg-primary text-primary-foreground hover:bg-primary/90 h-8 px-3">
+            <Button size="sm" className="bg-primary text-primary-foreground hover:bg-primary/90 h-9 px-4">
               {t("Commencer gratuitement", "Get started free")}
             </Button>
           </Link>
@@ -164,6 +140,7 @@ function Navbar() {
     </header>
   );
 }
+
 
 function LangToggle({ lang, setLang }: { lang: "fr" | "en"; setLang: (l: "fr" | "en") => void }) {
   return (
