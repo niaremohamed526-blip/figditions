@@ -188,7 +188,8 @@ function JoinPage() {
           </ul>
         </div>
 
-        <form onSubmit={onSubmit} className="rounded-2xl border border-border bg-card/60 backdrop-blur p-6 space-y-4">
+        <form onSubmit={onSubmit} className={cn("rounded-2xl border border-border bg-card/60 backdrop-blur p-6 space-y-4", shake && "animate-[shake_0.5s]")}>
+          <style>{`@keyframes shake { 0%,100%{transform:translateX(0)} 20%,60%{transform:translateX(-8px)} 40%,80%{transform:translateX(8px)} }`}</style>
           <h2 className="text-lg font-semibold">Créer mon compte</h2>
           <div className="space-y-2">
             <Label>Nom complet</Label>
@@ -198,18 +199,95 @@ function JoinPage() {
             <Label>Email</Label>
             <Input type="email" value={invite.email} disabled />
           </div>
+
           <div className="space-y-2">
             <Label>Mot de passe</Label>
-            <Input type="password" required minLength={8} value={password} onChange={(e) => setPassword(e.target.value)} />
+            <div className="relative">
+              <Input
+                type={showPw ? "text" : "password"}
+                required
+                minLength={8}
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                className="pr-10"
+              />
+              <button
+                type="button"
+                tabIndex={-1}
+                onClick={() => setShowPw((v) => !v)}
+                className="absolute right-2 top-1/2 -translate-y-1/2 p-1.5 text-muted-foreground hover:text-foreground"
+                aria-label={showPw ? "Masquer" : "Afficher"}
+              >
+                {showPw ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+              </button>
+            </div>
+            {password.length > 0 && (
+              <div className="space-y-1">
+                <div className="h-1.5 w-full rounded-full bg-muted overflow-hidden">
+                  <div
+                    className="h-full transition-all duration-300"
+                    style={{ width: `${(strength.level / 3) * 100}%`, backgroundColor: strength.color }}
+                  />
+                </div>
+                <p className="text-xs font-medium" style={{ color: strength.color }}>{strength.label}</p>
+              </div>
+            )}
           </div>
+
           <div className="space-y-2">
             <Label>Confirmer le mot de passe</Label>
-            <Input type="password" required minLength={8} value={confirm} onChange={(e) => setConfirm(e.target.value)} />
+            <div className="relative">
+              <Input
+                type={showConfirm ? "text" : "password"}
+                required
+                minLength={8}
+                value={confirm}
+                onChange={(e) => setConfirm(e.target.value)}
+                className={cn(
+                  "pr-16",
+                  confirm.length > 0 && !matchValid && "border-red-500 focus-visible:ring-red-500",
+                  confirm.length > 0 && matchValid && "border-green-500 focus-visible:ring-green-500",
+                )}
+              />
+              <div className="absolute right-2 top-1/2 -translate-y-1/2 flex items-center gap-1">
+                {confirm.length > 0 && matchValid && <Check className="h-4 w-4 text-green-500" />}
+                <button
+                  type="button"
+                  tabIndex={-1}
+                  onClick={() => setShowConfirm((v) => !v)}
+                  className="p-1.5 text-muted-foreground hover:text-foreground"
+                  aria-label={showConfirm ? "Masquer" : "Afficher"}
+                >
+                  {showConfirm ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                </button>
+              </div>
+            </div>
+            {confirm.length > 0 && !matchValid && (
+              <p className="text-xs text-red-500">Les mots de passe ne correspondent pas</p>
+            )}
           </div>
-          <Button type="submit" disabled={submitting} className="w-full bg-primary text-primary-foreground hover:bg-primary/90 h-11 font-semibold">
+
+          {formError && (
+            <div className="rounded-lg border border-red-500/40 bg-red-500/10 px-3 py-2 text-sm text-red-400">
+              {formError}
+              {formError.includes("existe déjà") && (
+                <>
+                  {" "}
+                  <Link to="/login" className="underline font-semibold">Se connecter</Link>
+                </>
+              )}
+            </div>
+          )}
+
+          <Button
+            type="submit"
+            disabled={!canSubmit}
+            className="w-full bg-primary text-primary-foreground hover:bg-primary/90 h-11 font-semibold disabled:opacity-50"
+          >
             {submitting ? <Loader2 className="h-4 w-4 animate-spin" /> : "Créer mon compte"}
           </Button>
         </form>
+
       </div>
     </div>
   );
