@@ -173,12 +173,12 @@ function Hero() {
           <span className="h-1.5 w-1.5 rounded-full bg-primary animate-pulse" />
           {t("Conçu à Bamako 🇲🇱", "Built in Bamako 🇲🇱")}
         </span>
-        <h1 className="text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-bold tracking-tight leading-[1.05]">
+        <h1 className="text-[32px] sm:text-[42px] md:text-[56px] font-bold tracking-tight leading-[1.2] break-words">
           {t("La plateforme tout-en-un pour les ", "The all-in-one platform for ")}
-          <span className="bg-gradient-to-r from-primary to-[color:var(--gold)] bg-clip-text text-transparent">
-            {t("maisons d'édition africaines", "African publishing houses")}
-          </span>
+          <span style={{ color: "#00C896" }}>{t("maisons d'édition", "African publishing")}</span>{" "}
+          <span style={{ color: "#D4AF37" }}>{t("africaines", "houses")}</span>
         </h1>
+
         <p className="mt-6 text-base sm:text-lg md:text-xl text-muted-foreground max-w-3xl mx-auto leading-relaxed">
           {t(
             "Gérez vos manuscrits, vos stocks, vos contrats et vos finances depuis un seul tableau de bord. Conçu pour Bamako, pensé pour l'Afrique.",
