@@ -585,11 +585,21 @@ function Footer() {
     <footer className="border-t border-border bg-card/40 py-12 px-4">
       <div className="max-w-7xl mx-auto grid sm:grid-cols-2 lg:grid-cols-5 gap-8 items-start">
         <div>
-          <Logo className="h-10 w-auto" />
+          <Logo
+            className="h-[60px] w-auto"
+            style={{ filter: "brightness(1.5) drop-shadow(0px 0px 12px rgba(212,175,55,0.5))" }}
+          />
+          <p
+            className="mt-2 font-bold"
+            style={{ color: "#D4AF37", fontSize: "20px", letterSpacing: "3px" }}
+          >
+            FIGDITIONS
+          </p>
           <p className="mt-3 text-sm text-muted-foreground max-w-xs">
             {t("La plateforme éditoriale de l'Afrique de l'Ouest", "The publishing platform of West Africa")}
           </p>
         </div>
+
 
         <div>
           <h4 className="text-sm font-semibold mb-3">{t("Navigation", "Navigation")}</h4>
