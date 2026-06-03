@@ -978,6 +978,7 @@ export type Database = {
     }
     Functions: {
       current_entreprise_id: { Args: never; Returns: string }
+      current_entreprise_plan: { Args: never; Returns: string }
       fn_notify: {
         Args: {
           p_entreprise: string

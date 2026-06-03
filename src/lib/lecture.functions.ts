@@ -57,11 +57,19 @@ export const openSharedPdf = createServerFn({ method: "POST" })
 
     const { data: m } = await supabaseAdmin
       .from("manuscrits")
-      .select("titre, auteur, pdf_path, nombre_pages")
+      .select("titre, auteur, pdf_path, nombre_pages, entreprise_id")
       .eq("id", share.manuscrit_id)
       .maybeSingle();
 
     if (!m?.pdf_path) return { ok: false as const, reason: "no_file" as const };
+
+    // SECURITY: prevent cross-tenant path injection — the manuscrit's pdf_path
+    // MUST live under that manuscrit's own tenant prefix. Otherwise a tenant
+    // member could overwrite pdf_path with another tenant's storage key and
+    // obtain a signed URL via the share flow.
+    if (!m.entreprise_id || !m.pdf_path.startsWith(`${m.entreprise_id}/`)) {
+      return { ok: false as const, reason: "no_file" as const };
+    }
 
     const { data: signed, error: sErr } = await supabaseAdmin.storage
       .from("manuscrits")
