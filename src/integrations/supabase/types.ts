@@ -988,6 +988,7 @@ export type Database = {
         }
         Returns: undefined
       }
+      increment_pdf_view: { Args: { p_token: string }; Returns: Json }
       pourcentage_droits_pour: {
         Args: { p_auteur: string; p_manuscrit: string }
         Returns: number
