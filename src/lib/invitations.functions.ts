@@ -57,6 +57,7 @@ export const acceptInvitation = createServerFn({ method: "POST" })
   .inputValidator((d: { token: string }) => z.object({ token: z.string().uuid() }).parse(d))
   .handler(async ({ data, context }) => {
     const userId = context.userId;
+    const callerEmail = (context.claims.email as string | undefined)?.toLowerCase() ?? null;
     const { data: inv } = await supabaseAdmin
       .from("invitations")
       .select("*")
@@ -66,6 +67,9 @@ export const acceptInvitation = createServerFn({ method: "POST" })
     if (inv.statut !== "en_attente") throw new Error("Invitation déjà utilisée");
     if (new Date(inv.expires_at as string).getTime() < Date.now())
       throw new Error("Invitation expirée");
+    if (!callerEmail || callerEmail !== (inv.email as string).toLowerCase()) {
+      throw new Error("Ce lien n'est pas valide pour votre adresse email");
+    }
 
     const perms = sanitizePermissions(inv.permissions);
 
