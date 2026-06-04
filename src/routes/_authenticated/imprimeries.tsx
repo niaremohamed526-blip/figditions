@@ -13,6 +13,17 @@ import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sh
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
 
+function getSafeUrl(url: string | null): string | null {
+  if (!url) return null;
+  try {
+    const parsed = new URL(url);
+    if (!["http:", "https:"].includes(parsed.protocol)) return null;
+    return parsed.toString();
+  } catch {
+    return null;
+  }
+}
+
 export const Route = createFileRoute("/_authenticated/imprimeries")({
   component: ImprimeriesPage,
   head: () => ({ meta: [{ title: "Imprimeries — FIGDITIONS" }] }),
