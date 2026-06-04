@@ -147,7 +147,18 @@ function Card({ item, expanded, onToggle }: { item: Imprimerie; expanded: boolea
         {item.adresse && <p className="flex items-start gap-2"><MapPin className="h-4 w-4 mt-0.5 shrink-0 text-primary" /><span>{item.adresse}</span></p>}
         {item.telephone && <p className="flex items-center gap-2"><Phone className="h-4 w-4 shrink-0 text-primary" /><a href={`tel:${item.telephone}`} className="hover:text-foreground">{item.telephone}</a></p>}
         {item.email && <p className="flex items-center gap-2"><Mail className="h-4 w-4 shrink-0 text-primary" /><a href={`mailto:${item.email}`} className="hover:text-foreground truncate">{item.email}</a></p>}
-        {item.site_web && <p className="flex items-center gap-2"><Globe className="h-4 w-4 shrink-0 text-primary" /><a href={item.site_web} target="_blank" rel="noreferrer" className="hover:text-foreground truncate">{item.site_web.replace(/^https?:\/\//, "")}</a></p>}
+        {(() => {
+          const safe = getSafeUrl(item.site_web);
+          if (!safe) return null;
+          return (
+            <p className="flex items-center gap-2">
+              <Globe className="h-4 w-4 shrink-0 text-primary" />
+              <a href={safe} target="_blank" rel="noopener noreferrer" className="hover:text-foreground truncate">
+                {safe.replace(/^https?:\/\//, "")}
+              </a>
+            </p>
+          );
+        })()}
       </div>
 
       <div className="mt-4 flex flex-wrap gap-1.5">
