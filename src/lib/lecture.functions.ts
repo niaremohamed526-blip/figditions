@@ -45,28 +45,38 @@ export const openSharedPdf = createServerFn({ method: "POST" })
     }).parse(d),
   )
   .handler(async ({ data }) => {
-    const { data: share, error } = await supabaseAdmin
-      .from("pdf_partages")
-      .select("id, manuscrit_id, est_actif, nombre_vues_max, nombre_vues_actuel, nom_lecteur, entreprise_lecteur")
-      .eq("token", data.token)
-      .maybeSingle();
-    if (error || !share) return { ok: false as const, reason: "not_found" as const };
-    if (!share.est_actif) return { ok: false as const, reason: "disabled" as const };
-    if (share.nombre_vues_actuel >= share.nombre_vues_max)
-      return { ok: false as const, reason: "exhausted" as const };
+    // Atomic check-and-increment to prevent concurrent requests from bypassing the view cap.
+    const { data: rpcData, error: rpcError } = await supabaseAdmin
+      .rpc("increment_pdf_view", { p_token: data.token });
+
+    if (rpcError || !rpcData) {
+      return { ok: false as const, reason: "not_found" as const };
+    }
+
+    const result = rpcData as {
+      success: boolean;
+      error: "not_found" | "disabled" | "exhausted" | null;
+      views_used?: number;
+      views_max?: number;
+      manuscrit_id?: string;
+      nom_lecteur?: string | null;
+      entreprise_lecteur?: string | null;
+    };
+
+    if (!result.success) {
+      return { ok: false as const, reason: (result.error ?? "not_found") as "not_found" | "disabled" | "exhausted" };
+    }
 
     const { data: m } = await supabaseAdmin
       .from("manuscrits")
       .select("titre, auteur, pdf_path, nombre_pages, entreprise_id")
-      .eq("id", share.manuscrit_id)
+      .eq("id", result.manuscrit_id!)
       .maybeSingle();
 
     if (!m?.pdf_path) return { ok: false as const, reason: "no_file" as const };
 
     // SECURITY: prevent cross-tenant path injection — the manuscrit's pdf_path
-    // MUST live under that manuscrit's own tenant prefix. Otherwise a tenant
-    // member could overwrite pdf_path with another tenant's storage key and
-    // obtain a signed URL via the share flow.
+    // MUST live under that manuscrit's own tenant prefix.
     if (!m.entreprise_id || !m.pdf_path.startsWith(`${m.entreprise_id}/`)) {
       return { ok: false as const, reason: "no_file" as const };
     }
@@ -76,23 +86,15 @@ export const openSharedPdf = createServerFn({ method: "POST" })
       .createSignedUrl(m.pdf_path, 60 * 60);
     if (sErr || !signed) return { ok: false as const, reason: "no_file" as const };
 
-    const newCount = share.nombre_vues_actuel + 1;
-    await supabaseAdmin
-      .from("pdf_partages")
-      .update({
-        nombre_vues_actuel: newCount,
-        last_viewed_at: new Date().toISOString(),
-      })
-      .eq("id", share.id);
-
     return {
       ok: true as const,
       pdfUrl: signed.signedUrl,
       titre: m.titre,
       auteur: m.auteur,
-      nom_lecteur: share.nom_lecteur,
-      entreprise_lecteur: share.entreprise_lecteur,
-      vue_actuelle: newCount,
-      vue_max: share.nombre_vues_max,
+      nom_lecteur: result.nom_lecteur ?? "",
+      entreprise_lecteur: result.entreprise_lecteur ?? "",
+      vue_actuelle: result.views_used ?? 0,
+      vue_max: result.views_max ?? 0,
     };
   });
+
