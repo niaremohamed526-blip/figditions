@@ -10,7 +10,17 @@ import { Logo } from "@/components/logo";
 
 export const Route = createFileRoute("/signup")({
   component: SignupPage,
-  head: () => ({ meta: [{ title: "Inscription — FIGDITIONS" }] }),
+  head: () => ({
+    meta: [
+      { title: "Inscription — FIGDITIONS" },
+      { name: "description", content: "Créez votre compte FIGDITIONS et digitalisez la gestion de votre maison d'édition : manuscrits, contrats, stocks et finances." },
+      { property: "og:title", content: "Inscription — FIGDITIONS" },
+      { property: "og:description", content: "Créez votre compte FIGDITIONS pour votre maison d'édition." },
+      { property: "og:url", content: "https://figditions.xyz/signup" },
+      { property: "og:type", content: "website" },
+    ],
+    links: [{ rel: "canonical", href: "https://figditions.xyz/signup" }],
+  }),
 });
 
 function SignupPage() {

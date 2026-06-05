@@ -9,6 +9,7 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
+import { Route as SitemapDotxmlRouteImport } from './routes/sitemap[.]xml'
 import { Route as SignupRouteImport } from './routes/signup'
 import { Route as PolitiqueDeConfidentialiteRouteImport } from './routes/politique-de-confidentialite'
 import { Route as LoginRouteImport } from './routes/login'
@@ -34,6 +35,11 @@ import { Route as AuthenticatedContratsContratIdRouteImport } from './routes/_au
 import { Route as AuthenticatedAuteursAuteurIdRouteImport } from './routes/_authenticated/auteurs.$auteurId'
 import { Route as ApiPublicHooksCheckRemindersRouteImport } from './routes/api/public/hooks/check-reminders'
 
+const SitemapDotxmlRoute = SitemapDotxmlRouteImport.update({
+  id: '/sitemap.xml',
+  path: '/sitemap.xml',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const SignupRoute = SignupRouteImport.update({
   id: '/signup',
   path: '/signup',
@@ -170,6 +176,7 @@ export interface FileRoutesByFullPath {
   '/login': typeof LoginRoute
   '/politique-de-confidentialite': typeof PolitiqueDeConfidentialiteRoute
   '/signup': typeof SignupRoute
+  '/sitemap.xml': typeof SitemapDotxmlRoute
   '/auteurs': typeof AuthenticatedAuteursRouteWithChildren
   '/contrats': typeof AuthenticatedContratsRouteWithChildren
   '/conversions': typeof AuthenticatedConversionsRoute
@@ -195,6 +202,7 @@ export interface FileRoutesByTo {
   '/login': typeof LoginRoute
   '/politique-de-confidentialite': typeof PolitiqueDeConfidentialiteRoute
   '/signup': typeof SignupRoute
+  '/sitemap.xml': typeof SitemapDotxmlRoute
   '/auteurs': typeof AuthenticatedAuteursRouteWithChildren
   '/contrats': typeof AuthenticatedContratsRouteWithChildren
   '/conversions': typeof AuthenticatedConversionsRoute
@@ -222,6 +230,7 @@ export interface FileRoutesById {
   '/login': typeof LoginRoute
   '/politique-de-confidentialite': typeof PolitiqueDeConfidentialiteRoute
   '/signup': typeof SignupRoute
+  '/sitemap.xml': typeof SitemapDotxmlRoute
   '/_authenticated/auteurs': typeof AuthenticatedAuteursRouteWithChildren
   '/_authenticated/contrats': typeof AuthenticatedContratsRouteWithChildren
   '/_authenticated/conversions': typeof AuthenticatedConversionsRoute
@@ -249,6 +258,7 @@ export interface FileRouteTypes {
     | '/login'
     | '/politique-de-confidentialite'
     | '/signup'
+    | '/sitemap.xml'
     | '/auteurs'
     | '/contrats'
     | '/conversions'
@@ -274,6 +284,7 @@ export interface FileRouteTypes {
     | '/login'
     | '/politique-de-confidentialite'
     | '/signup'
+    | '/sitemap.xml'
     | '/auteurs'
     | '/contrats'
     | '/conversions'
@@ -300,6 +311,7 @@ export interface FileRouteTypes {
     | '/login'
     | '/politique-de-confidentialite'
     | '/signup'
+    | '/sitemap.xml'
     | '/_authenticated/auteurs'
     | '/_authenticated/contrats'
     | '/_authenticated/conversions'
@@ -327,6 +339,7 @@ export interface RootRouteChildren {
   LoginRoute: typeof LoginRoute
   PolitiqueDeConfidentialiteRoute: typeof PolitiqueDeConfidentialiteRoute
   SignupRoute: typeof SignupRoute
+  SitemapDotxmlRoute: typeof SitemapDotxmlRoute
   LectureTokenRoute: typeof LectureTokenRoute
   RejoindreTokenRoute: typeof RejoindreTokenRoute
   ApiPublicPaydunyaWebhookRoute: typeof ApiPublicPaydunyaWebhookRoute
@@ -335,6 +348,13 @@ export interface RootRouteChildren {
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
+    '/sitemap.xml': {
+      id: '/sitemap.xml'
+      path: '/sitemap.xml'
+      fullPath: '/sitemap.xml'
+      preLoaderRoute: typeof SitemapDotxmlRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/signup': {
       id: '/signup'
       path: '/signup'
@@ -571,6 +591,7 @@ const rootRouteChildren: RootRouteChildren = {
   LoginRoute: LoginRoute,
   PolitiqueDeConfidentialiteRoute: PolitiqueDeConfidentialiteRoute,
   SignupRoute: SignupRoute,
+  SitemapDotxmlRoute: SitemapDotxmlRoute,
   LectureTokenRoute: LectureTokenRoute,
   RejoindreTokenRoute: RejoindreTokenRoute,
   ApiPublicPaydunyaWebhookRoute: ApiPublicPaydunyaWebhookRoute,
