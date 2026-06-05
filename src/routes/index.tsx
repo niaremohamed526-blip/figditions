@@ -16,11 +16,14 @@ export const Route = createFileRoute("/")({
   component: Landing,
   head: () => ({
     meta: [
-      { title: "FIGDITIONS — Plateforme éditoriale pour maisons d'édition africaines" },
-      { name: "description", content: "Gérez vos manuscrits, stocks, contrats et finances depuis un seul tableau de bord. Conçu pour Bamako, pensé pour l'Afrique." },
-      { property: "og:title", content: "FIGDITIONS — Plateforme éditoriale" },
+      { title: "FIGDITIONS — Plateforme éditoriale africaine" },
+      { name: "description", content: "Gérez manuscrits, stocks, contrats et finances depuis un tableau de bord unique. Conçu pour les maisons d'édition d'Afrique de l'Ouest." },
+      { property: "og:title", content: "FIGDITIONS — Plateforme éditoriale africaine" },
       { property: "og:description", content: "La plateforme tout-en-un pour les maisons d'édition africaines." },
+      { property: "og:url", content: "https://figditions.xyz/" },
+      { property: "og:type", content: "website" },
     ],
+    links: [{ rel: "canonical", href: "https://figditions.xyz/" }],
   }),
 });
 

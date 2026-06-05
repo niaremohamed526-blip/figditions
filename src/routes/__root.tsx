@@ -78,6 +78,29 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
       { rel: "preconnect", href: "https://fonts.gstatic.com", crossOrigin: "anonymous" },
       { rel: "stylesheet", href: "https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Plus+Jakarta+Sans:wght@500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" },
     ],
+    scripts: [
+      {
+        type: "application/ld+json",
+        children: JSON.stringify({
+          "@context": "https://schema.org",
+          "@graph": [
+            {
+              "@type": "Organization",
+              name: "FIGDITIONS",
+              url: "https://figditions.xyz",
+              logo: "https://figditions.xyz/favicon.ico",
+              description: "Plateforme éditoriale tout-en-un pour les maisons d'édition d'Afrique de l'Ouest.",
+            },
+            {
+              "@type": "WebSite",
+              name: "FIGDITIONS",
+              url: "https://figditions.xyz",
+              inLanguage: "fr",
+            },
+          ],
+        }),
+      },
+    ],
   }),
   shellComponent: RootShell,
   component: RootComponent,

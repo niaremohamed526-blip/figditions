@@ -10,7 +10,17 @@ import { Logo } from "@/components/logo";
 
 export const Route = createFileRoute("/login")({
   component: LoginPage,
-  head: () => ({ meta: [{ title: "Connexion — FIGDITIONS" }] }),
+  head: () => ({
+    meta: [
+      { title: "Connexion — FIGDITIONS" },
+      { name: "description", content: "Connectez-vous à votre espace FIGDITIONS pour gérer manuscrits, contrats, stocks et ventes de votre maison d'édition." },
+      { property: "og:title", content: "Connexion — FIGDITIONS" },
+      { property: "og:description", content: "Accédez à votre espace éditorial FIGDITIONS." },
+      { property: "og:url", content: "https://figditions.xyz/login" },
+      { property: "og:type", content: "website" },
+    ],
+    links: [{ rel: "canonical", href: "https://figditions.xyz/login" }],
+  }),
 });
 
 function LoginPage() {
@@ -32,6 +42,7 @@ function LoginPage() {
   return (
     <div className="min-h-screen gradient-bg flex items-center justify-center px-4 py-12">
       <div className="w-full max-w-md animate-[fade-up_0.6s_ease-out_both]">
+        <h1 className="sr-only">Connexion à votre compte FIGDITIONS</h1>
         <div className="text-center mb-10 flex flex-col items-center">
           <Logo className="h-28 w-auto mb-2" />
           <p className="mt-1 text-muted-foreground text-sm">
