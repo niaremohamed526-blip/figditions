@@ -42,6 +42,7 @@ function LoginPage() {
   return (
     <div className="min-h-screen gradient-bg flex items-center justify-center px-4 py-12">
       <div className="w-full max-w-md animate-[fade-up_0.6s_ease-out_both]">
+        <h1 className="sr-only">Connexion à votre compte FIGDITIONS</h1>
         <div className="text-center mb-10 flex flex-col items-center">
           <Logo className="h-28 w-auto mb-2" />
           <p className="mt-1 text-muted-foreground text-sm">
