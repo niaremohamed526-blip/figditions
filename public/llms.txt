@@ -1,0 +1,12 @@
+# FIGDITIONS
+
+> Plateforme éditoriale tout-en-un pour les maisons d'édition d'Afrique de l'Ouest : gestion de manuscrits, contrats, stocks, ventes et finances.
+
+FIGDITIONS aide les éditeurs africains à digitaliser leur chaîne éditoriale, du dépôt du manuscrit jusqu'au suivi des ventes et des royalties.
+
+## Pages
+
+- [Accueil](/): Présentation de la plateforme, fonctionnalités et tarifs.
+- [À propos](/a-propos): L'équipe et la mission de FIGDITIONS.
+- [Conditions d'utilisation](/conditions-utilisation): Conditions générales d'utilisation.
+- [Politique de confidentialité](/politique-de-confidentialite): Traitement des données personnelles.

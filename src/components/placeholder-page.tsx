@@ -13,7 +13,7 @@ export function PlaceholderPage({
         <div className="mx-auto h-16 w-16 rounded-2xl bg-primary/10 text-primary flex items-center justify-center">
           <Icon className="h-8 w-8" />
         </div>
-        <h3 className="mt-4 font-semibold">Bientôt disponible</h3>
+        <h2 className="mt-4 font-semibold">Bientôt disponible</h2>
         <p className="mt-1 text-sm text-muted-foreground max-w-md mx-auto">
           Ce module est en cours de préparation. Revenez prochainement pour découvrir cette fonctionnalité.
         </p>
