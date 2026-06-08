@@ -221,7 +221,7 @@ export function UpgradePaymentModal({ open, onOpenChange, plan, defaultPeriode =
             onClick={onPay}
             disabled={loading}
             className="w-full h-12 text-base font-semibold"
-            style={{ backgroundColor: "#00C896", color: "#0A1628" }}
+            style={{ backgroundColor: "#C8922A", color: "#0D0A06" }}
           >
             {loading ? (
               <><Loader2 className="h-5 w-5 animate-spin" /> Traitement en cours...</>

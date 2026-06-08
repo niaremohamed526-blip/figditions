@@ -53,7 +53,7 @@ function LecturePage() {
 
   if (!info) {
     return (
-      <div className="min-h-screen flex items-center justify-center" style={{ background: "#0A1628" }}>
+      <div className="min-h-screen flex items-center justify-center" style={{ background: "#0D0A06" }}>
         <Loader2 className="h-8 w-8 animate-spin text-primary" />
       </div>
     );
@@ -64,7 +64,7 @@ function LecturePage() {
 
   if (!opened?.ok) {
     return (
-      <div className="min-h-screen flex items-center justify-center p-6" style={{ background: "#0A1628" }}>
+      <div className="min-h-screen flex items-center justify-center p-6" style={{ background: "#0D0A06" }}>
         <form onSubmit={handleOpen} className="w-full max-w-md space-y-5">
           <div className="text-center space-y-3">
             <Logo className="h-12 mx-auto" />
@@ -101,9 +101,9 @@ function LecturePage() {
 
 function ErrorPage({ reason }: { reason: string }) {
   return (
-    <div className="min-h-screen flex items-center justify-center p-6" style={{ background: "#0A1628" }}>
+    <div className="min-h-screen flex items-center justify-center p-6" style={{ background: "#0D0A06" }}>
       <div className="max-w-md text-center space-y-5">
-        <Lock className="h-16 w-16 mx-auto" style={{ color: "#D4AF37" }} />
+        <Lock className="h-16 w-16 mx-auto" style={{ color: "#E8B84B" }} />
         <p className="text-white text-lg">{reason}</p>
         <Button variant="outline" onClick={() => window.history.back()}>Retour</Button>
         <div className="pt-8"><Logo className="h-8 mx-auto opacity-70" /></div>
@@ -182,7 +182,7 @@ function SecureViewer({ data }: { data: Extract<OpenResult, { ok: true }> }) {
       // Watermark
       const text = `Lecture exclusive — ${data.nom_lecteur}${data.entreprise_lecteur ? " · " + data.entreprise_lecteur : ""} — FIGDITIONS`;
       ctx.save();
-      ctx.fillStyle = "rgba(212,175,55,0.15)";
+      ctx.fillStyle = "rgba(232,184,75,0.15)";
       ctx.font = "bold 28px sans-serif";
       ctx.textAlign = "center";
       ctx.textBaseline = "middle";
@@ -197,12 +197,12 @@ function SecureViewer({ data }: { data: Extract<OpenResult, { ok: true }> }) {
   }, [page, numPages, data.nom_lecteur, data.entreprise_lecteur]);
 
   return (
-    <div className="min-h-screen flex flex-col" style={{ background: "#0A1628" }} onCopy={(e) => e.preventDefault()}>
+    <div className="min-h-screen flex flex-col" style={{ background: "#0D0A06" }} onCopy={(e) => e.preventDefault()}>
       {/* Top bar */}
       <header className="sticky top-0 z-10 flex items-center justify-between gap-3 px-4 py-3 border-b border-border/60 bg-background/80 backdrop-blur">
         <Logo className="h-7" />
         <p className="text-sm font-medium text-foreground truncate max-w-[50%] text-center">{data.titre}</p>
-        <span className="text-xs font-semibold" style={{ color: "#D4AF37" }}>
+        <span className="text-xs font-semibold" style={{ color: "#E8B84B" }}>
           Vue {data.vue_actuelle} sur {data.vue_max}
         </span>
       </header>

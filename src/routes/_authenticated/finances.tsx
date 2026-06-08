@@ -43,7 +43,7 @@ interface Manuscrit { id: string; titre: string; auteur: string; auteur_id?: str
 interface Auteur { id: string; nom_complet: string; }
 interface Stock { id: string; manuscrit_id: string; librairie_nom: string | null; exemplaires_restants: number; prix_unitaire_fcfa: number | null; exemplaires_vendus: number; }
 
-const COLORS = ["#00C896", "#D4AF37", "#4F8FF7", "#E85D8C", "#7E5FFF", "#FF9F45"];
+const COLORS = ["#C8922A", "#E8B84B", "#4F8FF7", "#E85D8C", "#7E5FFF", "#FF9F45"];
 
 function FinancesPage() {
   const { user } = useAuth();
@@ -182,10 +182,10 @@ function FinancesInner({ entrepriseId }: { entrepriseId: string | null }) {
                   <XAxis dataKey="label" stroke="#94A3B8" fontSize={12} />
                   <YAxis stroke="#94A3B8" fontSize={12} tickFormatter={(v) => `${(v/1000).toFixed(0)}k`} />
                   <Tooltip
-                    contentStyle={{ background: "#0D2137", border: "1px solid #1E3A5F", borderRadius: 8 }}
+                    contentStyle={{ background: "#1A1208", border: "1px solid #1E3A5F", borderRadius: 8 }}
                     formatter={(v: number) => fcfa(v)}
                   />
-                  <Bar dataKey="revenue" fill="#00C896" radius={[6, 6, 0, 0]} />
+                  <Bar dataKey="revenue" fill="#C8922A" radius={[6, 6, 0, 0]} />
                 </BarChart>
               </ResponsiveContainer>
             )}
@@ -202,7 +202,7 @@ function FinancesInner({ entrepriseId }: { entrepriseId: string | null }) {
                   <Pie data={pieData} dataKey="value" nameKey="name" outerRadius={80} label={(e) => `${e.name}`}>
                     {pieData.map((_, i) => <Cell key={i} fill={COLORS[i % COLORS.length]} />)}
                   </Pie>
-                  <Tooltip contentStyle={{ background: "#0D2137", border: "1px solid #1E3A5F", borderRadius: 8 }} formatter={(v: number) => fcfa(v)} />
+                  <Tooltip contentStyle={{ background: "#1A1208", border: "1px solid #1E3A5F", borderRadius: 8 }} formatter={(v: number) => fcfa(v)} />
                 </PieChart>
               </ResponsiveContainer>
             )}
@@ -530,10 +530,10 @@ function FinancesAnalytics({ ventes, manuscrits, aMap, mMap }: { ventes: Vente[]
                 <CartesianGrid strokeDasharray="3 3" stroke="#1E3A5F" />
                 <XAxis dataKey="label" stroke="#94A3B8" fontSize={12} />
                 <YAxis stroke="#94A3B8" fontSize={12} tickFormatter={(v) => `${(v/1000).toFixed(0)}k`} />
-                <Tooltip contentStyle={{ background: "#0D2137", border: "1px solid #1E3A5F", borderRadius: 8 }} formatter={(v: number) => fcfa(v)} />
+                <Tooltip contentStyle={{ background: "#1A1208", border: "1px solid #1E3A5F", borderRadius: 8 }} formatter={(v: number) => fcfa(v)} />
                 <Legend />
-                <Bar dataKey="revenue" name="Mensuel" fill="#00C896" radius={[6, 6, 0, 0]} />
-                <Line type="monotone" dataKey="cumul" name="Cumulé" stroke="#D4AF37" strokeWidth={2} />
+                <Bar dataKey="revenue" name="Mensuel" fill="#C8922A" radius={[6, 6, 0, 0]} />
+                <Line type="monotone" dataKey="cumul" name="Cumulé" stroke="#E8B84B" strokeWidth={2} />
               </ComposedChart>
             </ResponsiveContainer>
           )}

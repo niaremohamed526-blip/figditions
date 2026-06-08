@@ -207,15 +207,15 @@ function DashboardPage() {
                   <AreaChart data={revenueData}>
                     <defs>
                       <linearGradient id="revGradient" x1="0" y1="0" x2="0" y2="1">
-                        <stop offset="0%" stopColor="#00C896" stopOpacity={0.6} />
-                        <stop offset="100%" stopColor="#00C896" stopOpacity={0} />
+                        <stop offset="0%" stopColor="#C8922A" stopOpacity={0.6} />
+                        <stop offset="100%" stopColor="#C8922A" stopOpacity={0} />
                       </linearGradient>
                     </defs>
                     <CartesianGrid strokeDasharray="3 3" stroke="#1E3A5F" />
                     <XAxis dataKey="label" stroke="#94A3B8" fontSize={12} />
                     <YAxis stroke="#94A3B8" fontSize={12} tickFormatter={(v) => `${(v/1000).toFixed(0)}k`} />
-                    <Tooltip contentStyle={{ background: "#0D2137", border: "1px solid #1E3A5F", borderRadius: 8 }} formatter={(v: number) => fcfa(v)} />
-                    <Area type="monotone" dataKey="revenue" stroke="#00C896" strokeWidth={2} fill="url(#revGradient)" />
+                    <Tooltip contentStyle={{ background: "#1A1208", border: "1px solid #1E3A5F", borderRadius: 8 }} formatter={(v: number) => fcfa(v)} />
+                    <Area type="monotone" dataKey="revenue" stroke="#C8922A" strokeWidth={2} fill="url(#revGradient)" />
                   </AreaChart>
                 </ResponsiveContainer>
               )}
@@ -232,7 +232,7 @@ function DashboardPage() {
                       <Pie data={statusPie.filter((s) => s.value > 0)} dataKey="value" nameKey="name" innerRadius={55} outerRadius={85} paddingAngle={2}>
                         {statusPie.filter((s) => s.value > 0).map((s) => <Cell key={s.name} fill={s.color} />)}
                       </Pie>
-                      <Tooltip contentStyle={{ background: "#0D2137", border: "1px solid #1E3A5F", borderRadius: 8 }} />
+                      <Tooltip contentStyle={{ background: "#1A1208", border: "1px solid #1E3A5F", borderRadius: 8 }} />
                     </PieChart>
                   </ResponsiveContainer>
                   <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none">

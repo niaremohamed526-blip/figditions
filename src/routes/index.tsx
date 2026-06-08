@@ -73,7 +73,7 @@ function BrandHeader() {
         }
         .animate-brand-in { animation: brand-in 0.8s ease both; }
         .animate-brand-in img {
-          filter: drop-shadow(0px 0px 20px rgba(212,175,55,0.4));
+          filter: drop-shadow(0px 0px 20px rgba(232,184,75,0.4));
         }
       `}</style>
     </div>
@@ -95,7 +95,7 @@ function Navbar() {
   return (
     <header className={cn(
       "sticky top-0 inset-x-0 z-50 transition-all duration-300",
-      scrolled ? "bg-[rgba(10,22,40,0.9)] backdrop-blur-xl border-b border-border" : "bg-transparent"
+      scrolled ? "bg-[rgba(13,10,6,0.9)] backdrop-blur-xl border-b border-border" : "bg-transparent"
     )}>
       <nav className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-14 md:h-16 flex items-center justify-between gap-4">
         <div className="hidden md:flex items-center gap-6">
@@ -166,9 +166,9 @@ function Hero() {
   return (
     <section className="relative flex items-center justify-center pt-12 pb-20 px-4 overflow-hidden">
       <div className="absolute inset-0 -z-10">
-        <div className="absolute inset-0 bg-gradient-to-br from-[#0A1628] via-[#0D2137] to-[#0A1628]" />
+        <div className="absolute inset-0 bg-gradient-to-br from-[#0D0A06] via-[#1A1208] to-[#0D0A06]" />
         <div className="absolute inset-0 opacity-40"
-             style={{ backgroundImage: "radial-gradient(circle at 20% 30%, oklch(0.78 0.17 165 / 0.25), transparent 50%), radial-gradient(circle at 80% 70%, oklch(0.78 0.13 88 / 0.18), transparent 55%)" }} />
+             style={{ backgroundImage: "radial-gradient(circle at 20% 30%, oklch(0.72 0.14 75 / 0.25), transparent 50%), radial-gradient(circle at 80% 70%, oklch(0.82 0.16 80 / 0.18), transparent 55%)" }} />
       </div>
 
       <div className="max-w-5xl mx-auto text-center animate-fade-up">
@@ -178,8 +178,8 @@ function Hero() {
         </span>
         <h1 className="text-[32px] sm:text-[42px] md:text-[56px] font-bold tracking-tight leading-[1.2] break-words">
           {t("La plateforme tout-en-un pour les ", "The all-in-one platform for ")}
-          <span style={{ color: "#00C896" }}>{t("maisons d'édition", "African publishing")}</span>{" "}
-          <span style={{ color: "#D4AF37" }}>{t("africaines", "houses")}</span>
+          <span style={{ color: "#C8922A" }}>{t("maisons d'édition", "African publishing")}</span>{" "}
+          <span style={{ color: "#E8B84B" }}>{t("africaines", "houses")}</span>
         </h1>
 
         <p className="mt-6 text-base sm:text-lg md:text-xl text-muted-foreground max-w-3xl mx-auto leading-relaxed">
@@ -237,7 +237,7 @@ function Features() {
         <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-5">
           {items.map((f, i) => (
             <RevealOnScroll key={i} delay={i * 80}>
-              <div className="group h-full rounded-2xl border border-border bg-[#0D2137] p-6 transition-all duration-300 hover:border-[color:var(--gold)] hover:-translate-y-1 hover:shadow-[0_0_24px_-4px_var(--gold)]">
+              <div className="group h-full rounded-2xl border border-border bg-[#1A1208] p-6 transition-all duration-300 hover:border-[color:var(--gold)] hover:-translate-y-1 hover:shadow-[0_0_24px_-4px_var(--gold)]">
                 <div className="h-12 w-12 rounded-xl bg-primary/15 text-primary flex items-center justify-center group-hover:bg-primary group-hover:text-primary-foreground transition-colors">
                   <f.icon className="h-6 w-6" />
                 </div>
@@ -261,7 +261,7 @@ function Partners() {
     { Icon: Youtube, href: "https://www.youtube.com/@figuira-editions9737", label: "YouTube" },
   ];
   return (
-    <section id="partners" className="py-[60px] px-4 bg-[#0D2137]">
+    <section id="partners" className="py-[60px] px-4 bg-[#1A1208]">
       <div className="max-w-7xl mx-auto">
         <div className="text-center mb-12">
           <h2 className="text-3xl md:text-5xl font-bold tracking-tight">
@@ -276,7 +276,7 @@ function Partners() {
         </div>
 
         <RevealOnScroll>
-          <div className="max-w-2xl mx-auto rounded-2xl border-2 border-[color:var(--gold)] bg-[#0A1628] p-8 md:p-10 text-center relative shadow-[0_0_40px_-10px_var(--gold)]">
+          <div className="max-w-2xl mx-auto rounded-2xl border-2 border-[color:var(--gold)] bg-[#0D0A06] p-8 md:p-10 text-center relative shadow-[0_0_40px_-10px_var(--gold)]">
             <div className="absolute -top-3 left-1/2 -translate-x-1/2">
               <span className="text-xs font-bold px-3 py-1 rounded-full bg-[color:var(--gold)] text-background shadow-glow">
                 {t("Partenaire officiel ⭐", "Official partner ⭐")}
@@ -287,7 +287,7 @@ function Partners() {
               href="https://figuiraeditions.org"
               target="_blank"
               rel="noopener noreferrer"
-              className="inline-block mt-4 transition-transform duration-300 hover:scale-105 hover:drop-shadow-[0_0_24px_rgba(212,175,55,0.6)]"
+              className="inline-block mt-4 transition-transform duration-300 hover:scale-105 hover:drop-shadow-[0_0_24px_rgba(232,184,75,0.6)]"
             >
               <img src={figuiraLogo} alt="Figuira Editions" style={{ height: "80px", width: "auto" }} className="mx-auto" />
             </a>
@@ -349,7 +349,7 @@ function HowItWorks() {
     { emoji: "💸", fr: "Pilotez vos finances", en: "Pilot your finances", dfr: "Suivez vos ventes, calculez les droits d'auteur et analysez vos performances", den: "Track your sales, calculate royalties and analyze your performance" },
   ];
   return (
-    <section className="py-24 px-4 bg-gradient-to-b from-[#0D2137] to-background">
+    <section className="py-24 px-4 bg-gradient-to-b from-[#1A1208] to-background">
       <div className="max-w-7xl mx-auto">
         <div className="text-center mb-16">
           <h2 className="text-3xl md:text-5xl font-bold tracking-tight">{t("Comment ça marche ?", "How it works?")}</h2>
@@ -424,7 +424,7 @@ function Pricing() {
       ],
       cta: t("Choisir Pro", "Choose Pro"),
       ctaVariant: "default" as const,
-      cardClass: "border-primary shadow-glow bg-gradient-to-b from-[#0D2137] to-[#0A1628] lg:scale-105 lg:-my-2 relative",
+      cardClass: "border-primary shadow-glow bg-gradient-to-b from-[#1A1208] to-[#0D0A06] lg:scale-105 lg:-my-2 relative",
       btnClass: "bg-primary text-primary-foreground hover:bg-primary/90",
       highlighted: true,
     },
@@ -557,9 +557,9 @@ function CtaBanner() {
   const { t } = useI18n();
   return (
     <section className="py-20 px-4">
-      <div className="max-w-6xl mx-auto rounded-3xl bg-[#0D2137] border border-border p-10 md:p-16 text-center relative overflow-hidden">
+      <div className="max-w-6xl mx-auto rounded-3xl bg-[#1A1208] border border-border p-10 md:p-16 text-center relative overflow-hidden">
         <div className="absolute inset-0 opacity-30"
-             style={{ backgroundImage: "radial-gradient(circle at 20% 50%, oklch(0.78 0.17 165 / 0.3), transparent 50%), radial-gradient(circle at 80% 50%, oklch(0.78 0.13 88 / 0.2), transparent 50%)" }} />
+             style={{ backgroundImage: "radial-gradient(circle at 20% 50%, oklch(0.72 0.14 75 / 0.3), transparent 50%), radial-gradient(circle at 80% 50%, oklch(0.82 0.16 80 / 0.2), transparent 50%)" }} />
         <div className="relative">
           <h2 className="text-3xl md:text-5xl font-bold tracking-tight">
             {t("Prêt à moderniser votre maison d'édition ?", "Ready to modernize your publishing house?")}
@@ -590,11 +590,11 @@ function Footer() {
         <div>
           <Logo
             className="h-[60px] w-auto"
-            style={{ filter: "brightness(1.5) drop-shadow(0px 0px 12px rgba(212,175,55,0.5))" }}
+            style={{ filter: "brightness(1.5) drop-shadow(0px 0px 12px rgba(232,184,75,0.5))" }}
           />
           <p
             className="mt-2 font-bold"
-            style={{ color: "#D4AF37", fontSize: "20px", letterSpacing: "3px" }}
+            style={{ color: "#E8B84B", fontSize: "20px", letterSpacing: "3px" }}
           >
             FIGDITIONS
           </p>

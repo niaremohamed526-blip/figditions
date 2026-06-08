@@ -424,14 +424,14 @@ function EditorialAnalytics({ items }: { items: Manuscrit[] | null }) {
                 <BarChart data={stageAvg} layout="vertical" margin={{ left: 20 }}>
                   <defs>
                     <linearGradient id="stageGrad" x1="0" y1="0" x2="1" y2="0">
-                      <stop offset="0%" stopColor="#00C896" />
-                      <stop offset="100%" stopColor="#D4AF37" />
+                      <stop offset="0%" stopColor="#C8922A" />
+                      <stop offset="100%" stopColor="#E8B84B" />
                     </linearGradient>
                   </defs>
                   <CartesianGrid strokeDasharray="3 3" stroke="#1E3A5F" />
                   <XAxis type="number" stroke="#94A3B8" fontSize={12} />
                   <YAxis type="category" dataKey="stage" stroke="#94A3B8" fontSize={12} width={90} />
-                  <Tooltip contentStyle={{ background: "#0D2137", border: "1px solid #1E3A5F", borderRadius: 8 }} formatter={(v: number) => `${v} jours`} />
+                  <Tooltip contentStyle={{ background: "#1A1208", border: "1px solid #1E3A5F", borderRadius: 8 }} formatter={(v: number) => `${v} jours`} />
                   <Bar dataKey="days" fill="url(#stageGrad)" radius={[0, 6, 6, 0]} />
                 </BarChart>
               </ResponsiveContainer>
@@ -447,8 +447,8 @@ function EditorialAnalytics({ items }: { items: Manuscrit[] | null }) {
                   <CartesianGrid strokeDasharray="3 3" stroke="#1E3A5F" />
                   <XAxis dataKey="label" stroke="#94A3B8" fontSize={12} />
                   <YAxis stroke="#94A3B8" fontSize={12} allowDecimals={false} />
-                  <Tooltip contentStyle={{ background: "#0D2137", border: "1px solid #1E3A5F", borderRadius: 8 }} />
-                  <Bar dataKey="count" fill="#00C896" radius={[6, 6, 0, 0]} />
+                  <Tooltip contentStyle={{ background: "#1A1208", border: "1px solid #1E3A5F", borderRadius: 8 }} />
+                  <Bar dataKey="count" fill="#C8922A" radius={[6, 6, 0, 0]} />
                 </BarChart>
               </ResponsiveContainer>
             )}

@@ -19,7 +19,7 @@ export function StatusStepper({ statut }: { statut: string }) {
                 <span
                   className={cn(
                     "h-0.5 flex-1 transition-colors",
-                    i === 0 ? "opacity-0" : i <= currentIdx ? "bg-[#00C896]" : "bg-[#1E3A5F]",
+                    i === 0 ? "opacity-0" : i <= currentIdx ? "bg-[#C8922A]" : "bg-[#1E3A5F]",
                   )}
                 />
                 <Circle state={state} />
@@ -27,15 +27,15 @@ export function StatusStepper({ statut }: { statut: string }) {
                 <span
                   className={cn(
                     "h-0.5 flex-1 transition-colors",
-                    i === total - 1 ? "opacity-0" : i < currentIdx ? "bg-[#00C896]" : "bg-[#1E3A5F]",
+                    i === total - 1 ? "opacity-0" : i < currentIdx ? "bg-[#C8922A]" : "bg-[#1E3A5F]",
                   )}
                 />
               </div>
               <span
                 className={cn(
                   "mt-2 text-[11px] text-center leading-tight px-1 transition-colors",
-                  state === "done" && "text-[#00C896] font-medium",
-                  state === "current" && "text-[#D4AF37] font-semibold",
+                  state === "done" && "text-[#C8922A] font-medium",
+                  state === "current" && "text-[#E8B84B] font-semibold",
                   state === "todo" && "text-muted-foreground",
                 )}
               >
@@ -58,7 +58,7 @@ export function StatusStepper({ statut }: { statut: string }) {
                   <span
                     className={cn(
                       "w-0.5 flex-1 min-h-[24px] my-1 transition-colors",
-                      i < currentIdx ? "bg-[#00C896]" : "bg-[#1E3A5F]",
+                      i < currentIdx ? "bg-[#C8922A]" : "bg-[#1E3A5F]",
                     )}
                   />
                 )}
@@ -66,8 +66,8 @@ export function StatusStepper({ statut }: { statut: string }) {
               <span
                 className={cn(
                   "pt-1 pb-4 text-sm transition-colors",
-                  state === "done" && "text-[#00C896] font-medium",
-                  state === "current" && "text-[#D4AF37] font-semibold",
+                  state === "done" && "text-[#C8922A] font-medium",
+                  state === "current" && "text-[#E8B84B] font-semibold",
                   state === "todo" && "text-muted-foreground",
                 )}
               >
@@ -79,7 +79,7 @@ export function StatusStepper({ statut }: { statut: string }) {
       </ol>
 
       <p className="text-xs text-center text-muted-foreground">
-        Étape <span className="text-[#D4AF37] font-semibold">{currentIdx + 1}</span> sur {total}
+        Étape <span className="text-[#E8B84B] font-semibold">{currentIdx + 1}</span> sur {total}
       </p>
     </div>
   );
@@ -88,7 +88,7 @@ export function StatusStepper({ statut }: { statut: string }) {
 function Circle({ state }: { state: "done" | "current" | "todo" }) {
   if (state === "done") {
     return (
-      <span className="h-7 w-7 rounded-full bg-[#00C896] text-white flex items-center justify-center shrink-0 shadow-[0_0_10px_rgba(0,200,150,0.5)]">
+      <span className="h-7 w-7 rounded-full bg-[#C8922A] text-white flex items-center justify-center shrink-0 shadow-[0_0_10px_rgba(200,146,42,0.5)]">
         <Check className="h-4 w-4" strokeWidth={3} />
       </span>
     );
@@ -96,8 +96,8 @@ function Circle({ state }: { state: "done" | "current" | "todo" }) {
   if (state === "current") {
     return (
       <span className="relative h-7 w-7 shrink-0 flex items-center justify-center">
-        <span className="absolute inset-0 rounded-full bg-[#D4AF37]/40 animate-ping" />
-        <span className="relative h-7 w-7 rounded-full bg-[#D4AF37] shadow-[0_0_15px_rgba(212,175,55,0.7)]" />
+        <span className="absolute inset-0 rounded-full bg-[#E8B84B]/40 animate-ping" />
+        <span className="relative h-7 w-7 rounded-full bg-[#E8B84B] shadow-[0_0_15px_rgba(232,184,75,0.7)]" />
       </span>
     );
   }

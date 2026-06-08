@@ -197,17 +197,17 @@ function ManuscritDetailPage() {
         <section
           className="rounded-xl border p-5 flex flex-col md:flex-row md:items-center md:justify-between gap-4"
           style={{
-            borderColor: "rgba(212,175,55,0.35)",
+            borderColor: "rgba(232,184,75,0.35)",
             background:
-              "linear-gradient(135deg, rgba(212,175,55,0.08), rgba(0,200,150,0.06))",
+              "linear-gradient(135deg, rgba(232,184,75,0.08), rgba(200,146,42,0.06))",
           }}
         >
           <div className="flex items-start gap-3">
             <div
               className="h-11 w-11 rounded-lg flex items-center justify-center shrink-0"
-              style={{ background: "rgba(212,175,55,0.15)" }}
+              style={{ background: "rgba(232,184,75,0.15)" }}
             >
-              <Sparkles className="h-5 w-5" style={{ color: "#D4AF37" }} />
+              <Sparkles className="h-5 w-5" style={{ color: "#E8B84B" }} />
             </div>
             <div>
               <h2 className="font-semibold flex items-center gap-2">
@@ -215,9 +215,9 @@ function ManuscritDetailPage() {
                 <span
                   className="text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-full"
                   style={{
-                    background: "rgba(212,175,55,0.15)",
-                    color: "#D4AF37",
-                    border: "1px solid rgba(212,175,55,0.35)",
+                    background: "rgba(232,184,75,0.15)",
+                    color: "#E8B84B",
+                    border: "1px solid rgba(232,184,75,0.35)",
                   }}
                 >
                   Business
@@ -250,7 +250,7 @@ function ManuscritDetailPage() {
       {/* PDF Source */}
       <section className="rounded-xl border border-border bg-card p-5">
         <div className="flex items-center gap-3 mb-4">
-          <FileText className="h-5 w-5" style={{ color: "#00C896" }} />
+          <FileText className="h-5 w-5" style={{ color: "#C8922A" }} />
           <h2 className="font-semibold">📄 Fichier du manuscrit</h2>
         </div>
 
@@ -265,15 +265,15 @@ function ManuscritDetailPage() {
         {uploading ? (
           <div className="rounded-lg border border-border bg-background/30 p-6">
             <div className="flex items-center gap-3 mb-3">
-              <Loader2 className="h-5 w-5 animate-spin" style={{ color: "#00C896" }} />
+              <Loader2 className="h-5 w-5 animate-spin" style={{ color: "#C8922A" }} />
               <p className="text-sm font-medium">Chargement... {progress}%</p>
             </div>
             <Progress value={progress} className="h-2" />
           </div>
         ) : m.pdf_path && pdfMeta ? (
           <div className="rounded-lg border border-border bg-background/30 p-4 flex items-center gap-4 flex-wrap">
-            <div className="h-12 w-12 rounded-lg flex items-center justify-center" style={{ background: "rgba(0,200,150,0.12)" }}>
-              <FileText className="h-6 w-6" style={{ color: "#00C896" }} />
+            <div className="h-12 w-12 rounded-lg flex items-center justify-center" style={{ background: "rgba(200,146,42,0.12)" }}>
+              <FileText className="h-6 w-6" style={{ color: "#C8922A" }} />
             </div>
             <div className="flex-1 min-w-[180px]">
               <p className="font-medium truncate">{pdfMeta.name}</p>
@@ -302,18 +302,18 @@ function ManuscritDetailPage() {
             onDrop={onDrop}
             className="rounded-lg p-10 text-center cursor-pointer transition-colors"
             style={{
-              border: `2px dashed #00C896`,
-              background: dragOver ? "rgba(0,200,150,0.08)" : "transparent",
+              border: `2px dashed #C8922A`,
+              background: dragOver ? "rgba(200,146,42,0.08)" : "transparent",
             }}
           >
-            <CloudUpload className="h-12 w-12 mx-auto mb-3" style={{ color: "#00C896" }} />
+            <CloudUpload className="h-12 w-12 mx-auto mb-3" style={{ color: "#C8922A" }} />
             <p className="font-medium">Glissez votre PDF ici ou cliquez pour sélectionner</p>
             <p className="text-xs text-muted-foreground mt-1">Format accepté: PDF · Taille max: 10 MB</p>
           </div>
         )}
 
         {m.pdf_path && pdfMeta && !uploading && (
-          <p className="mt-3 text-xs flex items-center gap-1.5" style={{ color: "#00C896" }}>
+          <p className="mt-3 text-xs flex items-center gap-1.5" style={{ color: "#C8922A" }}>
             <CheckCircle2 className="h-3.5 w-3.5" /> PDF uploadé avec succès
           </p>
         )}
@@ -322,7 +322,7 @@ function ManuscritDetailPage() {
       {!m.pdf_path && (
         <div
           className="rounded-lg p-3 text-sm flex items-start gap-2"
-          style={{ background: "rgba(212,175,55,0.1)", border: "1px solid rgba(212,175,55,0.3)", color: "#D4AF37" }}
+          style={{ background: "rgba(232,184,75,0.1)", border: "1px solid rgba(232,184,75,0.3)", color: "#E8B84B" }}
         >
           <AlertTriangle className="h-4 w-4 mt-0.5 shrink-0" />
           <span>⚠️ Uploadez d'abord un PDF pour pouvoir créer des liens de partage sécurisés</span>
@@ -333,7 +333,7 @@ function ManuscritDetailPage() {
       <section className="rounded-xl border border-border bg-card p-5">
         <div className="flex items-center justify-between flex-wrap gap-3 mb-4">
           <div className="flex items-center gap-3">
-            <Lock className="h-5 w-5" style={{ color: "#D4AF37" }} />
+            <Lock className="h-5 w-5" style={{ color: "#E8B84B" }} />
             <h2 className="font-semibold">Partage Sécurisé</h2>
           </div>
           <Button
@@ -349,7 +349,7 @@ function ManuscritDetailPage() {
           <Skeleton className="h-32 w-full" />
         ) : partages.length === 0 ? (
           <div className="py-10 text-center">
-            <Lock className="h-10 w-10 mx-auto" style={{ color: "#D4AF37" }} />
+            <Lock className="h-10 w-10 mx-auto" style={{ color: "#E8B84B" }} />
             <p className="mt-3 text-sm text-muted-foreground">
               Aucun lien partagé pour le moment.
             </p>
@@ -478,7 +478,7 @@ function StatCard({ label, value, small }: { label: string; value: string | numb
   return (
     <div className="rounded-lg border border-border bg-background/30 p-4">
       <p className="text-xs uppercase tracking-wide text-muted-foreground">{label}</p>
-      <p className={`mt-1 font-semibold ${small ? "text-base" : "text-2xl"}`} style={{ color: "#D4AF37" }}>{value}</p>
+      <p className={`mt-1 font-semibold ${small ? "text-base" : "text-2xl"}`} style={{ color: "#E8B84B" }}>{value}</p>
     </div>
   );
 }
