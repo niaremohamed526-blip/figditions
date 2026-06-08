@@ -419,7 +419,7 @@
     letter-spacing: 0.5px;
     border: 1px solid transparent;
   }
-  .status-publie     { background: rgba(200,146,42,0.1);  color: #C8922A; border-color: rgba(200,146,42,0.2); }
+  .status-publie     { background: rgba(76,175,125,0.1);  color: #4CAF7D; border-color: rgba(76,175,125,0.2); }
   .status-impression { background: rgba(236,72,153,0.1); color: #EC4899; border-color: rgba(236,72,153,0.2); }
   .status-maquette   { background: rgba(249,115,22,0.1); color: #F97316; border-color: rgba(249,115,22,0.2); }
   .status-echantillon{ background: rgba(245,158,11,0.1); color: #F59E0B; border-color: rgba(245,158,11,0.2); }
@@ -503,7 +503,7 @@ button {
   border-radius: 12px !important;
   box-shadow: 0 8px 32px rgba(0,0,0,0.3) !important;
 }
-[data-sonner-toaster] [data-sonner-toast][data-type="success"] { border-left-color: #C8922A !important; }
+[data-sonner-toaster] [data-sonner-toast][data-type="success"] { border-left-color: #4CAF7D !important; }
 [data-sonner-toaster] [data-sonner-toast][data-type="error"]   { border-left-color: #EF4444 !important; }
 [data-sonner-toaster] [data-sonner-toast][data-type="warning"] { border-left-color: #F59E0B !important; }
 [data-sonner-toaster] [data-sonner-toast][data-type="info"]    { border-left-color: #3B82F6 !important; }
