@@ -31,8 +31,7 @@ export const Route = createFileRoute("/")({
 
 function Landing() {
   return (
-    <div className="min-h-screen bg-background text-foreground overflow-x-hidden">
-      <BrandHeader />
+    <div className="min-h-screen bg-[#0A0704] text-foreground overflow-x-hidden">
       <Navbar />
       <Hero />
       <Features />
@@ -47,41 +46,6 @@ function Landing() {
 }
 
 
-function BrandHeader() {
-  const { t } = useI18n();
-  return (
-    <div className="w-full flex flex-col items-center justify-center pt-8 pb-4 px-4 animate-brand-in">
-      <Logo
-        className="h-20 md:h-[120px] w-auto"
-        // gold drop-shadow per spec
-        // eslint-disable-next-line react/forbid-dom-props
-      />
-      <p
-        className="mt-3 text-[color:var(--gold)] text-center font-semibold uppercase"
-        style={{ fontSize: "14px", letterSpacing: "3px" }}
-      >
-        <span className="hidden sm:inline">{t("La plateforme éditoriale de l'Afrique de l'Ouest", "The publishing platform of West Africa")}</span>
-        <span
-          className="sm:hidden"
-          style={{ fontSize: "11px", letterSpacing: "2px" }}
-        >
-          {t("La plateforme éditoriale de l'Afrique de l'Ouest", "The publishing platform of West Africa")}
-        </span>
-      </p>
-      <style>{`
-        @keyframes brand-in {
-          from { opacity: 0; transform: scale(0.8); }
-          to { opacity: 1; transform: scale(1); }
-        }
-        .animate-brand-in { animation: brand-in 0.8s ease both; }
-        .animate-brand-in img {
-          filter: drop-shadow(0px 0px 20px rgba(232,184,75,0.4));
-        }
-      `}</style>
-    </div>
-  );
-}
-
 function Navbar() {
   const { t, lang, setLang } = useI18n();
   const [scrolled, setScrolled] = useState(false);
@@ -94,51 +58,63 @@ function Navbar() {
     return () => window.removeEventListener("scroll", onScroll);
   }, []);
 
+  const navLinks = [
+    { label: t("Accueil", "Home"), href: "#top" },
+    { label: t("Fonctionnalités", "Features"), href: "#features" },
+    { label: t("Prix", "Pricing"), href: "#pricing" },
+    { label: t("Contact", "Contact"), href: "#contact" },
+  ];
+
   return (
     <header className={cn(
-      "sticky top-0 inset-x-0 z-50 transition-all duration-300",
-      scrolled ? "bg-[rgba(13,10,6,0.9)] backdrop-blur-xl border-b border-border" : "bg-transparent"
+      "fixed top-0 inset-x-0 z-50 transition-all duration-300",
+      scrolled ? "bg-[rgba(10,7,4,0.85)] backdrop-blur-xl border-b border-[rgba(200,146,42,0.15)]" : "bg-transparent"
     )}>
-      <nav className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-14 md:h-16 flex items-center justify-between gap-4">
-        <div className="hidden md:flex items-center gap-6">
-          <Link
-            to="/a-propos"
-            className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors"
-          >
-            {t("À propos", "About")}
-          </Link>
+      <nav className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 md:h-20 flex items-center justify-between gap-4">
+        <Link to="/" className="flex items-center gap-2 shrink-0">
+          <Logo className="h-9 w-auto" />
+          <span className="font-extrabold tracking-wide text-[color:var(--gold)] text-lg hidden sm:inline">FIGDITIONS</span>
+        </Link>
+
+        <div className="hidden md:flex items-center gap-12 absolute left-1/2 -translate-x-1/2">
+          {navLinks.map((l) => (
+            <a key={l.label} href={l.href} className="text-[15px] text-white/80 hover:text-white transition-colors">
+              {l.label}
+            </a>
+          ))}
         </div>
 
         <div className="hidden md:flex items-center gap-3 ml-auto">
           <LangToggle lang={lang} setLang={setLang} />
-          <Link to="/login">
-            <Button variant="outline" size="sm" className="h-9 px-4 border-border hover:border-primary hover:text-primary">
-              {t("Se connecter", "Sign in")}
-            </Button>
-          </Link>
-          <Link to="/signup">
-            <Button size="sm" className="bg-primary text-primary-foreground hover:bg-primary/90 h-9 px-4">
-              {t("Commencer gratuitement", "Get started free")}
-            </Button>
+          <Link
+            to="/signup"
+            className="group inline-flex items-center gap-2 rounded-full border border-[#C8922A] text-[#C8922A] px-6 py-2.5 text-sm font-medium hover:bg-[#C8922A] hover:text-white transition-colors"
+          >
+            {t("Démarrer l'Essai", "Start trial")}
+            <span className="h-6 w-6 rounded-full bg-[#C8922A] text-white flex items-center justify-center group-hover:bg-white group-hover:text-[#C8922A] transition-colors">
+              <ArrowRight className="h-3.5 w-3.5" />
+            </span>
           </Link>
         </div>
 
-        <button className="md:hidden p-2 ml-auto" onClick={() => setOpen(!open)} aria-label="Menu">
+        <button className="md:hidden p-2 ml-auto text-white" onClick={() => setOpen(!open)} aria-label="Menu">
           {open ? <X className="h-6 w-6" /> : <Menu className="h-6 w-6" />}
         </button>
       </nav>
 
       {open && (
-        <div className="md:hidden bg-background/95 backdrop-blur-xl border-b border-border px-4 py-4 space-y-3 animate-fade-in">
-          <Link to="/a-propos" onClick={() => setOpen(false)} className="block text-sm font-medium text-muted-foreground hover:text-foreground py-2">
-            {t("À propos", "About")}
-          </Link>
+        <div className="md:hidden bg-[rgba(10,7,4,0.95)] backdrop-blur-xl border-b border-[rgba(200,146,42,0.2)] px-4 py-4 space-y-3 animate-fade-in">
+          {navLinks.map((l) => (
+            <a key={l.label} href={l.href} onClick={() => setOpen(false)} className="block text-sm font-medium text-white/80 hover:text-white py-2">
+              {l.label}
+            </a>
+          ))}
           <LangToggle lang={lang} setLang={setLang} />
           <Link to="/login" onClick={() => setOpen(false)} className="block">
             <Button variant="outline" className="w-full">{t("Se connecter", "Sign in")}</Button>
           </Link>
           <Link to="/signup" onClick={() => setOpen(false)} className="block">
-            <Button className="w-full bg-primary text-primary-foreground">{t("Commencer gratuitement", "Get started free")}</Button>
+            <Button className="w-full bg-primary text-primary-foreground">{t("Démarrer l'Essai", "Start trial")}</Button>
           </Link>
         </div>
       )}
@@ -149,11 +125,11 @@ function Navbar() {
 
 function LangToggle({ lang, setLang }: { lang: "fr" | "en"; setLang: (l: "fr" | "en") => void }) {
   return (
-    <div className="inline-flex items-center rounded-full border border-border bg-card p-0.5 text-xs font-semibold">
+    <div className="inline-flex items-center rounded-full border border-[rgba(200,146,42,0.3)] bg-[rgba(26,18,8,0.6)] p-0.5 text-xs font-semibold">
       {(["fr", "en"] as const).map((l) => (
         <button key={l} onClick={() => setLang(l)} className={cn(
           "px-3 py-1.5 rounded-full transition-colors uppercase",
-          lang === l ? "bg-primary text-primary-foreground" : "text-muted-foreground hover:text-foreground"
+          lang === l ? "bg-[#C8922A] text-white" : "text-white/70 hover:text-white"
         )}>{l}</button>
       ))}
     </div>
@@ -162,56 +138,166 @@ function LangToggle({ lang, setLang }: { lang: "fr" | "en"; setLang: (l: "fr" | 
 
 function Hero() {
   const { t } = useI18n();
-  const scrollToFeatures = () => {
-    document.getElementById("features")?.scrollIntoView({ behavior: "smooth" });
-  };
   return (
-    <section className="relative flex items-center justify-center pt-12 pb-20 px-4 overflow-hidden">
-      <div className="absolute inset-0 -z-10">
-        <div className="absolute inset-0 bg-gradient-to-br from-[#0D0A06] via-[#1A1208] to-[#0D0A06]" />
-        <div className="absolute inset-0 opacity-40"
-             style={{ backgroundImage: "radial-gradient(circle at 20% 30%, oklch(0.72 0.14 75 / 0.25), transparent 50%), radial-gradient(circle at 80% 70%, oklch(0.82 0.16 80 / 0.18), transparent 55%)" }} />
-      </div>
+    <section id="top" className="relative w-full min-h-screen overflow-hidden bg-[#0A0704]">
+      {/* Warm golden ambient glow */}
+      <div
+        className="absolute inset-0 -z-10"
+        style={{
+          background:
+            "radial-gradient(ellipse 80% 80% at 65% 40%, rgba(180,110,20,0.35) 0%, rgba(140,80,10,0.2) 30%, transparent 70%)",
+        }}
+      />
 
-      <div className="max-w-5xl mx-auto text-center animate-fade-up">
-        <span className="inline-flex items-center gap-2 rounded-full border border-primary/30 bg-primary/10 px-3 py-1 text-xs font-medium text-primary mb-6">
-          <span className="h-1.5 w-1.5 rounded-full bg-primary animate-pulse" />
-          {t("Conçu à Bamako 🇲🇱", "Built in Bamako 🇲🇱")}
-        </span>
-        <h1 className="text-[32px] sm:text-[42px] md:text-[56px] font-bold tracking-tight leading-[1.2] break-words">
-          {t("La plateforme tout-en-un pour les ", "The all-in-one platform for ")}
-          <span style={{ color: "#C8922A" }}>{t("maisons d'édition", "African publishing")}</span>{" "}
-          <span style={{ color: "#E8B84B" }}>{t("africaines", "houses")}</span>
-        </h1>
+      {/* Hero image — right side */}
+      <img
+        src={heroAsset.url}
+        alt="FIGDITIONS — Plateforme éditoriale africaine"
+        className="absolute inset-y-0 right-0 h-full w-full md:w-[70%] object-cover object-center pointer-events-none select-none"
+        style={{
+          WebkitMaskImage:
+            "linear-gradient(to right, transparent 0%, black 20%, black 80%, transparent 100%)",
+          maskImage:
+            "linear-gradient(to right, transparent 0%, black 20%, black 80%, transparent 100%)",
+        }}
+      />
 
-        <p className="mt-6 text-base sm:text-lg md:text-xl text-muted-foreground max-w-3xl mx-auto leading-relaxed">
-          {t(
-            "Gérez vos manuscrits, vos stocks, vos contrats et vos finances depuis un seul tableau de bord. Conçu pour Bamako, pensé pour l'Afrique.",
-            "Manage your manuscripts, stocks, contracts and finances from one single dashboard. Built for Bamako, made for Africa."
-          )}
-        </p>
-        <div className="mt-9 flex flex-col sm:flex-row items-center justify-center gap-3">
-          <Link to="/signup">
-            <Button size="lg" className="bg-primary text-primary-foreground hover:bg-primary/90 shadow-glow text-base h-12 px-7">
-              {t("Commencer gratuitement", "Get started for free")} <ArrowRight className="ml-2 h-4 w-4" />
-            </Button>
-          </Link>
-          <Button size="lg" variant="outline" onClick={scrollToFeatures} className="border-border hover:border-primary hover:text-primary text-base h-12 px-7">
-            {t("Voir la démo", "Watch demo")}
-          </Button>
-        </div>
-        <div className="mt-10 flex flex-col items-center gap-2">
-          <div className="flex items-center gap-1">
-            {Array.from({ length: 5 }).map((_, i) => <Star key={i} className="h-4 w-4 fill-[color:var(--gold)] text-[color:var(--gold)]" />)}
-          </div>
-          <p className="text-sm text-muted-foreground">
-            {t("Déjà plus de 10 maisons d'édition nous font confiance", "Already trusted by 10+ publishing houses")}
+      {/* Hero text — bottom left */}
+      <div className="relative z-10 max-w-7xl mx-auto px-6 lg:px-12 pt-40 md:pt-0 md:absolute md:bottom-[20%] md:left-0 md:right-0">
+        <div className="max-w-xl">
+          <h1
+            className="font-black text-white leading-[0.9] tracking-tight"
+            style={{ fontSize: "clamp(48px, 8vw, 100px)", letterSpacing: "-3px" }}
+          >
+            FIGDITIONS
+          </h1>
+          <p className="mt-4 text-[18px] leading-[1.5] max-w-[380px]" style={{ color: "rgba(184,168,152,0.9)" }}>
+            {t(
+              "La plateforme centrale pour les éditeurs ouest-africains",
+              "The central platform for West African publishers"
+            )}
           </p>
+
+          {/* CTA buttons */}
+          <div className="mt-8 flex flex-wrap items-center gap-3">
+            <Link to="/signup">
+              <Button size="lg" className="bg-[#C8922A] text-white hover:bg-[#A67420] h-12 px-7 rounded-full">
+                {t("Commencer gratuitement", "Get started")} <ArrowRight className="ml-2 h-4 w-4" />
+              </Button>
+            </Link>
+            <Link to="/login">
+              <Button size="lg" variant="outline" className="border-[rgba(200,146,42,0.4)] text-white hover:border-[#C8922A] hover:text-[#C8922A] bg-transparent h-12 px-7 rounded-full">
+                {t("Se connecter", "Sign in")}
+              </Button>
+            </Link>
+          </div>
+
+          {/* Social icons */}
+          <div className="mt-8 flex items-center gap-5">
+            {[
+              { Icon: Facebook, href: "https://www.facebook.com/figuira", label: "Facebook" },
+              { Icon: Instagram, href: "https://www.instagram.com/figuiraeditions2", label: "Instagram" },
+              { Icon: Twitter, href: "https://twitter.com/figditions", label: "X" },
+            ].map(({ Icon, href, label }) => (
+              <a
+                key={label}
+                href={href}
+                target="_blank"
+                rel="noopener noreferrer"
+                aria-label={label}
+                className="text-[#6B5B4E] hover:text-[#C8922A] transition-colors"
+              >
+                <Icon className="h-5 w-5" />
+              </a>
+            ))}
+          </div>
         </div>
       </div>
+
+      {/* Floating OHADA card */}
+      <div
+        className="hidden lg:flex absolute z-10 flex-col gap-2 rounded-2xl border p-5 animate-[float_4s_ease-in-out_infinite]"
+        style={{
+          top: "22%",
+          left: "38%",
+          background: "rgba(26,18,8,0.85)",
+          borderColor: "rgba(200,146,42,0.3)",
+          backdropFilter: "blur(12px)",
+          minWidth: "180px",
+        }}
+      >
+        <div className="flex items-center gap-2">
+          <FileSignature className="h-5 w-5 text-[#C8922A]" />
+          <span className="text-[#E8B84B] font-bold tracking-wide text-sm">OHADA</span>
+        </div>
+        <div className="space-y-1.5 mt-1">
+          <div className="h-1.5 rounded-full bg-[rgba(200,146,42,0.25)] w-full" />
+          <div className="h-1.5 rounded-full bg-[rgba(200,146,42,0.25)] w-4/5" />
+          <div className="h-1.5 rounded-full bg-[rgba(200,146,42,0.25)] w-3/5" />
+        </div>
+        <div className="mt-2 h-px bg-[rgba(200,146,42,0.4)] w-2/3" />
+      </div>
+
+      {/* Floating Stock card */}
+      <div
+        className="hidden lg:flex absolute z-10 flex-col gap-2 rounded-2xl border p-5 animate-[float_4s_ease-in-out_2s_infinite]"
+        style={{
+          top: "20%",
+          right: "5%",
+          background: "rgba(26,18,8,0.85)",
+          borderColor: "rgba(200,146,42,0.3)",
+          backdropFilter: "blur(12px)",
+          minWidth: "180px",
+        }}
+      >
+        <div className="flex items-center gap-2">
+          <Boxes className="h-5 w-5 text-[#C8922A]" />
+          <span className="text-[#E8B84B] font-bold tracking-wide text-sm">STOCK</span>
+        </div>
+        <div className="text-white font-bold text-xl">50 634</div>
+        <div className="flex items-end gap-1 h-8">
+          {[40, 65, 50, 80, 35, 90, 60].map((h, i) => (
+            <div key={i} className="w-2 rounded-sm bg-[#C8922A]" style={{ height: `${h}%` }} />
+          ))}
+        </div>
+      </div>
+
+      {/* Scroll indicator */}
+      <a
+        href="#features"
+        aria-label="Scroll"
+        className="absolute left-1/2 -translate-x-1/2 bottom-8 z-10 animate-[scrollBounce_2s_infinite]"
+        style={{ color: "rgba(200,146,42,0.6)" }}
+      >
+        <MousePointer2 className="h-8 w-8 rotate-180" />
+      </a>
+
+      {/* Decorative star */}
+      <div
+        className="absolute bottom-6 right-8 z-10 animate-[pulseStar_3s_infinite]"
+        aria-hidden="true"
+      >
+        <Sparkles className="h-8 w-8 text-[#C8922A]" />
+      </div>
+
+      <style>{`
+        @keyframes float {
+          0%, 100% { transform: translateY(0px); }
+          50% { transform: translateY(-12px); }
+        }
+        @keyframes scrollBounce {
+          0%, 100% { transform: translate(-50%, 0); }
+          50% { transform: translate(-50%, 8px); }
+        }
+        @keyframes pulseStar {
+          0%, 100% { opacity: 1; transform: scale(1); }
+          50% { opacity: 0.6; transform: scale(0.9); }
+        }
+      `}</style>
     </section>
   );
 }
+
 
 function Features() {
   const { t } = useI18n();
