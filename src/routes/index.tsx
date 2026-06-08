@@ -3,7 +3,7 @@ import { useEffect, useState } from "react";
 import {
   Menu, X, Star, BookOpen, Users, Package, Wallet, FileText, Calculator,
   Twitter, Linkedin, Facebook, Instagram, Youtube, ArrowRight, Check,
-  Factory, Shield, BarChart3, Store, Sparkles,
+  Factory, Shield, BarChart3, Store, Sparkles, FileSignature, Boxes, MousePointer2,
 } from "lucide-react";
 import { Logo } from "@/components/logo";
 import { useI18n } from "@/hooks/use-i18n";
@@ -11,6 +11,8 @@ import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { CookieBanner } from "@/components/cookie-banner";
 import figuiraLogo from "@/assets/figuira-logo.jpg";
+import heroAsset from "@/assets/hero-figditions.png.asset.json";
+
 
 export const Route = createFileRoute("/")({
   component: Landing,
