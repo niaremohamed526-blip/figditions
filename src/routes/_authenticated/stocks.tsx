@@ -495,7 +495,7 @@ function InventoryAnalytics({ stocks, titreMap }: { stocks: Stock[]; titreMap: R
     return { data, titles };
   }, [ventes, range, titreMap]);
 
-  const colors = ["#00C896", "#D4AF37", "#3B82F6", "#F59E0B", "#8B5CF6", "#EC4899"];
+  const colors = ["#C8922A", "#E8B84B", "#3B82F6", "#F59E0B", "#8B5CF6", "#EC4899"];
 
   return (
     <AnalyticsSection title="📊 Analytiques stocks" range={range} setRange={setRange}>
@@ -516,10 +516,10 @@ function InventoryAnalytics({ stocks, titreMap }: { stocks: Stock[]; titreMap: R
                   <CartesianGrid strokeDasharray="3 3" stroke="#1E3A5F" />
                   <XAxis dataKey="name" stroke="#94A3B8" fontSize={11} angle={-20} textAnchor="end" height={60} />
                   <YAxis stroke="#94A3B8" fontSize={12} />
-                  <Tooltip contentStyle={{ background: "#0D2137", border: "1px solid #1E3A5F", borderRadius: 8 }} />
+                  <Tooltip contentStyle={{ background: "#1A1208", border: "1px solid #1E3A5F", borderRadius: 8 }} />
                   <Legend />
                   <Bar dataKey="deposited" name="Déposés" fill="#3B82F6" radius={[6, 6, 0, 0]} />
-                  <Bar dataKey="remaining" name="Restants" fill="#00C896" radius={[6, 6, 0, 0]} />
+                  <Bar dataKey="remaining" name="Restants" fill="#C8922A" radius={[6, 6, 0, 0]} />
                 </BarChart>
               </ResponsiveContainer>
             )}
@@ -534,7 +534,7 @@ function InventoryAnalytics({ stocks, titreMap }: { stocks: Stock[]; titreMap: R
                   <CartesianGrid strokeDasharray="3 3" stroke="#1E3A5F" />
                   <XAxis dataKey="label" stroke="#94A3B8" fontSize={12} />
                   <YAxis stroke="#94A3B8" fontSize={12} allowDecimals={false} />
-                  <Tooltip contentStyle={{ background: "#0D2137", border: "1px solid #1E3A5F", borderRadius: 8 }} />
+                  <Tooltip contentStyle={{ background: "#1A1208", border: "1px solid #1E3A5F", borderRadius: 8 }} />
                   <Legend />
                   {salesEvolution.titles.map((t, i) => <Line key={t} type="monotone" dataKey={t} stroke={colors[i % colors.length]} strokeWidth={2} />)}
                 </LineChart>

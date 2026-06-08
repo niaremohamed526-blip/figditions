@@ -65,11 +65,11 @@ interface Mouvement {
 }
 
 const MOUVEMENT_LABEL: Record<string, { icon: string; label: string; sign: "+" | "-" | "~"; color: string }> = {
-  impression:          { icon: "📥", label: "Impression reçue",        sign: "+", color: "text-[#00C896]" },
+  impression:          { icon: "📥", label: "Impression reçue",        sign: "+", color: "text-[#C8922A]" },
   transfert_librairie: { icon: "📤", label: "Transfert vers librairie", sign: "-", color: "text-blue-400" },
   vente_directe:       { icon: "💰", label: "Vente directe",            sign: "-", color: "text-blue-400" },
   evenement:           { icon: "📚", label: "Événement / Exposition",   sign: "-", color: "text-blue-400" },
-  retour_librairie:    { icon: "🔄", label: "Retour de librairie",      sign: "+", color: "text-[#00C896]" },
+  retour_librairie:    { icon: "🔄", label: "Retour de librairie",      sign: "+", color: "text-[#C8922A]" },
   perte:               { icon: "❌", label: "Perte / Dommage",          sign: "-", color: "text-red-400" },
   ajustement:          { icon: "🔧", label: "Ajustement manuel",        sign: "~", color: "text-yellow-400" },
 };
@@ -157,14 +157,14 @@ export function StockInterneTab({ entrepriseId, userId }: { entrepriseId: string
     <div className="space-y-6">
       {/* Summary cards */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
-        <SumCard icon={<Warehouse />} label="📦 Total en stock" value={String(totals.disponible)} accent="#00C896" />
+        <SumCard icon={<Warehouse />} label="📦 Total en stock" value={String(totals.disponible)} accent="#C8922A" />
         <SumCard icon={<Truck />} label="🔄 Transférés librairies" value={String(totals.transferees)} accent="#3B82F6" />
         <SumCard
           icon={<ShoppingBag />}
           label="💰 Vendus directement"
           value={String(totals.vendusDirect)}
           sub={fcfa(totals.revenueDirect)}
-          accent="#D4AF37"
+          accent="#E8B84B"
         />
         <SumCard
           icon={<BellRing />}
@@ -258,7 +258,7 @@ export function StockInterneTab({ entrepriseId, userId }: { entrepriseId: string
                       ? "text-red-400 bg-red-500/15 border-red-500/30"
                       : r.quantite_disponible <= r.seuil_alerte
                       ? "text-orange-400 bg-orange-500/15 border-orange-500/30"
-                      : "text-[#00C896] bg-primary/15 border-primary/30";
+                      : "text-[#C8922A] bg-primary/15 border-primary/30";
                   const valeur = r.quantite_disponible * Number(r.cout_unitaire_impression_fcfa || 0);
                   return (
                     <tr key={r.manuscrit_id} className="group border-t border-border hover:bg-primary/5 transition-colors">
@@ -706,7 +706,7 @@ function MouvementForm({
             </SelectContent>
           </Select>
           {currentStock && (
-            <p className="text-xs text-muted-foreground">Stock disponible: <span className="text-[#00C896] font-semibold">{currentStock.quantite_disponible}</span></p>
+            <p className="text-xs text-muted-foreground">Stock disponible: <span className="text-[#C8922A] font-semibold">{currentStock.quantite_disponible}</span></p>
           )}
         </div>
         <div className="space-y-2">
@@ -875,9 +875,9 @@ function HistoryView({
                 <CartesianGrid strokeDasharray="3 3" stroke="#1E3A5F" />
                 <XAxis dataKey="date" stroke="#94A3B8" fontSize={11} />
                 <YAxis stroke="#94A3B8" fontSize={11} allowDecimals={false} />
-                <Tooltip contentStyle={{ background: "#0D2137", border: "1px solid #1E3A5F", borderRadius: 8 }} />
+                <Tooltip contentStyle={{ background: "#1A1208", border: "1px solid #1E3A5F", borderRadius: 8 }} />
                 <ReferenceLine y={stock.seuil_alerte} stroke="#EF4444" strokeDasharray="4 4" label={{ value: "seuil", fill: "#EF4444", fontSize: 10 }} />
-                <Line type="monotone" dataKey="stock" stroke="#00C896" strokeWidth={2} dot={{ r: 3 }} />
+                <Line type="monotone" dataKey="stock" stroke="#C8922A" strokeWidth={2} dot={{ r: 3 }} />
               </LineChart>
             </ResponsiveContainer>
           </div>
@@ -920,7 +920,7 @@ function MiniStat({ label, value, highlight }: { label: string; value: number; h
   return (
     <div className="rounded-lg border border-border bg-background/40 p-3">
       <p className="text-[10px] uppercase tracking-wide text-muted-foreground">{label}</p>
-      <p className={cn("mt-0.5 text-lg font-bold tabular-nums", highlight && "text-[#00C896]")}>{value}</p>
+      <p className={cn("mt-0.5 text-lg font-bold tabular-nums", highlight && "text-[#C8922A]")}>{value}</p>
     </div>
   );
 }
@@ -1004,12 +1004,12 @@ function DistributionAnalytics({
                   <CartesianGrid strokeDasharray="3 3" stroke="#1E3A5F" />
                   <XAxis type="number" stroke="#94A3B8" fontSize={11} unit="%" />
                   <YAxis type="category" dataKey="name" stroke="#94A3B8" fontSize={11} width={110} />
-                  <Tooltip contentStyle={{ background: "#0D2137", border: "1px solid #1E3A5F", borderRadius: 8 }} formatter={(v: number) => `${v}%`} />
+                  <Tooltip contentStyle={{ background: "#1A1208", border: "1px solid #1E3A5F", borderRadius: 8 }} formatter={(v: number) => `${v}%`} />
                   <Legend />
                   <Bar dataKey="librairies" name="Librairies" stackId="d" fill="#3B82F6" />
-                  <Bar dataKey="direct"     name="Vente directe" stackId="d" fill="#D4AF37" />
+                  <Bar dataKey="direct"     name="Vente directe" stackId="d" fill="#E8B84B" />
                   <Bar dataKey="evenements" name="Événements" stackId="d" fill="#A855F7" />
-                  <Bar dataKey="restant"    name="Restant" stackId="d" fill="#00C896" />
+                  <Bar dataKey="restant"    name="Restant" stackId="d" fill="#C8922A" />
                 </BarChart>
               </ResponsiveContainer>
             )}

@@ -412,9 +412,9 @@ function AuthorAnalytics({ auteurs, entrepriseId }: { auteurs: Auteur[]; entrepr
                 <CartesianGrid strokeDasharray="3 3" stroke="#1E3A5F" />
                 <XAxis dataKey="label" stroke="#94A3B8" fontSize={12} />
                 <YAxis stroke="#94A3B8" fontSize={12} tickFormatter={(v) => `${(v/1000).toFixed(0)}k`} />
-                <Tooltip contentStyle={{ background: "#0D2137", border: "1px solid #1E3A5F", borderRadius: 8 }} formatter={(v: number) => fcfa(v)} />
+                <Tooltip contentStyle={{ background: "#1A1208", border: "1px solid #1E3A5F", borderRadius: 8 }} formatter={(v: number) => fcfa(v)} />
                 <Legend />
-                <Bar dataKey="paid" name="Payées" stackId="a" fill="#00C896" radius={[0, 0, 0, 0]} />
+                <Bar dataKey="paid" name="Payées" stackId="a" fill="#C8922A" radius={[0, 0, 0, 0]} />
                 <Bar dataKey="pending" name="En attente" stackId="a" fill="#F59E0B" radius={[6, 6, 0, 0]} />
               </BarChart>
             </ResponsiveContainer>

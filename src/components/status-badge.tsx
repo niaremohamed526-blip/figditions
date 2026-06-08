@@ -57,7 +57,7 @@ export const STATUT_COLOR: Record<string, string> = {
   maquette:    "#F97316",
   echantillon: "#F59E0B",
   impression:  "#EC4899",
-  publie:      "#00C896",
+  publie:      "#C8922A",
 };
 
 export const STATUT_LABEL: Record<string, string> = Object.fromEntries(

@@ -52,12 +52,12 @@ function Hero() {
   return (
     <section className="relative flex items-center justify-center pt-20 pb-24 px-4 overflow-hidden text-center">
       <div className="absolute inset-0 -z-10">
-        <div className="absolute inset-0 bg-gradient-to-br from-[#0A1628] via-[#0D2137] to-[#0A1628]" />
+        <div className="absolute inset-0 bg-gradient-to-br from-[#0D0A06] via-[#1A1208] to-[#0D0A06]" />
         <div className="absolute inset-0 opacity-40"
-             style={{ backgroundImage: "radial-gradient(circle at 20% 30%, oklch(0.78 0.17 165 / 0.25), transparent 50%), radial-gradient(circle at 80% 70%, oklch(0.78 0.13 88 / 0.18), transparent 55%)" }} />
+             style={{ backgroundImage: "radial-gradient(circle at 20% 30%, oklch(0.72 0.14 75 / 0.25), transparent 50%), radial-gradient(circle at 80% 70%, oklch(0.82 0.16 80 / 0.18), transparent 55%)" }} />
       </div>
       <div className="max-w-3xl mx-auto">
-        <Logo className="h-24 md:h-32 w-auto mx-auto drop-shadow-[0_0_24px_rgba(212,175,55,0.4)]" />
+        <Logo className="h-24 md:h-32 w-auto mx-auto drop-shadow-[0_0_24px_rgba(232,184,75,0.4)]" />
         <h1 className="mt-8 text-4xl md:text-6xl font-bold tracking-tight">
           À Propos de <span className="bg-gradient-to-r from-primary to-[color:var(--gold)] bg-clip-text text-transparent">FIGDITIONS</span>
         </h1>
@@ -97,7 +97,7 @@ function Mission() {
 
 function Story() {
   return (
-    <section className="py-20 px-4 bg-[#0D2137]">
+    <section className="py-20 px-4 bg-[#1A1208]">
       <div className="max-w-4xl mx-auto">
         <h2 className="text-3xl md:text-4xl font-bold tracking-tight">Notre Histoire</h2>
         <div className="mt-6 space-y-4 text-muted-foreground leading-relaxed text-[15px]">
@@ -131,7 +131,7 @@ function Numbers() {
         <h2 className="text-3xl md:text-4xl font-bold tracking-tight text-center">FIGDITIONS en chiffres</h2>
         <div className="mt-12 grid sm:grid-cols-2 lg:grid-cols-4 gap-5">
           {stats.map((s, i) => (
-            <div key={i} className="rounded-2xl border border-border bg-[#0D2137] p-6 text-center transition-all hover:border-[color:var(--gold)] hover:-translate-y-1">
+            <div key={i} className="rounded-2xl border border-border bg-[#1A1208] p-6 text-center transition-all hover:border-[color:var(--gold)] hover:-translate-y-1">
               <div className="text-4xl mb-3">{s.icon}</div>
               <div className="text-4xl font-bold bg-gradient-to-r from-primary to-[color:var(--gold)] bg-clip-text text-transparent">
                 {s.value}
@@ -152,7 +152,7 @@ function Values() {
     { icon: Rocket, emoji: "🚀", title: "Innovation", desc: "Nous améliorons constamment la plateforme grâce aux retours de nos utilisateurs" },
   ];
   return (
-    <section className="py-20 px-4 bg-[#0D2137]">
+    <section className="py-20 px-4 bg-[#1A1208]">
       <div className="max-w-7xl mx-auto">
         <h2 className="text-3xl md:text-4xl font-bold tracking-tight text-center">Nos Valeurs</h2>
         <div className="mt-12 grid md:grid-cols-3 gap-6">
@@ -185,7 +185,7 @@ function TechStack() {
         </p>
         <div className="mt-12 grid sm:grid-cols-2 lg:grid-cols-4 gap-5">
           {stack.map((s, i) => (
-            <div key={i} className="rounded-2xl border border-border bg-[#0D2137] p-6 hover:border-[color:var(--gold)] transition-colors">
+            <div key={i} className="rounded-2xl border border-border bg-[#1A1208] p-6 hover:border-[color:var(--gold)] transition-colors">
               <div className="h-11 w-11 rounded-xl bg-[color:var(--gold)]/15 text-[color:var(--gold)] flex items-center justify-center">
                 <s.icon className="h-5 w-5" />
               </div>
@@ -201,10 +201,10 @@ function TechStack() {
 
 function Partnership() {
   return (
-    <section className="py-20 px-4 bg-[#0D2137]">
+    <section className="py-20 px-4 bg-[#1A1208]">
       <div className="max-w-7xl mx-auto">
         <h2 className="text-3xl md:text-4xl font-bold tracking-tight text-center">Nos Partenaires</h2>
-        <div className="mt-12 max-w-2xl mx-auto rounded-2xl border-2 border-[color:var(--gold)] bg-[#0A1628] p-8 md:p-10 text-center shadow-[0_0_40px_-10px_var(--gold)]">
+        <div className="mt-12 max-w-2xl mx-auto rounded-2xl border-2 border-[color:var(--gold)] bg-[#0D0A06] p-8 md:p-10 text-center shadow-[0_0_40px_-10px_var(--gold)]">
           <img src={figuiraLogo} alt="Figuira Editions" style={{ height: "80px", width: "auto" }} className="mx-auto" />
           <h3 className="mt-5 text-xl font-bold tracking-wide">FIGUIRA ÉDITIONS</h3>
           <p className="mt-1 text-sm font-semibold text-primary">Partenaire officiel ⭐</p>
@@ -246,7 +246,7 @@ function Contact() {
         <h2 className="text-3xl md:text-4xl font-bold tracking-tight text-center">Nous Contacter</h2>
 
         <div className="mt-10 grid md:grid-cols-2 gap-6">
-          <div className="rounded-2xl border border-border bg-[#0D2137] p-6">
+          <div className="rounded-2xl border border-border bg-[#1A1208] p-6">
             <div className="flex items-center gap-3">
               <div className="h-10 w-10 rounded-xl bg-primary/15 text-primary flex items-center justify-center">
                 <Mail className="h-5 w-5" />
@@ -257,7 +257,7 @@ function Contact() {
               </div>
             </div>
           </div>
-          <div className="rounded-2xl border border-border bg-[#0D2137] p-6">
+          <div className="rounded-2xl border border-border bg-[#1A1208] p-6">
             <div className="flex items-center gap-3">
               <div className="h-10 w-10 rounded-xl bg-[color:var(--gold)]/15 text-[color:var(--gold)] flex items-center justify-center">
                 <MapPin className="h-5 w-5" />
@@ -270,7 +270,7 @@ function Contact() {
           </div>
         </div>
 
-        <form onSubmit={onSubmit} className="mt-8 rounded-2xl border border-border bg-[#0D2137] p-6 md:p-8 space-y-4">
+        <form onSubmit={onSubmit} className="mt-8 rounded-2xl border border-border bg-[#1A1208] p-6 md:p-8 space-y-4">
           <div className="space-y-2">
             <Label>Nom</Label>
             <Input required value={form.name} onChange={(e) => setForm((f) => ({ ...f, name: e.target.value }))} className="bg-background/50" />
