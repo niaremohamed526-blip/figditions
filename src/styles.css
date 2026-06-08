@@ -93,38 +93,41 @@
 }
 *::-webkit-scrollbar-thumb:hover { background: oklch(0.78 0.17 165 / 0.4); }
 
-/* Dark theme by default (Figditions) */
+/* Dark theme by default (Figditions — warm African luxury) */
 :root {
   --radius: 0.625rem;
-  --background: oklch(0.19 0.04 250);
+  /* Warm dark base */
+  --background: oklch(0.13 0.015 60);          /* #0D0A06 */
   --foreground: oklch(1 0 0);
-  --card: oklch(0.23 0.045 250);
+  --card: oklch(0.17 0.025 60);                /* #1A1208 */
   --card-foreground: oklch(1 0 0);
-  --popover: oklch(0.23 0.045 250);
+  --popover: oklch(0.17 0.025 60);
   --popover-foreground: oklch(1 0 0);
-  --primary: oklch(0.78 0.17 165);
-  --primary-foreground: oklch(0.15 0.03 250);
-  --secondary: oklch(0.28 0.04 250);
+  /* Gold primary */
+  --primary: oklch(0.72 0.14 75);              /* #C8922A */
+  --primary-foreground: oklch(0.13 0.015 60);
+  --secondary: oklch(0.22 0.035 60);
   --secondary-foreground: oklch(1 0 0);
-  --muted: oklch(0.26 0.035 250);
-  --muted-foreground: oklch(0.71 0.03 250);
-  --accent: oklch(0.28 0.04 250);
+  --muted: oklch(0.2 0.025 60);
+  --muted-foreground: oklch(0.72 0.025 60);    /* #B8A898 */
+  --accent: oklch(0.22 0.035 60);
   --accent-foreground: oklch(1 0 0);
   --destructive: oklch(0.65 0.22 25);
   --destructive-foreground: oklch(1 0 0);
-  --border: oklch(0.32 0.05 250);
-  --input: oklch(0.28 0.04 250);
-  --ring: oklch(0.78 0.17 165);
-  --gold: oklch(0.78 0.13 88);
+  --border: oklch(0.72 0.14 75 / 0.18);
+  --input: oklch(0.72 0.14 75 / 0.18);
+  --ring: oklch(0.72 0.14 75);
+  --gold: oklch(0.82 0.16 80);                 /* #E8B84B */
 
-  --sidebar: oklch(0.23 0.045 250);
+  --sidebar: oklch(0.13 0.015 60);
   --sidebar-foreground: oklch(1 0 0);
-  --sidebar-primary: oklch(0.78 0.17 165);
-  --sidebar-primary-foreground: oklch(0.15 0.03 250);
-  --sidebar-accent: oklch(0.28 0.05 250);
+  --sidebar-primary: oklch(0.72 0.14 75);
+  --sidebar-primary-foreground: oklch(0.13 0.015 60);
+  --sidebar-accent: oklch(0.2 0.03 60);
   --sidebar-accent-foreground: oklch(1 0 0);
-  --sidebar-border: oklch(0.32 0.05 250);
-  --sidebar-ring: oklch(0.78 0.17 165);
+  --sidebar-border: oklch(0.72 0.14 75 / 0.15);
+  --sidebar-ring: oklch(0.72 0.14 75);
+
 
   /* Spacing scale (8px grid) */
   --space-xs: 4px;
