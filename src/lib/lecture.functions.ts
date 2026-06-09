@@ -75,11 +75,25 @@ export const openSharedPdf = createServerFn({ method: "POST" })
 
     if (!m?.pdf_path) return { ok: false as const, reason: "no_file" as const };
 
+    // SECURITY: verify the share link's enterprise matches the manuscript's enterprise.
+    // Without this check, an attacker in enterprise A could create a pdf_partages row
+    // referencing a manuscrit_id from enterprise B and obtain a signed URL to it.
+    const { data: shareRow } = await supabaseAdmin
+      .from("pdf_partages")
+      .select("entreprise_id")
+      .eq("token", data.token)
+      .maybeSingle();
+
+    if (!shareRow || !m.entreprise_id || shareRow.entreprise_id !== m.entreprise_id) {
+      return { ok: false as const, reason: "not_found" as const };
+    }
+
     // SECURITY: prevent cross-tenant path injection — the manuscrit's pdf_path
     // MUST live under that manuscrit's own tenant prefix.
-    if (!m.entreprise_id || !m.pdf_path.startsWith(`${m.entreprise_id}/`)) {
+    if (!m.pdf_path.startsWith(`${m.entreprise_id}/`)) {
       return { ok: false as const, reason: "no_file" as const };
     }
+
 
     const { data: signed, error: sErr } = await supabaseAdmin.storage
       .from("manuscrits")
