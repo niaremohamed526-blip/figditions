@@ -1,0 +1,1 @@
+REVOKE ALL ON FUNCTION public.pdf_partages_check_manuscrit_tenant() FROM PUBLIC, anon, authenticated;
