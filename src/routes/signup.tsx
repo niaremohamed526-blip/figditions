@@ -1,12 +1,12 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
-import { useState, type FormEvent } from "react";
+import { useState, lazy, Suspense, useMemo, type FormEvent } from "react";
 import { supabase } from "@/integrations/supabase/client";
-import { Input } from "@/components/ui/input";
-import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { toast } from "sonner";
-import { Loader2 } from "lucide-react";
+import { Loader2, Eye, EyeOff, Check, X } from "lucide-react";
 import { Logo } from "@/components/logo";
+
+const Ballpit = lazy(() => import("@/components/Ballpit"));
 
 export const Route = createFileRoute("/signup")({
   component: SignupPage,
@@ -23,27 +23,90 @@ export const Route = createFileRoute("/signup")({
   }),
 });
 
+const BALL_COLORS = [0xc8922a, 0xe8b84b, 0xa67420, 0xd4af37, 0xf5d07a, 0x6b4c10];
+
+function BallpitPanel() {
+  return (
+    <div className="hidden md:flex relative w-1/2 h-screen sticky top-0 overflow-hidden" style={{ background: "#0D0A06" }}>
+      <Suspense fallback={<div className="absolute inset-0" style={{ background: "#0D0A06" }} />}>
+        <Ballpit
+          count={120}
+          gravity={0.3}
+          friction={0.9975}
+          wallBounce={0.95}
+          followCursor
+          colors={BALL_COLORS}
+          ambientColor={0xc8922a}
+          ambientIntensity={0.4}
+          lightIntensity={120}
+          minSize={0.2}
+          maxSize={0.8}
+        />
+      </Suspense>
+      <div className="pointer-events-none absolute inset-0 flex flex-col items-center justify-center text-center px-8">
+        <Logo className="h-24 w-auto mb-4" />
+        <p className="font-medium" style={{ fontSize: 12, letterSpacing: 4, color: "#C8922A", marginTop: 12 }}>
+          LA PLATEFORME ÉDITORIALE<br />DE L'AFRIQUE DE L'OUEST
+        </p>
+      </div>
+    </div>
+  );
+}
+
+function GoldInput(props: React.InputHTMLAttributes<HTMLInputElement>) {
+  return (
+    <input
+      {...props}
+      className={
+        "w-full h-11 px-4 rounded-lg outline-none transition-all text-white placeholder:text-[#6b5a48] " +
+        "focus:ring-2 focus:ring-[#C8922A]/40 " +
+        (props.className ?? "")
+      }
+      style={{
+        background: "rgba(13,10,6,0.6)",
+        border: "1px solid rgba(200,146,42,0.25)",
+        ...props.style,
+      }}
+    />
+  );
+}
+
+function scorePassword(pwd: string) {
+  let s = 0;
+  if (pwd.length >= 6) s++;
+  if (pwd.length >= 10) s++;
+  if (/[A-Z]/.test(pwd) && /[a-z]/.test(pwd)) s++;
+  if (/\d/.test(pwd)) s++;
+  if (/[^A-Za-z0-9]/.test(pwd)) s++;
+  return Math.min(s, 3); // 0..3
+}
+
 function SignupPage() {
   const navigate = useNavigate();
   const [form, setForm] = useState({
     full_name: "",
+    entreprise_nom: "",
     email: "",
     password: "",
-    entreprise_nom: "",
+    confirm: "",
     ville: "Bamako",
   });
-  const [acceptedTerms, setAcceptedTerms] = useState(false);
+  const [showPwd, setShowPwd] = useState(false);
+  const [accepted, setAccepted] = useState(false);
   const [loading, setLoading] = useState(false);
 
-  const onChange = (k: string) => (e: React.ChangeEvent<HTMLInputElement>) =>
+  const onChange = (k: keyof typeof form) => (e: React.ChangeEvent<HTMLInputElement>) =>
     setForm((f) => ({ ...f, [k]: e.target.value }));
+
+  const strength = useMemo(() => scorePassword(form.password), [form.password]);
+  const strengthLabel = ["Faible", "Faible", "Moyen", "Fort"][strength];
+  const strengthColor = ["#EF4444", "#EF4444", "#F59E0B", "#C8922A"][strength];
+  const match = form.confirm.length > 0 && form.password === form.confirm;
 
   const onSubmit = async (e: FormEvent) => {
     e.preventDefault();
-    if (!acceptedTerms) {
-      toast.error("Vous devez accepter les conditions d'utilisation et la politique de confidentialité");
-      return;
-    }
+    if (!accepted) return toast.error("Vous devez accepter les conditions d'utilisation");
+    if (!match) return toast.error("Les mots de passe ne correspondent pas");
     setLoading(true);
     const { error } = await supabase.auth.signUp({
       email: form.email,
@@ -64,71 +127,154 @@ function SignupPage() {
   };
 
   return (
-    <div className="min-h-screen gradient-bg flex items-center justify-center px-4 py-12">
-      <div className="w-full max-w-md animate-[fade-up_0.6s_ease-out_both]">
-        <h1 className="sr-only">Inscription à FIGDITIONS</h1>
-        <div className="text-center mb-8 flex flex-col items-center">
-          <Logo className="h-28 w-auto mb-2" />
-          <p className="mt-1 text-muted-foreground text-sm">
-            La plateforme éditoriale de l'Afrique de l'Ouest
-          </p>
-        </div>
+    <div className="min-h-screen flex" style={{ background: "#0D0A06" }}>
+      <BallpitPanel />
 
-        <div className="rounded-2xl border border-border bg-card/60 backdrop-blur p-8 shadow-2xl">
-          <h2 className="text-xl font-semibold mb-1">Créer un compte</h2>
-          <p className="text-sm text-muted-foreground mb-6">Lancez votre maison d'édition</p>
+      <div
+        className="flex-1 md:w-1/2 flex items-center justify-center px-6 py-12 min-h-screen"
+        style={{
+          background: "radial-gradient(ellipse at top, rgba(200,146,42,0.10) 0%, #0D0A06 60%)",
+          borderLeft: "1px solid rgba(200,146,42,0.1)",
+        }}
+      >
+        <div className="w-full" style={{ maxWidth: 440 }}>
+          <div className="md:hidden flex justify-center mb-8">
+            <Logo className="h-20 w-auto" />
+          </div>
 
-          <form onSubmit={onSubmit} className="space-y-4">
-            <div className="space-y-2">
-              <Label>Nom complet</Label>
-              <Input required value={form.full_name} onChange={onChange("full_name")} className="bg-background/50" />
-            </div>
-            <div className="space-y-2">
-              <Label>Email</Label>
-              <Input type="email" required value={form.email} onChange={onChange("email")} className="bg-background/50" />
-            </div>
-            <div className="space-y-2">
-              <Label>Mot de passe</Label>
-              <Input type="password" required minLength={6} value={form.password} onChange={onChange("password")} className="bg-background/50" />
-            </div>
-            <div className="space-y-2">
-              <Label>Nom de la maison d'édition</Label>
-              <Input required value={form.entreprise_nom} onChange={onChange("entreprise_nom")} className="bg-background/50" />
-            </div>
-            <div className="space-y-2">
-              <Label>Ville</Label>
-              <Input required value={form.ville} onChange={onChange("ville")} className="bg-background/50" />
-            </div>
-            <label className="flex items-start gap-2.5 text-xs text-muted-foreground cursor-pointer select-none pt-1">
-              <input
-                type="checkbox"
-                required
-                checked={acceptedTerms}
-                onChange={(e) => setAcceptedTerms(e.target.checked)}
-                className="mt-0.5 h-4 w-4 rounded border-border accent-primary cursor-pointer shrink-0"
-              />
-              <span>
-                J'accepte les{" "}
-                <Link to="/conditions-utilisation" target="_blank" className="text-primary hover:underline">
-                  Conditions d'Utilisation
-                </Link>{" "}
-                et la{" "}
-                <Link to="/politique-de-confidentialite" target="_blank" className="text-primary hover:underline">
-                  Politique de Confidentialité
-                </Link>{" "}
-                de FIGDITIONS
-              </span>
-            </label>
-            <Button type="submit" disabled={loading || !acceptedTerms}
-              className="w-full bg-primary text-primary-foreground hover:bg-primary/90 font-semibold h-11">
-              {loading ? <Loader2 className="h-4 w-4 animate-spin" /> : "Créer mon compte"}
-            </Button>
-          </form>
+          <div
+            className="rounded-[20px] p-6 md:p-12"
+            style={{
+              background: "rgba(26,18,8,0.6)",
+              border: "1px solid rgba(200,146,42,0.15)",
+              backdropFilter: "blur(20px)",
+            }}
+          >
+            <p className="font-semibold mb-6" style={{ color: "#C8922A", letterSpacing: 3, fontSize: 11 }}>
+              FIGDITIONS
+            </p>
+            <h1 className="text-white font-bold" style={{ fontSize: 32 }}>
+              Créer votre compte
+            </h1>
+            <p style={{ color: "#B8A898", marginBottom: 32, marginTop: 4 }}>
+              Rejoignez les éditeurs africains
+            </p>
 
-          <p className="mt-6 text-center text-sm text-muted-foreground">
-            Déjà inscrit ?{" "}
-            <Link to="/login" className="text-primary hover:underline font-medium">Se connecter</Link>
-          </p>
+            <form onSubmit={onSubmit} className="space-y-4">
+              <div className="space-y-2">
+                <Label className="text-white/90">Nom complet</Label>
+                <GoldInput required value={form.full_name} placeholder="Votre nom complet" onChange={onChange("full_name")} />
+              </div>
+              <div className="space-y-2">
+                <Label className="text-white/90">Nom de la maison d'édition</Label>
+                <GoldInput required value={form.entreprise_nom} placeholder="ex: Éditions Jamana" onChange={onChange("entreprise_nom")} />
+              </div>
+              <div className="space-y-2">
+                <Label className="text-white/90">Email</Label>
+                <GoldInput type="email" required value={form.email} placeholder="votre@email.com" onChange={onChange("email")} />
+              </div>
+
+              <div className="space-y-2">
+                <Label className="text-white/90">Mot de passe</Label>
+                <div className="relative">
+                  <GoldInput
+                    type={showPwd ? "text" : "password"}
+                    required
+                    minLength={6}
+                    value={form.password}
+                    placeholder="••••••••"
+                    onChange={onChange("password")}
+                    style={{ paddingRight: 44 }}
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setShowPwd((v) => !v)}
+                    className="absolute right-3 top-1/2 -translate-y-1/2 text-[#B8A898] hover:text-[#C8922A]"
+                  >
+                    {showPwd ? <EyeOff size={18} /> : <Eye size={18} />}
+                  </button>
+                </div>
+                {form.password.length > 0 && (
+                  <div className="flex items-center gap-2">
+                    <div className="flex-1 h-1.5 rounded-full overflow-hidden" style={{ background: "rgba(200,146,42,0.15)" }}>
+                      <div
+                        className="h-full transition-all"
+                        style={{ width: `${((strength + 1) / 4) * 100}%`, background: strengthColor }}
+                      />
+                    </div>
+                    <span className="text-xs font-medium" style={{ color: strengthColor }}>{strengthLabel}</span>
+                  </div>
+                )}
+              </div>
+
+              <div className="space-y-2">
+                <Label className="text-white/90">Confirmer le mot de passe</Label>
+                <div className="relative">
+                  <GoldInput
+                    type={showPwd ? "text" : "password"}
+                    required
+                    value={form.confirm}
+                    placeholder="••••••••"
+                    onChange={onChange("confirm")}
+                    style={{ paddingRight: 44 }}
+                  />
+                  {form.confirm.length > 0 && (
+                    <span className="absolute right-3 top-1/2 -translate-y-1/2">
+                      {match ? <Check size={18} className="text-[#C8922A]" /> : <X size={18} className="text-red-500" />}
+                    </span>
+                  )}
+                </div>
+              </div>
+
+              <div className="space-y-2">
+                <Label className="text-white/90">Ville</Label>
+                <GoldInput required value={form.ville} placeholder="Bamako" onChange={onChange("ville")} />
+              </div>
+
+              <label className="flex items-start gap-2.5 text-xs cursor-pointer select-none pt-1" style={{ color: "#B8A898" }}>
+                <input
+                  type="checkbox"
+                  required
+                  checked={accepted}
+                  onChange={(e) => setAccepted(e.target.checked)}
+                  className="mt-0.5 h-4 w-4 rounded cursor-pointer shrink-0"
+                  style={{ accentColor: "#C8922A" }}
+                />
+                <span>
+                  J'accepte les{" "}
+                  <Link to="/conditions-utilisation" target="_blank" className="hover:underline" style={{ color: "#C8922A" }}>
+                    Conditions d'Utilisation
+                  </Link>{" "}
+                  et la{" "}
+                  <Link to="/politique-de-confidentialite" target="_blank" className="hover:underline" style={{ color: "#C8922A" }}>
+                    Politique de Confidentialité
+                  </Link>
+                </span>
+              </label>
+
+              <button
+                type="submit"
+                disabled={loading || !accepted}
+                className="w-full inline-flex items-center justify-center font-semibold text-white transition-all hover:brightness-110 hover:-translate-y-px disabled:opacity-60"
+                style={{
+                  height: 48,
+                  borderRadius: 12,
+                  fontSize: 15,
+                  background: "linear-gradient(135deg, #C8922A, #A67420)",
+                  boxShadow: "0 4px 20px rgba(200,146,42,0.3)",
+                }}
+              >
+                {loading ? <Loader2 className="h-4 w-4 animate-spin" /> : "Créer mon compte"}
+              </button>
+
+              <p className="text-center text-sm pt-2" style={{ color: "#B8A898" }}>
+                Déjà un compte ?{" "}
+                <Link to="/login" className="font-medium hover:underline" style={{ color: "#C8922A" }}>
+                  Se connecter
+                </Link>
+              </p>
+            </form>
+          </div>
         </div>
       </div>
     </div>
