@@ -11,7 +11,6 @@ import {
   Vector2,
   Vector3,
   MeshPhysicalMaterial,
-  ShaderChunk,
   Color,
   Object3D,
   InstancedMesh,
@@ -367,8 +366,6 @@ export default function Ballpit({ className = "", style, ...props }: BallpitProp
     return () => instance.dispose();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
-  // silence unused
-  void ShaderChunk;
   return (
     <canvas
       ref={canvasRef}
