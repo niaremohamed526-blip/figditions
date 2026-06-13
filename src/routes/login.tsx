@@ -1,5 +1,5 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
-import { useState, lazy, Suspense, type FormEvent } from "react";
+import { useState, lazy, Suspense, useEffect, type FormEvent } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { Label } from "@/components/ui/label";
 import { toast } from "sonner";
@@ -23,36 +23,59 @@ export const Route = createFileRoute("/login")({
   }),
 });
 
-const BALL_COLORS = [0xc8922a, 0xe8b84b, 0xa67420, 0xd4af37, 0xf5d07a, 0x6b4c10];
+const BALL_COLORS = [0xc8922a, 0xe8b84b, 0xa67420, 0xf5d07a, 0x8b6914];
 
-function BallpitPanel({ count = 100 }: { count?: number }) {
+function useIsMobile() {
+  const [m, setM] = useState(false);
+  useEffect(() => {
+    const mq = window.matchMedia("(max-width: 767px)");
+    const on = () => setM(mq.matches);
+    on();
+    mq.addEventListener("change", on);
+    return () => mq.removeEventListener("change", on);
+  }, []);
+  return m;
+}
+
+function BallpitBackground() {
+  const isMobile = useIsMobile();
   return (
-    <div className="hidden md:flex relative w-1/2 h-screen overflow-hidden" style={{ background: "#0D0A06" }}>
-      <Suspense fallback={<div className="absolute inset-0" style={{ background: "#0D0A06" }} />}>
-        <Ballpit
-          count={count}
-          gravity={0.3}
-          friction={0.9975}
-          wallBounce={0.95}
-          followCursor
-          colors={BALL_COLORS}
-          ambientColor={0xc8922a}
-          ambientIntensity={0.4}
-          lightIntensity={120}
-          minSize={0.2}
-          maxSize={0.8}
-        />
-      </Suspense>
-      <div className="pointer-events-none absolute inset-0 flex flex-col items-center justify-center text-center px-8">
-        <Logo className="h-24 w-auto mb-4" />
-        <p
-          className="font-medium"
-          style={{ fontSize: 12, letterSpacing: 4, color: "#C8922A", marginTop: 12 }}
-        >
-          LA PLATEFORME ÉDITORIALE<br />DE L'AFRIQUE DE L'OUEST
-        </p>
+    <>
+      <div
+        style={{
+          position: "fixed",
+          inset: 0,
+          zIndex: 0,
+          background: "#0D0A06",
+        }}
+      >
+        <Suspense fallback={null}>
+          <Ballpit
+            count={isMobile ? 80 : 150}
+            gravity={0.5}
+            friction={0.9975}
+            wallBounce={0.95}
+            followCursor
+            colors={BALL_COLORS}
+            ambientColor={0xc8922a}
+            ambientIntensity={0.5}
+            lightIntensity={150}
+            minSize={0.3}
+            maxSize={0.9}
+          />
+        </Suspense>
       </div>
-    </div>
+      <div
+        style={{
+          position: "fixed",
+          inset: 0,
+          zIndex: 1,
+          background:
+            "radial-gradient(ellipse at center, rgba(13,10,6,0.3) 0%, rgba(13,10,6,0.7) 100%)",
+          pointerEvents: "none",
+        }}
+      />
+    </>
   );
 }
 
@@ -80,6 +103,7 @@ function LoginPage() {
   const [password, setPassword] = useState("");
   const [showPwd, setShowPwd] = useState(false);
   const [loading, setLoading] = useState(false);
+  const isMobile = useIsMobile();
 
   const onSubmit = async (e: FormEvent) => {
     e.preventDefault();
@@ -92,118 +116,143 @@ function LoginPage() {
   };
 
   return (
-    <div className="min-h-screen flex" style={{ background: "#0D0A06" }}>
-      <BallpitPanel count={100} />
+    <div style={{ minHeight: "100vh", position: "relative", background: "#0D0A06" }}>
+      <BallpitBackground />
 
       <div
-        className="flex-1 md:w-1/2 flex items-center justify-center px-6 py-12 min-h-screen"
         style={{
-          background:
-            "radial-gradient(ellipse at top, rgba(200,146,42,0.10) 0%, #0D0A06 60%)",
-          borderLeft: "1px solid rgba(200,146,42,0.1)",
+          position: "relative",
+          zIndex: 2,
+          display: "flex",
+          flexDirection: "column",
+          alignItems: "center",
+          justifyContent: "center",
+          minHeight: "100vh",
+          padding: 24,
+          pointerEvents: "none",
         }}
       >
-        <div className="w-full" style={{ maxWidth: 440 }}>
-          <div className="md:hidden flex justify-center mb-8">
-            <Logo className="h-20 w-auto" />
-          </div>
-
-          <div
-            className="rounded-[20px] p-6 md:p-12"
+        <div style={{ textAlign: "center", marginBottom: 32, pointerEvents: "auto" }}>
+          <Logo
+            className="mx-auto"
             style={{
-              background: "rgba(26,18,8,0.6)",
-              border: "1px solid rgba(200,146,42,0.15)",
-              backdropFilter: "blur(20px)",
+              height: isMobile ? 55 : 70,
+              width: "auto",
+              filter: "drop-shadow(0 0 24px rgba(200,146,42,0.8))",
+              display: "block",
+              margin: "0 auto 12px auto",
+            }}
+          />
+          <p
+            style={{
+              color: "#C8922A",
+              fontSize: 11,
+              letterSpacing: 3,
+              textTransform: "uppercase",
+              margin: 0,
             }}
           >
-            <p
-              className="font-semibold mb-6"
-              style={{ color: "#C8922A", letterSpacing: 3, fontSize: 11 }}
-            >
-              FIGDITIONS
-            </p>
-            <h1 className="text-white font-bold" style={{ fontSize: 32 }}>
-              Bon retour !
-            </h1>
-            <p style={{ color: "#B8A898", marginBottom: 40, marginTop: 4 }}>
-              Connectez-vous à votre espace
-            </p>
+            La plateforme éditoriale de l'Afrique de l'Ouest
+          </p>
+        </div>
 
-            <form onSubmit={onSubmit} className="space-y-4">
-              <div className="space-y-2">
-                <Label htmlFor="email" className="text-white/90">Adresse email</Label>
+        <div
+          style={{
+            background: "rgba(13,10,6,0.85)",
+            border: "1px solid rgba(200,146,42,0.25)",
+            borderRadius: 24,
+            padding: isMobile ? 32 : 48,
+            width: isMobile ? "calc(100% - 32px)" : "100%",
+            margin: isMobile ? 16 : 0,
+            maxWidth: 440,
+            backdropFilter: "blur(24px)",
+            WebkitBackdropFilter: "blur(24px)",
+            boxShadow:
+              "0 25px 80px rgba(0,0,0,0.6), 0 0 0 1px rgba(200,146,42,0.1)",
+            pointerEvents: "auto",
+          }}
+        >
+          <h1 style={{ color: "white", fontSize: 32, fontWeight: 700, marginBottom: 8 }}>
+            Bon retour !
+          </h1>
+          <p style={{ color: "#B8A898", fontSize: 15, marginBottom: 40 }}>
+            Connectez-vous à votre espace
+          </p>
+
+          <form onSubmit={onSubmit} className="space-y-4">
+            <div className="space-y-2">
+              <Label htmlFor="email" className="text-white/90">Adresse email</Label>
+              <GoldInput
+                id="email"
+                type="email"
+                required
+                value={email}
+                placeholder="votre@email.com"
+                onChange={(e) => setEmail(e.target.value)}
+              />
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="password" className="text-white/90">Mot de passe</Label>
+              <div className="relative">
                 <GoldInput
-                  id="email"
-                  type="email"
+                  id="password"
+                  type={showPwd ? "text" : "password"}
                   required
-                  value={email}
-                  placeholder="votre@email.com"
-                  onChange={(e) => setEmail(e.target.value)}
+                  value={password}
+                  placeholder="••••••••"
+                  onChange={(e) => setPassword(e.target.value)}
+                  style={{ paddingRight: 44 }}
                 />
-              </div>
-
-              <div className="space-y-2">
-                <Label htmlFor="password" className="text-white/90">Mot de passe</Label>
-                <div className="relative">
-                  <GoldInput
-                    id="password"
-                    type={showPwd ? "text" : "password"}
-                    required
-                    value={password}
-                    placeholder="••••••••"
-                    onChange={(e) => setPassword(e.target.value)}
-                    style={{ paddingRight: 44 }}
-                  />
-                  <button
-                    type="button"
-                    onClick={() => setShowPwd((v) => !v)}
-                    className="absolute right-3 top-1/2 -translate-y-1/2 text-[#B8A898] hover:text-[#C8922A]"
-                    aria-label={showPwd ? "Masquer" : "Afficher"}
-                  >
-                    {showPwd ? <EyeOff size={18} /> : <Eye size={18} />}
-                  </button>
-                </div>
-              </div>
-
-              <div className="text-right">
-                <Link
-                  to="/login"
-                  className="hover:underline"
-                  style={{ color: "#C8922A", fontSize: 13 }}
+                <button
+                  type="button"
+                  onClick={() => setShowPwd((v) => !v)}
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-[#B8A898] hover:text-[#C8922A]"
+                  aria-label={showPwd ? "Masquer" : "Afficher"}
                 >
-                  Mot de passe oublié ?
-                </Link>
+                  {showPwd ? <EyeOff size={18} /> : <Eye size={18} />}
+                </button>
               </div>
+            </div>
 
-              <button
-                type="submit"
-                disabled={loading}
-                className="w-full inline-flex items-center justify-center font-semibold text-white transition-all hover:brightness-110 hover:-translate-y-px disabled:opacity-60"
-                style={{
-                  height: 48,
-                  borderRadius: 12,
-                  fontSize: 15,
-                  background: "linear-gradient(135deg, #C8922A, #A67420)",
-                  boxShadow: "0 4px 20px rgba(200,146,42,0.3)",
-                }}
+            <div className="text-right">
+              <Link
+                to="/login"
+                className="hover:underline"
+                style={{ color: "#C8922A", fontSize: 13 }}
               >
-                {loading ? <Loader2 className="h-4 w-4 animate-spin" /> : "Se connecter"}
-              </button>
+                Mot de passe oublié ?
+              </Link>
+            </div>
 
-              <div className="flex items-center gap-3 my-2">
-                <div className="flex-1 h-px" style={{ background: "rgba(200,146,42,0.2)" }} />
-                <span className="text-xs" style={{ color: "#B8A898" }}>ou</span>
-                <div className="flex-1 h-px" style={{ background: "rgba(200,146,42,0.2)" }} />
-              </div>
+            <button
+              type="submit"
+              disabled={loading}
+              className="w-full inline-flex items-center justify-center font-semibold text-white transition-all hover:brightness-110 hover:-translate-y-px disabled:opacity-60"
+              style={{
+                height: 48,
+                borderRadius: 12,
+                fontSize: 15,
+                background: "linear-gradient(135deg, #C8922A, #A67420)",
+                boxShadow: "0 4px 20px rgba(200,146,42,0.3)",
+              }}
+            >
+              {loading ? <Loader2 className="h-4 w-4 animate-spin" /> : "Se connecter"}
+            </button>
 
-              <p className="text-center text-sm" style={{ color: "#B8A898" }}>
-                Pas encore de compte ?{" "}
-                <Link to="/signup" className="font-medium hover:underline" style={{ color: "#C8922A" }}>
-                  S'inscrire
-                </Link>
-              </p>
-            </form>
-          </div>
+            <div className="flex items-center gap-3 my-2">
+              <div className="flex-1 h-px" style={{ background: "rgba(200,146,42,0.2)" }} />
+              <span className="text-xs" style={{ color: "#B8A898" }}>ou</span>
+              <div className="flex-1 h-px" style={{ background: "rgba(200,146,42,0.2)" }} />
+            </div>
+
+            <p className="text-center text-sm" style={{ color: "#B8A898" }}>
+              Pas encore de compte ?{" "}
+              <Link to="/signup" className="font-medium hover:underline" style={{ color: "#C8922A" }}>
+                S'inscrire
+              </Link>
+            </p>
+          </form>
         </div>
       </div>
     </div>
