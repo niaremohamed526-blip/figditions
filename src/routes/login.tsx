@@ -5,6 +5,7 @@ import { Label } from "@/components/ui/label";
 import { toast } from "sonner";
 import { Loader2, Eye, EyeOff } from "lucide-react";
 import { Logo } from "@/components/logo";
+import { authErrorFr } from "@/lib/auth-errors";
 
 const Ballpit = lazy(() => import("@/components/Ballpit"));
 
@@ -110,7 +111,7 @@ function LoginPage() {
     setLoading(true);
     const { error } = await supabase.auth.signInWithPassword({ email, password });
     setLoading(false);
-    if (error) return toast.error(error.message);
+    if (error) return toast.error(authErrorFr(error.message));
     toast.success("Bienvenue !");
     navigate({ to: "/dashboard" });
   };
@@ -217,7 +218,7 @@ function LoginPage() {
 
             <div className="text-right">
               <Link
-                to="/login"
+                to="/mot-de-passe-oublie"
                 className="hover:underline"
                 style={{ color: "#C8922A", fontSize: 13 }}
               >

@@ -11,7 +11,9 @@
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as SitemapDotxmlRouteImport } from './routes/sitemap[.]xml'
 import { Route as SignupRouteImport } from './routes/signup'
+import { Route as ReinitialiserMotDePasseRouteImport } from './routes/reinitialiser-mot-de-passe'
 import { Route as PolitiqueDeConfidentialiteRouteImport } from './routes/politique-de-confidentialite'
+import { Route as MotDePasseOublieRouteImport } from './routes/mot-de-passe-oublie'
 import { Route as LoginRouteImport } from './routes/login'
 import { Route as ConditionsUtilisationRouteImport } from './routes/conditions-utilisation'
 import { Route as AProposRouteImport } from './routes/a-propos'
@@ -45,12 +47,22 @@ const SignupRoute = SignupRouteImport.update({
   path: '/signup',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ReinitialiserMotDePasseRoute = ReinitialiserMotDePasseRouteImport.update({
+  id: '/reinitialiser-mot-de-passe',
+  path: '/reinitialiser-mot-de-passe',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const PolitiqueDeConfidentialiteRoute =
   PolitiqueDeConfidentialiteRouteImport.update({
     id: '/politique-de-confidentialite',
     path: '/politique-de-confidentialite',
     getParentRoute: () => rootRouteImport,
   } as any)
+const MotDePasseOublieRoute = MotDePasseOublieRouteImport.update({
+  id: '/mot-de-passe-oublie',
+  path: '/mot-de-passe-oublie',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const LoginRoute = LoginRouteImport.update({
   id: '/login',
   path: '/login',
@@ -174,7 +186,9 @@ export interface FileRoutesByFullPath {
   '/a-propos': typeof AProposRoute
   '/conditions-utilisation': typeof ConditionsUtilisationRoute
   '/login': typeof LoginRoute
+  '/mot-de-passe-oublie': typeof MotDePasseOublieRoute
   '/politique-de-confidentialite': typeof PolitiqueDeConfidentialiteRoute
+  '/reinitialiser-mot-de-passe': typeof ReinitialiserMotDePasseRoute
   '/signup': typeof SignupRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
   '/auteurs': typeof AuthenticatedAuteursRouteWithChildren
@@ -200,7 +214,9 @@ export interface FileRoutesByTo {
   '/a-propos': typeof AProposRoute
   '/conditions-utilisation': typeof ConditionsUtilisationRoute
   '/login': typeof LoginRoute
+  '/mot-de-passe-oublie': typeof MotDePasseOublieRoute
   '/politique-de-confidentialite': typeof PolitiqueDeConfidentialiteRoute
+  '/reinitialiser-mot-de-passe': typeof ReinitialiserMotDePasseRoute
   '/signup': typeof SignupRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
   '/auteurs': typeof AuthenticatedAuteursRouteWithChildren
@@ -228,7 +244,9 @@ export interface FileRoutesById {
   '/a-propos': typeof AProposRoute
   '/conditions-utilisation': typeof ConditionsUtilisationRoute
   '/login': typeof LoginRoute
+  '/mot-de-passe-oublie': typeof MotDePasseOublieRoute
   '/politique-de-confidentialite': typeof PolitiqueDeConfidentialiteRoute
+  '/reinitialiser-mot-de-passe': typeof ReinitialiserMotDePasseRoute
   '/signup': typeof SignupRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
   '/_authenticated/auteurs': typeof AuthenticatedAuteursRouteWithChildren
@@ -256,7 +274,9 @@ export interface FileRouteTypes {
     | '/a-propos'
     | '/conditions-utilisation'
     | '/login'
+    | '/mot-de-passe-oublie'
     | '/politique-de-confidentialite'
+    | '/reinitialiser-mot-de-passe'
     | '/signup'
     | '/sitemap.xml'
     | '/auteurs'
@@ -282,7 +302,9 @@ export interface FileRouteTypes {
     | '/a-propos'
     | '/conditions-utilisation'
     | '/login'
+    | '/mot-de-passe-oublie'
     | '/politique-de-confidentialite'
+    | '/reinitialiser-mot-de-passe'
     | '/signup'
     | '/sitemap.xml'
     | '/auteurs'
@@ -309,7 +331,9 @@ export interface FileRouteTypes {
     | '/a-propos'
     | '/conditions-utilisation'
     | '/login'
+    | '/mot-de-passe-oublie'
     | '/politique-de-confidentialite'
+    | '/reinitialiser-mot-de-passe'
     | '/signup'
     | '/sitemap.xml'
     | '/_authenticated/auteurs'
@@ -337,7 +361,9 @@ export interface RootRouteChildren {
   AProposRoute: typeof AProposRoute
   ConditionsUtilisationRoute: typeof ConditionsUtilisationRoute
   LoginRoute: typeof LoginRoute
+  MotDePasseOublieRoute: typeof MotDePasseOublieRoute
   PolitiqueDeConfidentialiteRoute: typeof PolitiqueDeConfidentialiteRoute
+  ReinitialiserMotDePasseRoute: typeof ReinitialiserMotDePasseRoute
   SignupRoute: typeof SignupRoute
   SitemapDotxmlRoute: typeof SitemapDotxmlRoute
   LectureTokenRoute: typeof LectureTokenRoute
@@ -362,11 +388,25 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof SignupRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/reinitialiser-mot-de-passe': {
+      id: '/reinitialiser-mot-de-passe'
+      path: '/reinitialiser-mot-de-passe'
+      fullPath: '/reinitialiser-mot-de-passe'
+      preLoaderRoute: typeof ReinitialiserMotDePasseRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/politique-de-confidentialite': {
       id: '/politique-de-confidentialite'
       path: '/politique-de-confidentialite'
       fullPath: '/politique-de-confidentialite'
       preLoaderRoute: typeof PolitiqueDeConfidentialiteRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/mot-de-passe-oublie': {
+      id: '/mot-de-passe-oublie'
+      path: '/mot-de-passe-oublie'
+      fullPath: '/mot-de-passe-oublie'
+      preLoaderRoute: typeof MotDePasseOublieRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/login': {
@@ -589,7 +629,9 @@ const rootRouteChildren: RootRouteChildren = {
   AProposRoute: AProposRoute,
   ConditionsUtilisationRoute: ConditionsUtilisationRoute,
   LoginRoute: LoginRoute,
+  MotDePasseOublieRoute: MotDePasseOublieRoute,
   PolitiqueDeConfidentialiteRoute: PolitiqueDeConfidentialiteRoute,
+  ReinitialiserMotDePasseRoute: ReinitialiserMotDePasseRoute,
   SignupRoute: SignupRoute,
   SitemapDotxmlRoute: SitemapDotxmlRoute,
   LectureTokenRoute: LectureTokenRoute,
@@ -600,13 +642,3 @@ const rootRouteChildren: RootRouteChildren = {
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
-
-import type { getRouter } from './router.tsx'
-import type { startInstance } from './start.ts'
-declare module '@tanstack/react-start' {
-  interface Register {
-    ssr: true
-    router: Awaited<ReturnType<typeof getRouter>>
-    config: Awaited<ReturnType<typeof startInstance.getOptions>>
-  }
-}

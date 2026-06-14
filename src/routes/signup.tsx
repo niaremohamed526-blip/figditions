@@ -5,6 +5,7 @@ import { Label } from "@/components/ui/label";
 import { toast } from "sonner";
 import { Loader2, Eye, EyeOff, Check, X } from "lucide-react";
 import { Logo } from "@/components/logo";
+import { authErrorFr } from "@/lib/auth-errors";
 
 const Ballpit = lazy(() => import("@/components/Ballpit"));
 
@@ -140,7 +141,7 @@ function SignupPage() {
       },
     });
     setLoading(false);
-    if (error) return toast.error(error.message);
+    if (error) return toast.error(authErrorFr(error.message));
     toast.success("Compte créé !");
     navigate({ to: "/dashboard" });
   };
