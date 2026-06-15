@@ -72,8 +72,7 @@ function Navbar() {
     )}>
       <nav className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 md:h-20 flex items-center justify-between gap-4">
         <Link to="/" className="flex items-center gap-2 shrink-0">
-          <Logo className="h-9 w-auto" />
-          <span className="font-extrabold tracking-wide text-[color:var(--gold)] text-lg hidden sm:inline">FIGDITIONS</span>
+          <Logo className="h-14 w-auto" />
         </Link>
 
         <div className="hidden md:flex items-center gap-12 absolute left-1/2 -translate-x-1/2">
