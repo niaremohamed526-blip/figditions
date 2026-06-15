@@ -175,7 +175,7 @@ export function AppShell({ children }: { children: ReactNode }) {
           <Menu className="h-5 w-5" />
         </button>
         <Link to="/dashboard" className="flex-1 flex justify-center">
-          <Logo className="h-9 w-auto" />
+          <Logo className="h-10 w-auto" />
         </Link>
         <NotificationBell entrepriseId={entreprise?.id} />
         <LangToggle lang={lang} setLang={setLang} />
