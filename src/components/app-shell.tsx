@@ -144,7 +144,7 @@ export function AppShell({ children }: { children: ReactNode }) {
       <aside className="hidden md:flex w-64 flex-col bg-sidebar border-r border-border sticky top-0 h-screen">
         <div className="px-3 py-5 border-b border-border flex items-center justify-between gap-2">
           <Link to="/dashboard" className="block flex-1 min-w-0">
-            <Logo className="h-12 w-full" />
+            <Logo className="h-16 w-full" />
           </Link>
           <NotificationBell entrepriseId={entreprise?.id} />
           <LangToggle lang={lang} setLang={setLang} />
