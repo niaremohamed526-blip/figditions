@@ -143,8 +143,8 @@ export function AppShell({ children }: { children: ReactNode }) {
     <div className="min-h-screen gradient-bg flex">
       <aside className="hidden md:flex w-64 flex-col bg-sidebar border-r border-border sticky top-0 h-screen">
         <div className="px-3 py-5 border-b border-border flex items-center justify-between gap-2">
-          <Link to="/dashboard" className="block flex-1 min-w-0">
-            <Logo className="h-16 w-full" />
+          <Link to="/dashboard" className="flex items-center justify-center flex-1 min-w-0">
+            <Logo className="h-16 w-auto" />
           </Link>
           <NotificationBell entrepriseId={entreprise?.id} />
           <LangToggle lang={lang} setLang={setLang} />
