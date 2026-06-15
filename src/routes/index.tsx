@@ -71,8 +71,8 @@ function Navbar() {
       scrolled ? "bg-[rgba(10,7,4,0.85)] backdrop-blur-xl border-b border-[rgba(200,146,42,0.15)]" : "bg-transparent"
     )}>
       <nav className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 md:h-20 flex items-center justify-between gap-4">
-        <Link to="/" className="flex items-center gap-2 shrink-0">
-          <Logo className="h-14 w-auto" />
+        <Link to="/" className="flex items-center shrink-0">
+          <Logo className="h-12 md:h-16 w-auto" style={{ filter: "drop-shadow(0 1px 6px rgba(0,0,0,0.35))" }} />
         </Link>
 
         <div className="hidden md:flex items-center gap-12 absolute left-1/2 -translate-x-1/2">
