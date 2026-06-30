@@ -11,7 +11,7 @@ import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { CookieBanner } from "@/components/cookie-banner";
 import figuiraLogo from "@/assets/figuira-logo.jpg";
-import heroAsset from "@/assets/hero-figditions.png.asset.json";
+const heroAsset = { url: "/assets/hero-figditions.png" };
 
 
 export const Route = createFileRoute("/")({
