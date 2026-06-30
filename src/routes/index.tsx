@@ -10,7 +10,7 @@ import { useI18n } from "@/hooks/use-i18n";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { CookieBanner } from "@/components/cookie-banner";
-import figuiraLogo from "@/assets/figuira-logo.jpg";
+const figuiraLogo = "/assets/figuira-logo.png";
 const heroAsset = { url: "/assets/hero-figditions.png" };
 
 
