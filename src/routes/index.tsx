@@ -215,8 +215,8 @@ function Hero() {
       <div
         className="hidden lg:flex absolute z-10 flex-col gap-2 rounded-2xl border p-5 animate-[float_4s_ease-in-out_infinite]"
         style={{
-          top: "22%",
-          right: "5%",
+          top: "42%",
+          left: "5%",
           background: "rgba(26,18,8,0.85)",
           borderColor: "rgba(200,146,42,0.3)",
           backdropFilter: "blur(12px)",
