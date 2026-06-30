@@ -2,7 +2,7 @@ import { createFileRoute, Link } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import {
   Menu, X, BookOpen, Users, Package, Wallet, FileText, Calculator,
-  Linkedin, Instagram, ArrowRight, Check,
+  Linkedin, Instagram, Facebook, Youtube, ArrowRight, Check,
   Factory, Shield, BarChart3, Store, Sparkles, Boxes, MousePointer2,
 } from "lucide-react";
 import { Logo } from "@/components/logo";
