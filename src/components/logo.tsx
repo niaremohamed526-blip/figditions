@@ -1,4 +1,4 @@
-import logoAsset from "@/assets/figditions-logo.png.asset.json";
+const logoAsset = { url: "/assets/figditions-logo.png" };
 import { cn } from "@/lib/utils";
 
 export function Logo({
