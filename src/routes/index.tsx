@@ -1,7 +1,7 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import {
-  Menu, X, Star, BookOpen, Users, Package, Wallet, FileText, Calculator,
+  Menu, X, BookOpen, Users, Package, Wallet, FileText, Calculator,
   Twitter, Linkedin, Facebook, Instagram, Youtube, ArrowRight, Check,
   Factory, Shield, BarChart3, Store, Sparkles, FileSignature, Boxes, MousePointer2,
 } from "lucide-react";
@@ -213,7 +213,7 @@ function Hero() {
         </div>
       </div>
 
-      {/* Floating OHADA card */}
+      {/* Floating Manuscript Management card */}
       <div
         className="hidden lg:flex absolute z-10 flex-col gap-2 rounded-2xl border p-5 animate-[float_4s_ease-in-out_infinite]"
         style={{
@@ -222,12 +222,16 @@ function Hero() {
           background: "rgba(26,18,8,0.85)",
           borderColor: "rgba(200,146,42,0.3)",
           backdropFilter: "blur(12px)",
-          minWidth: "180px",
+          minWidth: "200px",
         }}
       >
         <div className="flex items-center gap-2">
-          <FileSignature className="h-5 w-5 text-[#C8922A]" />
-          <span className="text-[#E8B84B] font-bold tracking-wide text-sm">OHADA</span>
+          <BookOpen className="h-5 w-5 text-[#C8922A]" />
+          <span className="text-[#E8B84B] font-bold tracking-wide text-sm">MANUSCRIT MANAGEMENT</span>
+        </div>
+        <div className="flex items-baseline gap-1 mt-1">
+          <span className="text-white font-bold text-2xl">128</span>
+          <span className="text-xs text-[rgba(184,168,152,0.8)]">manuscrits actifs</span>
         </div>
         <div className="space-y-1.5 mt-1">
           <div className="h-1.5 rounded-full bg-[rgba(200,146,42,0.25)] w-full" />
@@ -271,13 +275,6 @@ function Hero() {
         <MousePointer2 className="h-8 w-8 rotate-180" />
       </a>
 
-      {/* Decorative star */}
-      <div
-        className="absolute bottom-6 right-8 z-10 animate-[pulseStar_3s_infinite]"
-        aria-hidden="true"
-      >
-        <Sparkles className="h-8 w-8 text-[#C8922A]" />
-      </div>
 
       <style>{`
         @keyframes float {
@@ -287,10 +284,6 @@ function Hero() {
         @keyframes scrollBounce {
           0%, 100% { transform: translate(-50%, 0); }
           50% { transform: translate(-50%, 8px); }
-        }
-        @keyframes pulseStar {
-          0%, 100% { opacity: 1; transform: scale(1); }
-          50% { opacity: 0.6; transform: scale(0.9); }
         }
       `}</style>
     </section>
