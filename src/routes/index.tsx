@@ -213,7 +213,7 @@ function Hero() {
         </div>
       </div>
 
-      {/* Floating OHADA card */}
+      {/* Floating Manuscript Management card */}
       <div
         className="hidden lg:flex absolute z-10 flex-col gap-2 rounded-2xl border p-5 animate-[float_4s_ease-in-out_infinite]"
         style={{
@@ -222,12 +222,16 @@ function Hero() {
           background: "rgba(26,18,8,0.85)",
           borderColor: "rgba(200,146,42,0.3)",
           backdropFilter: "blur(12px)",
-          minWidth: "180px",
+          minWidth: "200px",
         }}
       >
         <div className="flex items-center gap-2">
-          <FileSignature className="h-5 w-5 text-[#C8922A]" />
-          <span className="text-[#E8B84B] font-bold tracking-wide text-sm">OHADA</span>
+          <BookOpen className="h-5 w-5 text-[#C8922A]" />
+          <span className="text-[#E8B84B] font-bold tracking-wide text-sm">MANUSCRIT MANAGEMENT</span>
+        </div>
+        <div className="flex items-baseline gap-1 mt-1">
+          <span className="text-white font-bold text-2xl">128</span>
+          <span className="text-xs text-[rgba(184,168,152,0.8)]">manuscrits actifs</span>
         </div>
         <div className="space-y-1.5 mt-1">
           <div className="h-1.5 rounded-full bg-[rgba(200,146,42,0.25)] w-full" />
