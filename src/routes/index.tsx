@@ -2,8 +2,8 @@ import { createFileRoute, Link } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import {
   Menu, X, BookOpen, Users, Package, Wallet, FileText, Calculator,
-  Twitter, Linkedin, Facebook, Instagram, Youtube, ArrowRight, Check,
-  Factory, Shield, BarChart3, Store, Sparkles, FileSignature, Boxes, MousePointer2,
+  Linkedin, Instagram, Facebook, Youtube, ArrowRight, Check,
+  Factory, Shield, BarChart3, Store, Sparkles, Boxes, MousePointer2,
 } from "lucide-react";
 import { Logo } from "@/components/logo";
 import { useI18n } from "@/hooks/use-i18n";
@@ -194,9 +194,7 @@ function Hero() {
           {/* Social icons */}
           <div className="mt-8 flex items-center gap-5">
             {[
-              { Icon: Facebook, href: "https://www.facebook.com/figuira", label: "Facebook" },
-              { Icon: Instagram, href: "https://www.instagram.com/figuiraeditions2", label: "Instagram" },
-              { Icon: Twitter, href: "https://twitter.com/figditions", label: "X" },
+              { Icon: Instagram, href: "https://www.instagram.com/medmo_05?igsh=MTBxMHpueTBucHEyMQ%3D%3D&utm_source=qr", label: "Instagram" },
             ].map(({ Icon, href, label }) => (
               <a
                 key={label}
@@ -218,7 +216,7 @@ function Hero() {
         className="hidden lg:flex absolute z-10 flex-col gap-2 rounded-2xl border p-5 animate-[float_4s_ease-in-out_infinite]"
         style={{
           top: "22%",
-          left: "38%",
+          right: "5%",
           background: "rgba(26,18,8,0.85)",
           borderColor: "rgba(200,146,42,0.3)",
           backdropFilter: "blur(12px)",
@@ -717,8 +715,11 @@ function Footer() {
         </div>
 
         <div className="flex md:justify-end gap-3">
-          {[Twitter, Linkedin, Facebook].map((Icon, i) => (
-            <a key={i} href="#" aria-label="social" className="h-10 w-10 rounded-full border border-border flex items-center justify-center text-muted-foreground hover:text-primary hover:border-primary transition-colors">
+          {[
+            { Icon: Linkedin, href: "https://www.linkedin.com/in/figuira-éditions-113118301/", label: "LinkedIn" },
+            { Icon: Instagram, href: "https://www.instagram.com/medmo_05?igsh=MTBxMHpueTBucHEyMQ%3D%3D&utm_source=qr", label: "Instagram" },
+          ].map(({ Icon, href, label }) => (
+            <a key={label} href={href} target="_blank" rel="noopener noreferrer" aria-label={label} className="h-10 w-10 rounded-full border border-border flex items-center justify-center text-muted-foreground hover:text-primary hover:border-primary transition-colors">
               <Icon className="h-4 w-4" />
             </a>
           ))}
