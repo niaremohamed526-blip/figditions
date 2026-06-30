@@ -1,58 +1,41 @@
-# Vérification PayDunya — Plan de test
+# Pourquoi les images ne s'affichent pas sur Vercel
 
-## Objectif
-Confirmer que :
-1. La création d'invoice PayDunya fonctionne en mode `test` (sandbox).
-2. Le webhook `/api/public/paydunya-webhook` met à jour correctement `abonnements`, `paiements` et **`entreprises.plan` / `max_utilisateurs` / `abonnement_expire_le`**.
-3. La protection anti-rejeu (idempotence) tient.
+Toutes les images du site (logo, image hero, etc.) sont stockées sur le **CDN de Lovable** et servies via des URLs du type :
 
-## État actuel (code audité)
-- `PAYDUNYA_MASTER_KEY`, `PRIVATE_KEY`, `TOKEN`, `MODE` présents dans les secrets serveur.
-- `createPaymentInvoice` (serverFn) : gate admin + insert `abonnements` + `paiements` (statut `en_attente`).
-- `paydunya-webhook` POST : ré-confirme via API PayDunya (source de vérité), idempotent, met à jour les 3 tables.
-- `guard_entreprises_sensitive_fields` autorise `service_role` → l'update du plan passera.
-
-## Étapes de vérification
-
-### 1. Smoke test du endpoint webhook (publié)
-- `POST /api/public/paydunya-webhook` sans token → attendu **400 "Missing token"**.
-- `GET` → **200 "PayDunya webhook endpoint"**.
-Confirme que la route est bien déployée et joignable depuis l'extérieur (URL stable PayDunya pourra appeler).
-
-### 2. Création d'une vraie invoice sandbox via la serverFn
-Depuis une session admin (Playwright sur le preview) :
-- Aller dans `/parametres` onglet plan, cliquer "Upgrader vers Pro mensuel".
-- Vérifier : insert dans `abonnements` (statut `en_attente`, `paydunya_token` rempli), redirection vers `paydunya.com/sandbox-checkout/invoice/<token>`.
-
-### 3. Simulation du callback IPN
-Au lieu de payer manuellement dans le sandbox (long et flaky), simuler le POST IPN sur le webhook avec le token réel généré à l'étape 2 :
 ```
-POST /api/public/paydunya-webhook
-Content-Type: application/json
-{ "data": { "invoice_token": "<token>" } }
+/__l5e/assets-v1/<asset_id>/<filename>
 ```
-Le webhook va lui-même appeler `confirm/<token>` chez PayDunya. Deux cas :
-- **Si le sandbox PayDunya renvoie `completed`** (test card auto-validée) → vérifier que :
-  - `abonnements.statut = 'actif'`, `date_fin` = +30j
-  - `paiements.statut = 'succes'`
-  - `entreprises.plan = 'pro'`, `max_utilisateurs = 3`, `abonnement_expire_le` rempli
-- **Si `pending`** (paiement non effectué dans le sandbox UI) → aucune mutation, retour 200.
 
-### 4. Test anti-rejeu
-Re-POSTer le même token : doit retourner `"Already processed"` 200 sans nouvelle mutation.
+Ce préfixe `/__l5e/...` n'existe **que sur l'infrastructure d'hébergement Lovable**. Sur Vercel, ce chemin n'est routé nulle part → le navigateur reçoit du HTML (la page 404 SPA) à la place de l'image → image cassée.
 
-### 5. Cas erreur
-- Token inconnu → 200 "ok" (anti-leak), aucune mutation. ✔
+Concrètement, les assets concernés sont au minimum :
+- `src/assets/figditions-logo.png` (logo principal, partout : navbar, sidebar, footer, mobile)
+- `src/assets/hero-figditions.png` (image héros de la landing page)
+- Tout autre `*.png.asset.json` / `*.jpg.asset.json` présent dans `src/assets/`
 
-## Outils utilisés
-- `stack_modern--invoke-server-function` pour les POST vers `/api/public/paydunya-webhook`.
-- `supabase--read_query` pour inspecter `abonnements`, `paiements`, `entreprises` avant/après.
-- `stack_modern--server-function-logs` si une étape échoue.
-- (Optionnel) Playwright pour exécuter le clic UI réel à l'étape 2 — sinon on appelle la serverFn `createPaymentInvoice` directement via curl avec la session admin.
+## Solution
 
-## Livrable
-Rapport clair en français listant pour chaque étape : ✅ ou ❌ + état SQL avant/après pour l'entreprise testée. Si un bug est détecté, je propose une correction (sans l'appliquer — repasse en plan mode pour validation).
+Rapatrier ces fichiers **dans le repo** pour qu'ils soient buildés et servis par Vercel comme n'importe quel asset statique.
 
-## Pré-requis avant de lancer
-- Confirmer quelle **entreprise** je peux utiliser pour le test (idéalement la tienne sur le compte de connexion preview, plan actuel `starter`).
-- Confirmer que je peux insérer/modifier des lignes de test dans `abonnements` / `paiements` pour cette entreprise.
+### Étapes
+
+1. **Inventorier** tous les fichiers `*.asset.json` dans `src/` (logo, hero, et tout autre asset CDN éventuel).
+2. **Télécharger** chaque binaire depuis l'URL CDN actuelle (`https://<preview>.lovable.app/__l5e/assets-v1/...`) et l'écrire dans `public/assets/` (ex. `public/assets/figditions-logo.png`, `public/assets/hero-figditions.png`).
+3. **Remplacer le composant `src/components/logo.tsx`** : il importe `figditions-logo.png.asset.json` et utilise `asset.url`. À la place, pointer sur `/assets/figditions-logo.png` (chemin public servi par Vite/Vercel).
+4. **Mettre à jour `src/routes/index.tsx`** (et tout autre fichier qui importe un `.asset.json`) pour utiliser le chemin `/assets/...` au lieu de `assetJson.url`.
+5. **Supprimer les fichiers `.asset.json` migrés** pour éviter la confusion future.
+6. **Vérifier** : `bun run build` doit passer, et la preview doit afficher logo + hero comme avant. Une fois redéployé sur Vercel, les images chargeront.
+
+### Effet de bord important
+
+Sur Lovable, ces images étaient sur CDN (rapides, hors bundle). En les remettant dans `public/`, elles sont servies par Vercel directement. C'est parfait pour Vercel, et ça continue de fonctionner sur Lovable. **Le hero fait ~2 Mo** — je recommande de le recompresser (WebP ou JPEG qualité 80) après migration ; je peux le faire dans la foulée si tu veux.
+
+## Ce qui n'est PAS touché
+
+- Aucun changement de logique, de DB, de PayDunya, de Supabase.
+- Aucun changement visuel : mêmes images, mêmes positions.
+- Les `.asset.json` non utilisés sur le site Vercel (s'il y en a) peuvent rester.
+
+## Question ouverte
+
+Confirme-tu que tu veux que je **télécharge les binaires depuis le CDN Lovable et les commit dans `public/assets/`** ? (C'est la voie la plus simple et la plus fiable. L'alternative — héberger les images sur Supabase Storage — est plus lourde et apporte zéro bénéfice ici.)
