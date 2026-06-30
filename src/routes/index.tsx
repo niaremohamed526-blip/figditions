@@ -1,7 +1,7 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import {
-  Menu, X, Star, BookOpen, Users, Package, Wallet, FileText, Calculator,
+  Menu, X, BookOpen, Users, Package, Wallet, FileText, Calculator,
   Twitter, Linkedin, Facebook, Instagram, Youtube, ArrowRight, Check,
   Factory, Shield, BarChart3, Store, Sparkles, FileSignature, Boxes, MousePointer2,
 } from "lucide-react";
