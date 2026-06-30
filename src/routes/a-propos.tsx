@@ -6,7 +6,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Logo } from "@/components/logo";
-import figuiraLogo from "@/assets/figuira-logo.jpg";
+const figuiraLogo = "/assets/figuira-logo.png";
 
 export const Route = createFileRoute("/a-propos")({
   component: AboutPage,
