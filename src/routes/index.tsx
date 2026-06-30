@@ -275,13 +275,6 @@ function Hero() {
         <MousePointer2 className="h-8 w-8 rotate-180" />
       </a>
 
-      {/* Decorative star */}
-      <div
-        className="absolute bottom-6 right-8 z-10 animate-[pulseStar_3s_infinite]"
-        aria-hidden="true"
-      >
-        <Sparkles className="h-8 w-8 text-[#C8922A]" />
-      </div>
 
       <style>{`
         @keyframes float {
@@ -291,10 +284,6 @@ function Hero() {
         @keyframes scrollBounce {
           0%, 100% { transform: translate(-50%, 0); }
           50% { transform: translate(-50%, 8px); }
-        }
-        @keyframes pulseStar {
-          0%, 100% { opacity: 1; transform: scale(1); }
-          50% { opacity: 0.6; transform: scale(0.9); }
         }
       `}</style>
     </section>
