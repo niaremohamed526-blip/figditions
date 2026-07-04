@@ -1,0 +1,13 @@
+{
+  "name": "figditions-migration",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "export": "node export-storage.mjs",
+    "import": "node import-storage.mjs"
+  },
+  "dependencies": {
+    "@supabase/supabase-js": "^2.45.0",
+    "dotenv": "^16.4.5"
+  }
+}
