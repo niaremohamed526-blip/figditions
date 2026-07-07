@@ -39,10 +39,15 @@ const FEATURES: Record<Plan, string[]> = {
 
 export function UpgradePaymentModal({ open, onOpenChange, plan, defaultPeriode = "mensuel" }: Props) {
   const planDef = PLANS[plan];
+  const { user } = useAuth();
+  const { profile } = useProfile(user?.id);
+  const isAdmin = profile?.role === "admin";
   const [periode, setPeriode] = useState<Periode>(defaultPeriode);
   const [methode, setMethode] = useState<Methode>("orange_money");
   const [phone, setPhone] = useState("");
   const [loading, setLoading] = useState(false);
+  const [promoOpen, setPromoOpen] = useState(false);
+  const [promoApplied, setPromoApplied] = useState(false);
 
   const createInvoice = useServerFn(createPaymentInvoice);
 
@@ -51,6 +56,8 @@ export function UpgradePaymentModal({ open, onOpenChange, plan, defaultPeriode =
     setPeriode(defaultPeriode);
     setMethode("orange_money");
     setPhone("");
+    setPromoOpen(false);
+    setPromoApplied(false);
   }, [open, defaultPeriode]);
 
   const amount = periode === "mensuel" ? planDef.monthlyFcfa : planDef.yearlyFcfa;
