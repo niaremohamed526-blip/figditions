@@ -155,6 +155,8 @@ export function UpgradePaymentModal({ open, onOpenChange, plan, defaultPeriode =
             )}
           </div>
 
+          {!promoApplied && (
+          <>
           {/* Payment method */}
           <div className="mb-5">
             <h3 className="text-sm font-semibold mb-2">Choisir votre moyen de paiement</h3>
@@ -211,6 +213,33 @@ export function UpgradePaymentModal({ open, onOpenChange, plan, defaultPeriode =
             </div>
           </div>
 
+          {/* Promo code collapsible */}
+          <div className="mb-5">
+            <button
+              type="button"
+              onClick={() => setPromoOpen((v) => !v)}
+              className="flex items-center gap-1.5 text-sm font-medium hover:opacity-80 transition-opacity"
+              style={{ color: "#C8922A" }}
+            >
+              <Ticket className="h-4 w-4" />
+              <span>🎟️ J'ai un code promotionnel</span>
+              <ChevronDown className={cn("h-4 w-4 transition-transform", promoOpen && "rotate-180")} />
+            </button>
+            {promoOpen && (
+              <div className="mt-3 animate-fade-in">
+                <PromoCodeCard
+                  entrepriseId={profile?.entreprise_id}
+                  isAdmin={isAdmin}
+                  compact
+                  onSuccess={() => {
+                    setPromoApplied(true);
+                    setTimeout(() => onOpenChange(false), 2500);
+                  }}
+                />
+              </div>
+            )}
+          </div>
+
           {/* Order summary */}
           <div className="rounded-xl border border-border bg-background/40 p-4 mb-4 text-sm space-y-1.5">
             <div className="flex justify-between text-muted-foreground"><span>Plan</span><span className="text-foreground">{planDef.label}</span></div>
@@ -238,6 +267,16 @@ export function UpgradePaymentModal({ open, onOpenChange, plan, defaultPeriode =
               <>Payer {fcfa(amount)}</>
             )}
           </Button>
+          </>
+          )}
+
+          {promoApplied && (
+            <div className="rounded-xl border border-emerald-500/40 bg-emerald-500/10 p-5 text-center animate-fade-in">
+              <CheckCircle2 className="h-10 w-10 text-emerald-400 mx-auto mb-2" />
+              <div className="font-semibold text-base">Code appliqué — Aucun paiement requis</div>
+              <p className="text-sm text-muted-foreground mt-1">Votre plan est activé gratuitement.</p>
+            </div>
+          )}
 
           {/* Security badges */}
           <div className="mt-4 grid grid-cols-2 gap-1.5 text-[11px] text-muted-foreground">
