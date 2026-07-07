@@ -626,6 +626,15 @@ function Pricing() {
             "No credit card required · Cancel anytime · Pay with Orange Money or Moov Money"
           )}
         </p>
+
+        <div className="mt-6 text-center">
+          <p className="text-sm" style={{ color: "#B8A898" }}>
+            {t("Vous avez un code promotionnel ?", "Have a promo code?")}{" "}
+            <Link to="/signup" hash="plan" className="text-[color:var(--gold)] hover:underline story-link">
+              {t("Entrez votre code après inscription", "Enter your code after signing up")}
+            </Link>
+          </p>
+        </div>
       </div>
     </section>
   );
