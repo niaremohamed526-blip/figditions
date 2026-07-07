@@ -3,13 +3,15 @@ import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Loader2, Lock, Smartphone, CreditCard, ShieldCheck, RotateCcw, Sparkles } from "lucide-react";
+import { Loader2, Lock, Smartphone, CreditCard, ShieldCheck, RotateCcw, Sparkles, Ticket, ChevronDown, CheckCircle2 } from "lucide-react";
 import { useServerFn } from "@tanstack/react-start";
 import { createPaymentInvoice, getPaydunyaModeFn } from "@/lib/paiements.functions";
 import { toast } from "sonner";
 import { PLANS } from "@/lib/plans";
 import { fcfa } from "@/lib/format";
 import { cn } from "@/lib/utils";
+import { PromoCodeCard } from "@/components/promo-code-card";
+import { useAuth, useProfile } from "@/hooks/use-auth";
 
 type Plan = "pro" | "business";
 type Periode = "mensuel" | "annuel";
