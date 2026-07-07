@@ -117,6 +117,10 @@ function ParametresPage() {
         isAdmin={isAdmin}
       />
 
+      {isAdmin && (
+        <PromoCodeCard entrepriseId={profile?.entreprise_id} isAdmin={isAdmin} />
+      )}
+
       <Tabs defaultValue={isAdmin ? "maison" : "compte"} className="w-full">
         <TabsList className="bg-card border border-border flex-wrap h-auto">
           <TabsTrigger value="compte">Mon compte</TabsTrigger>
