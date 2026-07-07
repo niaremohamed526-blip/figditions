@@ -3,13 +3,15 @@ import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Loader2, Lock, Smartphone, CreditCard, ShieldCheck, RotateCcw, Sparkles } from "lucide-react";
+import { Loader2, Lock, Smartphone, CreditCard, ShieldCheck, RotateCcw, Sparkles, Ticket, ChevronDown, CheckCircle2 } from "lucide-react";
 import { useServerFn } from "@tanstack/react-start";
 import { createPaymentInvoice, getPaydunyaModeFn } from "@/lib/paiements.functions";
 import { toast } from "sonner";
 import { PLANS } from "@/lib/plans";
 import { fcfa } from "@/lib/format";
 import { cn } from "@/lib/utils";
+import { PromoCodeCard } from "@/components/promo-code-card";
+import { useAuth, useProfile } from "@/hooks/use-auth";
 
 type Plan = "pro" | "business";
 type Periode = "mensuel" | "annuel";
@@ -37,10 +39,15 @@ const FEATURES: Record<Plan, string[]> = {
 
 export function UpgradePaymentModal({ open, onOpenChange, plan, defaultPeriode = "mensuel" }: Props) {
   const planDef = PLANS[plan];
+  const { user } = useAuth();
+  const { profile } = useProfile(user?.id);
+  const isAdmin = profile?.role === "admin";
   const [periode, setPeriode] = useState<Periode>(defaultPeriode);
   const [methode, setMethode] = useState<Methode>("orange_money");
   const [phone, setPhone] = useState("");
   const [loading, setLoading] = useState(false);
+  const [promoOpen, setPromoOpen] = useState(false);
+  const [promoApplied, setPromoApplied] = useState(false);
 
   const createInvoice = useServerFn(createPaymentInvoice);
 
@@ -49,6 +56,8 @@ export function UpgradePaymentModal({ open, onOpenChange, plan, defaultPeriode =
     setPeriode(defaultPeriode);
     setMethode("orange_money");
     setPhone("");
+    setPromoOpen(false);
+    setPromoApplied(false);
   }, [open, defaultPeriode]);
 
   const amount = periode === "mensuel" ? planDef.monthlyFcfa : planDef.yearlyFcfa;
@@ -146,6 +155,8 @@ export function UpgradePaymentModal({ open, onOpenChange, plan, defaultPeriode =
             )}
           </div>
 
+          {!promoApplied && (
+          <>
           {/* Payment method */}
           <div className="mb-5">
             <h3 className="text-sm font-semibold mb-2">Choisir votre moyen de paiement</h3>
@@ -202,6 +213,33 @@ export function UpgradePaymentModal({ open, onOpenChange, plan, defaultPeriode =
             </div>
           </div>
 
+          {/* Promo code collapsible */}
+          <div className="mb-5">
+            <button
+              type="button"
+              onClick={() => setPromoOpen((v) => !v)}
+              className="flex items-center gap-1.5 text-sm font-medium hover:opacity-80 transition-opacity"
+              style={{ color: "#C8922A" }}
+            >
+              <Ticket className="h-4 w-4" />
+              <span>🎟️ J'ai un code promotionnel</span>
+              <ChevronDown className={cn("h-4 w-4 transition-transform", promoOpen && "rotate-180")} />
+            </button>
+            {promoOpen && (
+              <div className="mt-3 animate-fade-in">
+                <PromoCodeCard
+                  entrepriseId={profile?.entreprise_id}
+                  isAdmin={isAdmin}
+                  compact
+                  onSuccess={() => {
+                    setPromoApplied(true);
+                    setTimeout(() => onOpenChange(false), 2500);
+                  }}
+                />
+              </div>
+            )}
+          </div>
+
           {/* Order summary */}
           <div className="rounded-xl border border-border bg-background/40 p-4 mb-4 text-sm space-y-1.5">
             <div className="flex justify-between text-muted-foreground"><span>Plan</span><span className="text-foreground">{planDef.label}</span></div>
@@ -229,6 +267,16 @@ export function UpgradePaymentModal({ open, onOpenChange, plan, defaultPeriode =
               <>Payer {fcfa(amount)}</>
             )}
           </Button>
+          </>
+          )}
+
+          {promoApplied && (
+            <div className="rounded-xl border border-emerald-500/40 bg-emerald-500/10 p-5 text-center animate-fade-in">
+              <CheckCircle2 className="h-10 w-10 text-emerald-400 mx-auto mb-2" />
+              <div className="font-semibold text-base">Code appliqué — Aucun paiement requis</div>
+              <p className="text-sm text-muted-foreground mt-1">Votre plan est activé gratuitement.</p>
+            </div>
+          )}
 
           {/* Security badges */}
           <div className="mt-4 grid grid-cols-2 gap-1.5 text-[11px] text-muted-foreground">
