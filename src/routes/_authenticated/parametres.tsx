@@ -19,6 +19,7 @@ import { toast } from "sonner";
 import { cn } from "@/lib/utils";
 import { PLANS, planFor } from "@/lib/plans";
 import { UpgradePaymentModal } from "@/components/upgrade-payment-modal";
+import { PromoCodeCard } from "@/components/promo-code-card";
 import { PaymentResultModal } from "@/components/payment-result-modal";
 import { fcfa } from "@/lib/format";
 import { SecurityCard } from "@/components/security-card";
