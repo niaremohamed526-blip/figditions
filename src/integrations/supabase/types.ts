@@ -780,6 +780,99 @@ export type Database = {
           },
         ]
       }
+      promo_code_redemptions: {
+        Row: {
+          created_at: string
+          entreprise_id: string
+          expire_le: string | null
+          id: string
+          periode_appliquee: string
+          plan_applique: string
+          promo_code_id: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          entreprise_id: string
+          expire_le?: string | null
+          id?: string
+          periode_appliquee: string
+          plan_applique: string
+          promo_code_id: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          entreprise_id?: string
+          expire_le?: string | null
+          id?: string
+          periode_appliquee?: string
+          plan_applique?: string
+          promo_code_id?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "promo_code_redemptions_entreprise_id_fkey"
+            columns: ["entreprise_id"]
+            isOneToOne: false
+            referencedRelation: "entreprises"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "promo_code_redemptions_promo_code_id_fkey"
+            columns: ["promo_code_id"]
+            isOneToOne: false
+            referencedRelation: "promo_codes"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      promo_codes: {
+        Row: {
+          actif: boolean
+          code: string
+          created_at: string
+          description: string | null
+          duree_jours: number | null
+          expires_at: string | null
+          id: string
+          max_utilisations: number
+          periode: string
+          plan: string
+          updated_at: string
+          utilisations_actuelles: number
+        }
+        Insert: {
+          actif?: boolean
+          code: string
+          created_at?: string
+          description?: string | null
+          duree_jours?: number | null
+          expires_at?: string | null
+          id?: string
+          max_utilisations?: number
+          periode?: string
+          plan: string
+          updated_at?: string
+          utilisations_actuelles?: number
+        }
+        Update: {
+          actif?: boolean
+          code?: string
+          created_at?: string
+          description?: string | null
+          duree_jours?: number | null
+          expires_at?: string | null
+          id?: string
+          max_utilisations?: number
+          periode?: string
+          plan?: string
+          updated_at?: string
+          utilisations_actuelles?: number
+        }
+        Relationships: []
+      }
       stock_interne: {
         Row: {
           cout_unitaire_impression_fcfa: number
@@ -992,6 +1085,10 @@ export type Database = {
       pourcentage_droits_pour: {
         Args: { p_auteur: string; p_manuscrit: string }
         Returns: number
+      }
+      redeem_promo_code: {
+        Args: { p_code: string; p_entreprise_id: string }
+        Returns: Json
       }
     }
     Enums: {
