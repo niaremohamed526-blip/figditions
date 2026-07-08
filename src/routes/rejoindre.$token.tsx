@@ -82,8 +82,15 @@ function JoinPage() {
     }
     setSubmitting(true);
     const { data: existing } = await supabase.auth.getUser();
+    const signedInEmail = existing.user?.email?.toLowerCase() ?? null;
+    const inviteEmail = invite.email.toLowerCase();
+    const isInviteeSignedIn = signedInEmail === inviteEmail;
     try {
-      if (!existing.user) {
+      if (existing.user && !isInviteeSignedIn) {
+        await supabase.auth.signOut();
+      }
+
+      if (!isInviteeSignedIn) {
         const { error } = await supabase.auth.signUp({
           email: invite.email,
           password,
