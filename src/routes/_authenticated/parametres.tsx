@@ -129,6 +129,7 @@ function ParametresPage() {
           {isAdmin && <TabsTrigger value="equipe">Mon équipe</TabsTrigger>}
           <TabsTrigger value="plan" id="plan">Plans</TabsTrigger>
           {isAdmin && <TabsTrigger value="paiements">Paiements</TabsTrigger>}
+          {isAdmin && <TabsTrigger value="config">Configuration</TabsTrigger>}
           <TabsTrigger value="danger" className="text-destructive">Zone dangereuse</TabsTrigger>
         </TabsList>
 
