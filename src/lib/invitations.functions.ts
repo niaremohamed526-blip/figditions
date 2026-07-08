@@ -1,7 +1,6 @@
 import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
-import { supabaseAdmin } from "@/integrations/supabase/client.server";
 import { PAGES, type Permissions } from "./permissions";
 
 const permissionsSchema = z.record(z.string(), z.boolean());
@@ -16,90 +15,54 @@ function sanitizePermissions(input: unknown): Permissions {
       }
     }
   }
-  // never grant parametres via invitation — admin-only
   result.parametres = false;
   return result;
 }
 
-/** PUBLIC — fetch invitation by token (no auth). Returns minimal safe data. */
+/** PUBLIC — fetch invitation by token via SECURITY DEFINER RPC (no service-role needed). */
 export const getInvitationByToken = createServerFn({ method: "GET" })
   .inputValidator((d: { token: string }) => z.object({ token: z.string().uuid() }).parse(d))
   .handler(async ({ data }) => {
-    const { data: inv } = await supabaseAdmin
-      .from("invitations")
-      .select("id, email, statut, expires_at, permissions, full_name, role_label, entreprise_id")
-      .eq("token", data.token)
-      .maybeSingle();
-    if (!inv) return { valid: false as const, reason: "invalid" as const };
-    if (inv.statut !== "en_attente") return { valid: false as const, reason: "used" as const };
-    if (new Date(inv.expires_at as string).getTime() < Date.now())
-      return { valid: false as const, reason: "expired" as const };
-
-    const { data: ent } = await supabaseAdmin
-      .from("entreprises")
-      .select("nom")
-      .eq("id", inv.entreprise_id as string)
-      .maybeSingle();
-
+    const { createClient } = await import("@supabase/supabase-js");
+    const sb = createClient(
+      process.env.SUPABASE_URL!,
+      process.env.SUPABASE_PUBLISHABLE_KEY!,
+      { auth: { storage: undefined, persistSession: false, autoRefreshToken: false } },
+    );
+    const { data: rpc, error } = await sb.rpc("get_invitation_public", { p_token: data.token });
+    if (error || !rpc) return { valid: false as const, reason: "invalid" as const };
+    const r = rpc as {
+      valid: boolean;
+      reason?: "invalid" | "used" | "expired";
+      email?: string;
+      full_name?: string | null;
+      role_label?: string | null;
+      permissions?: Permissions;
+      entreprise_nom?: string;
+    };
+    if (!r.valid) return { valid: false as const, reason: (r.reason ?? "invalid") };
     return {
       valid: true as const,
-      email: inv.email as string,
-      full_name: (inv.full_name as string | null) ?? null,
-      role_label: (inv.role_label as string | null) ?? null,
-      permissions: (inv.permissions ?? {}) as Permissions,
-      entreprise_nom: (ent?.nom as string | null) ?? "votre maison d'édition",
+      email: r.email!,
+      full_name: r.full_name ?? null,
+      role_label: r.role_label ?? null,
+      permissions: (r.permissions ?? {}) as Permissions,
+      entreprise_nom: r.entreprise_nom ?? "votre maison d'édition",
     };
   });
 
-/** Called after sign-up/sign-in to wire invited user into the right entreprise. */
+/** Called after sign-up/sign-in — uses SECURITY DEFINER RPC. */
 export const acceptInvitation = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .inputValidator((d: { token: string }) => z.object({ token: z.string().uuid() }).parse(d))
   .handler(async ({ data, context }) => {
-    const userId = context.userId;
-    const callerEmail = (context.claims.email as string | undefined)?.toLowerCase() ?? null;
-    const { data: inv } = await supabaseAdmin
-      .from("invitations")
-      .select("*")
-      .eq("token", data.token)
-      .maybeSingle();
-    if (!inv) throw new Error("Invitation introuvable");
-    if (inv.statut !== "en_attente") throw new Error("Invitation déjà utilisée");
-    if (new Date(inv.expires_at as string).getTime() < Date.now())
-      throw new Error("Invitation expirée");
-    if (!callerEmail || callerEmail !== (inv.email as string).toLowerCase()) {
-      throw new Error("Ce lien n'est pas valide pour votre adresse email");
-    }
-
-    const perms = sanitizePermissions(inv.permissions);
-
-    // Cleanup: handle_new_user may have auto-created an entreprise for OAuth flow.
-    // Delete spurious entreprises owned by this user (other than the invited one).
-    await supabaseAdmin
-      .from("entreprises")
-      .delete()
-      .eq("owner_id", userId)
-      .neq("id", inv.entreprise_id as string);
-
-    // Wire profile to the invited entreprise with the granted permissions.
-    const { error: pErr } = await supabaseAdmin
-      .from("profiles")
-      .update({
-        entreprise_id: inv.entreprise_id as string,
-        role: "membre",
-        permissions: perms,
-        role_label: (inv.role_label as string | null) ?? null,
-        full_name: (inv.full_name as string | null) ?? undefined,
-      })
-      .eq("id", userId);
-    if (pErr) throw new Error(pErr.message);
-
-    await supabaseAdmin
-      .from("invitations")
-      .update({ statut: "acceptee" })
-      .eq("id", inv.id);
-
-    return { ok: true, entreprise_id: inv.entreprise_id as string };
+    const { data: rpc, error } = await context.supabase.rpc("accept_invitation", {
+      p_token: data.token,
+    });
+    if (error) throw new Error(error.message);
+    const r = rpc as { ok: boolean; error?: string; entreprise_id?: string };
+    if (!r.ok) throw new Error(r.error ?? "Erreur d'acceptation");
+    return { ok: true, entreprise_id: r.entreprise_id! };
   });
 
 /** Create an invitation (admin only). */
@@ -116,7 +79,6 @@ export const createInvitation = createServerFn({ method: "POST" })
       .parse(d),
   )
   .handler(async ({ data, context }) => {
-    // Must be admin
     const { data: me } = await context.supabase
       .from("profiles")
       .select("role, entreprise_id")
@@ -211,24 +173,32 @@ export const updateMemberPermissions = createServerFn({ method: "POST" })
     return { ok: true };
   });
 
+/** Removes a member. Auth-user deletion requires service-role and is best-effort. */
 export const removeMember = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .inputValidator((d: { member_id: string }) => z.object({ member_id: z.string().uuid() }).parse(d))
   .handler(async ({ data, context }) => {
-    const { data: me } = await supabaseAdmin
+    const { data: me } = await context.supabase
       .from("profiles").select("role, entreprise_id").eq("id", context.userId).single();
     if (!me || me.role !== "admin") throw new Error("Action réservée à l'administrateur");
     if (data.member_id === context.userId) throw new Error("Action impossible");
-    // Delete profile (RLS will allow this for admin); also unset auth user via admin API
-    await supabaseAdmin
+
+    // Delete profile via RLS (admin policy allows this)
+    const { error: delErr } = await context.supabase
       .from("profiles")
       .delete()
       .eq("id", data.member_id)
       .eq("entreprise_id", me.entreprise_id as string);
-    try {
-      await supabaseAdmin.auth.admin.deleteUser(data.member_id);
-    } catch {
-      // ignore — profile delete is the source of truth for app access
+    if (delErr) throw new Error(delErr.message);
+
+    // Best-effort auth user deletion (needs service-role; skipped silently otherwise)
+    if (process.env.SUPABASE_SERVICE_ROLE_KEY) {
+      try {
+        const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+        await supabaseAdmin.auth.admin.deleteUser(data.member_id);
+      } catch {
+        /* profile delete is source of truth */
+      }
     }
     return { ok: true };
   });
