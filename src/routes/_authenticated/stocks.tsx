@@ -29,6 +29,7 @@ import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGri
 import { AlertTriangle } from "lucide-react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { StockInterneTab } from "@/components/stock-interne";
+import { BordereauxTab } from "@/components/bordereaux-tab";
 
 export const Route = createFileRoute("/_authenticated/stocks")({
   component: StocksPage,
