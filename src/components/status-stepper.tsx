@@ -34,9 +34,9 @@ export function StatusStepper({ statut }: { statut: string }) {
                 <span
                   className={cn(
                     "h-0.5 flex-1 transition-colors",
-                    i === total - 1 ? "opacity-0" : i < currentIdx ? `bg-[${doneColor}]` : "bg-[#1E3A5F]",
+                    i === total - 1 ? "opacity-0" : "",
                   )}
-                  style={i < currentIdx ? { backgroundColor: doneColor } : undefined}
+                  style={i < currentIdx ? { backgroundColor: doneColor } : { backgroundColor: "#1E3A5F" }}
                 />
               </div>
               <span
