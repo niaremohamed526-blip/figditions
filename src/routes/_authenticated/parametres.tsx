@@ -169,6 +169,13 @@ function ParametresPage() {
           </TabsContent>
         )}
 
+        {isAdmin && (
+          <TabsContent value="config" className="mt-6">
+            <ConfigStatusSection />
+          </TabsContent>
+        )}
+
+
         <TabsContent value="danger" className="mt-6">
           <DangerZone />
         </TabsContent>
