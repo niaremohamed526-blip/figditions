@@ -401,7 +401,7 @@ function GenerateDialog({
 
       const numero = (data as any)?.numero ?? "BRD";
 
-      generateBordereauPdf({
+      await generateBordereauPdf({
         numero,
         type,
         maison: entreprise.nom,
@@ -418,6 +418,7 @@ function GenerateDialog({
         totalExemplaires: totalEx,
         totalFcfa: totalFcfa,
         notes: notes || null,
+        watermarkLogoUrl: watermark,
       });
 
       toast.success(`Bordereau ${numero} généré`);
