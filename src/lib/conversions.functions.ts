@@ -1,8 +1,18 @@
 import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
-import { supabaseAdmin } from "@/integrations/supabase/client.server";
+import type { supabaseAdmin as SupabaseAdminType } from "@/integrations/supabase/client.server";
 import { createJob, getJob, exportedFileFor, type CCFormat } from "./cloudconvert.server";
+
+let _admin: typeof SupabaseAdminType | null = null;
+async function getAdmin(): Promise<typeof SupabaseAdminType> {
+  if (!_admin) {
+    const mod = await import("@/integrations/supabase/client.server");
+    _admin = mod.supabaseAdmin;
+  }
+  return _admin;
+}
+
 
 const metaSchema = z.object({
   titre: z.string().trim().min(1).max(200),
