@@ -304,6 +304,7 @@ function GenerateDialog({
   const [fin, setFin] = useState<Date>(endOfMonth(new Date()));
   const [notes, setNotes] = useState("");
   const [loading, setLoading] = useState(false);
+  const [watermark, setWatermark] = useState<string | null>(null);
 
   useEffect(() => {
     if (open) {
@@ -312,8 +313,20 @@ function GenerateDialog({
       setDebut(startOfMonth(new Date()));
       setFin(endOfMonth(new Date()));
       setNotes("");
+      setWatermark(null);
     }
   }, [open, librairies]);
+
+  const onPickLogo = (file: File | null) => {
+    if (!file) return setWatermark(null);
+    if (file.size > 2 * 1024 * 1024) {
+      toast.error("Logo trop lourd (max 2 Mo).");
+      return;
+    }
+    const reader = new FileReader();
+    reader.onload = () => setWatermark(reader.result as string);
+    reader.readAsDataURL(file);
+  };
 
   const selected = librairies.find((l) => l.nom === librairieNom);
 
