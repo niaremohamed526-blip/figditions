@@ -128,9 +128,9 @@ export function BordereauxTab({
     setToDelete(null);
   };
 
-  const reprint = (b: Bordereau) => {
+  const reprint = async (b: Bordereau) => {
     if (!entreprise) return;
-    generateBordereauPdf({
+    await generateBordereauPdf({
       numero: b.numero,
       type: b.type,
       maison: entreprise.nom,
