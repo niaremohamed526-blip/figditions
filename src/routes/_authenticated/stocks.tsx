@@ -135,6 +135,7 @@ function StocksPage() {
         <TabsList className="bg-card border border-border">
           <TabsTrigger value="externe">🏪 Stock Externe</TabsTrigger>
           <TabsTrigger value="interne">🏭 Stock Interne</TabsTrigger>
+          <TabsTrigger value="bordereaux">📄 Bordereaux</TabsTrigger>
         </TabsList>
 
         <TabsContent value="externe" className="space-y-6 mt-0">
