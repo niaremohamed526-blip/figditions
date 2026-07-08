@@ -23,6 +23,7 @@ import { PromoCodeCard } from "@/components/promo-code-card";
 import { PaymentResultModal } from "@/components/payment-result-modal";
 import { fcfa } from "@/lib/format";
 import { SecurityCard } from "@/components/security-card";
+import { ConfigStatusSection } from "@/components/config-status-section";
 import {
   PAGES, PRESETS, applyPreset, defaultInvitationPermissions, fullPermissions,
   type Permissions, type PermissionKey,
@@ -128,6 +129,7 @@ function ParametresPage() {
           {isAdmin && <TabsTrigger value="equipe">Mon équipe</TabsTrigger>}
           <TabsTrigger value="plan" id="plan">Plans</TabsTrigger>
           {isAdmin && <TabsTrigger value="paiements">Paiements</TabsTrigger>}
+          {isAdmin && <TabsTrigger value="config">Configuration</TabsTrigger>}
           <TabsTrigger value="danger" className="text-destructive">Zone dangereuse</TabsTrigger>
         </TabsList>
 
@@ -166,6 +168,13 @@ function ParametresPage() {
             <PaymentsHistory entrepriseId={profile?.entreprise_id ?? null} />
           </TabsContent>
         )}
+
+        {isAdmin && (
+          <TabsContent value="config" className="mt-6">
+            <ConfigStatusSection />
+          </TabsContent>
+        )}
+
 
         <TabsContent value="danger" className="mt-6">
           <DangerZone />
