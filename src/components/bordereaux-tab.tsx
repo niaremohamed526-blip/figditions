@@ -507,6 +507,38 @@ function GenerateDialog({
           )}
 
           <div className="space-y-2">
+            <Label>Logo maison (filigrane, optionnel)</Label>
+            <div className="flex items-center gap-3">
+              {watermark ? (
+                <div className="relative h-14 w-14 rounded-lg border border-border overflow-hidden bg-white flex items-center justify-center">
+                  <img src={watermark} alt="Aperçu logo" className="max-h-full max-w-full object-contain" />
+                  <button
+                    type="button"
+                    onClick={() => setWatermark(null)}
+                    className="absolute -top-1 -right-1 bg-destructive text-destructive-foreground rounded-full p-0.5 shadow"
+                    aria-label="Retirer le logo"
+                  >
+                    <X className="h-3 w-3" />
+                  </button>
+                </div>
+              ) : (
+                <label className="h-14 w-14 rounded-lg border border-dashed border-border flex items-center justify-center cursor-pointer hover:border-primary/50 hover:bg-primary/5 transition-colors">
+                  <ImagePlus className="h-5 w-5 text-muted-foreground" />
+                  <input
+                    type="file"
+                    accept="image/png,image/jpeg,image/webp"
+                    className="hidden"
+                    onChange={(e) => onPickLogo(e.target.files?.[0] ?? null)}
+                  />
+                </label>
+              )}
+              <p className="text-xs text-muted-foreground flex-1">
+                Ajoutez le logo de votre maison — il apparaîtra en filigrane discret au centre du bordereau. Le logo FIGDITIONS reste en en-tête.
+              </p>
+            </div>
+          </div>
+
+          <div className="space-y-2">
             <Label>Notes (optionnel)</Label>
             <Textarea value={notes} onChange={(e) => setNotes(e.target.value)} rows={2} placeholder="Ex. Règlement sous 30 jours après validation." />
           </div>
