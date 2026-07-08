@@ -1070,6 +1070,7 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      _debug_profile: { Args: { p_id: string }; Returns: Json }
       accept_invitation: { Args: { p_token: string }; Returns: Json }
       fn_notify: {
         Args: {
