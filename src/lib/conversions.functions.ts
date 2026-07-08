@@ -41,6 +41,7 @@ export const getSourceUploadUrl = createServerFn({ method: "POST" })
     z.object({ extension: z.enum(["pdf", "docx", "txt"]) }).parse(d),
   )
   .handler(async ({ data, context }) => {
+    const supabaseAdmin = await getAdmin();
     const entId = await getEntrepriseId(context.supabase, context.userId);
     // Plan gate also on upload URL to short-circuit unauthorized usage.
     const { data: ent } = await supabaseAdmin
@@ -73,6 +74,7 @@ export const createAndStartConversion = createServerFn({ method: "POST" })
       .parse(d),
   )
   .handler(async ({ data, context }) => {
+    const supabaseAdmin = await getAdmin();
     const entId = await getEntrepriseId(context.supabase, context.userId);
 
     // SECURITY: prevent cross-tenant path injection — file paths MUST live under the caller's tenant prefix.
@@ -149,6 +151,7 @@ export const pollConversion = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .inputValidator((d: { id: string }) => z.object({ id: z.string().uuid() }).parse(d))
   .handler(async ({ data, context }) => {
+    const supabaseAdmin = await getAdmin();
     const entId = await getEntrepriseId(context.supabase, context.userId);
 
     const { data: row, error } = await supabaseAdmin
@@ -240,6 +243,7 @@ export const pollConversion = createServerFn({ method: "POST" })
 export const listConversions = createServerFn({ method: "GET" })
   .middleware([requireSupabaseAuth])
   .handler(async ({ context }) => {
+    const supabaseAdmin = await getAdmin();
     const entId = await getEntrepriseId(context.supabase, context.userId);
     const { data, error } = await supabaseAdmin
       .from("conversions")
@@ -255,6 +259,7 @@ export const getConversionDownloadUrl = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .inputValidator((d: { path: string }) => z.object({ path: z.string().min(1) }).parse(d))
   .handler(async ({ data, context }) => {
+    const supabaseAdmin = await getAdmin();
     const entId = await getEntrepriseId(context.supabase, context.userId);
     if (!data.path.startsWith(`${entId}/`)) throw new Error("Accès refusé");
     const { data: signed, error } = await supabaseAdmin.storage
@@ -268,6 +273,7 @@ export const deleteConversion = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .inputValidator((d: { id: string }) => z.object({ id: z.string().uuid() }).parse(d))
   .handler(async ({ data, context }) => {
+    const supabaseAdmin = await getAdmin();
     const entId = await getEntrepriseId(context.supabase, context.userId);
     const { data: row } = await supabaseAdmin
       .from("conversions")
