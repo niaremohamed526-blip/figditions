@@ -170,11 +170,11 @@ export const resendInvitation = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .inputValidator((d: { id: string }) => z.object({ id: z.string().uuid() }).parse(d))
   .handler(async ({ data, context }) => {
-    const { data: me } = await supabaseAdmin
+    const { data: me } = await context.supabase
       .from("profiles").select("role, entreprise_id").eq("id", context.userId).single();
     if (!me || me.role !== "admin") throw new Error("Action réservée à l'administrateur");
     const newExpiry = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString();
-    const { error } = await supabaseAdmin
+    const { error } = await context.supabase
       .from("invitations")
       .update({ expires_at: newExpiry, statut: "en_attente" })
       .eq("id", data.id)
@@ -193,7 +193,7 @@ export const updateMemberPermissions = createServerFn({ method: "POST" })
     }).parse(d),
   )
   .handler(async ({ data, context }) => {
-    const { data: me } = await supabaseAdmin
+    const { data: me } = await context.supabase
       .from("profiles").select("role, entreprise_id").eq("id", context.userId).single();
     if (!me || me.role !== "admin" || !me.entreprise_id) {
       throw new Error("Action réservée à l'administrateur");
@@ -202,7 +202,7 @@ export const updateMemberPermissions = createServerFn({ method: "POST" })
       throw new Error("Vous ne pouvez pas modifier vos propres permissions");
     }
     const perms = sanitizePermissions(data.permissions);
-    const { error } = await supabaseAdmin
+    const { error } = await context.supabase
       .from("profiles")
       .update({ permissions: perms, role_label: data.role_label ?? null })
       .eq("id", data.member_id)
