@@ -1070,6 +1070,7 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      accept_invitation: { Args: { p_token: string }; Returns: Json }
       fn_notify: {
         Args: {
           p_entreprise: string
@@ -1081,6 +1082,7 @@ export type Database = {
         }
         Returns: undefined
       }
+      get_invitation_public: { Args: { p_token: string }; Returns: Json }
       increment_pdf_view: { Args: { p_token: string }; Returns: Json }
       pourcentage_droits_pour: {
         Args: { p_auteur: string; p_manuscrit: string }

@@ -1,6 +1,5 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { confirmPaydunyaInvoice, planMaxUsers } from "@/lib/paydunya.server";
-import { supabaseAdmin } from "@/integrations/supabase/client.server";
 
 // PayDunya posts an IPN to this endpoint. We treat the body as advisory and
 // re-confirm the invoice via PayDunya's confirm API as the source of truth.
@@ -8,7 +7,9 @@ export const Route = createFileRoute("/api/public/paydunya-webhook")({
   server: {
     handlers: {
       POST: async ({ request }) => {
+        const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
         try {
+
           // PayDunya sends form-encoded data, but custom_data may include the token.
           let token: string | undefined;
           const contentType = request.headers.get("content-type") || "";

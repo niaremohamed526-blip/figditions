@@ -1,12 +1,12 @@
 import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
-import { supabaseAdmin } from "@/integrations/supabase/client.server";
 import {
   createPaydunyaInvoice,
   getPaydunyaMode,
   planPrice,
 } from "./paydunya.server";
+
 
 const createInvoiceSchema = z.object({
   plan: z.enum(["pro", "business"]),
@@ -20,6 +20,8 @@ export const createPaymentInvoice = createServerFn({ method: "POST" })
   .inputValidator((input) => createInvoiceSchema.parse(input))
   .handler(async ({ data, context }) => {
     const { userId, supabase } = context;
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+
 
     // Fetch profile + entreprise via authenticated client (RLS scoped)
     const { data: profile, error: pErr } = await supabase

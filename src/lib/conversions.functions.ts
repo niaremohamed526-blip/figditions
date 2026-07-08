@@ -1,8 +1,18 @@
 import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
-import { supabaseAdmin } from "@/integrations/supabase/client.server";
+import type { supabaseAdmin as SupabaseAdminType } from "@/integrations/supabase/client.server";
 import { createJob, getJob, exportedFileFor, type CCFormat } from "./cloudconvert.server";
+
+let _admin: typeof SupabaseAdminType | null = null;
+async function getAdmin(): Promise<typeof SupabaseAdminType> {
+  if (!_admin) {
+    const mod = await import("@/integrations/supabase/client.server");
+    _admin = mod.supabaseAdmin;
+  }
+  return _admin;
+}
+
 
 const metaSchema = z.object({
   titre: z.string().trim().min(1).max(200),
@@ -14,7 +24,7 @@ const metaSchema = z.object({
   annee_publication: z.number().int().min(1900).max(2100).optional().nullable(),
 });
 
-async function getEntrepriseId(supabase: ReturnType<typeof supabaseAdmin.from> extends never ? never : any, userId: string): Promise<string> {
+async function getEntrepriseId(supabase: { from: (...args: unknown[]) => any }, userId: string): Promise<string> {
   const { data, error } = await supabase
     .from("profiles")
     .select("entreprise_id")
@@ -31,6 +41,7 @@ export const getSourceUploadUrl = createServerFn({ method: "POST" })
     z.object({ extension: z.enum(["pdf", "docx", "txt"]) }).parse(d),
   )
   .handler(async ({ data, context }) => {
+    const supabaseAdmin = await getAdmin();
     const entId = await getEntrepriseId(context.supabase, context.userId);
     // Plan gate also on upload URL to short-circuit unauthorized usage.
     const { data: ent } = await supabaseAdmin
@@ -63,6 +74,7 @@ export const createAndStartConversion = createServerFn({ method: "POST" })
       .parse(d),
   )
   .handler(async ({ data, context }) => {
+    const supabaseAdmin = await getAdmin();
     const entId = await getEntrepriseId(context.supabase, context.userId);
 
     // SECURITY: prevent cross-tenant path injection — file paths MUST live under the caller's tenant prefix.
@@ -139,6 +151,7 @@ export const pollConversion = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .inputValidator((d: { id: string }) => z.object({ id: z.string().uuid() }).parse(d))
   .handler(async ({ data, context }) => {
+    const supabaseAdmin = await getAdmin();
     const entId = await getEntrepriseId(context.supabase, context.userId);
 
     const { data: row, error } = await supabaseAdmin
@@ -230,6 +243,7 @@ export const pollConversion = createServerFn({ method: "POST" })
 export const listConversions = createServerFn({ method: "GET" })
   .middleware([requireSupabaseAuth])
   .handler(async ({ context }) => {
+    const supabaseAdmin = await getAdmin();
     const entId = await getEntrepriseId(context.supabase, context.userId);
     const { data, error } = await supabaseAdmin
       .from("conversions")
@@ -245,6 +259,7 @@ export const getConversionDownloadUrl = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .inputValidator((d: { path: string }) => z.object({ path: z.string().min(1) }).parse(d))
   .handler(async ({ data, context }) => {
+    const supabaseAdmin = await getAdmin();
     const entId = await getEntrepriseId(context.supabase, context.userId);
     if (!data.path.startsWith(`${entId}/`)) throw new Error("Accès refusé");
     const { data: signed, error } = await supabaseAdmin.storage
@@ -258,6 +273,7 @@ export const deleteConversion = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .inputValidator((d: { id: string }) => z.object({ id: z.string().uuid() }).parse(d))
   .handler(async ({ data, context }) => {
+    const supabaseAdmin = await getAdmin();
     const entId = await getEntrepriseId(context.supabase, context.userId);
     const { data: row } = await supabaseAdmin
       .from("conversions")
