@@ -94,23 +94,46 @@ function JoinPage() {
         });
         if (error) {
           const m = error.message.toLowerCase();
-          if (m.includes("already") || m.includes("registered") || m.includes("exists")) {
-            setFormError("Un compte existe déjà avec cet email. Connectez-vous directement.");
+          const alreadyExists =
+            m.includes("already") || m.includes("registered") || m.includes("exists");
+          if (alreadyExists) {
+            // Account already exists — try to sign in with provided password
+            const { error: sErr } = await supabase.auth.signInWithPassword({
+              email: invite.email,
+              password,
+            });
+            if (sErr) {
+              setFormError(
+                "Un compte existe déjà avec cet email. Le mot de passe saisi est incorrect — utilisez votre mot de passe existant ou réinitialisez-le.",
+              );
+              triggerShake();
+              setSubmitting(false);
+              return;
+            }
+            // signed in successfully → fall through to accept()
           } else if (m.includes("weak") || m.includes("password")) {
             setFormError("Mot de passe trop faible. Utilisez au moins 8 caractères.");
+            triggerShake();
+            setSubmitting(false);
+            return;
           } else if (m.includes("network") || m.includes("fetch")) {
             setFormError("Erreur de connexion. Réessayez.");
+            triggerShake();
+            setSubmitting(false);
+            return;
           } else {
             setFormError(error.message);
+            triggerShake();
+            setSubmitting(false);
+            return;
           }
-          triggerShake();
-          setSubmitting(false);
-          return;
+        } else {
+          const { error: sErr } = await supabase.auth.signInWithPassword({ email: invite.email, password });
+          if (sErr) throw new Error(sErr.message);
         }
-        const { error: sErr } = await supabase.auth.signInWithPassword({ email: invite.email, password });
-        if (sErr) throw new Error(sErr.message);
       }
       await accept({ data: { token } });
+
       toast.success("Bienvenue sur FIGDITIONS !");
       navigate({ to: "/dashboard" });
     } catch (err) {
