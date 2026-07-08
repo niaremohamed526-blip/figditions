@@ -46,9 +46,11 @@ export const openSharedPdf = createServerFn({ method: "POST" })
     }).parse(d),
   )
   .handler(async ({ data }) => {
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
     // Atomic check-and-increment to prevent concurrent requests from bypassing the view cap.
     const { data: rpcData, error: rpcError } = await supabaseAdmin
       .rpc("increment_pdf_view", { p_token: data.token });
+
 
     if (rpcError || !rpcData) {
       return { ok: false as const, reason: "not_found" as const };
