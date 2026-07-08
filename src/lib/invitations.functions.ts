@@ -117,7 +117,7 @@ export const createInvitation = createServerFn({ method: "POST" })
   )
   .handler(async ({ data, context }) => {
     // Must be admin
-    const { data: me } = await supabaseAdmin
+    const { data: me } = await context.supabase
       .from("profiles")
       .select("role, entreprise_id")
       .eq("id", context.userId)
@@ -127,7 +127,7 @@ export const createInvitation = createServerFn({ method: "POST" })
     }
     const perms = sanitizePermissions(data.permissions);
 
-    const { data: row, error } = await supabaseAdmin
+    const { data: row, error } = await context.supabase
       .from("invitations")
       .insert({
         entreprise_id: me.entreprise_id as string,
@@ -150,14 +150,14 @@ export const updateInvitationPermissions = createServerFn({ method: "POST" })
     z.object({ id: z.string().uuid(), permissions: permissionsSchema }).parse(d),
   )
   .handler(async ({ data, context }) => {
-    const { data: me } = await supabaseAdmin
+    const { data: me } = await context.supabase
       .from("profiles")
       .select("role, entreprise_id")
       .eq("id", context.userId)
       .single();
     if (!me || me.role !== "admin") throw new Error("Action réservée à l'administrateur");
     const perms = sanitizePermissions(data.permissions);
-    const { error } = await supabaseAdmin
+    const { error } = await context.supabase
       .from("invitations")
       .update({ permissions: perms })
       .eq("id", data.id)
