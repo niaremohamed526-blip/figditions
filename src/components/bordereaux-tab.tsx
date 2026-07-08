@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { format, startOfMonth, endOfMonth } from "date-fns";
 import { fr } from "date-fns/locale";
-import { FileText, Loader2, Calendar as CalendarIcon, Download, Trash2, Sparkles } from "lucide-react";
+import { FileText, Loader2, Calendar as CalendarIcon, Download, Trash2, Sparkles, ImagePlus, X } from "lucide-react";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
@@ -128,9 +128,9 @@ export function BordereauxTab({
     setToDelete(null);
   };
 
-  const reprint = (b: Bordereau) => {
+  const reprint = async (b: Bordereau) => {
     if (!entreprise) return;
-    generateBordereauPdf({
+    await generateBordereauPdf({
       numero: b.numero,
       type: b.type,
       maison: entreprise.nom,
@@ -304,6 +304,7 @@ function GenerateDialog({
   const [fin, setFin] = useState<Date>(endOfMonth(new Date()));
   const [notes, setNotes] = useState("");
   const [loading, setLoading] = useState(false);
+  const [watermark, setWatermark] = useState<string | null>(null);
 
   useEffect(() => {
     if (open) {
@@ -312,8 +313,20 @@ function GenerateDialog({
       setDebut(startOfMonth(new Date()));
       setFin(endOfMonth(new Date()));
       setNotes("");
+      setWatermark(null);
     }
   }, [open, librairies]);
+
+  const onPickLogo = (file: File | null) => {
+    if (!file) return setWatermark(null);
+    if (file.size > 2 * 1024 * 1024) {
+      toast.error("Logo trop lourd (max 2 Mo).");
+      return;
+    }
+    const reader = new FileReader();
+    reader.onload = () => setWatermark(reader.result as string);
+    reader.readAsDataURL(file);
+  };
 
   const selected = librairies.find((l) => l.nom === librairieNom);
 
@@ -388,7 +401,7 @@ function GenerateDialog({
 
       const numero = (data as any)?.numero ?? "BRD";
 
-      generateBordereauPdf({
+      await generateBordereauPdf({
         numero,
         type,
         maison: entreprise.nom,
@@ -405,6 +418,7 @@ function GenerateDialog({
         totalExemplaires: totalEx,
         totalFcfa: totalFcfa,
         notes: notes || null,
+        watermarkLogoUrl: watermark,
       });
 
       toast.success(`Bordereau ${numero} généré`);
@@ -491,6 +505,38 @@ function GenerateDialog({
               </div>
             </div>
           )}
+
+          <div className="space-y-2">
+            <Label>Logo maison (filigrane, optionnel)</Label>
+            <div className="flex items-center gap-3">
+              {watermark ? (
+                <div className="relative h-14 w-14 rounded-lg border border-border overflow-hidden bg-white flex items-center justify-center">
+                  <img src={watermark} alt="Aperçu logo" className="max-h-full max-w-full object-contain" />
+                  <button
+                    type="button"
+                    onClick={() => setWatermark(null)}
+                    className="absolute -top-1 -right-1 bg-destructive text-destructive-foreground rounded-full p-0.5 shadow"
+                    aria-label="Retirer le logo"
+                  >
+                    <X className="h-3 w-3" />
+                  </button>
+                </div>
+              ) : (
+                <label className="h-14 w-14 rounded-lg border border-dashed border-border flex items-center justify-center cursor-pointer hover:border-primary/50 hover:bg-primary/5 transition-colors">
+                  <ImagePlus className="h-5 w-5 text-muted-foreground" />
+                  <input
+                    type="file"
+                    accept="image/png,image/jpeg,image/webp"
+                    className="hidden"
+                    onChange={(e) => onPickLogo(e.target.files?.[0] ?? null)}
+                  />
+                </label>
+              )}
+              <p className="text-xs text-muted-foreground flex-1">
+                Ajoutez le logo de votre maison — il apparaîtra en filigrane discret au centre du bordereau. Le logo FIGDITIONS reste en en-tête.
+              </p>
+            </div>
+          </div>
 
           <div className="space-y-2">
             <Label>Notes (optionnel)</Label>

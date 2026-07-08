@@ -1,12 +1,12 @@
 import jsPDF from "jspdf";
 import { fcfa } from "@/lib/format";
+import figditionsLogoUrl from "@/assets/figditions-logo.png";
 
 export interface BordereauLigne {
   titre: string;
   quantite: number;
   prix_unitaire: number;
   total: number;
-  // optional context for depot type
   deposes?: number;
   vendus?: number;
   restants?: number;
@@ -24,203 +24,323 @@ export interface BordereauPdfData {
   librairieAdresse?: string | null;
   periodeDebut?: string | null;
   periodeFin?: string | null;
-  dateEmission: string; // formatted date
+  dateEmission: string;
   lignes: BordereauLigne[];
   totalExemplaires: number;
   totalFcfa: number;
   notes?: string | null;
+  /** Optional data URL (or http URL) of the publisher's own logo, rendered as a discreet watermark at the center. */
+  watermarkLogoUrl?: string | null;
 }
 
-export function generateBordereauPdf(d: BordereauPdfData, action: "download" | "open" = "download") {
+async function urlToDataUrl(url: string): Promise<string> {
+  const res = await fetch(url);
+  const blob = await res.blob();
+  return await new Promise((resolve, reject) => {
+    const r = new FileReader();
+    r.onload = () => resolve(r.result as string);
+    r.onerror = reject;
+    r.readAsDataURL(blob);
+  });
+}
+
+async function loadImageSize(dataUrl: string): Promise<{ w: number; h: number }> {
+  return await new Promise((resolve, reject) => {
+    const img = new Image();
+    img.onload = () => resolve({ w: img.naturalWidth, h: img.naturalHeight });
+    img.onerror = reject;
+    img.src = dataUrl;
+  });
+}
+
+export async function generateBordereauPdf(
+  d: BordereauPdfData,
+  action: "download" | "open" = "download",
+) {
   const doc = new jsPDF({ unit: "pt", format: "a4" });
   const W = doc.internal.pageSize.getWidth();
   const H = doc.internal.pageSize.getHeight();
-  const M = 48;
+  const M = 56;
 
-  // Header band
-  doc.setFillColor(10, 22, 40);
-  doc.rect(0, 0, W, 90, "F");
-  doc.setTextColor(0, 200, 150);
-  doc.setFontSize(22);
-  doc.setFont("helvetica", "bold");
-  doc.text("FIGDITIONS", M, 44);
-  doc.setFont("helvetica", "normal");
-  doc.setFontSize(9);
-  doc.setTextColor(212, 175, 55);
-  doc.text("Plateforme d'édition au Mali", M, 60);
+  // Editorial magazine palette
+  const INK = [17, 24, 39] as const;         // near-black navy
+  const MUTED = [110, 114, 128] as const;
+  const HAIR = [220, 216, 208] as const;     // warm hairline
+  const GOLD = [176, 141, 62] as const;      // refined gold
+  const PAPER_ACCENT = [248, 245, 239] as const;
 
-  doc.setTextColor(255, 255, 255);
-  doc.setFontSize(9);
-  doc.text(d.maison.toUpperCase(), W - M, 40, { align: "right" });
-  if (d.maisonAdresse) doc.text(d.maisonAdresse, W - M, 54, { align: "right" });
-  if (d.maisonVille) doc.text(d.maisonVille, W - M, 66, { align: "right" });
-  const contact = [d.maisonTelephone, d.maisonEmail].filter(Boolean).join(" · ");
-  if (contact) doc.text(contact, W - M, 78, { align: "right" });
+  // ─── Watermark (user's logo, very discreet, centered) ────────────────
+  if (d.watermarkLogoUrl) {
+    try {
+      const dataUrl = d.watermarkLogoUrl.startsWith("data:")
+        ? d.watermarkLogoUrl
+        : await urlToDataUrl(d.watermarkLogoUrl);
+      const { w, h } = await loadImageSize(dataUrl);
+      const maxW = 320;
+      const scale = maxW / w;
+      const drawW = maxW;
+      const drawH = h * scale;
+      const x = (W - drawW) / 2;
+      const y = (H - drawH) / 2;
+      const anyDoc = doc as any;
+      if (anyDoc.GState) {
+        anyDoc.setGState(new anyDoc.GState({ opacity: 0.07 }));
+        doc.addImage(dataUrl, "PNG", x, y, drawW, drawH, undefined, "FAST");
+        anyDoc.setGState(new anyDoc.GState({ opacity: 1 }));
+      } else {
+        doc.addImage(dataUrl, "PNG", x, y, drawW, drawH, undefined, "FAST");
+      }
+    } catch {
+      // silent — watermark is optional
+    }
+  }
 
-  // Title
-  let y = 120;
-  const title = d.type === "depot" ? "BORDEREAU DE DÉPÔT" : "BORDEREAU DE VENTE";
-  doc.setTextColor(20, 20, 20);
-  doc.setFont("helvetica", "bold");
-  doc.setFontSize(16);
-  doc.text(title, M, y);
-  doc.setFont("helvetica", "normal");
-  doc.setFontSize(10);
-  doc.setTextColor(120, 120, 120);
-  doc.text(`N° ${d.numero}`, W - M, y, { align: "right" });
-  y += 8;
-  doc.setDrawColor(212, 175, 55);
-  doc.setLineWidth(1);
-  doc.line(M, y, W - M, y);
-  y += 22;
+  // ─── Editorial masthead ──────────────────────────────────────────────
+  // FIGDITIONS logo top-center
+  try {
+    const logoData = await urlToDataUrl(figditionsLogoUrl);
+    const { w, h } = await loadImageSize(logoData);
+    const targetW = 150;
+    const targetH = (h / w) * targetW;
+    doc.addImage(logoData, "PNG", (W - targetW) / 2, 36, targetW, targetH, undefined, "FAST");
+  } catch {
+    // fallback wordmark
+    doc.setFont("times", "bold");
+    doc.setFontSize(22);
+    doc.setTextColor(...INK);
+    doc.text("FIGDITIONS", W / 2, 60, { align: "center" });
+  }
 
-  // Parties (Éditeur / Librairie)
-  const colW = (W - 2 * M - 20) / 2;
-  const boxH = 78;
-  doc.setDrawColor(220, 220, 220);
-  doc.setLineWidth(0.5);
-  doc.rect(M, y, colW, boxH);
-  doc.rect(M + colW + 20, y, colW, boxH);
+  // Thin gold rule under masthead
+  doc.setDrawColor(...GOLD);
+  doc.setLineWidth(0.6);
+  doc.line(W / 2 - 24, 96, W / 2 + 24, 96);
 
-  doc.setTextColor(120, 120, 120);
+  // Small tagline
+  doc.setFont("times", "italic");
+  doc.setFontSize(8.5);
+  doc.setTextColor(...MUTED);
+  doc.text("Plateforme éditoriale — Bamako", W / 2, 112, { align: "center" });
+
+  // ─── Title block (asymmetric editorial) ──────────────────────────────
+  let y = 148;
+
+  // Left: eyebrow + large title
   doc.setFont("helvetica", "bold");
   doc.setFontSize(8);
-  doc.text("ÉDITEUR", M + 8, y + 14);
-  doc.text("LIBRAIRIE", M + colW + 28, y + 14);
+  doc.setTextColor(...GOLD);
+  doc.text(
+    (d.type === "depot" ? "N° " : "N° ") + d.numero.toUpperCase(),
+    M,
+    y,
+  );
 
+  doc.setFont("times", "normal");
+  doc.setFontSize(28);
+  doc.setTextColor(...INK);
+  const title = d.type === "depot" ? "Bordereau de dépôt" : "Bordereau de vente";
+  doc.text(title, M, y + 30);
+
+  // Right: date stack
   doc.setFont("helvetica", "bold");
-  doc.setFontSize(11);
-  doc.setTextColor(20, 20, 20);
-  doc.text(d.maison, M + 8, y + 30);
-  doc.text(d.librairieNom, M + colW + 28, y + 30);
-
-  doc.setFont("helvetica", "normal");
-  doc.setFontSize(9);
-  doc.setTextColor(80, 80, 80);
-  let leftY = y + 46;
-  if (d.maisonAdresse) { doc.text(d.maisonAdresse, M + 8, leftY); leftY += 12; }
-  if (d.maisonVille) { doc.text(d.maisonVille, M + 8, leftY); leftY += 12; }
-  if (d.maisonTelephone) doc.text(d.maisonTelephone, M + 8, leftY);
-
-  if (d.librairieAdresse) {
-    const lines = doc.splitTextToSize(d.librairieAdresse, colW - 16);
-    doc.text(lines, M + colW + 28, y + 46);
-  }
-
-  y += boxH + 16;
-
-  // Meta line (date + période)
-  doc.setFont("helvetica", "normal");
-  doc.setFontSize(10);
-  doc.setTextColor(60, 60, 60);
-  doc.text(`Date d'émission : ${d.dateEmission}`, M, y);
+  doc.setFontSize(7.5);
+  doc.setTextColor(...MUTED);
+  doc.text("ÉMIS LE", W - M, y, { align: "right" });
+  doc.setFont("times", "normal");
+  doc.setFontSize(12);
+  doc.setTextColor(...INK);
+  doc.text(d.dateEmission, W - M, y + 16, { align: "right" });
   if (d.periodeDebut && d.periodeFin) {
-    doc.text(`Période : du ${d.periodeDebut} au ${d.periodeFin}`, W - M, y, { align: "right" });
+    doc.setFont("helvetica", "bold");
+    doc.setFontSize(7.5);
+    doc.setTextColor(...MUTED);
+    doc.text("PÉRIODE", W - M, y + 34, { align: "right" });
+    doc.setFont("times", "italic");
+    doc.setFontSize(10);
+    doc.setTextColor(...INK);
+    doc.text(`${d.periodeDebut} — ${d.periodeFin}`, W - M, y + 48, { align: "right" });
   }
-  y += 20;
 
-  // Table header
+  y += 72;
+
+  // Full-width hairline
+  doc.setDrawColor(...HAIR);
+  doc.setLineWidth(0.4);
+  doc.line(M, y, W - M, y);
+  y += 28;
+
+  // ─── Parties (two columns, no boxes, editorial labels) ───────────────
+  const colGap = 32;
+  const colW = (W - 2 * M - colGap) / 2;
+
+  const renderParty = (
+    x: number,
+    label: string,
+    name: string,
+    lines: (string | null | undefined)[],
+  ) => {
+    doc.setFont("helvetica", "bold");
+    doc.setFontSize(7.5);
+    doc.setTextColor(...MUTED);
+    doc.text(label, x, y);
+    doc.setFont("times", "bold");
+    doc.setFontSize(13);
+    doc.setTextColor(...INK);
+    doc.text(name, x, y + 18);
+    doc.setFont("helvetica", "normal");
+    doc.setFontSize(9);
+    doc.setTextColor(80, 82, 92);
+    let ly = y + 34;
+    lines.filter(Boolean).forEach((line) => {
+      const wrapped = doc.splitTextToSize(String(line), colW);
+      doc.text(wrapped, x, ly);
+      ly += wrapped.length * 11;
+    });
+  };
+
+  renderParty(M, "ÉDITEUR", d.maison, [
+    d.maisonAdresse,
+    d.maisonVille,
+    d.maisonTelephone,
+    d.maisonEmail,
+  ]);
+  renderParty(M + colW + colGap, "LIBRAIRIE", d.librairieNom, [d.librairieAdresse]);
+
+  y += 96;
+
+  // ─── Table — clean rows, gold accents ────────────────────────────────
   const isDepot = d.type === "depot";
-  const colTitre = M;
-  const colTitreW = isDepot ? W - 2 * M - 260 : W - 2 * M - 240;
-  const colQte = colTitre + colTitreW;
-  const colPrix = colQte + (isDepot ? 60 : 60);
-  const colTotal = colPrix + (isDepot ? 100 : 90);
+  doc.setDrawColor(...INK);
+  doc.setLineWidth(0.8);
+  doc.line(M, y, W - M, y);
 
-  doc.setFillColor(245, 245, 245);
-  doc.rect(M, y, W - 2 * M, 22, "F");
   doc.setFont("helvetica", "bold");
-  doc.setFontSize(9);
-  doc.setTextColor(80, 80, 80);
-  doc.text("Titre", colTitre + 8, y + 15);
+  doc.setFontSize(7.5);
+  doc.setTextColor(...MUTED);
+  const headerY = y + 14;
+  doc.text("TITRE", M, headerY);
   if (isDepot) {
-    doc.text("Dép.", colQte, y + 15, { align: "left" });
-    doc.text("Vendus", colPrix, y + 15, { align: "left" });
-    doc.text("Rest.", colTotal, y + 15, { align: "left" });
+    doc.text("DÉPOSÉS", W - M - 200, headerY, { align: "right" });
+    doc.text("VENDUS", W - M - 110, headerY, { align: "right" });
+    doc.text("RESTANTS", W - M, headerY, { align: "right" });
   } else {
-    doc.text("Qté", colQte, y + 15, { align: "left" });
-    doc.text("Prix unit.", colPrix, y + 15, { align: "left" });
-    doc.text("Total", W - M - 8, y + 15, { align: "right" });
+    doc.text("QTÉ", W - M - 230, headerY, { align: "right" });
+    doc.text("PRIX UNITAIRE", W - M - 110, headerY, { align: "right" });
+    doc.text("TOTAL", W - M, headerY, { align: "right" });
   }
-  y += 22;
+  y = headerY + 10;
+  doc.setDrawColor(...HAIR);
+  doc.setLineWidth(0.4);
+  doc.line(M, y, W - M, y);
+  y += 14;
 
-  doc.setFont("helvetica", "normal");
-  doc.setTextColor(30, 30, 30);
-  doc.setFontSize(10);
+  doc.setFont("times", "normal");
+  doc.setFontSize(11);
+  doc.setTextColor(...INK);
 
   for (const l of d.lignes) {
     if (y > H - 220) {
       doc.addPage();
       y = M;
     }
-    const titreLines = doc.splitTextToSize(l.titre, colTitreW - 12);
-    const rowH = Math.max(20, titreLines.length * 12 + 8);
-    doc.setDrawColor(235, 235, 235);
-    doc.line(M, y, W - M, y);
-    doc.text(titreLines, colTitre + 8, y + 14);
+    const titreLines = doc.splitTextToSize(l.titre, W - 2 * M - 260);
+    const rowH = Math.max(22, titreLines.length * 13 + 10);
+
+    doc.setFont("times", "normal");
+    doc.setFontSize(11);
+    doc.setTextColor(...INK);
+    doc.text(titreLines, M, y + 4);
+
+    doc.setFont("helvetica", "normal");
+    doc.setFontSize(10);
     if (isDepot) {
-      doc.text(String(l.deposes ?? l.quantite), colQte, y + 14);
-      doc.text(String(l.vendus ?? 0), colPrix, y + 14);
-      doc.text(String(l.restants ?? 0), colTotal, y + 14);
+      doc.text(String(l.deposes ?? l.quantite), W - M - 200, y + 4, { align: "right" });
+      doc.text(String(l.vendus ?? 0), W - M - 110, y + 4, { align: "right" });
+      doc.text(String(l.restants ?? 0), W - M, y + 4, { align: "right" });
     } else {
-      doc.text(String(l.quantite), colQte, y + 14);
-      doc.text(fcfa(l.prix_unitaire), colPrix, y + 14);
-      doc.text(fcfa(l.total), W - M - 8, y + 14, { align: "right" });
+      doc.text(String(l.quantite), W - M - 230, y + 4, { align: "right" });
+      doc.text(fcfa(l.prix_unitaire), W - M - 110, y + 4, { align: "right" });
+      doc.setTextColor(...INK);
+      doc.text(fcfa(l.total), W - M, y + 4, { align: "right" });
     }
     y += rowH;
+    doc.setDrawColor(...HAIR);
+    doc.setLineWidth(0.3);
+    doc.line(M, y - 6, W - M, y - 6);
   }
 
-  // Totals
-  doc.setDrawColor(212, 175, 55);
-  doc.setLineWidth(1);
+  // ─── Totals block ────────────────────────────────────────────────────
+  y += 10;
+  doc.setDrawColor(...INK);
+  doc.setLineWidth(0.8);
   doc.line(M, y, W - M, y);
-  y += 18;
+  y += 22;
+
   doc.setFont("helvetica", "bold");
-  doc.setFontSize(11);
-  doc.setTextColor(20, 20, 20);
-  doc.text(`Total exemplaires : ${d.totalExemplaires}`, M, y);
+  doc.setFontSize(8);
+  doc.setTextColor(...MUTED);
+  doc.text("TOTAL EXEMPLAIRES", M, y);
+  doc.setFont("times", "bold");
+  doc.setFontSize(16);
+  doc.setTextColor(...INK);
+  doc.text(String(d.totalExemplaires), M, y + 22);
+
   if (!isDepot) {
-    doc.setTextColor(0, 130, 100);
-    doc.text(`Total : ${fcfa(d.totalFcfa)}`, W - M, y, { align: "right" });
+    doc.setFont("helvetica", "bold");
+    doc.setFontSize(8);
+    doc.setTextColor(...MUTED);
+    doc.text("MONTANT TOTAL", W - M, y, { align: "right" });
+    doc.setFont("times", "bold");
+    doc.setFontSize(20);
+    doc.setTextColor(...GOLD);
+    doc.text(fcfa(d.totalFcfa), W - M, y + 24, { align: "right" });
   }
-  y += 28;
+  y += 44;
 
   // Notes
   if (d.notes) {
-    doc.setFont("helvetica", "italic");
-    doc.setFontSize(9);
-    doc.setTextColor(90, 90, 90);
-    const notesLines = doc.splitTextToSize(`Note : ${d.notes}`, W - 2 * M);
-    doc.text(notesLines, M, y);
-    y += notesLines.length * 12 + 10;
+    doc.setFillColor(...PAPER_ACCENT);
+    const notesLines = doc.splitTextToSize(d.notes, W - 2 * M - 24);
+    const boxH = notesLines.length * 12 + 24;
+    doc.rect(M, y, W - 2 * M, boxH, "F");
+    doc.setFont("helvetica", "bold");
+    doc.setFontSize(7.5);
+    doc.setTextColor(...GOLD);
+    doc.text("NOTE", M + 12, y + 14);
+    doc.setFont("times", "italic");
+    doc.setFontSize(10);
+    doc.setTextColor(...INK);
+    doc.text(notesLines, M + 12, y + 28);
+    y += boxH + 10;
   }
 
-  // Signatures
+  // ─── Signatures ──────────────────────────────────────────────────────
   if (y > H - 130) { doc.addPage(); y = M; }
   y = Math.max(y, H - 140);
   const sigColW = (W - 2 * M - 40) / 2;
-  doc.setDrawColor(120, 120, 120);
+  doc.setDrawColor(...INK);
   doc.setLineWidth(0.5);
   doc.line(M, y, M + sigColW, y);
   doc.line(M + sigColW + 40, y, M + 2 * sigColW + 40, y);
-  doc.setFont("helvetica", "normal");
-  doc.setFontSize(9);
-  doc.setTextColor(80, 80, 80);
-  doc.text("Signature de l'éditeur", M, y + 14);
-  doc.text("Signature de la librairie", M + sigColW + 40, y + 14);
   doc.setFont("helvetica", "bold");
-  doc.setTextColor(20, 20, 20);
+  doc.setFontSize(7.5);
+  doc.setTextColor(...MUTED);
+  doc.text("SIGNATURE — ÉDITEUR", M, y + 14);
+  doc.text("SIGNATURE — LIBRAIRIE", M + sigColW + 40, y + 14);
+  doc.setFont("times", "italic");
+  doc.setFontSize(10);
+  doc.setTextColor(...INK);
   doc.text(d.maison, M, y + 30);
   doc.text(d.librairieNom, M + sigColW + 40, y + 30);
 
   // Footer
-  doc.setFont("helvetica", "italic");
-  doc.setFontSize(8);
-  doc.setTextColor(150, 150, 150);
+  doc.setFont("helvetica", "normal");
+  doc.setFontSize(7.5);
+  doc.setTextColor(...MUTED);
   doc.text(
-    `Bordereau ${d.numero} · Généré via FIGDITIONS · ${d.dateEmission}`,
+    `Bordereau ${d.numero}   ·   Généré via FIGDITIONS   ·   ${d.dateEmission}`,
     W / 2,
-    H - 20,
+    H - 22,
     { align: "center" },
   );
 
