@@ -10,7 +10,7 @@ const MAP: Record<string, { label: string; cls: string }> = {
   maquette:    { label: "Maquette",    cls: "bg-orange-500/15 text-orange-400 border-orange-500/30 shadow-[0_0_10px_rgba(249,115,22,0.25)]" },
   echantillon: { label: "Échantillon", cls: "bg-amber-500/15 text-amber-400 border-amber-500/30 shadow-[0_0_10px_rgba(245,158,11,0.25)]" },
   impression:  { label: "Impression",  cls: "bg-pink-500/15 text-pink-400 border-pink-500/30 shadow-[0_0_10px_rgba(236,72,153,0.25)]" },
-  publie:      { label: "Publié",      cls: "bg-primary/15 text-primary border-primary/40 shadow-[0_0_10px_var(--color-primary)]" },
+  publie:      { label: "Publié",      cls: "bg-green-500/15 text-green-400 border-green-500/30 shadow-[0_0_10px_rgba(34,197,94,0.25)]" },
 };
 
 export function StatusBadge({ statut }: { statut: string }) {
@@ -57,7 +57,7 @@ export const STATUT_COLOR: Record<string, string> = {
   maquette:    "#F97316",
   echantillon: "#F59E0B",
   impression:  "#EC4899",
-  publie:      "#C8922A",
+  publie:      "#22C55E",
 };
 
 export const STATUT_LABEL: Record<string, string> = Object.fromEntries(
