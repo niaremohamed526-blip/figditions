@@ -1,13 +1,14 @@
 import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
-import { supabaseAdmin } from "@/integrations/supabase/client.server";
 
 const tokenSchema = z.object({ token: z.string().uuid() });
 
 export const getShareInfo = createServerFn({ method: "POST" })
   .inputValidator((d) => tokenSchema.parse(d))
   .handler(async ({ data }) => {
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
     const { data: share, error } = await supabaseAdmin
+
       .from("pdf_partages")
       .select("id, nom_lecteur, email_lecteur, entreprise_lecteur, nombre_vues_max, nombre_vues_actuel, est_actif, manuscrit_id")
       .eq("token", data.token)
