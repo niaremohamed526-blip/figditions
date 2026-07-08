@@ -24,7 +24,7 @@ const metaSchema = z.object({
   annee_publication: z.number().int().min(1900).max(2100).optional().nullable(),
 });
 
-async function getEntrepriseId(supabase: ReturnType<typeof supabaseAdmin.from> extends never ? never : any, userId: string): Promise<string> {
+async function getEntrepriseId(supabase: { from: (...args: unknown[]) => any }, userId: string): Promise<string> {
   const { data, error } = await supabase
     .from("profiles")
     .select("entreprise_id")
