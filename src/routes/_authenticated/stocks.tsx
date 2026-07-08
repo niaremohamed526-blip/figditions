@@ -29,6 +29,7 @@ import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGri
 import { AlertTriangle } from "lucide-react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { StockInterneTab } from "@/components/stock-interne";
+import { BordereauxTab } from "@/components/bordereaux-tab";
 
 export const Route = createFileRoute("/_authenticated/stocks")({
   component: StocksPage,
@@ -134,6 +135,7 @@ function StocksPage() {
         <TabsList className="bg-card border border-border">
           <TabsTrigger value="externe">🏪 Stock Externe</TabsTrigger>
           <TabsTrigger value="interne">🏭 Stock Interne</TabsTrigger>
+          <TabsTrigger value="bordereaux">📄 Bordereaux</TabsTrigger>
         </TabsList>
 
         <TabsContent value="externe" className="space-y-6 mt-0">
@@ -264,6 +266,10 @@ function StocksPage() {
 
         <TabsContent value="interne" className="space-y-6 mt-0">
           <StockInterneTab entrepriseId={profile?.entreprise_id ?? null} userId={user?.id ?? null} />
+        </TabsContent>
+
+        <TabsContent value="bordereaux" className="space-y-6 mt-0">
+          <BordereauxTab entreprise={entreprise as any} stocks={(items ?? []) as any} titreMap={titreMap} />
         </TabsContent>
       </Tabs>
     </div>

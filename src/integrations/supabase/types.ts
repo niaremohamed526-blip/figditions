@@ -101,6 +101,71 @@ export type Database = {
         }
         Relationships: []
       }
+      bordereaux: {
+        Row: {
+          annee: number
+          created_at: string
+          created_by: string | null
+          entreprise_id: string
+          id: string
+          librairie_adresse: string | null
+          librairie_nom: string
+          lignes: Json
+          notes: string | null
+          numero: string
+          periode_debut: string | null
+          periode_fin: string | null
+          total_exemplaires: number
+          total_fcfa: number
+          type: string
+          updated_at: string
+        }
+        Insert: {
+          annee: number
+          created_at?: string
+          created_by?: string | null
+          entreprise_id: string
+          id?: string
+          librairie_adresse?: string | null
+          librairie_nom: string
+          lignes?: Json
+          notes?: string | null
+          numero: string
+          periode_debut?: string | null
+          periode_fin?: string | null
+          total_exemplaires?: number
+          total_fcfa?: number
+          type: string
+          updated_at?: string
+        }
+        Update: {
+          annee?: number
+          created_at?: string
+          created_by?: string | null
+          entreprise_id?: string
+          id?: string
+          librairie_adresse?: string | null
+          librairie_nom?: string
+          lignes?: Json
+          notes?: string | null
+          numero?: string
+          periode_debut?: string | null
+          periode_fin?: string | null
+          total_exemplaires?: number
+          total_fcfa?: number
+          type?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "bordereaux_entreprise_id_fkey"
+            columns: ["entreprise_id"]
+            isOneToOne: false
+            referencedRelation: "entreprises"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       contrats: {
         Row: {
           auteur_id: string | null
@@ -1071,6 +1136,20 @@ export type Database = {
     }
     Functions: {
       accept_invitation: { Args: { p_token: string }; Returns: Json }
+      create_bordereau: {
+        Args: {
+          p_librairie_adresse: string
+          p_librairie_nom: string
+          p_lignes: Json
+          p_notes: string
+          p_periode_debut: string
+          p_periode_fin: string
+          p_total_exemplaires: number
+          p_total_fcfa: number
+          p_type: string
+        }
+        Returns: Json
+      }
       fn_notify: {
         Args: {
           p_entreprise: string
