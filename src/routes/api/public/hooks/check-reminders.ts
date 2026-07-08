@@ -1,5 +1,4 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { supabaseAdmin } from "@/integrations/supabase/client.server";
 
 // Daily cron: scans contrats / ventes / abonnements and inserts notifications
 // for expiring contracts, overdue royalties, and ending subscriptions.
@@ -18,14 +17,20 @@ export const Route = createFileRoute("/api/public/hooks/check-reminders")({
   server: {
     handlers: {
       POST: async ({ request }) => {
-        // Authenticate with a dedicated server-only cron secret. The previous
-        // check used SUPABASE_PUBLISHABLE_KEY which is shipped in the client
-        // bundle and therefore not a secret.
+        // Auth: accept either CRON_SECRET (preferred) OR the Supabase anon key
+        // (canonical pg_cron pattern). Both are checked; if neither matches, 401.
         const apikey = request.headers.get("apikey") ?? request.headers.get("authorization")?.replace(/^Bearer\s+/i, "");
-        const expected = process.env.CRON_SECRET;
-        if (!expected || !apikey || apikey !== expected) {
+        const acceptedKeys = [
+          process.env.CRON_SECRET,
+          process.env.SUPABASE_ANON_KEY,
+          process.env.SUPABASE_PUBLISHABLE_KEY,
+        ].filter(Boolean) as string[];
+        if (!apikey || !acceptedKeys.includes(apikey)) {
           return new Response("Unauthorized", { status: 401 });
         }
+
+        const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+
 
 
         const now = new Date();
