@@ -166,8 +166,9 @@ function FinancesInner({ entrepriseId }: { entrepriseId: string | null }) {
         </Button>
       </header>
 
-      <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-4">
+      <div className="grid sm:grid-cols-2 lg:grid-cols-5 gap-4">
         <StatCard icon={TrendingUp} label="Chiffre d'affaires" value={fcfa(totals.revenue)} accent="primary" />
+        <StatCard icon={Store} label="Commission librairies (20%)" value={fcfa(totals.commission)} />
         <StatCard icon={Check} label="Royalties payées" value={fcfa(totals.paid)} accent="primary" />
         <StatCard icon={Clock} label="Royalties en attente" value={fcfa(totals.pending)} accent="gold" />
         <StatCard icon={ShoppingBag} label="Exemplaires vendus" value={String(totals.copies)} />
