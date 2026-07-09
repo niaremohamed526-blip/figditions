@@ -293,13 +293,49 @@ export async function generateBordereauPdf(
     doc.setFont("helvetica", "bold");
     doc.setFontSize(8);
     doc.setTextColor(...MUTED);
-    doc.text("MONTANT TOTAL", W - M, y, { align: "right" });
+    doc.text("CHIFFRE D'AFFAIRES", W - M, y, { align: "right" });
     doc.setFont("times", "bold");
     doc.setFontSize(20);
     doc.setTextColor(...GOLD);
     doc.text(fcfa(d.totalFcfa), W - M, y + 24, { align: "right" });
   }
   y += 44;
+
+  // Commission + droits + net éditeur breakdown (vente only)
+  if (!isDepot) {
+    const commission = Math.round(d.commissionLibrairieFcfa ?? d.totalFcfa * 0.2);
+    const droits = Math.round(d.droitsAuteurFcfa ?? d.totalFcfa * 0.1);
+    const net = d.totalFcfa - commission - droits;
+    const rows: [string, string, readonly [number, number, number]][] = [
+      ["Commission librairie (20%)", `− ${fcfa(commission)}`, [200, 120, 60]],
+      ["Droits d'auteur (10%)", `− ${fcfa(droits)}`, GOLD],
+    ];
+    doc.setFont("helvetica", "normal");
+    doc.setFontSize(10);
+    for (const [label, value, color] of rows) {
+      doc.setTextColor(...MUTED);
+      doc.text(label, W / 2 + 20, y);
+      doc.setTextColor(...color);
+      doc.setFont("helvetica", "bold");
+      doc.text(value, W - M, y, { align: "right" });
+      doc.setFont("helvetica", "normal");
+      y += 14;
+    }
+    doc.setDrawColor(...HAIR);
+    doc.setLineWidth(0.4);
+    doc.line(W / 2 + 20, y, W - M, y);
+    y += 14;
+    doc.setFont("helvetica", "bold");
+    doc.setFontSize(9);
+    doc.setTextColor(...MUTED);
+    doc.text("NET ÉDITEUR À REVERSER", W / 2 + 20, y);
+    doc.setFont("times", "bold");
+    doc.setFontSize(14);
+    doc.setTextColor(...INK);
+    doc.text(fcfa(net), W - M, y, { align: "right" });
+    y += 24;
+  }
+
 
   // Notes
   if (d.notes) {
