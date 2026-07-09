@@ -28,6 +28,10 @@ export interface BordereauPdfData {
   lignes: BordereauLigne[];
   totalExemplaires: number;
   totalFcfa: number;
+  /** Commission librairie (default 20% of totalFcfa when omitted, only used for "vente" type). */
+  commissionLibrairieFcfa?: number;
+  /** Droits auteur (10% by default). Only shown for "vente" type. */
+  droitsAuteurFcfa?: number;
   notes?: string | null;
   /** Optional data URL (or http URL) of the publisher's own logo, rendered as a discreet watermark at the center. */
   watermarkLogoUrl?: string | null;
