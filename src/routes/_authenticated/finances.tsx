@@ -91,6 +91,7 @@ function FinancesInner({ entrepriseId }: { entrepriseId: string | null }) {
     const v = ventes ?? [];
     return {
       revenue: v.reduce((a, x) => a + Number(x.montant_total_fcfa || 0), 0),
+      commission: v.reduce((a, x) => a + Number(x.commission_librairie_fcfa || 0), 0),
       paid: v.filter((x) => x.statut_paiement === "paye").reduce((a, x) => a + Number(x.droits_auteur_fcfa || 0), 0),
       pending: v.filter((x) => x.statut_paiement === "en_attente").reduce((a, x) => a + Number(x.droits_auteur_fcfa || 0), 0),
       copies: v.reduce((a, x) => a + Number(x.quantite_vendue || 0), 0),
