@@ -480,9 +480,16 @@ function VenteSheet({
               <Input type="number" min={0} value={prix} onChange={(e) => setPrix(Number(e.target.value))} />
             </div>
           </div>
-          <div className="rounded-lg border border-border bg-background/50 p-4 space-y-1">
-            <div className="flex justify-between text-sm"><span className="text-muted-foreground">Montant total</span><span className="font-semibold">{fcfa(total)}</span></div>
-            <div className="flex justify-between text-sm"><span className="text-muted-foreground">Droits d'auteur (10%)</span><span className="font-semibold text-[color:var(--gold)]">{fcfa(royalties)}</span></div>
+          <div className="rounded-lg border border-border bg-background/50 p-4 space-y-1.5">
+            <div className="flex justify-between text-sm"><span className="text-muted-foreground">Chiffre d'affaires</span><span className="font-semibold">{fcfa(total)}</span></div>
+            {isExterne && (
+              <div className="flex justify-between text-sm"><span className="text-muted-foreground">Commission librairie (20%)</span><span className="font-semibold text-orange-400">− {fcfa(commission)}</span></div>
+            )}
+            <div className="flex justify-between text-sm"><span className="text-muted-foreground">Droits d'auteur (10%)</span><span className="font-semibold text-[color:var(--gold)]">− {fcfa(royalties)}</span></div>
+            <div className="flex justify-between text-sm pt-1.5 border-t border-border"><span className="text-foreground font-medium">Net éditeur</span><span className="font-bold text-primary">{fcfa(netEditeur)}</span></div>
+            {!isExterne && (
+              <p className="text-xs text-muted-foreground pt-1">Aucune librairie sélectionnée → vente directe, sans commission.</p>
+            )}
           </div>
           <div className="flex justify-end gap-2 pt-2">
             <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>Annuler</Button>
