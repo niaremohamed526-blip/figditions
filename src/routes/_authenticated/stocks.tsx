@@ -332,7 +332,9 @@ function StockForm({
 
   const restants = Math.max(0, Number(form.exemplaires_deposes) - Number(form.exemplaires_vendus));
   const montantTotal = Number(form.exemplaires_vendus) * Number(form.prix_unitaire_fcfa);
-  const droitsAuteur = montantTotal * 0.1;
+  const commissionLibrairie = Math.round(montantTotal * 0.2);
+  const droitsAuteur = Math.round(montantTotal * 0.1);
+  const netEditeur = montantTotal - commissionLibrairie - droitsAuteur;
   const deltaVendus = Math.max(0, Number(form.exemplaires_vendus) - previousVendus);
 
   const submit = async (e: React.FormEvent) => {
@@ -407,15 +409,23 @@ function StockForm({
         <Row icon={<BookOpen className="h-4 w-4" />} label="Exemplaires restants">
           <span className="font-semibold text-primary">{restants}</span>
         </Row>
-        <Row icon={<Wallet className="h-4 w-4" />} label="Chiffre d'affaires généré">
-          <span className="font-semibold text-[color:var(--gold)]">{fcfa(montantTotal)}</span>
+        <Row icon={<Wallet className="h-4 w-4" />} label="Chiffre d'affaires brut">
+          <span className="font-semibold text-foreground">{fcfa(montantTotal)}</span>
+        </Row>
+        <Row icon={<Store className="h-4 w-4" />} label="Commission librairie (20%)">
+          <span className="font-semibold text-orange-400">− {fcfa(commissionLibrairie)}</span>
         </Row>
         <Row icon={<PenLine className="h-4 w-4" />} label="Droits auteur estimés (10%)">
-          <span className="font-semibold text-[color:var(--gold)]">{fcfa(droitsAuteur)}</span>
+          <span className="font-semibold text-[color:var(--gold)]">− {fcfa(droitsAuteur)}</span>
         </Row>
+        <div className="pt-2 border-t border-border">
+          <Row icon={<TrendingUp className="h-4 w-4" />} label="Net éditeur">
+            <span className="font-bold text-primary text-base">{fcfa(netEditeur)}</span>
+          </Row>
+        </div>
         {deltaVendus > 0 && Number(form.prix_unitaire_fcfa) > 0 && (
           <p className="pt-2 text-xs text-muted-foreground border-t border-border">
-            ✨ Une vente de <span className="text-primary font-medium">{deltaVendus} exemplaire(s)</span> sera enregistrée automatiquement.
+            ✨ Une vente de <span className="text-primary font-medium">{deltaVendus} exemplaire(s)</span> sera enregistrée automatiquement avec la commission librairie de 20 %.
           </p>
         )}
       </div>

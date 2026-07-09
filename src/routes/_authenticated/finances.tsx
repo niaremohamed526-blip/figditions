@@ -1,6 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useEffect, useMemo, useState } from "react";
-import { Plus, Wallet, TrendingUp, ShoppingBag, Clock, Loader2, Check } from "lucide-react";
+import { Plus, Wallet, TrendingUp, ShoppingBag, Clock, Loader2, Check, Store } from "lucide-react";
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, PieChart, Pie, Cell, Legend, ComposedChart, Line, CartesianGrid } from "recharts";
 import { format, subMonths, startOfMonth } from "date-fns";
 import { AnalyticsSection, defaultRange, inRange, EmptyChart, type DateRange } from "@/components/analytics-section";
@@ -35,6 +35,8 @@ interface Vente {
   prix_unitaire_fcfa: number;
   montant_total_fcfa: number;
   droits_auteur_fcfa: number;
+  commission_librairie_fcfa: number;
+  canal_vente: "externe" | "interne";
   statut_paiement: "en_attente" | "paye";
   date_vente: string;
   created_at: string;
@@ -89,6 +91,7 @@ function FinancesInner({ entrepriseId }: { entrepriseId: string | null }) {
     const v = ventes ?? [];
     return {
       revenue: v.reduce((a, x) => a + Number(x.montant_total_fcfa || 0), 0),
+      commission: v.reduce((a, x) => a + Number(x.commission_librairie_fcfa || 0), 0),
       paid: v.filter((x) => x.statut_paiement === "paye").reduce((a, x) => a + Number(x.droits_auteur_fcfa || 0), 0),
       pending: v.filter((x) => x.statut_paiement === "en_attente").reduce((a, x) => a + Number(x.droits_auteur_fcfa || 0), 0),
       copies: v.reduce((a, x) => a + Number(x.quantite_vendue || 0), 0),
@@ -163,8 +166,9 @@ function FinancesInner({ entrepriseId }: { entrepriseId: string | null }) {
         </Button>
       </header>
 
-      <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-4">
+      <div className="grid sm:grid-cols-2 lg:grid-cols-5 gap-4">
         <StatCard icon={TrendingUp} label="Chiffre d'affaires" value={fcfa(totals.revenue)} accent="primary" />
+        <StatCard icon={Store} label="Commission librairies (20%)" value={fcfa(totals.commission)} />
         <StatCard icon={Check} label="Royalties payées" value={fcfa(totals.paid)} accent="primary" />
         <StatCard icon={Clock} label="Royalties en attente" value={fcfa(totals.pending)} accent="gold" />
         <StatCard icon={ShoppingBag} label="Exemplaires vendus" value={String(totals.copies)} />
@@ -251,9 +255,11 @@ function FinancesInner({ entrepriseId }: { entrepriseId: string | null }) {
                 <tr className="text-left">
                   <th className="px-4 py-3 font-medium">Livre</th>
                   <th className="px-4 py-3 font-medium">Auteur</th>
+                  <th className="px-4 py-3 font-medium hidden lg:table-cell">Canal</th>
                   <th className="px-4 py-3 font-medium hidden md:table-cell">Qté</th>
                   <th className="px-4 py-3 font-medium hidden md:table-cell">PU</th>
                   <th className="px-4 py-3 font-medium">Total</th>
+                  <th className="px-4 py-3 font-medium hidden md:table-cell">Commission</th>
                   <th className="px-4 py-3 font-medium">Royalties</th>
                   <th className="px-4 py-3 font-medium">Statut</th>
                   <th className="px-4 py-3 font-medium hidden lg:table-cell">Date</th>
@@ -263,13 +269,27 @@ function FinancesInner({ entrepriseId }: { entrepriseId: string | null }) {
                 {filtered?.map((v) => {
                   const m = mMap[v.manuscrit_id];
                   const auteurName = (v.auteur_id && aMap[v.auteur_id]) ?? (m?.auteur_id && aMap[m.auteur_id!]) ?? m?.auteur ?? "—";
+                  const isExterne = v.canal_vente !== "interne";
                   return (
                     <tr key={v.id} className="border-t border-border">
                       <td className="px-4 py-3 font-medium">{m?.titre ?? "—"}</td>
                       <td className="px-4 py-3 text-muted-foreground">{auteurName}</td>
+                      <td className="px-4 py-3 hidden lg:table-cell">
+                        <span className={cn(
+                          "inline-flex items-center rounded-full border px-2 py-0.5 text-xs",
+                          isExterne
+                            ? "bg-blue-500/10 text-blue-400 border-blue-500/30"
+                            : "bg-emerald-500/10 text-emerald-400 border-emerald-500/30",
+                        )}>
+                          {isExterne ? "Librairie" : "Directe"}
+                        </span>
+                      </td>
                       <td className="px-4 py-3 hidden md:table-cell">{v.quantite_vendue}</td>
                       <td className="px-4 py-3 hidden md:table-cell">{fcfa(v.prix_unitaire_fcfa)}</td>
                       <td className="px-4 py-3 font-semibold">{fcfa(v.montant_total_fcfa)}</td>
+                      <td className="px-4 py-3 hidden md:table-cell text-orange-400">
+                        {Number(v.commission_librairie_fcfa) > 0 ? fcfa(v.commission_librairie_fcfa) : "—"}
+                      </td>
                       <td className="px-4 py-3 text-[color:var(--gold)] font-semibold">{fcfa(v.droits_auteur_fcfa)}</td>
                       <td className="px-4 py-3">
                         <span className={cn("inline-flex items-center rounded-full border px-2.5 py-0.5 text-xs font-medium",
@@ -376,7 +396,10 @@ function VenteSheet({
 
   const availableStocks = stocks.filter((s) => !manuscritId || s.manuscrit_id === manuscritId);
   const total = qty * prix;
+  const isExterne = !!stockId;
+  const commission = isExterne ? Math.round(total * 0.2) : 0;
   const royalties = Math.round(total * 0.1);
+  const netEditeur = total - commission - royalties;
 
   const submit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -391,6 +414,8 @@ function VenteSheet({
       prix_unitaire_fcfa: prix,
       montant_total_fcfa: total,
       droits_auteur_fcfa: royalties,
+      commission_librairie_fcfa: commission,
+      canal_vente: isExterne ? "externe" : "interne",
       montant: total,
       statut_paiement: "en_attente" as any,
       date_vente: new Date().toISOString().slice(0, 10),
@@ -455,9 +480,16 @@ function VenteSheet({
               <Input type="number" min={0} value={prix} onChange={(e) => setPrix(Number(e.target.value))} />
             </div>
           </div>
-          <div className="rounded-lg border border-border bg-background/50 p-4 space-y-1">
-            <div className="flex justify-between text-sm"><span className="text-muted-foreground">Montant total</span><span className="font-semibold">{fcfa(total)}</span></div>
-            <div className="flex justify-between text-sm"><span className="text-muted-foreground">Droits d'auteur (10%)</span><span className="font-semibold text-[color:var(--gold)]">{fcfa(royalties)}</span></div>
+          <div className="rounded-lg border border-border bg-background/50 p-4 space-y-1.5">
+            <div className="flex justify-between text-sm"><span className="text-muted-foreground">Chiffre d'affaires</span><span className="font-semibold">{fcfa(total)}</span></div>
+            {isExterne && (
+              <div className="flex justify-between text-sm"><span className="text-muted-foreground">Commission librairie (20%)</span><span className="font-semibold text-orange-400">− {fcfa(commission)}</span></div>
+            )}
+            <div className="flex justify-between text-sm"><span className="text-muted-foreground">Droits d'auteur (10%)</span><span className="font-semibold text-[color:var(--gold)]">− {fcfa(royalties)}</span></div>
+            <div className="flex justify-between text-sm pt-1.5 border-t border-border"><span className="text-foreground font-medium">Net éditeur</span><span className="font-bold text-primary">{fcfa(netEditeur)}</span></div>
+            {!isExterne && (
+              <p className="text-xs text-muted-foreground pt-1">Aucune librairie sélectionnée → vente directe, sans commission.</p>
+            )}
           </div>
           <div className="flex justify-end gap-2 pt-2">
             <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>Annuler</Button>
