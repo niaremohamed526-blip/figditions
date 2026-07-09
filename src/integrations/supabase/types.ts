@@ -1073,6 +1073,8 @@ export type Database = {
       ventes: {
         Row: {
           auteur_id: string | null
+          canal_vente: string
+          commission_librairie_fcfa: number
           created_at: string
           date_vente: string
           droits_auteur_fcfa: number
@@ -1087,6 +1089,8 @@ export type Database = {
         }
         Insert: {
           auteur_id?: string | null
+          canal_vente?: string
+          commission_librairie_fcfa?: number
           created_at?: string
           date_vente?: string
           droits_auteur_fcfa?: number
@@ -1101,6 +1105,8 @@ export type Database = {
         }
         Update: {
           auteur_id?: string | null
+          canal_vente?: string
+          commission_librairie_fcfa?: number
           created_at?: string
           date_vente?: string
           droits_auteur_fcfa?: number
