@@ -255,9 +255,11 @@ function FinancesInner({ entrepriseId }: { entrepriseId: string | null }) {
                 <tr className="text-left">
                   <th className="px-4 py-3 font-medium">Livre</th>
                   <th className="px-4 py-3 font-medium">Auteur</th>
+                  <th className="px-4 py-3 font-medium hidden lg:table-cell">Canal</th>
                   <th className="px-4 py-3 font-medium hidden md:table-cell">Qté</th>
                   <th className="px-4 py-3 font-medium hidden md:table-cell">PU</th>
                   <th className="px-4 py-3 font-medium">Total</th>
+                  <th className="px-4 py-3 font-medium hidden md:table-cell">Commission</th>
                   <th className="px-4 py-3 font-medium">Royalties</th>
                   <th className="px-4 py-3 font-medium">Statut</th>
                   <th className="px-4 py-3 font-medium hidden lg:table-cell">Date</th>
@@ -267,13 +269,27 @@ function FinancesInner({ entrepriseId }: { entrepriseId: string | null }) {
                 {filtered?.map((v) => {
                   const m = mMap[v.manuscrit_id];
                   const auteurName = (v.auteur_id && aMap[v.auteur_id]) ?? (m?.auteur_id && aMap[m.auteur_id!]) ?? m?.auteur ?? "—";
+                  const isExterne = v.canal_vente !== "interne";
                   return (
                     <tr key={v.id} className="border-t border-border">
                       <td className="px-4 py-3 font-medium">{m?.titre ?? "—"}</td>
                       <td className="px-4 py-3 text-muted-foreground">{auteurName}</td>
+                      <td className="px-4 py-3 hidden lg:table-cell">
+                        <span className={cn(
+                          "inline-flex items-center rounded-full border px-2 py-0.5 text-xs",
+                          isExterne
+                            ? "bg-blue-500/10 text-blue-400 border-blue-500/30"
+                            : "bg-emerald-500/10 text-emerald-400 border-emerald-500/30",
+                        )}>
+                          {isExterne ? "Librairie" : "Directe"}
+                        </span>
+                      </td>
                       <td className="px-4 py-3 hidden md:table-cell">{v.quantite_vendue}</td>
                       <td className="px-4 py-3 hidden md:table-cell">{fcfa(v.prix_unitaire_fcfa)}</td>
                       <td className="px-4 py-3 font-semibold">{fcfa(v.montant_total_fcfa)}</td>
+                      <td className="px-4 py-3 hidden md:table-cell text-orange-400">
+                        {Number(v.commission_librairie_fcfa) > 0 ? fcfa(v.commission_librairie_fcfa) : "—"}
+                      </td>
                       <td className="px-4 py-3 text-[color:var(--gold)] font-semibold">{fcfa(v.droits_auteur_fcfa)}</td>
                       <td className="px-4 py-3">
                         <span className={cn("inline-flex items-center rounded-full border px-2.5 py-0.5 text-xs font-medium",
