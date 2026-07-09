@@ -332,7 +332,9 @@ function StockForm({
 
   const restants = Math.max(0, Number(form.exemplaires_deposes) - Number(form.exemplaires_vendus));
   const montantTotal = Number(form.exemplaires_vendus) * Number(form.prix_unitaire_fcfa);
-  const droitsAuteur = montantTotal * 0.1;
+  const commissionLibrairie = Math.round(montantTotal * 0.2);
+  const droitsAuteur = Math.round(montantTotal * 0.1);
+  const netEditeur = montantTotal - commissionLibrairie - droitsAuteur;
   const deltaVendus = Math.max(0, Number(form.exemplaires_vendus) - previousVendus);
 
   const submit = async (e: React.FormEvent) => {
