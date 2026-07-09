@@ -35,6 +35,8 @@ interface Vente {
   prix_unitaire_fcfa: number;
   montant_total_fcfa: number;
   droits_auteur_fcfa: number;
+  commission_librairie_fcfa: number;
+  canal_vente: "externe" | "interne";
   statut_paiement: "en_attente" | "paye";
   date_vente: string;
   created_at: string;
