@@ -396,7 +396,10 @@ function VenteSheet({
 
   const availableStocks = stocks.filter((s) => !manuscritId || s.manuscrit_id === manuscritId);
   const total = qty * prix;
+  const isExterne = !!stockId;
+  const commission = isExterne ? Math.round(total * 0.2) : 0;
   const royalties = Math.round(total * 0.1);
+  const netEditeur = total - commission - royalties;
 
   const submit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -411,6 +414,8 @@ function VenteSheet({
       prix_unitaire_fcfa: prix,
       montant_total_fcfa: total,
       droits_auteur_fcfa: royalties,
+      commission_librairie_fcfa: commission,
+      canal_vente: isExterne ? "externe" : "interne",
       montant: total,
       statut_paiement: "en_attente" as any,
       date_vente: new Date().toISOString().slice(0, 10),
