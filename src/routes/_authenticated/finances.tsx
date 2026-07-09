@@ -1,6 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useEffect, useMemo, useState } from "react";
-import { Plus, Wallet, TrendingUp, ShoppingBag, Clock, Loader2, Check } from "lucide-react";
+import { Plus, Wallet, TrendingUp, ShoppingBag, Clock, Loader2, Check, Store } from "lucide-react";
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, PieChart, Pie, Cell, Legend, ComposedChart, Line, CartesianGrid } from "recharts";
 import { format, subMonths, startOfMonth } from "date-fns";
 import { AnalyticsSection, defaultRange, inRange, EmptyChart, type DateRange } from "@/components/analytics-section";
