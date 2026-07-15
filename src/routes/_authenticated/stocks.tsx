@@ -1,6 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useEffect, useMemo, useState } from "react";
-import { Plus, Search, Package, Loader2, Pencil, Trash2, Calendar as CalendarIcon, Store, BookOpen, TrendingUp, ShoppingBag, Wallet, PenLine, FileSpreadsheet } from "lucide-react";
+import { Plus, Search, Package, Loader2, Pencil, Trash2, Calendar as CalendarIcon, Store, BookOpen, TrendingUp, ShoppingBag, Wallet, PenLine, FileSpreadsheet, Zap } from "lucide-react";
 import { format } from "date-fns";
 import { fr } from "date-fns/locale";
 import { supabase } from "@/integrations/supabase/client";
@@ -31,6 +31,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { StockInterneTab } from "@/components/stock-interne";
 import { BordereauxTab } from "@/components/bordereaux-tab";
 import { StockImportDialog } from "@/components/stock-import-dialog";
+import { StockPosDialog } from "@/components/stock-pos-dialog";
 
 export const Route = createFileRoute("/_authenticated/stocks")({
   component: StocksPage,
@@ -63,6 +64,7 @@ function StocksPage() {
   const [deleting, setDeleting] = useState(false);
   const [upgradeOpen, setUpgradeOpen] = useState(false);
   const [importOpen, setImportOpen] = useState(false);
+  const [posOpen, setPosOpen] = useState(false);
 
   const load = async () => {
     setItems(null);
@@ -144,6 +146,9 @@ function StocksPage() {
           <div className="flex justify-end gap-2 flex-wrap">
             <Button variant="outline" onClick={() => setImportOpen(true)}>
               <FileSpreadsheet className="h-4 w-4 mr-2" /> Import Excel
+            </Button>
+            <Button variant="outline" onClick={() => setPosOpen(true)}>
+              <Zap className="h-4 w-4 mr-2" /> Saisie rapide
             </Button>
             <Button onClick={openNew} className="bg-primary text-primary-foreground hover:bg-primary/90">
               <Plus className="h-4 w-4 mr-2" /> Ajouter un dépôt
@@ -271,6 +276,14 @@ function StocksPage() {
       <StockImportDialog
         open={importOpen}
         onOpenChange={setImportOpen}
+        entrepriseId={profile?.entreprise_id ?? null}
+        manuscrits={manuscrits}
+        onImported={load}
+      />
+
+      <StockPosDialog
+        open={posOpen}
+        onOpenChange={setPosOpen}
         entrepriseId={profile?.entreprise_id ?? null}
         manuscrits={manuscrits}
         onImported={load}
