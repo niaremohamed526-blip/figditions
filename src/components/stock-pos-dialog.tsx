@@ -1,0 +1,337 @@
+import { useEffect, useMemo, useRef, useState } from "react";
+import { format } from "date-fns";
+import { Loader2, Zap, Trash2, Plus, CheckCircle2, X, Store, Keyboard } from "lucide-react";
+import { toast } from "sonner";
+import { supabase } from "@/integrations/supabase/client";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import {
+  Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter,
+} from "@/components/ui/dialog";
+import {
+  Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList,
+} from "@/components/ui/command";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { cn } from "@/lib/utils";
+import { fcfa } from "@/lib/format";
+
+interface Manuscrit { id: string; titre: string; statut: string; }
+
+interface Line {
+  id: string;
+  manuscritId: string;
+  titre: string;
+  quantite: number;
+  prix: number;
+}
+
+export function StockPosDialog({
+  open, onOpenChange, entrepriseId, manuscrits, onImported,
+}: {
+  open: boolean;
+  onOpenChange: (o: boolean) => void;
+  entrepriseId: string | null;
+  manuscrits: Manuscrit[];
+  onImported: () => void;
+}) {
+  const [step, setStep] = useState<1 | 2>(1);
+  const [librairieNom, setLibrairieNom] = useState("");
+  const [librairieAdresse, setLibrairieAdresse] = useState("");
+  const [dateDepot, setDateDepot] = useState<string>(format(new Date(), "yyyy-MM-dd"));
+
+  const [lines, setLines] = useState<Line[]>([]);
+  const [titrePickerOpen, setTitrePickerOpen] = useState(false);
+  const [currentManuscrit, setCurrentManuscrit] = useState<Manuscrit | null>(null);
+  const [currentQte, setCurrentQte] = useState<string>("1");
+  const [currentPrix, setCurrentPrix] = useState<string>("");
+
+  const [saving, setSaving] = useState(false);
+
+  const qteRef = useRef<HTMLInputElement>(null);
+  const prixRef = useRef<HTMLInputElement>(null);
+  const addBtnRef = useRef<HTMLButtonElement>(null);
+
+  const published = useMemo(() => manuscrits.filter((m) => m.statut === "publie"), [manuscrits]);
+
+  const totalEx = lines.reduce((s, l) => s + l.quantite, 0);
+  const totalValeur = lines.reduce((s, l) => s + l.quantite * l.prix, 0);
+
+  const reset = () => {
+    setStep(1);
+    setLibrairieNom("");
+    setLibrairieAdresse("");
+    setDateDepot(format(new Date(), "yyyy-MM-dd"));
+    setLines([]);
+    setCurrentManuscrit(null);
+    setCurrentQte("1");
+    setCurrentPrix("");
+  };
+
+  const close = () => { reset(); onOpenChange(false); };
+
+  const startSession = () => {
+    if (!librairieNom.trim()) return toast.error("Nom de la librairie requis");
+    setStep(2);
+    setTimeout(() => setTitrePickerOpen(true), 100);
+  };
+
+  const pickManuscrit = (m: Manuscrit) => {
+    setCurrentManuscrit(m);
+    setTitrePickerOpen(false);
+    setTimeout(() => qteRef.current?.focus(), 50);
+  };
+
+  const addLine = () => {
+    if (!currentManuscrit) { toast.error("Choisissez un titre"); return; }
+    const q = Number(currentQte);
+    const p = Number(currentPrix);
+    if (!Number.isFinite(q) || q <= 0) { toast.error("Quantité invalide"); qteRef.current?.focus(); return; }
+    if (!Number.isFinite(p) || p < 0) { toast.error("Prix invalide"); prixRef.current?.focus(); return; }
+
+    setLines((prev) => [
+      { id: crypto.randomUUID(), manuscritId: currentManuscrit.id, titre: currentManuscrit.titre, quantite: q, prix: p },
+      ...prev,
+    ]);
+    // reset for next entry
+    setCurrentManuscrit(null);
+    setCurrentQte("1");
+    setCurrentPrix("");
+    setTimeout(() => setTitrePickerOpen(true), 50);
+  };
+
+  const removeLine = (id: string) => setLines((prev) => prev.filter((l) => l.id !== id));
+
+  const submit = async () => {
+    if (!entrepriseId) return toast.error("Profil non chargé");
+    if (lines.length === 0) return toast.error("Aucun livre saisi");
+    setSaving(true);
+    const payload = lines.map((l) => ({
+      entreprise_id: entrepriseId,
+      manuscrit_id: l.manuscritId,
+      librairie_nom: librairieNom.trim(),
+      librairie_adresse: librairieAdresse.trim() || null,
+      exemplaires_deposes: l.quantite,
+      exemplaires_vendus: 0,
+      exemplaires_restants: l.quantite,
+      exemplaires_total: l.quantite,
+      prix_unitaire_fcfa: l.prix,
+      derniere_visite: dateDepot || null,
+    }));
+    const { error } = await supabase.from("stocks").insert(payload as any);
+    setSaving(false);
+    if (error) return toast.error(error.message);
+    toast.success(`${lines.length} dépôt(s) enregistré(s) chez « ${librairieNom} »`);
+    onImported();
+    close();
+  };
+
+  // Enter navigation: title → qte → prix → add
+  useEffect(() => {
+    const handler = (e: KeyboardEvent) => {
+      if (step !== 2) return;
+      if (e.key === "Enter" && (e.ctrlKey || e.metaKey)) {
+        e.preventDefault();
+        if (lines.length > 0) submit();
+      }
+    };
+    window.addEventListener("keydown", handler);
+    return () => window.removeEventListener("keydown", handler);
+  }, [step, lines.length]);
+
+  return (
+    <Dialog open={open} onOpenChange={(o) => { if (!o) close(); }}>
+      <DialogContent className="bg-card border-border max-w-3xl max-h-[92vh] overflow-y-auto">
+        <DialogHeader>
+          <DialogTitle className="flex items-center gap-2">
+            <Zap className="h-5 w-5 text-primary" />
+            Saisie rapide — Mode caisse
+          </DialogTitle>
+          <DialogDescription>
+            Sélectionnez la librairie une seule fois, puis enchaînez les livres sans rechargement.
+          </DialogDescription>
+        </DialogHeader>
+
+        {step === 1 ? (
+          <div className="space-y-4 py-2">
+            <div className="rounded-xl border border-border p-4 space-y-3">
+              <div className="flex items-center gap-2">
+                <Store className="h-4 w-4 text-primary" />
+                <h4 className="font-semibold text-sm">Librairie destinataire</h4>
+              </div>
+              <div className="space-y-1.5">
+                <Label className="text-xs">Nom de la librairie *</Label>
+                <Input value={librairieNom} onChange={(e) => setLibrairieNom(e.target.value)} placeholder="Ex. Librairie Renaissance" autoFocus />
+              </div>
+              <div className="grid sm:grid-cols-2 gap-3">
+                <div className="space-y-1.5">
+                  <Label className="text-xs">Adresse (optionnel)</Label>
+                  <Input value={librairieAdresse} onChange={(e) => setLibrairieAdresse(e.target.value)} placeholder="Ex. ACI 2000, Bamako" />
+                </div>
+                <div className="space-y-1.5">
+                  <Label className="text-xs">Date de dépôt</Label>
+                  <Input type="date" value={dateDepot} onChange={(e) => setDateDepot(e.target.value)} />
+                </div>
+              </div>
+            </div>
+            <DialogFooter>
+              <Button variant="outline" onClick={close}>Annuler</Button>
+              <Button onClick={startSession} className="bg-primary text-primary-foreground hover:bg-primary/90">
+                <Zap className="h-4 w-4 mr-2" /> Démarrer la saisie
+              </Button>
+            </DialogFooter>
+          </div>
+        ) : (
+          <div className="space-y-4 py-2">
+            {/* Session header */}
+            <div className="flex flex-wrap items-center justify-between gap-2 rounded-lg bg-primary/5 border border-primary/20 px-3 py-2 text-sm">
+              <div className="flex items-center gap-2 min-w-0">
+                <Store className="h-4 w-4 text-primary flex-shrink-0" />
+                <span className="font-semibold truncate">{librairieNom}</span>
+                {librairieAdresse && <span className="text-muted-foreground truncate">— {librairieAdresse}</span>}
+              </div>
+              <Button variant="ghost" size="sm" onClick={() => setStep(1)} className="h-7">Changer</Button>
+            </div>
+
+            {/* Quick entry row */}
+            <div className="rounded-xl border border-border p-3 space-y-3 bg-muted/20">
+              <div className="grid grid-cols-12 gap-2 items-end">
+                <div className="col-span-12 sm:col-span-6 space-y-1.5">
+                  <Label className="text-xs">Titre</Label>
+                  <Popover open={titrePickerOpen} onOpenChange={setTitrePickerOpen}>
+                    <PopoverTrigger asChild>
+                      <Button variant="outline" role="combobox" className={cn("w-full justify-between font-normal", !currentManuscrit && "text-muted-foreground")}>
+                        <span className="truncate">{currentManuscrit?.titre ?? "Choisir un titre…"}</span>
+                      </Button>
+                    </PopoverTrigger>
+                    <PopoverContent className="p-0 w-[--radix-popover-trigger-width] max-w-none" align="start">
+                      <Command>
+                        <CommandInput placeholder="Rechercher un titre…" autoFocus />
+                        <CommandList>
+                          <CommandEmpty>Aucun manuscrit publié.</CommandEmpty>
+                          <CommandGroup>
+                            {published.map((m) => (
+                              <CommandItem key={m.id} value={m.titre} onSelect={() => pickManuscrit(m)}>
+                                {m.titre}
+                              </CommandItem>
+                            ))}
+                          </CommandGroup>
+                        </CommandList>
+                      </Command>
+                    </PopoverContent>
+                  </Popover>
+                </div>
+                <div className="col-span-4 sm:col-span-2 space-y-1.5">
+                  <Label className="text-xs">Quantité</Label>
+                  <Input
+                    ref={qteRef}
+                    type="number"
+                    min={1}
+                    value={currentQte}
+                    onChange={(e) => setCurrentQte(e.target.value)}
+                    onKeyDown={(e) => { if (e.key === "Enter") { e.preventDefault(); prixRef.current?.focus(); prixRef.current?.select(); } }}
+                  />
+                </div>
+                <div className="col-span-5 sm:col-span-3 space-y-1.5">
+                  <Label className="text-xs">Prix FCFA</Label>
+                  <Input
+                    ref={prixRef}
+                    type="number"
+                    min={0}
+                    value={currentPrix}
+                    onChange={(e) => setCurrentPrix(e.target.value)}
+                    onKeyDown={(e) => { if (e.key === "Enter") { e.preventDefault(); addLine(); } }}
+                    placeholder="5000"
+                  />
+                </div>
+                <div className="col-span-3 sm:col-span-1">
+                  <Button ref={addBtnRef} onClick={addLine} className="w-full bg-primary text-primary-foreground hover:bg-primary/90" title="Ajouter (Entrée)">
+                    <Plus className="h-4 w-4" />
+                  </Button>
+                </div>
+              </div>
+              <div className="flex items-center gap-1.5 text-[11px] text-muted-foreground">
+                <Keyboard className="h-3 w-3" />
+                <span>Astuce&nbsp;: <kbd className="px-1 rounded bg-muted">Entrée</kbd> pour passer au champ suivant · <kbd className="px-1 rounded bg-muted">Ctrl</kbd>+<kbd className="px-1 rounded bg-muted">Entrée</kbd> pour valider tout</span>
+              </div>
+            </div>
+
+            {/* Session totals */}
+            <div className="grid grid-cols-3 gap-2 text-xs">
+              <Chip label="Lignes" value={String(lines.length)} />
+              <Chip label="Total ex." value={String(totalEx)} tone="success" />
+              <Chip label="Valeur" value={fcfa(totalValeur)} tone="gold" />
+            </div>
+
+            {/* Lines list */}
+            <div className="max-h-72 overflow-y-auto rounded-lg border border-border">
+              {lines.length === 0 ? (
+                <div className="p-6 text-center text-sm text-muted-foreground">
+                  Aucun livre saisi pour le moment. Commencez par choisir un titre ci-dessus.
+                </div>
+              ) : (
+                <table className="w-full text-xs">
+                  <thead className="bg-muted/40 sticky top-0">
+                    <tr className="text-left">
+                      <th className="px-2 py-1.5">Titre</th>
+                      <th className="px-2 py-1.5 text-center w-16">Qté</th>
+                      <th className="px-2 py-1.5 text-right w-24">Prix</th>
+                      <th className="px-2 py-1.5 text-right w-28">Sous-total</th>
+                      <th className="px-2 py-1.5 w-10"></th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {lines.map((l) => (
+                      <tr key={l.id} className="border-t border-border">
+                        <td className="px-2 py-1.5">
+                          <div className="flex items-center gap-1.5">
+                            <CheckCircle2 className="h-3.5 w-3.5 text-primary flex-shrink-0" />
+                            <span className="truncate max-w-[220px]" title={l.titre}>{l.titre}</span>
+                          </div>
+                        </td>
+                        <td className="px-2 py-1.5 text-center tabular-nums">{l.quantite}</td>
+                        <td className="px-2 py-1.5 text-right tabular-nums">{fcfa(l.prix)}</td>
+                        <td className="px-2 py-1.5 text-right tabular-nums font-semibold text-[color:var(--gold)]">{fcfa(l.quantite * l.prix)}</td>
+                        <td className="px-2 py-1.5 text-right">
+                          <Button variant="ghost" size="sm" onClick={() => removeLine(l.id)} className="h-6 w-6 p-0 hover:text-destructive">
+                            <X className="h-3.5 w-3.5" />
+                          </Button>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              )}
+            </div>
+
+            <DialogFooter>
+              <Button variant="outline" onClick={close} disabled={saving}>Annuler</Button>
+              <Button
+                onClick={submit}
+                disabled={saving || lines.length === 0}
+                className="bg-primary text-primary-foreground hover:bg-primary/90"
+              >
+                {saving
+                  ? <><Loader2 className="h-4 w-4 mr-2 animate-spin" /> Enregistrement…</>
+                  : <>Enregistrer {lines.length} dépôt(s)</>}
+              </Button>
+            </DialogFooter>
+          </div>
+        )}
+      </DialogContent>
+    </Dialog>
+  );
+}
+
+function Chip({ label, value, tone }: { label: string; value: string; tone?: "success" | "gold" }) {
+  const cls =
+    tone === "success" ? "text-primary bg-primary/10 border-primary/20"
+    : tone === "gold" ? "text-[color:var(--gold)] bg-[color:var(--gold)]/10 border-[color:var(--gold)]/20"
+    : "text-foreground bg-muted/40 border-border";
+  return (
+    <div className={cn("rounded-lg border px-2 py-1.5", cls)}>
+      <div className="text-[10px] uppercase tracking-wide opacity-80">{label}</div>
+      <div className="font-bold text-sm tabular-nums truncate">{value}</div>
+    </div>
+  );
+}
