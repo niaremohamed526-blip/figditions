@@ -30,6 +30,7 @@ import { AlertTriangle } from "lucide-react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { StockInterneTab } from "@/components/stock-interne";
 import { BordereauxTab } from "@/components/bordereaux-tab";
+import { StockImportDialog } from "@/components/stock-import-dialog";
 
 export const Route = createFileRoute("/_authenticated/stocks")({
   component: StocksPage,
