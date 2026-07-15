@@ -62,6 +62,7 @@ function StocksPage() {
   const [toDelete, setToDelete] = useState<Stock | null>(null);
   const [deleting, setDeleting] = useState(false);
   const [upgradeOpen, setUpgradeOpen] = useState(false);
+  const [importOpen, setImportOpen] = useState(false);
 
   const load = async () => {
     setItems(null);
