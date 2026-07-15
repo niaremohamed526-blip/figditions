@@ -1,6 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useEffect, useMemo, useState } from "react";
-import { Plus, Search, Package, Loader2, Pencil, Trash2, Calendar as CalendarIcon, Store, BookOpen, TrendingUp, ShoppingBag, Wallet, PenLine } from "lucide-react";
+import { Plus, Search, Package, Loader2, Pencil, Trash2, Calendar as CalendarIcon, Store, BookOpen, TrendingUp, ShoppingBag, Wallet, PenLine, FileSpreadsheet } from "lucide-react";
 import { format } from "date-fns";
 import { fr } from "date-fns/locale";
 import { supabase } from "@/integrations/supabase/client";
@@ -30,6 +30,7 @@ import { AlertTriangle } from "lucide-react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { StockInterneTab } from "@/components/stock-interne";
 import { BordereauxTab } from "@/components/bordereaux-tab";
+import { StockImportDialog } from "@/components/stock-import-dialog";
 
 export const Route = createFileRoute("/_authenticated/stocks")({
   component: StocksPage,
@@ -61,6 +62,7 @@ function StocksPage() {
   const [toDelete, setToDelete] = useState<Stock | null>(null);
   const [deleting, setDeleting] = useState(false);
   const [upgradeOpen, setUpgradeOpen] = useState(false);
+  const [importOpen, setImportOpen] = useState(false);
 
   const load = async () => {
     setItems(null);
@@ -139,7 +141,10 @@ function StocksPage() {
         </TabsList>
 
         <TabsContent value="externe" className="space-y-6 mt-0">
-          <div className="flex justify-end">
+          <div className="flex justify-end gap-2 flex-wrap">
+            <Button variant="outline" onClick={() => setImportOpen(true)}>
+              <FileSpreadsheet className="h-4 w-4 mr-2" /> Import Excel
+            </Button>
             <Button onClick={openNew} className="bg-primary text-primary-foreground hover:bg-primary/90">
               <Plus className="h-4 w-4 mr-2" /> Ajouter un dépôt
             </Button>
@@ -261,6 +266,14 @@ function StocksPage() {
         onOpenChange={setUpgradeOpen}
         title="Limite atteinte"
         description={`Vous avez atteint la limite de ${plan.maxBookstores} librairies du plan ${plan.label}. Passez au plan Pro pour suivre des librairies illimitées.`}
+      />
+
+      <StockImportDialog
+        open={importOpen}
+        onOpenChange={setImportOpen}
+        entrepriseId={profile?.entreprise_id ?? null}
+        manuscrits={manuscrits}
+        onImported={load}
       />
         </TabsContent>
 
