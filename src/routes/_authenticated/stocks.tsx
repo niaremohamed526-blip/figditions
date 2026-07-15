@@ -141,7 +141,10 @@ function StocksPage() {
         </TabsList>
 
         <TabsContent value="externe" className="space-y-6 mt-0">
-          <div className="flex justify-end">
+          <div className="flex justify-end gap-2 flex-wrap">
+            <Button variant="outline" onClick={() => setImportOpen(true)}>
+              <FileSpreadsheet className="h-4 w-4 mr-2" /> Import Excel
+            </Button>
             <Button onClick={openNew} className="bg-primary text-primary-foreground hover:bg-primary/90">
               <Plus className="h-4 w-4 mr-2" /> Ajouter un dépôt
             </Button>
