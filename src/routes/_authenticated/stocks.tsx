@@ -267,6 +267,14 @@ function StocksPage() {
         title="Limite atteinte"
         description={`Vous avez atteint la limite de ${plan.maxBookstores} librairies du plan ${plan.label}. Passez au plan Pro pour suivre des librairies illimitées.`}
       />
+
+      <StockImportDialog
+        open={importOpen}
+        onOpenChange={setImportOpen}
+        entrepriseId={profile?.entreprise_id ?? null}
+        manuscrits={manuscrits}
+        onImported={load}
+      />
         </TabsContent>
 
         <TabsContent value="interne" className="space-y-6 mt-0">
