@@ -307,6 +307,13 @@ export async function generateManuelStocksPdf(opts: { maison?: string | null } =
   h2("Suivre un dépôt existant");
   p("Chaque ligne du Stock externe affiche : déposés, vendus, restants. La pastille change de couleur en fonction du stock restant pour vous signaler quand la librairie est presque à sec.");
 
+  h2("Personnaliser la commission librairie et les droits d'auteur");
+  p("Chaque dépôt possède deux réglages, ajustables dans le formulaire d'ajout ou de modification :");
+  bullet("Commission librairie : bascule Activée / Désactivée. Quand elle est activée, choisissez le taux parmi 10 %, 15 % ou 20 %. Désactivée, aucune commission n'est prélevée (0 %).");
+  bullet("Droits d'auteur (10 %) : bascule Activés / Désactivés. Utile pour les titres du domaine public ou sans contrat de royalties.");
+  callout("Mémorisation par librairie", "Dès que vous tapez le nom d'une librairie déjà utilisée, FIGDITIONS ré-applique automatiquement le taux et les droits choisis la dernière fois pour cette librairie. Vous ne recommencez jamais le réglage.", "tip");
+  callout("Cohérence garantie", "Les taux choisis sont utilisés partout : ventes, statistiques Finances, bordereaux PDF. Le calcul se fait automatiquement à chaque vente enregistrée sur ce dépôt.", "example");
+
   // ─── 4. Ventes ─────────────────────────────────────────
   h1("4. Enregistrer les ventes");
   p("Toute vente doit être enregistrée pour que les royalties de l'auteur et vos statistiques financières restent à jour.");
@@ -321,7 +328,7 @@ export async function generateManuelStocksPdf(opts: { maison?: string | null } =
   step(1, "Depuis Stock externe, choisissez la librairie / titre concerné.");
   step(2, "Cliquez sur « Enregistrer une vente ».");
   step(3, "Saisissez le nombre d'exemplaires vendus. Le stock restant se met à jour automatiquement.");
-  callout("Calcul automatique", "Sur une vente en librairie, 20 % vont à la librairie (commission) et 10 % à l'auteur. Il vous reste 70 % de net éditeur.", "example");
+  callout("Calcul automatique", "Le système applique le taux de commission (0, 10, 15 ou 20 %) et les droits d'auteur (10 % ou 0 %) choisis pour ce dépôt. Exemple avec 20 % + 10 % : 20 % pour la librairie, 10 % pour l'auteur, 70 % de net éditeur.", "example");
 
   // ─── 5. Bordereaux ─────────────────────────────────────
   h1("5. Bordereaux (plan Business)");
