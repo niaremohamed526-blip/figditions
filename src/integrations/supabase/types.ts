@@ -1012,6 +1012,7 @@ export type Database = {
       }
       stocks: {
         Row: {
+          applique_droits_auteur: boolean
           created_at: string
           derniere_visite: string | null
           entreprise_id: string
@@ -1024,8 +1025,10 @@ export type Database = {
           librairie_nom: string | null
           manuscrit_id: string
           prix_unitaire_fcfa: number
+          taux_commission_pct: number
         }
         Insert: {
+          applique_droits_auteur?: boolean
           created_at?: string
           derniere_visite?: string | null
           entreprise_id: string
@@ -1038,8 +1041,10 @@ export type Database = {
           librairie_nom?: string | null
           manuscrit_id: string
           prix_unitaire_fcfa?: number
+          taux_commission_pct?: number
         }
         Update: {
+          applique_droits_auteur?: boolean
           created_at?: string
           derniere_visite?: string | null
           entreprise_id?: string
@@ -1052,6 +1057,7 @@ export type Database = {
           librairie_nom?: string | null
           manuscrit_id?: string
           prix_unitaire_fcfa?: number
+          taux_commission_pct?: number
         }
         Relationships: [
           {
