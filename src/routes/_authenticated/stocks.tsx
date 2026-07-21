@@ -11,6 +11,7 @@ import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet";
+import { Switch } from "@/components/ui/switch";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Calendar } from "@/components/ui/calendar";
@@ -49,6 +50,8 @@ interface Stock {
   exemplaires_restants: number;
   derniere_visite: string | null;
   prix_unitaire_fcfa: number | null;
+  taux_commission_pct?: number | null;
+  applique_droits_auteur?: boolean | null;
 }
 interface Manuscrit { id: string; titre: string; statut: string; auteur_id?: string | null; }
 
@@ -360,14 +363,45 @@ function StockForm({
     exemplaires_vendus: existing?.exemplaires_vendus ?? 0,
     prix_unitaire_fcfa: Number(existing?.prix_unitaire_fcfa ?? 0),
     derniere_visite: existing?.derniere_visite ? new Date(existing.derniere_visite) : undefined as Date | undefined,
+    taux_commission_pct: Number(existing?.taux_commission_pct ?? 20),
+    applique_droits_auteur: existing?.applique_droits_auteur ?? true,
   });
   const [loading, setLoading] = useState(false);
+  const [tauxTouched, setTauxTouched] = useState(false);
   const previousVendus = Number(existing?.exemplaires_vendus ?? 0);
+
+  // Mémoriser par librairie: pré-remplir taux + droits à partir du dernier dépôt de la même librairie
+  useEffect(() => {
+    if (existing || tauxTouched) return;
+    const nom = form.librairie_nom.trim();
+    if (!nom || !entrepriseId) return;
+    const handler = setTimeout(async () => {
+      const { data } = await (supabase as any)
+        .from("stocks")
+        .select("taux_commission_pct, applique_droits_auteur, librairie_adresse")
+        .eq("entreprise_id", entrepriseId)
+        .ilike("librairie_nom", nom)
+        .order("created_at", { ascending: false })
+        .limit(1);
+      const prev = data?.[0];
+      if (prev) {
+        setForm((f) => ({
+          ...f,
+          taux_commission_pct: prev.taux_commission_pct ?? f.taux_commission_pct,
+          applique_droits_auteur: prev.applique_droits_auteur ?? f.applique_droits_auteur,
+          librairie_adresse: f.librairie_adresse || (prev.librairie_adresse ?? ""),
+        }));
+      }
+    }, 350);
+    return () => clearTimeout(handler);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [form.librairie_nom, entrepriseId]);
 
   const restants = Math.max(0, Number(form.exemplaires_deposes) - Number(form.exemplaires_vendus));
   const montantTotal = Number(form.exemplaires_vendus) * Number(form.prix_unitaire_fcfa);
-  const commissionLibrairie = Math.round(montantTotal * 0.2);
-  const droitsAuteur = Math.round(montantTotal * 0.1);
+  const tauxComm = Number(form.taux_commission_pct) || 0;
+  const commissionLibrairie = Math.round(montantTotal * tauxComm / 100);
+  const droitsAuteur = form.applique_droits_auteur ? Math.round(montantTotal * 0.1) : 0;
   const netEditeur = montantTotal - commissionLibrairie - droitsAuteur;
   const deltaVendus = Math.max(0, Number(form.exemplaires_vendus) - previousVendus);
 
@@ -386,6 +420,8 @@ function StockForm({
       exemplaires_total: Number(form.exemplaires_deposes),
       prix_unitaire_fcfa: Number(form.prix_unitaire_fcfa),
       derniere_visite: form.derniere_visite ? format(form.derniere_visite, "yyyy-MM-dd") : null,
+      taux_commission_pct: tauxComm,
+      applique_droits_auteur: form.applique_droits_auteur,
     };
     const { error } = existing
       ? await supabase.from("stocks").update(payload).eq("id", existing.id)
@@ -438,6 +474,57 @@ function StockForm({
           placeholder="ex: 5000" />
       </div>
 
+      {/* Taux commission + droits auteur */}
+      <div className="rounded-xl border border-border bg-background/30 p-4 space-y-4">
+        <div className="space-y-2">
+          <div className="flex items-center justify-between">
+            <Label className="flex items-center gap-2 text-sm">
+              <Store className="h-4 w-4 text-orange-400" />
+              Commission librairie
+            </Label>
+            <Switch
+              checked={tauxComm > 0}
+              onCheckedChange={(v: boolean) => {
+                setTauxTouched(true);
+                setForm((f) => ({ ...f, taux_commission_pct: v ? 20 : 0 }));
+              }}
+            />
+          </div>
+          {tauxComm > 0 && (
+            <div className="flex gap-2 pt-1">
+              {[10, 15, 20].map((p) => (
+                <button
+                  key={p}
+                  type="button"
+                  onClick={() => { setTauxTouched(true); setForm({ ...form, taux_commission_pct: p }); }}
+                  className={cn(
+                    "flex-1 py-2 rounded-lg text-sm font-semibold border transition",
+                    tauxComm === p
+                      ? "bg-orange-400/15 border-orange-400/50 text-orange-300"
+                      : "bg-background border-border text-muted-foreground hover:border-orange-400/30"
+                  )}
+                >
+                  {p} %
+                </button>
+              ))}
+            </div>
+          )}
+          {tauxComm === 0 && (
+            <p className="text-xs text-muted-foreground">Aucune commission ne sera appliquée à la librairie.</p>
+          )}
+        </div>
+        <div className="flex items-center justify-between pt-2 border-t border-border">
+          <Label className="flex items-center gap-2 text-sm">
+            <PenLine className="h-4 w-4 text-[color:var(--gold)]" />
+            Droits d'auteur (10 %)
+          </Label>
+          <Switch
+            checked={form.applique_droits_auteur}
+            onCheckedChange={(v: boolean) => setForm({ ...form, applique_droits_auteur: v })}
+          />
+        </div>
+      </div>
+
       {/* Live calculations */}
       <div className="rounded-xl border border-border bg-background/40 p-4 space-y-2 text-sm">
         <Row icon={<BookOpen className="h-4 w-4" />} label="Exemplaires restants">
@@ -446,10 +533,10 @@ function StockForm({
         <Row icon={<Wallet className="h-4 w-4" />} label="Chiffre d'affaires brut">
           <span className="font-semibold text-foreground">{fcfa(montantTotal)}</span>
         </Row>
-        <Row icon={<Store className="h-4 w-4" />} label="Commission librairie (20%)">
+        <Row icon={<Store className="h-4 w-4" />} label={`Commission librairie (${tauxComm} %)`}>
           <span className="font-semibold text-orange-400">− {fcfa(commissionLibrairie)}</span>
         </Row>
-        <Row icon={<PenLine className="h-4 w-4" />} label="Droits auteur estimés (10%)">
+        <Row icon={<PenLine className="h-4 w-4" />} label={form.applique_droits_auteur ? "Droits auteur estimés (10 %)" : "Droits auteur (désactivés)"}>
           <span className="font-semibold text-[color:var(--gold)]">− {fcfa(droitsAuteur)}</span>
         </Row>
         <div className="pt-2 border-t border-border">
@@ -459,10 +546,11 @@ function StockForm({
         </div>
         {deltaVendus > 0 && Number(form.prix_unitaire_fcfa) > 0 && (
           <p className="pt-2 text-xs text-muted-foreground border-t border-border">
-            ✨ Une vente de <span className="text-primary font-medium">{deltaVendus} exemplaire(s)</span> sera enregistrée automatiquement avec la commission librairie de 20 %.
+            ✨ Une vente de <span className="text-primary font-medium">{deltaVendus} exemplaire(s)</span> sera enregistrée automatiquement avec une commission de {tauxComm} %{form.applique_droits_auteur ? " et 10 % de droits d'auteur" : " (sans droits d'auteur)"}.
           </p>
         )}
       </div>
+
 
       <div className="space-y-2">
         <Label>Dernière visite</Label>
