@@ -262,11 +262,11 @@ function AccountSection({ profile, email, entrepriseName, role }: { profile: any
             <Input value={entrepriseName} disabled />
           </div>
         </div>
-        <div className="flex justify-between items-center pt-2">
-          <Button variant="outline" onClick={() => setPwOpen(true)}>
+        <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-2 pt-2">
+          <Button variant="outline" onClick={() => setPwOpen(true)} className="w-full sm:w-auto min-h-11">
             <KeyRound className="h-4 w-4" /> Changer le mot de passe
           </Button>
-          <Button onClick={save} disabled={saving} className="bg-primary text-primary-foreground hover:bg-primary/90">
+          <Button onClick={save} disabled={saving} className="bg-primary text-primary-foreground hover:bg-primary/90 w-full sm:w-auto min-h-11">
             {saving ? <Loader2 className="h-4 w-4 animate-spin" /> : <><Save className="h-4 w-4" /> Sauvegarder</>}
           </Button>
         </div>
