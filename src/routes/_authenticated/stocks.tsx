@@ -473,6 +473,57 @@ function StockForm({
           placeholder="ex: 5000" />
       </div>
 
+      {/* Taux commission + droits auteur */}
+      <div className="rounded-xl border border-border bg-background/30 p-4 space-y-4">
+        <div className="space-y-2">
+          <div className="flex items-center justify-between">
+            <Label className="flex items-center gap-2 text-sm">
+              <Store className="h-4 w-4 text-orange-400" />
+              Commission librairie
+            </Label>
+            <Switch
+              checked={tauxComm > 0}
+              onCheckedChange={(v) => {
+                setTauxTouched(true);
+                setForm((f) => ({ ...f, taux_commission_pct: v ? 20 : 0 }));
+              }}
+            />
+          </div>
+          {tauxComm > 0 && (
+            <div className="flex gap-2 pt-1">
+              {[10, 15, 20].map((p) => (
+                <button
+                  key={p}
+                  type="button"
+                  onClick={() => { setTauxTouched(true); setForm({ ...form, taux_commission_pct: p }); }}
+                  className={cn(
+                    "flex-1 py-2 rounded-lg text-sm font-semibold border transition",
+                    tauxComm === p
+                      ? "bg-orange-400/15 border-orange-400/50 text-orange-300"
+                      : "bg-background border-border text-muted-foreground hover:border-orange-400/30"
+                  )}
+                >
+                  {p} %
+                </button>
+              ))}
+            </div>
+          )}
+          {tauxComm === 0 && (
+            <p className="text-xs text-muted-foreground">Aucune commission ne sera appliquée à la librairie.</p>
+          )}
+        </div>
+        <div className="flex items-center justify-between pt-2 border-t border-border">
+          <Label className="flex items-center gap-2 text-sm">
+            <PenLine className="h-4 w-4 text-[color:var(--gold)]" />
+            Droits d'auteur (10 %)
+          </Label>
+          <Switch
+            checked={form.applique_droits_auteur}
+            onCheckedChange={(v) => setForm({ ...form, applique_droits_auteur: v })}
+          />
+        </div>
+      </div>
+
       {/* Live calculations */}
       <div className="rounded-xl border border-border bg-background/40 p-4 space-y-2 text-sm">
         <Row icon={<BookOpen className="h-4 w-4" />} label="Exemplaires restants">
@@ -481,10 +532,10 @@ function StockForm({
         <Row icon={<Wallet className="h-4 w-4" />} label="Chiffre d'affaires brut">
           <span className="font-semibold text-foreground">{fcfa(montantTotal)}</span>
         </Row>
-        <Row icon={<Store className="h-4 w-4" />} label="Commission librairie (20%)">
+        <Row icon={<Store className="h-4 w-4" />} label={`Commission librairie (${tauxComm} %)`}>
           <span className="font-semibold text-orange-400">− {fcfa(commissionLibrairie)}</span>
         </Row>
-        <Row icon={<PenLine className="h-4 w-4" />} label="Droits auteur estimés (10%)">
+        <Row icon={<PenLine className="h-4 w-4" />} label={form.applique_droits_auteur ? "Droits auteur estimés (10 %)" : "Droits auteur (désactivés)"}>
           <span className="font-semibold text-[color:var(--gold)]">− {fcfa(droitsAuteur)}</span>
         </Row>
         <div className="pt-2 border-t border-border">
@@ -494,10 +545,11 @@ function StockForm({
         </div>
         {deltaVendus > 0 && Number(form.prix_unitaire_fcfa) > 0 && (
           <p className="pt-2 text-xs text-muted-foreground border-t border-border">
-            ✨ Une vente de <span className="text-primary font-medium">{deltaVendus} exemplaire(s)</span> sera enregistrée automatiquement avec la commission librairie de 20 %.
+            ✨ Une vente de <span className="text-primary font-medium">{deltaVendus} exemplaire(s)</span> sera enregistrée automatiquement avec une commission de {tauxComm} %{form.applique_droits_auteur ? " et 10 % de droits d'auteur" : " (sans droits d'auteur)"}.
           </p>
         )}
       </div>
+
 
       <div className="space-y-2">
         <Label>Dernière visite</Label>
