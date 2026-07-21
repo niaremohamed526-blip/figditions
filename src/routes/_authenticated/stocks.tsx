@@ -484,7 +484,7 @@ function StockForm({
             </Label>
             <Switch
               checked={tauxComm > 0}
-              onCheckedChange={(v) => {
+              onCheckedChange={(v: boolean) => {
                 setTauxTouched(true);
                 setForm((f) => ({ ...f, taux_commission_pct: v ? 20 : 0 }));
               }}
