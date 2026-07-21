@@ -17,15 +17,15 @@ export const Route = createFileRoute("/api/public/hooks/check-reminders")({
   server: {
     handlers: {
       POST: async ({ request }) => {
-        // Auth: accept either CRON_SECRET (preferred) OR the Supabase anon key
-        // (canonical pg_cron pattern). Both are checked; if neither matches, 401.
+        // Auth: require CRON_SECRET only. Do NOT accept the Supabase anon/
+        // publishable key because those are shipped in client bundles and
+        // any visitor could invoke this endpoint otherwise.
         const apikey = request.headers.get("apikey") ?? request.headers.get("authorization")?.replace(/^Bearer\s+/i, "");
-        const acceptedKeys = [
-          process.env.CRON_SECRET,
-          process.env.SUPABASE_ANON_KEY,
-          process.env.SUPABASE_PUBLISHABLE_KEY,
-        ].filter(Boolean) as string[];
-        if (!apikey || !acceptedKeys.includes(apikey)) {
+        const cronSecret = process.env.CRON_SECRET;
+        if (!cronSecret) {
+          return new Response("Unauthorized", { status: 401 });
+        }
+        if (!apikey || apikey !== cronSecret) {
           return new Response("Unauthorized", { status: 401 });
         }
 
