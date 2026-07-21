@@ -362,14 +362,45 @@ function StockForm({
     exemplaires_vendus: existing?.exemplaires_vendus ?? 0,
     prix_unitaire_fcfa: Number(existing?.prix_unitaire_fcfa ?? 0),
     derniere_visite: existing?.derniere_visite ? new Date(existing.derniere_visite) : undefined as Date | undefined,
+    taux_commission_pct: Number(existing?.taux_commission_pct ?? 20),
+    applique_droits_auteur: existing?.applique_droits_auteur ?? true,
   });
   const [loading, setLoading] = useState(false);
+  const [tauxTouched, setTauxTouched] = useState(false);
   const previousVendus = Number(existing?.exemplaires_vendus ?? 0);
+
+  // Mémoriser par librairie: pré-remplir taux + droits à partir du dernier dépôt de la même librairie
+  useEffect(() => {
+    if (existing || tauxTouched) return;
+    const nom = form.librairie_nom.trim();
+    if (!nom || !entrepriseId) return;
+    const handler = setTimeout(async () => {
+      const { data } = await (supabase as any)
+        .from("stocks")
+        .select("taux_commission_pct, applique_droits_auteur, librairie_adresse")
+        .eq("entreprise_id", entrepriseId)
+        .ilike("librairie_nom", nom)
+        .order("created_at", { ascending: false })
+        .limit(1);
+      const prev = data?.[0];
+      if (prev) {
+        setForm((f) => ({
+          ...f,
+          taux_commission_pct: prev.taux_commission_pct ?? f.taux_commission_pct,
+          applique_droits_auteur: prev.applique_droits_auteur ?? f.applique_droits_auteur,
+          librairie_adresse: f.librairie_adresse || (prev.librairie_adresse ?? ""),
+        }));
+      }
+    }, 350);
+    return () => clearTimeout(handler);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [form.librairie_nom, entrepriseId]);
 
   const restants = Math.max(0, Number(form.exemplaires_deposes) - Number(form.exemplaires_vendus));
   const montantTotal = Number(form.exemplaires_vendus) * Number(form.prix_unitaire_fcfa);
-  const commissionLibrairie = Math.round(montantTotal * 0.2);
-  const droitsAuteur = Math.round(montantTotal * 0.1);
+  const tauxComm = Number(form.taux_commission_pct) || 0;
+  const commissionLibrairie = Math.round(montantTotal * tauxComm / 100);
+  const droitsAuteur = form.applique_droits_auteur ? Math.round(montantTotal * 0.1) : 0;
   const netEditeur = montantTotal - commissionLibrairie - droitsAuteur;
   const deltaVendus = Math.max(0, Number(form.exemplaires_vendus) - previousVendus);
 
@@ -388,6 +419,8 @@ function StockForm({
       exemplaires_total: Number(form.exemplaires_deposes),
       prix_unitaire_fcfa: Number(form.prix_unitaire_fcfa),
       derniere_visite: form.derniere_visite ? format(form.derniere_visite, "yyyy-MM-dd") : null,
+      taux_commission_pct: tauxComm,
+      applique_droits_auteur: form.applique_droits_auteur,
     };
     const { error } = existing
       ? await supabase.from("stocks").update(payload).eq("id", existing.id)
