@@ -1,6 +1,7 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useEffect, useMemo, useState } from "react";
-import { Plus, Search, Package, Loader2, Pencil, Trash2, Calendar as CalendarIcon, Store, BookOpen, TrendingUp, ShoppingBag, Wallet, PenLine, FileSpreadsheet, Zap } from "lucide-react";
+import { Plus, Search, Package, Loader2, Pencil, Trash2, Calendar as CalendarIcon, Store, BookOpen, TrendingUp, ShoppingBag, Wallet, PenLine, FileSpreadsheet, Zap, BookMarked } from "lucide-react";
+import { generateManuelStocksPdf } from "@/lib/pdf-manuel-stocks";
 import { format } from "date-fns";
 import { fr } from "date-fns/locale";
 import { supabase } from "@/integrations/supabase/client";
