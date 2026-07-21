@@ -123,14 +123,14 @@ function ParametresPage() {
       )}
 
       <Tabs defaultValue={isAdmin ? "maison" : "compte"} className="w-full">
-        <TabsList className="bg-card border border-border flex-wrap h-auto">
-          <TabsTrigger value="compte">Mon compte</TabsTrigger>
-          {isAdmin && <TabsTrigger value="maison">Maison d'édition</TabsTrigger>}
-          {isAdmin && <TabsTrigger value="equipe">Mon équipe</TabsTrigger>}
-          <TabsTrigger value="plan" id="plan">Plans</TabsTrigger>
-          {isAdmin && <TabsTrigger value="paiements">Paiements</TabsTrigger>}
-          {isAdmin && <TabsTrigger value="config">Configuration</TabsTrigger>}
-          <TabsTrigger value="danger" className="text-destructive">Zone dangereuse</TabsTrigger>
+        <TabsList className="bg-card border border-border flex flex-wrap h-auto w-full justify-start gap-1">
+          <TabsTrigger value="compte" className="min-h-10">Mon compte</TabsTrigger>
+          {isAdmin && <TabsTrigger value="maison" className="min-h-10">Maison d'édition</TabsTrigger>}
+          {isAdmin && <TabsTrigger value="equipe" className="min-h-10">Mon équipe</TabsTrigger>}
+          <TabsTrigger value="plan" id="plan" className="min-h-10">Plans</TabsTrigger>
+          {isAdmin && <TabsTrigger value="paiements" className="min-h-10">Paiements</TabsTrigger>}
+          {isAdmin && <TabsTrigger value="config" className="min-h-10">Configuration</TabsTrigger>}
+          <TabsTrigger value="danger" className="text-destructive min-h-10">Zone dangereuse</TabsTrigger>
         </TabsList>
 
         <TabsContent value="compte" className="mt-6 space-y-6">
@@ -262,11 +262,11 @@ function AccountSection({ profile, email, entrepriseName, role }: { profile: any
             <Input value={entrepriseName} disabled />
           </div>
         </div>
-        <div className="flex justify-between items-center pt-2">
-          <Button variant="outline" onClick={() => setPwOpen(true)}>
+        <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-2 pt-2">
+          <Button variant="outline" onClick={() => setPwOpen(true)} className="w-full sm:w-auto min-h-11">
             <KeyRound className="h-4 w-4" /> Changer le mot de passe
           </Button>
-          <Button onClick={save} disabled={saving} className="bg-primary text-primary-foreground hover:bg-primary/90">
+          <Button onClick={save} disabled={saving} className="bg-primary text-primary-foreground hover:bg-primary/90 w-full sm:w-auto min-h-11">
             {saving ? <Loader2 className="h-4 w-4 animate-spin" /> : <><Save className="h-4 w-4" /> Sauvegarder</>}
           </Button>
         </div>

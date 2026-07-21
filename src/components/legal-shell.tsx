@@ -122,9 +122,10 @@ export function LegalShell({
         .prose-legal p { color: hsl(var(--muted-foreground)); line-height: 1.75; }
         .prose-legal ul { list-style: disc; padding-left: 1.25rem; color: hsl(var(--muted-foreground)); line-height: 1.75; }
         .prose-legal ul ul { list-style: circle; }
-        .prose-legal table { width: 100%; border-collapse: collapse; margin: 1rem 0; font-size: 0.9rem; }
-        .prose-legal th, .prose-legal td { border: 1px solid hsl(var(--border)); padding: 0.6rem 0.8rem; text-align: left; }
+        .prose-legal table { display: block; width: 100%; max-width: 100%; overflow-x: auto; border-collapse: collapse; margin: 1rem 0; font-size: 0.9rem; -webkit-overflow-scrolling: touch; }
+        .prose-legal th, .prose-legal td { border: 1px solid hsl(var(--border)); padding: 0.6rem 0.8rem; text-align: left; white-space: nowrap; }
         .prose-legal th { background: hsl(var(--card)); font-weight: 600; color: hsl(var(--foreground)); }
+        @media (min-width: 640px) { .prose-legal table { display: table; } .prose-legal th, .prose-legal td { white-space: normal; } }
         .prose-legal a { color: hsl(var(--primary)); text-decoration: underline; }
         @media print {
           body { background: white !important; color: black !important; }
