@@ -1,6 +1,7 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useEffect, useMemo, useState } from "react";
-import { Plus, Search, Package, Loader2, Pencil, Trash2, Calendar as CalendarIcon, Store, BookOpen, TrendingUp, ShoppingBag, Wallet, PenLine, FileSpreadsheet, Zap } from "lucide-react";
+import { Plus, Search, Package, Loader2, Pencil, Trash2, Calendar as CalendarIcon, Store, BookOpen, TrendingUp, ShoppingBag, Wallet, PenLine, FileSpreadsheet, Zap, BookMarked } from "lucide-react";
+import { generateManuelStocksPdf } from "@/lib/pdf-manuel-stocks";
 import { format } from "date-fns";
 import { fr } from "date-fns/locale";
 import { supabase } from "@/integrations/supabase/client";
@@ -133,6 +134,13 @@ function StocksPage() {
           <h1 className="text-3xl font-bold tracking-tight">Stocks</h1>
           <p className="text-muted-foreground mt-1">Gérez votre entrepôt interne et vos dépôts en librairie.</p>
         </div>
+        <Button
+          variant="outline"
+          onClick={() => generateManuelStocksPdf({ maison: entreprise?.nom ?? null })}
+          title="Télécharger le guide d'utilisation en PDF"
+        >
+          <BookMarked className="h-4 w-4 mr-2" /> Guide d'utilisation
+        </Button>
       </header>
 
       <Tabs defaultValue="externe" className="space-y-6">
