@@ -147,10 +147,10 @@ function StocksPage() {
       </header>
 
       <Tabs defaultValue="externe" className="space-y-6">
-        <TabsList className="bg-card border border-border">
-          <TabsTrigger value="externe">🏪 Stock Externe</TabsTrigger>
-          <TabsTrigger value="interne">🏭 Stock Interne</TabsTrigger>
-          <TabsTrigger value="bordereaux">📄 Bordereaux</TabsTrigger>
+        <TabsList className="bg-card border border-border flex flex-wrap h-auto w-full sm:w-auto sm:inline-flex">
+          <TabsTrigger value="externe" className="flex-1 sm:flex-initial min-h-10">🏪 Stock Externe</TabsTrigger>
+          <TabsTrigger value="interne" className="flex-1 sm:flex-initial min-h-10">🏭 Stock Interne</TabsTrigger>
+          <TabsTrigger value="bordereaux" className="flex-1 sm:flex-initial min-h-10">📄 Bordereaux</TabsTrigger>
         </TabsList>
 
         <TabsContent value="externe" className="space-y-6 mt-0">
