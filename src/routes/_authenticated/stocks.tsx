@@ -520,7 +520,7 @@ function StockForm({
           </Label>
           <Switch
             checked={form.applique_droits_auteur}
-            onCheckedChange={(v) => setForm({ ...form, applique_droits_auteur: v })}
+            onCheckedChange={(v: boolean) => setForm({ ...form, applique_droits_auteur: v })}
           />
         </div>
       </div>
