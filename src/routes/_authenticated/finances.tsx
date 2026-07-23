@@ -164,7 +164,10 @@ function FinancesInner({ entrepriseId, entrepriseNom }: { entrepriseId: string |
           <h1 className="text-3xl font-bold tracking-tight">Finances</h1>
           <p className="text-muted-foreground mt-1">Ventes, royalties et paiements en un coup d'œil.</p>
         </div>
-        <RecordSaleTrigger onClick={() => setSheetOpen(true)} />
+        <div className="flex flex-wrap items-center gap-2">
+          <ExportFinancesTrigger onClick={() => setExportOpen(true)} />
+          <RecordSaleTrigger onClick={() => setSheetOpen(true)} />
+        </div>
       </header>
 
       <div className="grid sm:grid-cols-2 lg:grid-cols-5 gap-4">
