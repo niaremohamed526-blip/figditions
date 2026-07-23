@@ -139,13 +139,16 @@ function StocksPage() {
           <h1 className="text-3xl font-bold tracking-tight">Stocks</h1>
           <p className="text-muted-foreground mt-1">Gérez votre entrepôt interne et vos dépôts en librairie.</p>
         </div>
-        <Button
-          variant="outline"
-          onClick={() => generateManuelStocksPdf({ maison: entreprise?.nom ?? null })}
-          title="Télécharger le guide d'utilisation en PDF"
-        >
-          <BookMarked className="h-4 w-4 mr-2" /> Guide d'utilisation
-        </Button>
+        <div className="flex flex-wrap items-center gap-2">
+          <Button
+            variant="outline"
+            onClick={() => generateManuelStocksPdf({ maison: entreprise?.nom ?? null })}
+            title="Télécharger le guide d'utilisation en PDF"
+          >
+            <BookMarked className="h-4 w-4 mr-2" /> Guide d'utilisation
+          </Button>
+          <RecordSaleTrigger onClick={() => setSaleOpen(true)} />
+        </div>
       </header>
 
       <Tabs defaultValue="externe" className="space-y-6">
