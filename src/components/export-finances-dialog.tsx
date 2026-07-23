@@ -76,7 +76,7 @@ export function ExportFinancesDialog({
       const [{ data: v }, { data: m }, { data: a }, { data: st }, { data: si }] = await Promise.all([
         supabase.from("ventes").select("*").gte("date_vente", from).lte("date_vente", to).order("date_vente", { ascending: true }),
         (supabase as any).from("manuscrits").select("id, titre, auteur, auteur_id, genre"),
-        supabase.from("auteurs").select("id, nom_complet, email, telephone, mobile_money_operateur, mobile_money_numero"),
+        supabase.from("auteurs").select("id, nom_complet, email, telephone, operateur, numero_mobile_money"),
         supabase.from("stocks").select("id, manuscrit_id, librairie_nom, librairie_adresse, exemplaires_deposes, exemplaires_vendus, exemplaires_restants, derniere_visite, prix_unitaire_fcfa"),
         supabase.from("stock_interne").select("id, manuscrit_id, quantite_imprimee, quantite_disponible, quantite_reservee, quantite_vendue_directement, prix_vente_direct_fcfa, seuil_alerte"),
       ]);
