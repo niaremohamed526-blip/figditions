@@ -55,7 +55,7 @@ function FinancesPage() {
   if (pLoading) return <div className="space-y-4"><Skeleton className="h-32 w-full" /><Skeleton className="h-96 w-full" /></div>;
   const plan = planFor(entreprise?.plan);
   if (!plan.finances) return <LockedPage feature="le module finances & royalties" requiredPlan="pro" />;
-  return <FinancesInner entrepriseId={profile?.entreprise_id ?? null} />;
+  return <FinancesInner entrepriseId={profile?.entreprise_id ?? null} entrepriseNom={entreprise?.nom ?? "Maison d'édition"} />;
 }
 
 function FinancesInner({ entrepriseId }: { entrepriseId: string | null }) {
