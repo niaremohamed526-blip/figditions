@@ -134,20 +134,35 @@ function StocksPage() {
 
   return (
     <div className="space-y-6">
-      <header className="flex flex-wrap items-end justify-between gap-4">
-        <div>
-          <h1 className="text-3xl font-bold tracking-tight">Stocks</h1>
-          <p className="text-muted-foreground mt-1">Gérez votre entrepôt interne et vos dépôts en librairie.</p>
+      <header className="grid grid-cols-[minmax(0,1fr)_auto] items-start gap-3 sm:flex sm:flex-wrap sm:items-end sm:justify-between sm:gap-4">
+        <div className="min-w-0">
+          <h1 className="text-2xl sm:text-3xl font-bold tracking-tight">Stocks</h1>
+          <p className="text-xs sm:text-sm text-muted-foreground mt-1">Gérez votre entrepôt interne et vos dépôts en librairie.</p>
         </div>
-        <div className="flex flex-wrap items-center gap-2">
+        <div className="flex items-center gap-2">
+          {/* Mobile: info icon only */}
+          <Button
+            variant="outline"
+            size="icon"
+            onClick={() => generateManuelStocksPdf({ maison: entreprise?.nom ?? null })}
+            title="Guide d'utilisation"
+            className="sm:hidden h-10 w-10 rounded-full border-primary/30"
+            aria-label="Guide d'utilisation"
+          >
+            <BookMarked className="h-4 w-4 text-primary" />
+          </Button>
+          {/* Desktop: full button */}
           <Button
             variant="outline"
             onClick={() => generateManuelStocksPdf({ maison: entreprise?.nom ?? null })}
             title="Télécharger le guide d'utilisation en PDF"
+            className="hidden sm:inline-flex"
           >
             <BookMarked className="h-4 w-4 mr-2" /> Guide d'utilisation
           </Button>
-          <RecordSaleTrigger onClick={() => setSaleOpen(true)} />
+          <div className="hidden sm:block">
+            <RecordSaleTrigger onClick={() => setSaleOpen(true)} />
+          </div>
         </div>
       </header>
 
