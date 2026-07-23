@@ -67,6 +67,7 @@ function FinancesInner({ entrepriseId, entrepriseNom }: { entrepriseId: string |
   const [from, setFrom] = useState("");
   const [to, setTo] = useState("");
   const [sheetOpen, setSheetOpen] = useState(false);
+  const [exportOpen, setExportOpen] = useState(false);
 
   const load = async () => {
     setVentes(null);
