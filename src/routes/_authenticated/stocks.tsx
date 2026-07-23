@@ -411,20 +411,24 @@ function StocksPage() {
   );
 }
 
-function SummaryCard({ icon, label, value, accent }: { icon: React.ReactNode; label: string; value: string; accent?: "primary" | "gold" }) {
-  const color = accent === "gold" ? "text-[color:var(--gold)]" : accent === "primary" ? "text-primary" : "text-foreground";
+function SummaryCard({ icon, label, value, sublabel, accent }: { icon: React.ReactNode; label: string; value: string; sublabel?: string; accent?: "primary" | "gold" }) {
+  const color = accent === "gold" ? "text-[color:var(--gold)]" : accent === "primary" ? "text-primary" : "text-[color:var(--gold)]";
   return (
-    <div className="rounded-xl border border-border bg-card p-4">
-      <div className="flex items-center gap-2 text-muted-foreground text-xs">
-        <span className={accent === "gold" ? "text-[color:var(--gold)]" : "text-primary"}>
+    <div className="rounded-2xl border border-primary/20 bg-card p-4 sm:p-4 shadow-sm">
+      <div className="flex items-center gap-2 text-muted-foreground text-[11px] sm:text-xs">
+        <span className="text-primary shrink-0">
           {icon}
         </span>
-        {label}
+        <span className="truncate">{label}</span>
       </div>
-      <p className={cn("mt-1.5 text-2xl font-bold truncate", color)}>{value}</p>
+      <p className={cn("mt-2 text-3xl sm:text-2xl font-bold tabular-nums truncate leading-tight", color)}>{value}</p>
+      {sublabel && (
+        <p className="mt-0.5 text-[11px] sm:text-xs text-muted-foreground truncate">{sublabel}</p>
+      )}
     </div>
   );
 }
+
 
 function EmptyState({ hasItems, onAdd }: { hasItems: boolean; onAdd: () => void }) {
   return (
