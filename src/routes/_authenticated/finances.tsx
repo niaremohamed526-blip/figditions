@@ -21,6 +21,7 @@ import { cn } from "@/lib/utils";
 import { fcfa } from "@/lib/format";
 import { planFor } from "@/lib/plans";
 import { LockedPage } from "@/components/locked-page";
+import { RecordSaleDrawer, RecordSaleTrigger } from "@/components/record-sale-drawer";
 
 export const Route = createFileRoute("/_authenticated/finances")({
   component: FinancesPage,
