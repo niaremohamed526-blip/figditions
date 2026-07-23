@@ -333,13 +333,10 @@ function FinancesInner({ entrepriseId }: { entrepriseId: string | null }) {
           )}
       </div>
 
-      <VenteSheet
+      <RecordSaleDrawer
         open={sheetOpen}
         onOpenChange={setSheetOpen}
         entrepriseId={entrepriseId}
-        manuscrits={manuscrits}
-        auteurs={auteurs}
-        stocks={stocks}
         onSaved={load}
       />
     </div>
