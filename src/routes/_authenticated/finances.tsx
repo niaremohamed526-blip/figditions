@@ -344,6 +344,12 @@ function FinancesInner({ entrepriseId, entrepriseNom }: { entrepriseId: string |
         entrepriseId={entrepriseId}
         onSaved={load}
       />
+
+      <ExportFinancesDialog
+        open={exportOpen}
+        onOpenChange={setExportOpen}
+        entrepriseNom={entrepriseNom}
+      />
     </div>
   );
 }
