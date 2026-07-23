@@ -58,7 +58,7 @@ function FinancesPage() {
   return <FinancesInner entrepriseId={profile?.entreprise_id ?? null} entrepriseNom={entreprise?.nom ?? "Maison d'édition"} />;
 }
 
-function FinancesInner({ entrepriseId }: { entrepriseId: string | null }) {
+function FinancesInner({ entrepriseId, entrepriseNom }: { entrepriseId: string | null; entrepriseNom: string }) {
   const [ventes, setVentes] = useState<Vente[] | null>(null);
   const [manuscrits, setManuscrits] = useState<Manuscrit[]>([]);
   const [auteurs, setAuteurs] = useState<Auteur[]>([]);
