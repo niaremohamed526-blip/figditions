@@ -273,7 +273,72 @@ function StocksPage() {
         <Input placeholder="Rechercher par librairie ou titre…" value={q} onChange={(e) => setQ(e.target.value)} className="pl-9 bg-card" />
       </div>
 
-      <div className="rounded-xl border border-border bg-card overflow-hidden">
+      {/* Mobile: card list */}
+      <div className="sm:hidden space-y-3">
+        {filtered === null ? (
+          Array.from({ length: 4 }).map((_, i) => <Skeleton key={i} className="h-32 w-full rounded-2xl" />)
+        ) : filtered.length === 0 ? (
+          <div className="rounded-2xl border border-border bg-card">
+            <EmptyState hasItems={(items?.length ?? 0) > 0} onAdd={openNew} />
+          </div>
+        ) : (
+          filtered.map((s) => {
+            const dep = s.exemplaires_deposes ?? 0;
+            const rest = s.exemplaires_restants ?? 0;
+            const pct = dep > 0 ? Math.round((rest / dep) * 100) : 0;
+            const barColor = pct > 50 ? "bg-emerald-500" : pct >= 20 ? "bg-orange-400" : "bg-red-500";
+            return (
+              <div key={s.id} className="rounded-2xl border border-border bg-card p-4 space-y-3">
+                <div className="flex items-start justify-between gap-3">
+                  <div className="min-w-0 flex-1">
+                    <div className="flex items-center gap-2">
+                      <BookOpen className="h-4 w-4 text-primary shrink-0" />
+                      <h4 className="font-semibold text-sm truncate">{titreMap[s.manuscrit_id] ?? "—"}</h4>
+                    </div>
+                    <p className="text-xs text-muted-foreground truncate mt-0.5 pl-6">{s.librairie_nom ?? "—"}</p>
+                  </div>
+                  <div className="flex items-center gap-1 shrink-0">
+                    <Button size="icon" variant="ghost" className="h-9 w-9 hover:bg-primary/15 hover:text-primary" onClick={() => openEdit(s)} aria-label="Modifier">
+                      <Pencil className="h-4 w-4" />
+                    </Button>
+                    <Button size="icon" variant="ghost" className="h-9 w-9 hover:bg-destructive/15 hover:text-destructive" onClick={() => setToDelete(s)} aria-label="Supprimer">
+                      <Trash2 className="h-4 w-4" />
+                    </Button>
+                  </div>
+                </div>
+                <div className="grid grid-cols-3 text-xs gap-2">
+                  <div>
+                    <div className="text-muted-foreground text-[11px]">Déposés</div>
+                    <div className="font-semibold tabular-nums">{dep}</div>
+                  </div>
+                  <div>
+                    <div className="text-muted-foreground text-[11px]">Vendus</div>
+                    <div className="font-semibold tabular-nums">{s.exemplaires_vendus ?? 0}</div>
+                  </div>
+                  <div>
+                    <div className="text-muted-foreground text-[11px]">Restants</div>
+                    <div className="font-semibold tabular-nums text-primary">{rest}</div>
+                  </div>
+                </div>
+                <div className="space-y-1">
+                  <div className="h-1.5 rounded-full bg-muted/40 overflow-hidden">
+                    <div className={cn("h-full rounded-full transition-all", barColor)} style={{ width: `${Math.min(100, Math.max(0, pct))}%` }} />
+                  </div>
+                </div>
+                <div className="flex items-center justify-between pt-1 border-t border-border">
+                  <span className="text-[11px] text-muted-foreground">Prix</span>
+                  <span className="text-sm font-semibold text-[color:var(--gold)] tabular-nums">
+                    {s.prix_unitaire_fcfa ? fcfa(s.prix_unitaire_fcfa) : "—"}
+                  </span>
+                </div>
+              </div>
+            );
+          })
+        )}
+      </div>
+
+      {/* Desktop: table */}
+      <div className="hidden sm:block rounded-xl border border-border bg-card overflow-hidden">
         {filtered === null ? (
           <div className="p-6 space-y-3">
             {Array.from({ length: 5 }).map((_, i) => <Skeleton key={i} className="h-12 w-full" />)}
@@ -333,6 +398,7 @@ function StocksPage() {
           </div>
         )}
       </div>
+
 
       <Sheet open={sheetOpen} onOpenChange={setSheetOpen}>
         <SheetContent side="right" className="bg-card border-border w-full sm:max-w-md overflow-y-auto">
