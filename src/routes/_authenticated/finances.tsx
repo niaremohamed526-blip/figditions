@@ -21,6 +21,7 @@ import { cn } from "@/lib/utils";
 import { fcfa } from "@/lib/format";
 import { planFor } from "@/lib/plans";
 import { LockedPage } from "@/components/locked-page";
+import { RecordSaleDrawer, RecordSaleTrigger } from "@/components/record-sale-drawer";
 
 export const Route = createFileRoute("/_authenticated/finances")({
   component: FinancesPage,
@@ -161,9 +162,7 @@ function FinancesInner({ entrepriseId }: { entrepriseId: string | null }) {
           <h1 className="text-3xl font-bold tracking-tight">Finances</h1>
           <p className="text-muted-foreground mt-1">Ventes, royalties et paiements en un coup d'œil.</p>
         </div>
-        <Button onClick={() => setSheetOpen(true)} className="bg-primary text-primary-foreground hover:bg-primary/90">
-          <Plus className="h-4 w-4" /> Enregistrer une vente
-        </Button>
+        <RecordSaleTrigger onClick={() => setSheetOpen(true)} />
       </header>
 
       <div className="grid sm:grid-cols-2 lg:grid-cols-5 gap-4">
@@ -334,13 +333,10 @@ function FinancesInner({ entrepriseId }: { entrepriseId: string | null }) {
           )}
       </div>
 
-      <VenteSheet
+      <RecordSaleDrawer
         open={sheetOpen}
         onOpenChange={setSheetOpen}
         entrepriseId={entrepriseId}
-        manuscrits={manuscrits}
-        auteurs={auteurs}
-        stocks={stocks}
         onSaved={load}
       />
     </div>
