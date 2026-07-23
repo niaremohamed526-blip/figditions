@@ -316,19 +316,53 @@ export async function generateManuelStocksPdf(opts: { maison?: string | null } =
 
   // ─── 4. Ventes ─────────────────────────────────────────
   h1("4. Enregistrer les ventes");
-  p("Toute vente doit être enregistrée pour que les royalties de l'auteur et vos statistiques financières restent à jour.");
+  p("Toute vente doit être enregistrée pour que les royalties de l'auteur et vos statistiques financières restent à jour. FIGDITIONS propose désormais un raccourci unique et rapide : le bouton doré « 💰 Enregistrer une vente ».");
 
-  h2("Vente directe (au bureau, en salon, en ligne)");
-  step(1, "Ouvrez la fiche du stock interne concerné.");
-  step(2, "Cliquez sur « Enregistrer une vente ».");
-  step(3, "Saisissez le nombre d'exemplaires vendus et validez.");
-  callout("Calcul automatique", "Sur une vente directe, 10 % du montant est réservé à l'auteur (droits d'auteur). Il n'y a pas de commission libraire.", "example");
+  h2("Le bouton « 💰 Enregistrer une vente »");
+  p("Ce bouton doré est présent en haut à droite de deux pages :");
+  bullet("Page Stocks — visible sur les onglets Stock interne ET Stock externe.");
+  bullet("Page Finances — même bouton, même formulaire.");
+  p("Où que vous soyez, un seul clic ouvre le même tiroir latéral pour saisir la vente. Aucun besoin d'ouvrir la fiche du livre au préalable.");
 
-  h2("Vente en librairie");
-  step(1, "Depuis Stock externe, choisissez la librairie / titre concerné.");
-  step(2, "Cliquez sur « Enregistrer une vente ».");
-  step(3, "Saisissez le nombre d'exemplaires vendus. Le stock restant se met à jour automatiquement.");
-  callout("Calcul automatique", "Le système applique le taux de commission (0, 10, 15 ou 20 %) et les droits d'auteur (10 % ou 0 %) choisis pour ce dépôt. Exemple avec 20 % + 10 % : 20 % pour la librairie, 10 % pour l'auteur, 70 % de net éditeur.", "example");
+  h2("Étape 1 — Choisir le livre");
+  step(1, "Cliquez sur « 💰 Enregistrer une vente ».");
+  step(2, "Dans le champ « 📚 Manuscrit », tapez les premières lettres du titre ou du nom de l'auteur : la liste se filtre en direct.");
+  step(3, "Sélectionnez le livre. Le nom de l'auteur, le prix unitaire et le stock disponible s'affichent automatiquement.");
+  callout("Seuls les livres publiés apparaissent", "La liste ne montre que les manuscrits au statut « Publié ». Si un titre manque, vérifiez qu'il est bien passé en publié dans la page Manuscrits.", "tip");
+
+  h2("Étape 2 — Choisir le type de vente");
+  p("Deux cartes cliquables s'affichent côte à côte :");
+  bullet("🏪 Vente en Librairie — pour une vente réalisée par une librairie partenaire. Un sélecteur de librairie apparaît juste en dessous : choisissez le point de dépôt concerné. Les librairies en rupture (0 exemplaire) sont grisées.");
+  bullet("🛍️ Vente Libre — pour une vente directe hors librairie (salon, événement, particulier, boutique en ligne, bureau). La vente sera automatiquement déduite de votre Stock interne.");
+
+  h2("Étape 3 — Détails de la vente");
+  step(1, "Saisissez la quantité vendue. Le système empêche de dépasser le stock disponible et affiche une alerte rouge en cas de saisie trop élevée.");
+  step(2, "Vérifiez le prix unitaire (préchargé). Vous pouvez le modifier ponctuellement, par exemple pour appliquer une remise.");
+  step(3, "Choisissez la date de la vente (par défaut : aujourd'hui).");
+  step(4, "Ajoutez une note si besoin (optionnel).");
+
+  h2("Récapitulatif en temps réel");
+  p("Sous le formulaire, un encadré « 📊 Récapitulatif » se met à jour à chaque frappe et affiche :");
+  bullet("La quantité et le prix unitaire saisis.");
+  bullet("Le montant total de la vente (en doré, mis en évidence).");
+  bullet("Les droits d'auteur calculés automatiquement : 10 % par défaut, ou le pourcentage du contrat signé si un contrat existe pour cet auteur et ce manuscrit.");
+  bullet("Le stock restant après la vente (vert si confortable, rouge si le seuil d'alerte est atteint).");
+
+  callout("Contrats reconnus automatiquement", "Si un contrat signé prévoit un pourcentage de droits différent (par ex. 12 %), FIGDITIONS l'utilise à la place du 10 % standard. Aucune saisie manuelle nécessaire.", "tip");
+
+  h2("Étape 4 — Enregistrer");
+  step(1, "Cliquez sur « 💾 Enregistrer la vente ».");
+  step(2, "Le tiroir bascule sur un écran vert de confirmation ✅ résumant la vente : titre, auteur, type, librairie (le cas échéant), quantité, prix, total, droits d'auteur, date.");
+  step(3, "Deux boutons apparaissent : « 📝 Enregistrer une autre vente » (réinitialise le formulaire pour une saisie en chaîne) ou « ✕ Fermer ».");
+
+  callout("Mise à jour instantanée partout", "Dès la vente enregistrée, tout est synchronisé : Stocks (exemplaires vendus / restants), Finances (chiffre d'affaires, droits d'auteur en attente), fiche Auteur, Tableau de bord, meilleures ventes, flux d'activité. Aucun rafraîchissement manuel nécessaire.", "example");
+
+  h2("Ce qui se passe en coulisses");
+  bullet("Vente en librairie : le stock de la librairie diminue automatiquement, une ligne est créée dans Ventes avec la commission libraire (0, 10, 15 ou 20 % selon le dépôt) et les droits d'auteur.");
+  bullet("Vente libre : le Stock interne diminue, un mouvement de type « vente directe » est enregistré, et une ligne apparaît dans Ventes sans commission libraire.");
+  bullet("Si le stock passe sous le seuil d'alerte, une notification jaune s'affiche pour vous prévenir.");
+
+  callout("Attention", "Vérifiez toujours la quantité avant de valider : une vente enregistrée diminue immédiatement le stock. En cas d'erreur, ouvrez la page Finances → Ventes pour supprimer ou corriger l'enregistrement.", "warn");
 
   // ─── 5. Bordereaux ─────────────────────────────────────
   h1("5. Bordereaux (plan Business)");
