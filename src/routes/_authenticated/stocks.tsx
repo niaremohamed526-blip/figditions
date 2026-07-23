@@ -473,6 +473,15 @@ function StocksPage() {
         entrepriseId={profile?.entreprise_id ?? null}
         onSaved={load}
       />
+
+      {/* Mobile FAB — Enregistrer une vente */}
+      <button
+        onClick={() => setSaleOpen(true)}
+        aria-label="Enregistrer une vente"
+        className="sm:hidden fixed right-4 bottom-20 z-40 h-14 w-14 rounded-full inline-flex items-center justify-center text-primary-foreground bg-gradient-to-br from-primary to-[color:var(--gold)] shadow-[0_8px_24px_-4px_rgba(200,146,42,0.55)] active:scale-95 transition"
+      >
+        <Wallet className="h-6 w-6" />
+      </button>
     </div>
   );
 }
