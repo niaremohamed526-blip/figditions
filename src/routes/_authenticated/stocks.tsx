@@ -134,50 +134,136 @@ function StocksPage() {
 
   return (
     <div className="space-y-6">
-      <header className="flex flex-wrap items-end justify-between gap-4">
-        <div>
-          <h1 className="text-3xl font-bold tracking-tight">Stocks</h1>
-          <p className="text-muted-foreground mt-1">Gérez votre entrepôt interne et vos dépôts en librairie.</p>
+      <header className="grid grid-cols-[minmax(0,1fr)_auto] items-start gap-3 sm:flex sm:flex-wrap sm:items-end sm:justify-between sm:gap-4">
+        <div className="min-w-0">
+          <h1 className="text-2xl sm:text-3xl font-bold tracking-tight">Stocks</h1>
+          <p className="text-xs sm:text-sm text-muted-foreground mt-1">Gérez votre entrepôt interne et vos dépôts en librairie.</p>
         </div>
-        <div className="flex flex-wrap items-center gap-2">
+        <div className="flex items-center gap-2">
+          {/* Mobile: info icon only */}
+          <Button
+            variant="outline"
+            size="icon"
+            onClick={() => generateManuelStocksPdf({ maison: entreprise?.nom ?? null })}
+            title="Guide d'utilisation"
+            className="sm:hidden h-10 w-10 rounded-full border-primary/30"
+            aria-label="Guide d'utilisation"
+          >
+            <BookMarked className="h-4 w-4 text-primary" />
+          </Button>
+          {/* Desktop: full button */}
           <Button
             variant="outline"
             onClick={() => generateManuelStocksPdf({ maison: entreprise?.nom ?? null })}
             title="Télécharger le guide d'utilisation en PDF"
+            className="hidden sm:inline-flex"
           >
             <BookMarked className="h-4 w-4 mr-2" /> Guide d'utilisation
           </Button>
-          <RecordSaleTrigger onClick={() => setSaleOpen(true)} />
+          <div className="hidden sm:block">
+            <RecordSaleTrigger onClick={() => setSaleOpen(true)} />
+          </div>
         </div>
       </header>
 
       <Tabs defaultValue="externe" className="space-y-6">
-        <TabsList className="bg-card border border-border flex flex-wrap h-auto w-full sm:w-auto sm:inline-flex">
-          <TabsTrigger value="externe" className="flex-1 sm:flex-initial min-h-10">🏪 Stock Externe</TabsTrigger>
-          <TabsTrigger value="interne" className="flex-1 sm:flex-initial min-h-10">🏭 Stock Interne</TabsTrigger>
-          <TabsTrigger value="bordereaux" className="flex-1 sm:flex-initial min-h-10">📄 Bordereaux</TabsTrigger>
+        <TabsList
+          className={cn(
+            // Mobile: real underline tabs
+            "w-full grid grid-cols-3 gap-0 h-11 rounded-none bg-transparent border-0 border-b border-border p-0",
+            // Desktop: card-style tabs
+            "sm:w-auto sm:inline-flex sm:h-auto sm:rounded-md sm:bg-card sm:border sm:border-border sm:p-1"
+          )}
+        >
+          <TabsTrigger
+            value="externe"
+            className={cn(
+              "min-h-11 text-sm rounded-none bg-transparent border-b-2 border-transparent text-muted-foreground",
+              "data-[state=active]:border-primary data-[state=active]:text-primary data-[state=active]:bg-transparent data-[state=active]:shadow-none",
+              "sm:rounded-md sm:border-b-0 sm:data-[state=active]:bg-primary sm:data-[state=active]:text-primary-foreground sm:data-[state=active]:border-transparent"
+            )}
+          >
+            <span className="sm:hidden">Externe</span>
+            <span className="hidden sm:inline">🏪 Stock Externe</span>
+          </TabsTrigger>
+          <TabsTrigger
+            value="interne"
+            className={cn(
+              "min-h-11 text-sm rounded-none bg-transparent border-b-2 border-transparent text-muted-foreground",
+              "data-[state=active]:border-primary data-[state=active]:text-primary data-[state=active]:bg-transparent data-[state=active]:shadow-none",
+              "sm:rounded-md sm:border-b-0 sm:data-[state=active]:bg-primary sm:data-[state=active]:text-primary-foreground sm:data-[state=active]:border-transparent"
+            )}
+          >
+            <span className="sm:hidden">Interne</span>
+            <span className="hidden sm:inline">🏭 Stock Interne</span>
+          </TabsTrigger>
+          <TabsTrigger
+            value="bordereaux"
+            className={cn(
+              "min-h-11 text-sm rounded-none bg-transparent border-b-2 border-transparent text-muted-foreground",
+              "data-[state=active]:border-primary data-[state=active]:text-primary data-[state=active]:bg-transparent data-[state=active]:shadow-none",
+              "sm:rounded-md sm:border-b-0 sm:data-[state=active]:bg-primary sm:data-[state=active]:text-primary-foreground sm:data-[state=active]:border-transparent"
+            )}
+          >
+            <span className="sm:hidden">Bordereaux</span>
+            <span className="hidden sm:inline">📄 Bordereaux</span>
+          </TabsTrigger>
         </TabsList>
 
-        <TabsContent value="externe" className="space-y-6 mt-0">
-          <div className="flex justify-end gap-2 flex-wrap">
-            <Button variant="outline" onClick={() => setImportOpen(true)}>
-              <FileSpreadsheet className="h-4 w-4 mr-2" /> Import Excel
-            </Button>
-            <Button variant="outline" onClick={() => setPosOpen(true)}>
-              <Zap className="h-4 w-4 mr-2" /> Saisie rapide
-            </Button>
-            <Button onClick={openNew} className="bg-primary text-primary-foreground hover:bg-primary/90">
-              <Plus className="h-4 w-4 mr-2" /> Ajouter un dépôt
-            </Button>
-          </div>
-
+        <TabsContent value="externe" className="space-y-5 mt-0">
+          {/* Stats — 2x2 grid on mobile, larger numbers */}
           <div className="grid grid-cols-2 lg:grid-cols-5 gap-3">
-            <SummaryCard icon={<BookOpen />} label="En circulation" value={String(totals.deposes)} />
-            <SummaryCard icon={<ShoppingBag />} label="Vendus" value={String(totals.vendus)} accent="primary" />
-            <SummaryCard icon={<TrendingUp />} label="Restants" value={String(totals.restants)} />
-            <SummaryCard icon={<Store />} label="Librairies" value={String(totals.librairies)} />
+            <SummaryCard icon={<BookOpen />} label="En circulation" value={String(totals.deposes)} sublabel="exemplaires" />
+            <SummaryCard icon={<ShoppingBag />} label="Vendus" value={String(totals.vendus)} sublabel="exemplaires" accent="primary" />
+            <SummaryCard icon={<TrendingUp />} label="Restants" value={String(totals.restants)} sublabel="exemplaires" />
+            <SummaryCard icon={<Store />} label="Librairies" value={String(totals.librairies)} sublabel="actives" />
             <SummaryCard icon={<Wallet />} label="Chiffre d'affaires" value={fcfa(totals.ca)} accent="gold" />
           </div>
+
+          {/* Action buttons — mobile: primary full-width + icon pills row */}
+          <div className="space-y-3 sm:space-y-0">
+            {/* Primary — full width on mobile */}
+            <Button
+              onClick={openNew}
+              className="w-full sm:hidden h-[52px] text-base font-semibold bg-gradient-to-r from-primary to-[color:var(--gold)] text-primary-foreground hover:opacity-95 shadow-lg shadow-primary/20"
+            >
+              <Plus className="h-5 w-5 mr-2" /> Ajouter un dépôt
+            </Button>
+            {/* Secondary — compact pills row on mobile */}
+            <div className="grid grid-cols-3 gap-2 sm:hidden">
+              <button
+                onClick={() => setSaleOpen(true)}
+                className="h-9 rounded-full border border-primary/40 bg-card text-xs font-medium text-foreground inline-flex items-center justify-center gap-1.5 hover:bg-primary/10 transition"
+              >
+                <Wallet className="h-3.5 w-3.5 text-primary" /> Vente
+              </button>
+              <button
+                onClick={() => setImportOpen(true)}
+                className="h-9 rounded-full border border-primary/40 bg-card text-xs font-medium text-foreground inline-flex items-center justify-center gap-1.5 hover:bg-primary/10 transition"
+              >
+                <FileSpreadsheet className="h-3.5 w-3.5 text-primary" /> Import
+              </button>
+              <button
+                onClick={() => setPosOpen(true)}
+                className="h-9 rounded-full border border-primary/40 bg-card text-xs font-medium text-foreground inline-flex items-center justify-center gap-1.5 hover:bg-primary/10 transition"
+              >
+                <Zap className="h-3.5 w-3.5 text-primary" /> Rapide
+              </button>
+            </div>
+            {/* Desktop: original inline actions */}
+            <div className="hidden sm:flex justify-end gap-2 flex-wrap">
+              <Button variant="outline" onClick={() => setImportOpen(true)}>
+                <FileSpreadsheet className="h-4 w-4 mr-2" /> Import Excel
+              </Button>
+              <Button variant="outline" onClick={() => setPosOpen(true)}>
+                <Zap className="h-4 w-4 mr-2" /> Saisie rapide
+              </Button>
+              <Button onClick={openNew} className="bg-primary text-primary-foreground hover:bg-primary/90">
+                <Plus className="h-4 w-4 mr-2" /> Ajouter un dépôt
+              </Button>
+            </div>
+          </div>
+
 
           <InventoryAnalytics stocks={items ?? []} titreMap={titreMap} />
 
@@ -187,7 +273,72 @@ function StocksPage() {
         <Input placeholder="Rechercher par librairie ou titre…" value={q} onChange={(e) => setQ(e.target.value)} className="pl-9 bg-card" />
       </div>
 
-      <div className="rounded-xl border border-border bg-card overflow-hidden">
+      {/* Mobile: card list */}
+      <div className="sm:hidden space-y-3">
+        {filtered === null ? (
+          Array.from({ length: 4 }).map((_, i) => <Skeleton key={i} className="h-32 w-full rounded-2xl" />)
+        ) : filtered.length === 0 ? (
+          <div className="rounded-2xl border border-border bg-card">
+            <EmptyState hasItems={(items?.length ?? 0) > 0} onAdd={openNew} />
+          </div>
+        ) : (
+          filtered.map((s) => {
+            const dep = s.exemplaires_deposes ?? 0;
+            const rest = s.exemplaires_restants ?? 0;
+            const pct = dep > 0 ? Math.round((rest / dep) * 100) : 0;
+            const barColor = pct > 50 ? "bg-emerald-500" : pct >= 20 ? "bg-orange-400" : "bg-red-500";
+            return (
+              <div key={s.id} className="rounded-2xl border border-border bg-card p-4 space-y-3">
+                <div className="flex items-start justify-between gap-3">
+                  <div className="min-w-0 flex-1">
+                    <div className="flex items-center gap-2">
+                      <BookOpen className="h-4 w-4 text-primary shrink-0" />
+                      <h4 className="font-semibold text-sm truncate">{titreMap[s.manuscrit_id] ?? "—"}</h4>
+                    </div>
+                    <p className="text-xs text-muted-foreground truncate mt-0.5 pl-6">{s.librairie_nom ?? "—"}</p>
+                  </div>
+                  <div className="flex items-center gap-1 shrink-0">
+                    <Button size="icon" variant="ghost" className="h-9 w-9 hover:bg-primary/15 hover:text-primary" onClick={() => openEdit(s)} aria-label="Modifier">
+                      <Pencil className="h-4 w-4" />
+                    </Button>
+                    <Button size="icon" variant="ghost" className="h-9 w-9 hover:bg-destructive/15 hover:text-destructive" onClick={() => setToDelete(s)} aria-label="Supprimer">
+                      <Trash2 className="h-4 w-4" />
+                    </Button>
+                  </div>
+                </div>
+                <div className="grid grid-cols-3 text-xs gap-2">
+                  <div>
+                    <div className="text-muted-foreground text-[11px]">Déposés</div>
+                    <div className="font-semibold tabular-nums">{dep}</div>
+                  </div>
+                  <div>
+                    <div className="text-muted-foreground text-[11px]">Vendus</div>
+                    <div className="font-semibold tabular-nums">{s.exemplaires_vendus ?? 0}</div>
+                  </div>
+                  <div>
+                    <div className="text-muted-foreground text-[11px]">Restants</div>
+                    <div className="font-semibold tabular-nums text-primary">{rest}</div>
+                  </div>
+                </div>
+                <div className="space-y-1">
+                  <div className="h-1.5 rounded-full bg-muted/40 overflow-hidden">
+                    <div className={cn("h-full rounded-full transition-all", barColor)} style={{ width: `${Math.min(100, Math.max(0, pct))}%` }} />
+                  </div>
+                </div>
+                <div className="flex items-center justify-between pt-1 border-t border-border">
+                  <span className="text-[11px] text-muted-foreground">Prix</span>
+                  <span className="text-sm font-semibold text-[color:var(--gold)] tabular-nums">
+                    {s.prix_unitaire_fcfa ? fcfa(s.prix_unitaire_fcfa) : "—"}
+                  </span>
+                </div>
+              </div>
+            );
+          })
+        )}
+      </div>
+
+      {/* Desktop: table */}
+      <div className="hidden sm:block rounded-xl border border-border bg-card overflow-hidden">
         {filtered === null ? (
           <div className="p-6 space-y-3">
             {Array.from({ length: 5 }).map((_, i) => <Skeleton key={i} className="h-12 w-full" />)}
@@ -247,6 +398,7 @@ function StocksPage() {
           </div>
         )}
       </div>
+
 
       <Sheet open={sheetOpen} onOpenChange={setSheetOpen}>
         <SheetContent side="right" className="bg-card border-border w-full sm:max-w-md overflow-y-auto">
@@ -321,24 +473,37 @@ function StocksPage() {
         entrepriseId={profile?.entreprise_id ?? null}
         onSaved={load}
       />
+
+      {/* Mobile FAB — Enregistrer une vente */}
+      <button
+        onClick={() => setSaleOpen(true)}
+        aria-label="Enregistrer une vente"
+        className="sm:hidden fixed right-4 bottom-20 z-40 h-14 w-14 rounded-full inline-flex items-center justify-center text-primary-foreground bg-gradient-to-br from-primary to-[color:var(--gold)] shadow-[0_8px_24px_-4px_rgba(200,146,42,0.55)] active:scale-95 transition"
+      >
+        <Wallet className="h-6 w-6" />
+      </button>
     </div>
   );
 }
 
-function SummaryCard({ icon, label, value, accent }: { icon: React.ReactNode; label: string; value: string; accent?: "primary" | "gold" }) {
-  const color = accent === "gold" ? "text-[color:var(--gold)]" : accent === "primary" ? "text-primary" : "text-foreground";
+function SummaryCard({ icon, label, value, sublabel, accent }: { icon: React.ReactNode; label: string; value: string; sublabel?: string; accent?: "primary" | "gold" }) {
+  const color = accent === "gold" ? "text-[color:var(--gold)]" : accent === "primary" ? "text-primary" : "text-[color:var(--gold)]";
   return (
-    <div className="rounded-xl border border-border bg-card p-4">
-      <div className="flex items-center gap-2 text-muted-foreground text-xs">
-        <span className={accent === "gold" ? "text-[color:var(--gold)]" : "text-primary"}>
+    <div className="rounded-2xl border border-primary/20 bg-card p-4 sm:p-4 shadow-sm">
+      <div className="flex items-center gap-2 text-muted-foreground text-[11px] sm:text-xs">
+        <span className="text-primary shrink-0">
           {icon}
         </span>
-        {label}
+        <span className="truncate">{label}</span>
       </div>
-      <p className={cn("mt-1.5 text-2xl font-bold truncate", color)}>{value}</p>
+      <p className={cn("mt-2 text-3xl sm:text-2xl font-bold tabular-nums truncate leading-tight", color)}>{value}</p>
+      {sublabel && (
+        <p className="mt-0.5 text-[11px] sm:text-xs text-muted-foreground truncate">{sublabel}</p>
+      )}
     </div>
   );
 }
+
 
 function EmptyState({ hasItems, onAdd }: { hasItems: boolean; onAdd: () => void }) {
   return (
