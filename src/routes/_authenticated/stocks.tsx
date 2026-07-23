@@ -70,6 +70,7 @@ function StocksPage() {
   const [upgradeOpen, setUpgradeOpen] = useState(false);
   const [importOpen, setImportOpen] = useState(false);
   const [posOpen, setPosOpen] = useState(false);
+  const [saleOpen, setSaleOpen] = useState(false);
 
   const load = async () => {
     setItems(null);
