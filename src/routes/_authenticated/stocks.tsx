@@ -167,32 +167,103 @@ function StocksPage() {
       </header>
 
       <Tabs defaultValue="externe" className="space-y-6">
-        <TabsList className="bg-card border border-border flex flex-wrap h-auto w-full sm:w-auto sm:inline-flex">
-          <TabsTrigger value="externe" className="flex-1 sm:flex-initial min-h-10">🏪 Stock Externe</TabsTrigger>
-          <TabsTrigger value="interne" className="flex-1 sm:flex-initial min-h-10">🏭 Stock Interne</TabsTrigger>
-          <TabsTrigger value="bordereaux" className="flex-1 sm:flex-initial min-h-10">📄 Bordereaux</TabsTrigger>
+        <TabsList
+          className={cn(
+            // Mobile: real underline tabs
+            "w-full grid grid-cols-3 gap-0 h-11 rounded-none bg-transparent border-0 border-b border-border p-0",
+            // Desktop: card-style tabs
+            "sm:w-auto sm:inline-flex sm:h-auto sm:rounded-md sm:bg-card sm:border sm:border-border sm:p-1"
+          )}
+        >
+          <TabsTrigger
+            value="externe"
+            className={cn(
+              "min-h-11 text-sm rounded-none bg-transparent border-b-2 border-transparent text-muted-foreground",
+              "data-[state=active]:border-primary data-[state=active]:text-primary data-[state=active]:bg-transparent data-[state=active]:shadow-none",
+              "sm:rounded-md sm:border-b-0 sm:data-[state=active]:bg-primary sm:data-[state=active]:text-primary-foreground sm:data-[state=active]:border-transparent"
+            )}
+          >
+            <span className="sm:hidden">Externe</span>
+            <span className="hidden sm:inline">🏪 Stock Externe</span>
+          </TabsTrigger>
+          <TabsTrigger
+            value="interne"
+            className={cn(
+              "min-h-11 text-sm rounded-none bg-transparent border-b-2 border-transparent text-muted-foreground",
+              "data-[state=active]:border-primary data-[state=active]:text-primary data-[state=active]:bg-transparent data-[state=active]:shadow-none",
+              "sm:rounded-md sm:border-b-0 sm:data-[state=active]:bg-primary sm:data-[state=active]:text-primary-foreground sm:data-[state=active]:border-transparent"
+            )}
+          >
+            <span className="sm:hidden">Interne</span>
+            <span className="hidden sm:inline">🏭 Stock Interne</span>
+          </TabsTrigger>
+          <TabsTrigger
+            value="bordereaux"
+            className={cn(
+              "min-h-11 text-sm rounded-none bg-transparent border-b-2 border-transparent text-muted-foreground",
+              "data-[state=active]:border-primary data-[state=active]:text-primary data-[state=active]:bg-transparent data-[state=active]:shadow-none",
+              "sm:rounded-md sm:border-b-0 sm:data-[state=active]:bg-primary sm:data-[state=active]:text-primary-foreground sm:data-[state=active]:border-transparent"
+            )}
+          >
+            <span className="sm:hidden">Bordereaux</span>
+            <span className="hidden sm:inline">📄 Bordereaux</span>
+          </TabsTrigger>
         </TabsList>
 
-        <TabsContent value="externe" className="space-y-6 mt-0">
-          <div className="flex justify-end gap-2 flex-wrap">
-            <Button variant="outline" onClick={() => setImportOpen(true)}>
-              <FileSpreadsheet className="h-4 w-4 mr-2" /> Import Excel
-            </Button>
-            <Button variant="outline" onClick={() => setPosOpen(true)}>
-              <Zap className="h-4 w-4 mr-2" /> Saisie rapide
-            </Button>
-            <Button onClick={openNew} className="bg-primary text-primary-foreground hover:bg-primary/90">
-              <Plus className="h-4 w-4 mr-2" /> Ajouter un dépôt
-            </Button>
-          </div>
-
+        <TabsContent value="externe" className="space-y-5 mt-0">
+          {/* Stats — 2x2 grid on mobile, larger numbers */}
           <div className="grid grid-cols-2 lg:grid-cols-5 gap-3">
-            <SummaryCard icon={<BookOpen />} label="En circulation" value={String(totals.deposes)} />
-            <SummaryCard icon={<ShoppingBag />} label="Vendus" value={String(totals.vendus)} accent="primary" />
-            <SummaryCard icon={<TrendingUp />} label="Restants" value={String(totals.restants)} />
-            <SummaryCard icon={<Store />} label="Librairies" value={String(totals.librairies)} />
+            <SummaryCard icon={<BookOpen />} label="En circulation" value={String(totals.deposes)} sublabel="exemplaires" />
+            <SummaryCard icon={<ShoppingBag />} label="Vendus" value={String(totals.vendus)} sublabel="exemplaires" accent="primary" />
+            <SummaryCard icon={<TrendingUp />} label="Restants" value={String(totals.restants)} sublabel="exemplaires" />
+            <SummaryCard icon={<Store />} label="Librairies" value={String(totals.librairies)} sublabel="actives" />
             <SummaryCard icon={<Wallet />} label="Chiffre d'affaires" value={fcfa(totals.ca)} accent="gold" />
           </div>
+
+          {/* Action buttons — mobile: primary full-width + icon pills row */}
+          <div className="space-y-3 sm:space-y-0">
+            {/* Primary — full width on mobile */}
+            <Button
+              onClick={openNew}
+              className="w-full sm:hidden h-[52px] text-base font-semibold bg-gradient-to-r from-primary to-[color:var(--gold)] text-primary-foreground hover:opacity-95 shadow-lg shadow-primary/20"
+            >
+              <Plus className="h-5 w-5 mr-2" /> Ajouter un dépôt
+            </Button>
+            {/* Secondary — compact pills row on mobile */}
+            <div className="grid grid-cols-3 gap-2 sm:hidden">
+              <button
+                onClick={() => setSaleOpen(true)}
+                className="h-9 rounded-full border border-primary/40 bg-card text-xs font-medium text-foreground inline-flex items-center justify-center gap-1.5 hover:bg-primary/10 transition"
+              >
+                <Wallet className="h-3.5 w-3.5 text-primary" /> Vente
+              </button>
+              <button
+                onClick={() => setImportOpen(true)}
+                className="h-9 rounded-full border border-primary/40 bg-card text-xs font-medium text-foreground inline-flex items-center justify-center gap-1.5 hover:bg-primary/10 transition"
+              >
+                <FileSpreadsheet className="h-3.5 w-3.5 text-primary" /> Import
+              </button>
+              <button
+                onClick={() => setPosOpen(true)}
+                className="h-9 rounded-full border border-primary/40 bg-card text-xs font-medium text-foreground inline-flex items-center justify-center gap-1.5 hover:bg-primary/10 transition"
+              >
+                <Zap className="h-3.5 w-3.5 text-primary" /> Rapide
+              </button>
+            </div>
+            {/* Desktop: original inline actions */}
+            <div className="hidden sm:flex justify-end gap-2 flex-wrap">
+              <Button variant="outline" onClick={() => setImportOpen(true)}>
+                <FileSpreadsheet className="h-4 w-4 mr-2" /> Import Excel
+              </Button>
+              <Button variant="outline" onClick={() => setPosOpen(true)}>
+                <Zap className="h-4 w-4 mr-2" /> Saisie rapide
+              </Button>
+              <Button onClick={openNew} className="bg-primary text-primary-foreground hover:bg-primary/90">
+                <Plus className="h-4 w-4 mr-2" /> Ajouter un dépôt
+              </Button>
+            </div>
+          </div>
+
 
           <InventoryAnalytics stocks={items ?? []} titreMap={titreMap} />
 
