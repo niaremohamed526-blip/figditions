@@ -314,6 +314,13 @@ function StocksPage() {
           <BordereauxTab entreprise={entreprise as any} stocks={(items ?? []) as any} titreMap={titreMap} />
         </TabsContent>
       </Tabs>
+
+      <RecordSaleDrawer
+        open={saleOpen}
+        onOpenChange={setSaleOpen}
+        entrepriseId={profile?.entreprise_id ?? null}
+        onSaved={load}
+      />
     </div>
   );
 }
