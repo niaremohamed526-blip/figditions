@@ -431,7 +431,7 @@ export function StockPosDialog({
             </div>
 
             <DialogFooter>
-              <Button variant="outline" onClick={close} disabled={saving}>Annuler</Button>
+              <Button variant="outline" onClick={guard.requestClose} disabled={saving}>Annuler</Button>
               <Button
                 onClick={submit}
                 disabled={saving || lines.length === 0}
