@@ -122,10 +122,10 @@ function StocksPage() {
   }, [items, titreMap]);
 
   const statutOf = (rest: number, dep: number): { key: string; label: string; cls: string } => {
-    if (rest === 0) return { key: "epuise", label: "Épuisé", cls: "bg-red-500/15 text-red-400 border-red-500/30" };
-    if (rest < 5) return { key: "critique", label: "Critique", cls: "bg-red-500/15 text-red-400 border-red-500/30 animate-pulse" };
-    if (rest <= 20) return { key: "bas", label: "Stock bas", cls: "bg-orange-500/15 text-orange-400 border-orange-500/30" };
-    return { key: "bon", label: "Bon stock", cls: "bg-emerald-500/15 text-emerald-400 border-emerald-500/30" };
+    if (rest === 0) return { key: "epuise", label: "✕ Épuisé", cls: "bg-red-500/15 text-red-400 border-red-500/30" };
+    if (rest < 5) return { key: "critique", label: "! Critique", cls: "bg-red-500/15 text-red-400 border-red-500/30 animate-pulse" };
+    if (rest <= 20) return { key: "bas", label: "⚠ Bas", cls: "bg-orange-500/15 text-orange-400 border-orange-500/30" };
+    return { key: "bon", label: "✓ Bon", cls: "bg-emerald-500/15 text-emerald-400 border-emerald-500/30" };
   };
 
   const monthStart = useMemo(() => { const d = new Date(); return new Date(d.getFullYear(), d.getMonth(), 1); }, []);
