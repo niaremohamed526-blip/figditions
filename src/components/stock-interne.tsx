@@ -1007,7 +1007,7 @@ function DistributionAnalytics({
                   <Tooltip contentStyle={{ background: "#1A1208", border: "1px solid #1E3A5F", borderRadius: 8 }} formatter={(v: number) => `${v}%`} />
                   <Legend />
                   <Bar dataKey="librairies" name="Librairies" stackId="d" fill="#3B82F6" />
-                  <Bar dataKey="direct"     name="Vente directe" stackId="d" fill="#E8B84B" />
+                  <Bar dataKey="direct"     name="Vente libre" stackId="d" fill="#E8B84B" />
                   <Bar dataKey="evenements" name="Événements" stackId="d" fill="#A855F7" />
                   <Bar dataKey="restant"    name="Restant" stackId="d" fill="#C8922A" />
                 </BarChart>
