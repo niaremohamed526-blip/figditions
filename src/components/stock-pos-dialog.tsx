@@ -301,7 +301,7 @@ export function StockPosDialog({
               </div>
             </div>
             <DialogFooter>
-              <Button variant="outline" onClick={close}>Annuler</Button>
+              <Button variant="outline" onClick={guard.requestClose}>Annuler</Button>
               <Button onClick={startSession} className="bg-primary text-primary-foreground hover:bg-primary/90">
                 <Zap className="h-4 w-4 mr-2" /> Démarrer la saisie
               </Button>
