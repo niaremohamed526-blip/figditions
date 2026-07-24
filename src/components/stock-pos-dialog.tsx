@@ -446,6 +446,12 @@ export function StockPosDialog({
         )}
       </DialogContent>
     </Dialog>
+    <UnsavedChangesModal
+      open={guard.showModal}
+      onContinue={guard.cancelClose}
+      onDiscard={() => { try { localStorage.removeItem(DRAFT_KEY); } catch {} guard.confirmDiscard(); }}
+    />
+    </>
   );
 }
 
