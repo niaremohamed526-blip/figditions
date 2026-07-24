@@ -278,7 +278,7 @@ export function RecordSaleDrawer({
                     <ChevronsUpDown className="h-4 w-4 opacity-50 flex-shrink-0" />
                   </Button>
                 </PopoverTrigger>
-                <PopoverContent className="p-0 w-[--radix-popover-trigger-width] max-w-none" align="start">
+                <PopoverContent className="p-0 w-[--radix-popover-trigger-width] max-w-none z-[400]" align="start">
                   <Command>
                     <CommandInput placeholder="Titre ou auteur…" />
                     <CommandList>
