@@ -380,6 +380,15 @@ export function StockPosDialog({
                 <Keyboard className="h-3 w-3" />
                 <span>Astuce&nbsp;: <kbd className="px-1 rounded bg-muted">Entrée</kbd> pour passer au champ suivant · <kbd className="px-1 rounded bg-muted">Ctrl</kbd>+<kbd className="px-1 rounded bg-muted">Entrée</kbd> pour valider tout</span>
               </div>
+              {partialRow && (
+                <div
+                  className="rounded-md px-3 py-2 text-xs flex items-center gap-2"
+                  style={{ background: "rgba(251,146,60,0.1)", border: "1px solid rgba(251,146,60,0.4)", color: "#fb923c" }}
+                >
+                  <AlertTriangle className="h-3.5 w-3.5" />
+                  Ligne incomplète — complétez la quantité et le prix, ou effacez le titre avant de continuer.
+                </div>
+              )}
             </div>
 
             {/* Session totals */}
