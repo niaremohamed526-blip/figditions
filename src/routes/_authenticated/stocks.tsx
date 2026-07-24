@@ -101,16 +101,56 @@ function StocksPage() {
   useEffect(() => { if (profile?.entreprise_id) load(); }, [profile?.entreprise_id]);
 
   const titreMap = useMemo(() => Object.fromEntries(manuscrits.map((m) => [m.id, m.titre])), [manuscrits]);
+  const authorFullName = (a: { nom: string | null; prenom: string | null } | undefined) =>
+    a ? [a.prenom, a.nom].filter(Boolean).join(" ").trim() : "";
+  const authorMap = useMemo(() => {
+    const byId = Object.fromEntries(auteurs.map((a) => [a.id, a]));
+    const map: Record<string, string> = {};
+    manuscrits.forEach((m) => { if (m.auteur_id && byId[m.auteur_id]) map[m.id] = authorFullName(byId[m.auteur_id]); });
+    return map;
+  }, [auteurs, manuscrits]);
+
+  const uniqueLibrairies = useMemo(() => {
+    const s = new Set<string>();
+    (items ?? []).forEach((x) => { const n = (x.librairie_nom ?? "").trim(); if (n) s.add(n); });
+    return [...s].sort((a, b) => a.localeCompare(b));
+  }, [items]);
+  const uniqueLivres = useMemo(() => {
+    const s = new Set<string>();
+    (items ?? []).forEach((x) => s.add(x.manuscrit_id));
+    return [...s].map((id) => ({ id, titre: titreMap[id] ?? "—" })).sort((a, b) => a.titre.localeCompare(b.titre));
+  }, [items, titreMap]);
+
+  const statutOf = (rest: number, dep: number): { key: string; label: string; cls: string } => {
+    if (rest === 0) return { key: "epuise", label: "Épuisé", cls: "bg-red-500/15 text-red-400 border-red-500/30" };
+    if (rest < 5) return { key: "critique", label: "Critique", cls: "bg-red-500/15 text-red-400 border-red-500/30 animate-pulse" };
+    if (rest <= 20) return { key: "bas", label: "Stock bas", cls: "bg-orange-500/15 text-orange-400 border-orange-500/30" };
+    return { key: "bon", label: "Bon stock", cls: "bg-emerald-500/15 text-emerald-400 border-emerald-500/30" };
+  };
+
+  const monthStart = useMemo(() => { const d = new Date(); return new Date(d.getFullYear(), d.getMonth(), 1); }, []);
+  const weekStart = useMemo(() => { const d = new Date(); const day = (d.getDay() + 6) % 7; return new Date(d.getFullYear(), d.getMonth(), d.getDate() - day); }, []);
 
   const filtered = useMemo(() => {
     if (!items) return null;
     const needle = q.toLowerCase().trim();
-    if (!needle) return items;
-    return items.filter((s) =>
-      (s.librairie_nom ?? "").toLowerCase().includes(needle) ||
-      (titreMap[s.manuscrit_id] ?? "").toLowerCase().includes(needle)
-    );
-  }, [items, q, titreMap]);
+    return items.filter((s) => {
+      if (needle) {
+        const hit = (s.librairie_nom ?? "").toLowerCase().includes(needle) || (titreMap[s.manuscrit_id] ?? "").toLowerCase().includes(needle);
+        if (!hit) return false;
+      }
+      if (librairieFilter !== "all" && (s.librairie_nom ?? "") !== librairieFilter) return false;
+      if (livreFilter !== "all" && s.manuscrit_id !== livreFilter) return false;
+      if (statutFilter !== "all" && statutOf(s.exemplaires_restants ?? 0, s.exemplaires_deposes ?? 0).key !== statutFilter) return false;
+      if (periodeFilter !== "all") {
+        const dv = s.derniere_visite ? new Date(s.derniere_visite) : null;
+        if (!dv) return false;
+        if (periodeFilter === "week" && dv < weekStart) return false;
+        if (periodeFilter === "month" && dv < monthStart) return false;
+      }
+      return true;
+    });
+  }, [items, q, titreMap, librairieFilter, livreFilter, statutFilter, periodeFilter, weekStart, monthStart]);
 
   const totals = useMemo(() => {
     const list = items ?? [];
@@ -123,6 +163,14 @@ function StocksPage() {
       ca: list.reduce((s, x) => s + (x.exemplaires_vendus ?? 0) * Number(x.prix_unitaire_fcfa ?? 0), 0),
     };
   }, [items]);
+
+  const activeFilters = (librairieFilter !== "all" ? 1 : 0) + (livreFilter !== "all" ? 1 : 0) + (statutFilter !== "all" ? 1 : 0) + (periodeFilter !== "all" ? 1 : 0);
+  const resetFilters = () => { setLibrairieFilter("all"); setLivreFilter("all"); setStatutFilter("all"); setPeriodeFilter("all"); };
+
+  useEffect(() => { setPage(1); }, [q, librairieFilter, livreFilter, statutFilter, periodeFilter, pageSize]);
+  const totalRows = filtered?.length ?? 0;
+  const totalPages = Math.max(1, Math.ceil(totalRows / pageSize));
+  const pageRows = useMemo(() => (filtered ? filtered.slice((page - 1) * pageSize, page * pageSize) : null), [filtered, page, pageSize]);
 
   const openNew = () => {
     const uniqueBookstores = new Set((items ?? []).map((s) => (s.librairie_nom ?? "").trim().toLowerCase()).filter(Boolean));
