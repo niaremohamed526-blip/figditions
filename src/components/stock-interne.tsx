@@ -77,6 +77,7 @@ const MOUVEMENT_LABEL: Record<string, { icon: string; label: string; sign: "+" |
 export function StockInterneTab({ entrepriseId, userId }: { entrepriseId: string | null; userId: string | null }) {
   const [manuscrits, setManuscrits] = useState<PubManuscrit[]>([]);
   const [stocks, setStocks] = useState<StockInterne[] | null>(null);
+  const [externalStocks, setExternalStocks] = useState<any[]>([]);
   const [mouvements, setMouvements] = useState<Mouvement[]>([]);
   const [addOpen, setAddOpen] = useState(false);
   const [mvtOpen, setMvtOpen] = useState(false);
@@ -87,14 +88,16 @@ export function StockInterneTab({ entrepriseId, userId }: { entrepriseId: string
 
   const load = async () => {
     setStocks(null);
-    const [{ data: m }, { data: s }, { data: mv }] = await Promise.all([
+    const [{ data: m }, { data: s }, { data: mv }, { data: ext }] = await Promise.all([
       supabase.from("manuscrits").select("id, titre, auteur, auteur_id, statut"),
       (supabase as any).from("stock_interne").select("*").order("created_at", { ascending: false }),
       (supabase as any).from("mouvements_stock").select("*").order("created_at", { ascending: false }),
+      (supabase as any).from("stocks").select("id, manuscrit_id, librairie_nom, exemplaires_deposes, exemplaires_restants"),
     ]);
     setManuscrits((m ?? []) as PubManuscrit[]);
     setStocks((s ?? []) as StockInterne[]);
     setMouvements((mv ?? []) as Mouvement[]);
+    setExternalStocks((ext ?? []) as any[]);
   };
 
   useEffect(() => { if (entrepriseId) load(); }, [entrepriseId]);
