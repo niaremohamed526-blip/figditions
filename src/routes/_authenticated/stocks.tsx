@@ -73,16 +73,29 @@ function StocksPage() {
   const [importOpen, setImportOpen] = useState(false);
   const [posOpen, setPosOpen] = useState(false);
   const [saleOpen, setSaleOpen] = useState(false);
+  const [auteurs, setAuteurs] = useState<Array<{ id: string; nom: string | null; prenom: string | null }>>([]);
+
+  // Global desktop filters
+  const [periodeFilter, setPeriodeFilter] = useState<string>("all");
+  const [librairieFilter, setLibrairieFilter] = useState<string>("all");
+  const [livreFilter, setLivreFilter] = useState<string>("all");
+  const [statutFilter, setStatutFilter] = useState<string>("all");
+
+  // Pagination (desktop table)
+  const [pageSize, setPageSize] = useState<number>(10);
+  const [page, setPage] = useState<number>(1);
 
   const load = async () => {
     setItems(null);
-    const [{ data: stocks, error }, { data: ms }] = await Promise.all([
+    const [{ data: stocks, error }, { data: ms }, { data: au }] = await Promise.all([
       supabase.from("stocks").select("*").order("created_at", { ascending: false }),
       (supabase as any).from("manuscrits").select("id, titre, statut, auteur_id"),
+      (supabase as any).from("auteurs").select("id, nom, prenom"),
     ]);
     if (error) toast.error(error.message);
     setItems((stocks ?? []) as Stock[]);
     setManuscrits((ms ?? []) as Manuscrit[]);
+    setAuteurs((au ?? []) as any);
   };
 
   useEffect(() => { if (profile?.entreprise_id) load(); }, [profile?.entreprise_id]);
