@@ -555,19 +555,30 @@ function StocksPage() {
               <EmptyState hasItems={(items?.length ?? 0) > 0} onAdd={openNew} />
             ) : (
               <>
-                <div className="overflow-x-auto">
-                  <table className="w-full text-sm">
+                <div className="overflow-x-auto rounded-xl border border-[color:var(--gold)]/10">
+                  <table className="w-full text-sm min-w-[900px]" style={{ tableLayout: "fixed" }}>
+                    <colgroup>
+                      <col style={{ minWidth: "180px" }} />
+                      <col style={{ width: "120px" }} />
+                      <col style={{ width: "80px" }} />
+                      <col style={{ width: "80px" }} />
+                      <col style={{ width: "90px" }} />
+                      <col style={{ width: "100px" }} />
+                      <col style={{ width: "110px" }} />
+                      <col style={{ width: "80px" }} />
+                      <col style={{ width: "100px" }} />
+                    </colgroup>
                     <thead className="bg-[color:var(--gold)]/[0.05]">
                       <tr className="text-left">
-                        <th className="px-5 h-10 text-[11px] font-semibold uppercase tracking-[1px] text-[color:var(--gold)]">Livre</th>
-                        <th className="px-4 h-10 text-[11px] font-semibold uppercase tracking-[1px] text-[color:var(--gold)]">Librairie</th>
-                        <th className="px-4 h-10 text-[11px] font-semibold uppercase tracking-[1px] text-[color:var(--gold)] text-center">Déposés</th>
-                        <th className="px-4 h-10 text-[11px] font-semibold uppercase tracking-[1px] text-[color:var(--gold)] text-center">Vendus</th>
-                        <th className="px-4 h-10 text-[11px] font-semibold uppercase tracking-[1px] text-[color:var(--gold)] text-center">Restants</th>
-                        <th className="px-4 h-10 text-[11px] font-semibold uppercase tracking-[1px] text-[color:var(--gold)] text-right">Prix unit.</th>
-                        <th className="px-4 h-10 text-[11px] font-semibold uppercase tracking-[1px] text-[color:var(--gold)] text-right">CA généré</th>
-                        <th className="px-4 h-10 text-[11px] font-semibold uppercase tracking-[1px] text-[color:var(--gold)]">Statut</th>
-                        <th className="px-4 h-10 text-[11px] font-semibold uppercase tracking-[1px] text-[color:var(--gold)] w-28 text-right">Actions</th>
+                        <th className="px-3 h-10 text-[11px] font-semibold uppercase tracking-[1px] text-[color:var(--gold)]">Livre</th>
+                        <th className="px-3 h-10 text-[11px] font-semibold uppercase tracking-[1px] text-[color:var(--gold)]">Librairie</th>
+                        <th className="px-3 h-10 text-[11px] font-semibold uppercase tracking-[1px] text-[color:var(--gold)] text-center">Déposés</th>
+                        <th className="px-3 h-10 text-[11px] font-semibold uppercase tracking-[1px] text-[color:var(--gold)] text-center">Vendus</th>
+                        <th className="px-3 h-10 text-[11px] font-semibold uppercase tracking-[1px] text-[color:var(--gold)] text-center">Restants</th>
+                        <th className="px-3 h-10 text-[11px] font-semibold uppercase tracking-[1px] text-[color:var(--gold)] text-right">Prix unit.</th>
+                        <th className="px-3 h-10 text-[11px] font-semibold uppercase tracking-[1px] text-[color:var(--gold)] text-right">CA généré</th>
+                        <th className="px-3 h-10 text-[11px] font-semibold uppercase tracking-[1px] text-[color:var(--gold)] text-center">Statut</th>
+                        <th className="px-3 h-10 text-[11px] font-semibold uppercase tracking-[1px] text-[color:var(--gold)] text-center">Actions</th>
                       </tr>
                     </thead>
                     <tbody>
@@ -576,56 +587,57 @@ function StocksPage() {
                         const vendus = s.exemplaires_vendus ?? 0;
                         const rest = s.exemplaires_restants ?? 0;
                         const ca = vendus * Number(s.prix_unitaire_fcfa ?? 0);
-                        const soldPct = dep > 0 ? Math.round((vendus / dep) * 100) : 0;
-                        const restColor = rest > 20 ? "text-emerald-400" : rest >= 5 ? "text-orange-400" : "text-red-400";
+                        const restColor = rest === 0 ? "text-red-400" : rest > 20 ? "text-emerald-400" : rest >= 5 ? "text-orange-400" : "text-red-400 animate-pulse";
                         const st = statutOf(rest, dep);
                         const author = authorMap[s.manuscrit_id];
                         return (
                           <tr
                             key={s.id}
-                            className="group border-b border-[color:var(--gold)]/[0.06] last:border-b-0 hover:bg-[color:var(--gold)]/[0.03] transition-colors duration-150 animate-fade-in"
-                            style={{ animationDelay: `${idx * 40}ms`, animationFillMode: "both" }}
+                            className="group border-b border-[color:var(--gold)]/[0.06] last:border-b-0 hover:bg-[color:var(--gold)]/[0.05] even:bg-[color:var(--gold)]/[0.02] transition-colors duration-150 animate-fade-in"
+                            style={{ animationDelay: `${idx * 40}ms`, animationFillMode: "both", height: "52px" }}
                           >
-                            <td className="px-5 py-3.5 h-14">
-                              <div className="flex items-start gap-3 min-w-0">
-                                <div className="h-9 w-9 rounded-lg bg-[color:var(--gold)]/10 border border-[color:var(--gold)]/20 flex items-center justify-center shrink-0">
+                            <td className="px-3 overflow-hidden">
+                              <div className="flex items-center gap-2.5 min-w-0">
+                                <div className="h-8 w-8 rounded-lg bg-[color:var(--gold)]/10 border border-[color:var(--gold)]/20 flex items-center justify-center shrink-0">
                                   <BookOpen className="h-4 w-4 text-[color:var(--gold)]" />
                                 </div>
-                                <div className="min-w-0">
+                                <div className="min-w-0 flex-1">
                                   <div className="font-semibold text-sm text-foreground truncate">{titreMap[s.manuscrit_id] ?? "—"}</div>
-                                  {author && <div className="text-xs text-muted-foreground truncate mt-0.5">{author}</div>}
+                                  {author && <div className="text-[11px] text-muted-foreground truncate">{author}</div>}
                                 </div>
                               </div>
                             </td>
-                            <td className="px-4 py-3.5 text-foreground/90">{s.librairie_nom ?? "—"}</td>
-                            <td className="px-4 py-3.5 text-center text-muted-foreground tabular-nums">{dep}</td>
-                            <td className="px-4 py-3.5 text-center text-muted-foreground tabular-nums">{vendus}</td>
-                            <td className="px-4 py-3.5 text-center">
-                              <div className="inline-flex flex-col items-center gap-1">
+                            <td className="px-3 text-foreground/90 truncate whitespace-nowrap overflow-hidden text-ellipsis" title={s.librairie_nom ?? ""}>{s.librairie_nom ?? "—"}</td>
+                            <td className="px-3 text-center text-muted-foreground tabular-nums whitespace-nowrap">{dep}</td>
+                            <td className="px-3 text-center text-muted-foreground tabular-nums whitespace-nowrap">{vendus}</td>
+                            <td className="px-3 text-center whitespace-nowrap">
+                              {rest === 0 ? (
+                                <span className="font-bold tabular-nums text-red-400 text-xs">Épuisé</span>
+                              ) : (
                                 <span className={cn("font-bold tabular-nums", restColor)}>{rest}</span>
-                                <div className="w-14 h-1 rounded-full bg-muted/40 overflow-hidden">
-                                  <div className="h-full bg-gradient-to-r from-primary to-[color:var(--gold)]" style={{ width: `${Math.min(100, soldPct)}%` }} />
-                                </div>
-                              </div>
+                              )}
                             </td>
-                            <td className="px-4 py-3.5 text-right text-muted-foreground tabular-nums">{s.prix_unitaire_fcfa ? fcfa(s.prix_unitaire_fcfa) : "—"}</td>
-                            <td className="px-4 py-3.5 text-right font-bold text-[color:var(--gold)] tabular-nums font-mono">{fcfa(ca)}</td>
-                            <td className="px-4 py-3.5">
-                              <span className={cn("inline-flex items-center px-2.5 h-6 rounded-full border text-[11px] font-semibold", st.cls)}>
+                            <td className="px-3 text-right text-muted-foreground tabular-nums whitespace-nowrap overflow-hidden text-ellipsis">{s.prix_unitaire_fcfa ? fcfa(s.prix_unitaire_fcfa) : "—"}</td>
+                            <td className={cn("px-3 text-right tabular-nums font-mono whitespace-nowrap overflow-hidden text-ellipsis text-[13px]", ca > 0 ? "font-bold text-[color:var(--gold)]" : "text-muted-foreground")}>{fcfa(ca)}</td>
+                            <td className="px-3 text-center whitespace-nowrap">
+                              <span
+                                className={cn("inline-flex items-center justify-center border font-semibold", st.cls)}
+                                style={{ fontSize: "11px", padding: "4px 8px", borderRadius: "100px", maxWidth: "80px", whiteSpace: "nowrap" }}
+                              >
                                 {st.label}
                               </span>
                             </td>
-                            <td className="px-4 py-3.5 text-right">
-                              <div className="flex items-center justify-end gap-1 opacity-0 group-hover:opacity-100 focus-within:opacity-100 transition-opacity duration-200">
-                                <Button size="icon" variant="ghost" className="h-8 w-8 hover:bg-primary/15 hover:text-primary" onClick={() => openEdit(s)} title="Modifier">
-                                  <Pencil className="h-4 w-4" />
-                                </Button>
-                                <Button size="icon" variant="ghost" className="h-8 w-8 hover:bg-[color:var(--gold)]/15 hover:text-[color:var(--gold)]" onClick={() => setSaleOpen(true)} title="Enregistrer une vente">
-                                  <Wallet className="h-4 w-4" />
-                                </Button>
-                                <Button size="icon" variant="ghost" className="h-8 w-8 hover:bg-destructive/15 hover:text-destructive" onClick={() => setToDelete(s)} title="Supprimer">
-                                  <Trash2 className="h-4 w-4" />
-                                </Button>
+                            <td className="px-3 whitespace-nowrap">
+                              <div className="flex items-center justify-center gap-1 md:opacity-0 md:group-hover:opacity-100 md:focus-within:opacity-100 transition-opacity duration-200">
+                                <button className="h-6 w-6 rounded-md flex items-center justify-center hover:bg-[color:var(--gold)]/10 text-muted-foreground hover:text-primary transition-colors" onClick={() => openEdit(s)} title="Modifier" aria-label="Modifier">
+                                  <Pencil className="h-3.5 w-3.5" />
+                                </button>
+                                <button className="h-6 w-6 rounded-md flex items-center justify-center hover:bg-[color:var(--gold)]/10 text-muted-foreground hover:text-[color:var(--gold)] transition-colors" onClick={() => setSaleOpen(true)} title="Enregistrer une vente" aria-label="Vente">
+                                  <Wallet className="h-3.5 w-3.5" />
+                                </button>
+                                <button className="h-6 w-6 rounded-md flex items-center justify-center hover:bg-destructive/10 text-muted-foreground hover:text-destructive transition-colors" onClick={() => setToDelete(s)} title="Supprimer" aria-label="Supprimer">
+                                  <Trash2 className="h-3.5 w-3.5" />
+                                </button>
                               </div>
                             </td>
                           </tr>
@@ -634,6 +646,7 @@ function StocksPage() {
                     </tbody>
                   </table>
                 </div>
+
 
                 {/* Pagination footer */}
                 <div className="flex items-center justify-between gap-3 px-5 py-3 border-t border-[color:var(--gold)]/[0.08] bg-card/60 flex-wrap">
