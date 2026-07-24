@@ -13,6 +13,8 @@ import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { fcfa } from "@/lib/format";
 import { cn } from "@/lib/utils";
+import { UnsavedChangesModal } from "@/components/unsaved-changes-modal";
+import { useCloseGuard } from "@/hooks/useCloseGuard";
 
 interface Manuscrit { id: string; titre: string; auteur: string | null; auteur_id: string | null; statut: string; }
 interface StockRow {
