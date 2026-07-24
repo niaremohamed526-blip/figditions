@@ -81,7 +81,63 @@ export function StockPosDialog({
     setCurrentPrix("");
   };
 
-  const close = () => { reset(); onOpenChange(false); };
+  // Dirty tracking + draft
+  const isDirty = useMemo(
+    () => lines.length > 0 || !!librairieNom.trim() || !!librairieAdresse.trim() ||
+          !!currentManuscrit || currentQte !== "1" || !!currentPrix.trim(),
+    [lines, librairieNom, librairieAdresse, currentManuscrit, currentQte, currentPrix],
+  );
+  const { markDirty, markClean } = useUnsavedChanges({ empty: true });
+  useEffect(() => { if (isDirty) markDirty({ dirty: true } as any); else markClean(); }, [isDirty, markDirty, markClean]);
+
+  const [draftFound, setDraftFound] = useState<Draft | null>(null);
+  const [lastSavedAt, setLastSavedAt] = useState<number | null>(null);
+
+  const close = () => { reset(); setDraftFound(null); onOpenChange(false); };
+  const guard = useCloseGuard(isDirty, close);
+
+  // Load draft when dialog opens
+  useEffect(() => {
+    if (!open) return;
+    try {
+      const raw = localStorage.getItem(DRAFT_KEY);
+      if (!raw) return;
+      const d = JSON.parse(raw) as Draft;
+      if (d?.lines?.length || d?.librairieNom) setDraftFound(d);
+    } catch {}
+  }, [open]);
+
+  // Auto-save draft every 30s while dirty
+  useEffect(() => {
+    if (!open || !isDirty) return;
+    const save = () => {
+      const draft: Draft = {
+        librairieNom, librairieAdresse, dateDepot, lines, savedAt: Date.now(),
+      };
+      try { localStorage.setItem(DRAFT_KEY, JSON.stringify(draft)); setLastSavedAt(draft.savedAt); } catch {}
+    };
+    const t = setInterval(save, 30_000);
+    return () => clearInterval(t);
+  }, [open, isDirty, librairieNom, librairieAdresse, dateDepot, lines]);
+
+  const restoreDraft = () => {
+    if (!draftFound) return;
+    setLibrairieNom(draftFound.librairieNom);
+    setLibrairieAdresse(draftFound.librairieAdresse);
+    setDateDepot(draftFound.dateDepot);
+    setLines(draftFound.lines);
+    if (draftFound.lines.length > 0) setStep(2);
+    setDraftFound(null);
+    toast.success("Brouillon restauré");
+  };
+  const discardDraft = () => {
+    try { localStorage.removeItem(DRAFT_KEY); } catch {}
+    setDraftFound(null);
+  };
+
+  // Partial-row warning: manuscrit picked but qté/prix incomplete
+  const partialRow = !!currentManuscrit && (!currentQte || Number(currentQte) <= 0 || !currentPrix || Number(currentPrix) < 0);
+
 
   const startSession = () => {
     if (!librairieNom.trim()) return toast.error("Nom de la librairie requis");
