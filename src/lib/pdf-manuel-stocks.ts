@@ -265,7 +265,7 @@ export async function generateManuelStocksPdf(opts: { maison?: string | null } =
   step(5, "Validez. Le stock est immédiatement disponible.");
 
   h2("Modifier ou corriger une quantité");
-  p("Sur chaque ligne, l'icône crayon permet de mettre à jour la quantité (réception complémentaire, casse, don, retour de librairie). L'icône poubelle supprime la ligne définitivement.");
+  p("Sur chaque ligne, l'icône crayon permet de mettre à jour la quantité (réception complémentaire, casse, don, retour de dépôt). L'icône poubelle supprime la ligne définitivement.");
 
   callout("Astuce", "Utilisez la modification pour tracer précisément : ajoutez 50 exemplaires lors d'une réimpression, retirez 3 exemplaires en cas de casse. Le stock reflète toujours la réalité.", "tip");
 
@@ -333,7 +333,7 @@ export async function generateManuelStocksPdf(opts: { maison?: string | null } =
   h2("Étape 2 — Choisir le type de vente");
   p("Deux cartes cliquables s'affichent côte à côte :");
   bullet("🏪 Vente en Librairie — pour une vente réalisée par une librairie partenaire. Un sélecteur de librairie apparaît juste en dessous : choisissez le point de dépôt concerné. Les librairies en rupture (0 exemplaire) sont grisées.");
-  bullet("🛍️ Vente Libre — pour une vente directe hors librairie (salon, événement, particulier, boutique en ligne, bureau). La vente sera automatiquement déduite de votre Stock interne.");
+  bullet("🛍️ Vente Libre — pour une vente libre hors librairie (salon, événement, particulier, boutique en ligne, bureau). La vente sera automatiquement déduite de votre Stock interne.");
 
   h2("Étape 3 — Détails de la vente");
   step(1, "Saisissez la quantité vendue. Le système empêche de dépasser le stock disponible et affiche une alerte rouge en cas de saisie trop élevée.");
@@ -359,7 +359,7 @@ export async function generateManuelStocksPdf(opts: { maison?: string | null } =
 
   h2("Ce qui se passe en coulisses");
   bullet("Vente en librairie : le stock de la librairie diminue automatiquement, une ligne est créée dans Ventes avec la commission libraire (0, 10, 15 ou 20 % selon le dépôt) et les droits d'auteur.");
-  bullet("Vente libre : le Stock interne diminue, un mouvement de type « vente directe » est enregistré, et une ligne apparaît dans Ventes sans commission libraire.");
+  bullet("Vente libre : le Stock interne diminue, un mouvement de type « vente libre » est enregistré, et une ligne apparaît dans Ventes sans commission libraire.");
   bullet("Si le stock passe sous le seuil d'alerte, une notification jaune s'affiche pour vous prévenir.");
 
   callout("Attention", "Vérifiez toujours la quantité avant de valider : une vente enregistrée diminue immédiatement le stock. En cas d'erreur, ouvrez la page Finances → Ventes pour supprimer ou corriger l'enregistrement.", "warn");
@@ -395,7 +395,7 @@ export async function generateManuelStocksPdf(opts: { maison?: string | null } =
     ensureSpace(140);
     const cols = [
       { title: "", w: 170 },
-      { title: "Vente directe", w: 170 },
+      { title: "Vente libre", w: 170 },
       { title: "Vente en librairie", w: (W - 2 * M) - 340 },
     ];
     const startX = M;

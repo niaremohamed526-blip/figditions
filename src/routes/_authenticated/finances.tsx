@@ -495,7 +495,7 @@ function VenteSheet({
             <div className="flex justify-between text-sm"><span className="text-muted-foreground">Droits d'auteur (10%)</span><span className="font-semibold text-[color:var(--gold)]">− {fcfa(royalties)}</span></div>
             <div className="flex justify-between text-sm pt-1.5 border-t border-border"><span className="text-foreground font-medium">Net éditeur</span><span className="font-bold text-primary">{fcfa(netEditeur)}</span></div>
             {!isExterne && (
-              <p className="text-xs text-muted-foreground pt-1">Aucune librairie sélectionnée → vente directe, sans commission.</p>
+              <p className="text-xs text-muted-foreground pt-1">Aucune librairie sélectionnée → vente libre, sans commission.</p>
             )}
           </div>
           <div className="flex justify-end gap-2 pt-2">
