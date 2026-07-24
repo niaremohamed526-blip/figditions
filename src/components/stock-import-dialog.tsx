@@ -13,6 +13,8 @@ import {
 } from "@/components/ui/dialog";
 import { cn } from "@/lib/utils";
 import { fcfa } from "@/lib/format";
+import { UnsavedChangesModal } from "@/components/unsaved-changes-modal";
+import { useCloseGuard } from "@/hooks/useCloseGuard";
 
 interface Manuscrit { id: string; titre: string; statut: string; }
 
