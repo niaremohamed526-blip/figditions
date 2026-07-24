@@ -863,7 +863,7 @@ function HistoryView({
         <MiniStat label="Total imprimé" value={stock.quantite_imprimee} />
         <MiniStat label="Disponible" value={stock.quantite_disponible} highlight />
         <MiniStat label="Librairies" value={stock.quantite_transferee_librairies} />
-        <MiniStat label="Vendus direct" value={stock.quantite_vendue_directement} />
+        <MiniStat label="Ventes libres" value={stock.quantite_vendue_directement} />
       </div>
 
       {chartData.length > 1 && (
