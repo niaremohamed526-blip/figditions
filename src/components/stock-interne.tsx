@@ -348,6 +348,7 @@ export function StockInterneTab({ entrepriseId, userId }: { entrepriseId: string
             entrepriseId={entrepriseId}
             userId={userId}
             stocks={stocks ?? []}
+            externalStocks={externalStocks}
             books={publishedBooks}
             prefillManuscritId={mvtPrefillId}
             onSaved={() => { setMvtOpen(false); setMvtPrefillId(null); load(); }}
