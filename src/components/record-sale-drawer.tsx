@@ -13,6 +13,8 @@ import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { fcfa } from "@/lib/format";
 import { cn } from "@/lib/utils";
+import { UnsavedChangesModal } from "@/components/unsaved-changes-modal";
+import { useCloseGuard } from "@/hooks/useCloseGuard";
 
 interface Manuscrit { id: string; titre: string; auteur: string | null; auteur_id: string | null; statut: string; }
 interface StockRow {
@@ -239,8 +241,15 @@ export function RecordSaleDrawer({
 
   const close = () => { resetForm(); onOpenChange(false); };
 
+  // Dirty tracking — treat any user-edited field as dirty (skip success view).
+  const isDirty =
+    !success &&
+    (!!manuscritId || saleType !== "libre" || qty !== "1" || !!prix || !!notes.trim() || !!stockId);
+  const guard = useCloseGuard(isDirty, close);
+
   return (
-    <Sheet open={open} onOpenChange={(o) => { if (!o) close(); }}>
+    <>
+    <Sheet open={open} onOpenChange={guard.handleOpenChange}>
       <SheetContent side="right" className="bg-card border-border w-full sm:max-w-lg overflow-y-auto">
         <SheetHeader>
           <SheetTitle className="text-xl">💰 Enregistrer une vente</SheetTitle>
@@ -452,6 +461,12 @@ export function RecordSaleDrawer({
         )}
       </SheetContent>
     </Sheet>
+    <UnsavedChangesModal
+      open={guard.showModal}
+      onContinue={guard.cancelClose}
+      onDiscard={guard.confirmDiscard}
+    />
+    </>
   );
 }
 

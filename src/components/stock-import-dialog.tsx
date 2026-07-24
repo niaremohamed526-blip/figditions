@@ -13,6 +13,8 @@ import {
 } from "@/components/ui/dialog";
 import { cn } from "@/lib/utils";
 import { fcfa } from "@/lib/format";
+import { UnsavedChangesModal } from "@/components/unsaved-changes-modal";
+import { useCloseGuard } from "@/hooks/useCloseGuard";
 
 interface Manuscrit { id: string; titre: string; statut: string; }
 
@@ -194,8 +196,12 @@ export function StockImportDialog({
     close();
   };
 
+  const isDirty = !!librairieNom || !!librairieAdresse || (rows?.length ?? 0) > 0;
+  const guard = useCloseGuard(isDirty, close);
+
   return (
-    <Dialog open={open} onOpenChange={(o) => { if (!o) close(); }}>
+    <>
+    <Dialog open={open} onOpenChange={guard.handleOpenChange}>
       <DialogContent className="bg-card border-border max-w-3xl max-h-[90vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
@@ -339,6 +345,12 @@ export function StockImportDialog({
         </DialogFooter>
       </DialogContent>
     </Dialog>
+    <UnsavedChangesModal
+      open={guard.showModal}
+      onContinue={guard.cancelClose}
+      onDiscard={guard.confirmDiscard}
+    />
+    </>
   );
 }
 

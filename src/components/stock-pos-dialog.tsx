@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { format } from "date-fns";
-import { Loader2, Zap, Trash2, Plus, CheckCircle2, X, Store, Keyboard } from "lucide-react";
+import { Loader2, Zap, Trash2, Plus, CheckCircle2, X, Store, Keyboard, AlertTriangle, Save } from "lucide-react";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
@@ -15,6 +15,19 @@ import {
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { cn } from "@/lib/utils";
 import { fcfa } from "@/lib/format";
+import { UnsavedChangesModal } from "@/components/unsaved-changes-modal";
+import { useUnsavedChanges } from "@/hooks/useUnsavedChanges";
+import { useCloseGuard } from "@/hooks/useCloseGuard";
+
+const DRAFT_KEY = "figeditions:pos-draft";
+
+interface Draft {
+  librairieNom: string;
+  librairieAdresse: string;
+  dateDepot: string;
+  lines: Line[];
+  savedAt: number;
+}
 
 interface Manuscrit { id: string; titre: string; statut: string; }
 
@@ -68,7 +81,63 @@ export function StockPosDialog({
     setCurrentPrix("");
   };
 
-  const close = () => { reset(); onOpenChange(false); };
+  // Dirty tracking + draft
+  const isDirty = useMemo(
+    () => lines.length > 0 || !!librairieNom.trim() || !!librairieAdresse.trim() ||
+          !!currentManuscrit || currentQte !== "1" || !!currentPrix.trim(),
+    [lines, librairieNom, librairieAdresse, currentManuscrit, currentQte, currentPrix],
+  );
+  const { markDirty, markClean } = useUnsavedChanges({ empty: true });
+  useEffect(() => { if (isDirty) markDirty({ dirty: true } as any); else markClean(); }, [isDirty, markDirty, markClean]);
+
+  const [draftFound, setDraftFound] = useState<Draft | null>(null);
+  const [lastSavedAt, setLastSavedAt] = useState<number | null>(null);
+
+  const close = () => { reset(); setDraftFound(null); onOpenChange(false); };
+  const guard = useCloseGuard(isDirty, close);
+
+  // Load draft when dialog opens
+  useEffect(() => {
+    if (!open) return;
+    try {
+      const raw = localStorage.getItem(DRAFT_KEY);
+      if (!raw) return;
+      const d = JSON.parse(raw) as Draft;
+      if (d?.lines?.length || d?.librairieNom) setDraftFound(d);
+    } catch {}
+  }, [open]);
+
+  // Auto-save draft every 30s while dirty
+  useEffect(() => {
+    if (!open || !isDirty) return;
+    const save = () => {
+      const draft: Draft = {
+        librairieNom, librairieAdresse, dateDepot, lines, savedAt: Date.now(),
+      };
+      try { localStorage.setItem(DRAFT_KEY, JSON.stringify(draft)); setLastSavedAt(draft.savedAt); } catch {}
+    };
+    const t = setInterval(save, 30_000);
+    return () => clearInterval(t);
+  }, [open, isDirty, librairieNom, librairieAdresse, dateDepot, lines]);
+
+  const restoreDraft = () => {
+    if (!draftFound) return;
+    setLibrairieNom(draftFound.librairieNom);
+    setLibrairieAdresse(draftFound.librairieAdresse);
+    setDateDepot(draftFound.dateDepot);
+    setLines(draftFound.lines);
+    if (draftFound.lines.length > 0) setStep(2);
+    setDraftFound(null);
+    toast.success("Brouillon restauré");
+  };
+  const discardDraft = () => {
+    try { localStorage.removeItem(DRAFT_KEY); } catch {}
+    setDraftFound(null);
+  };
+
+  // Partial-row warning: manuscrit picked but qté/prix incomplete
+  const partialRow = !!currentManuscrit && (!currentQte || Number(currentQte) <= 0 || !currentPrix || Number(currentPrix) < 0);
+
 
   const startSession = () => {
     if (!librairieNom.trim()) return toast.error("Nom de la librairie requis");
@@ -121,10 +190,26 @@ export function StockPosDialog({
     const { error } = await supabase.from("stocks").insert(payload as any);
     setSaving(false);
     if (error) return toast.error(error.message);
+    try { localStorage.removeItem(DRAFT_KEY); } catch {}
     toast.success(`${lines.length} dépôt(s) enregistré(s) chez « ${librairieNom} »`);
     onImported();
-    close();
+    reset();
+    onOpenChange(false);
   };
+
+  // Ctrl+S save shortcut
+  useEffect(() => {
+    if (!open) return;
+    const onKey = (e: KeyboardEvent) => {
+      if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === "s") {
+        e.preventDefault();
+        if (lines.length > 0 && !saving) submit();
+      }
+    };
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [open, lines.length, saving]);
 
   // Enter navigation: title → qte → prix → add
   useEffect(() => {
@@ -140,17 +225,58 @@ export function StockPosDialog({
   }, [step, lines.length]);
 
   return (
-    <Dialog open={open} onOpenChange={(o) => { if (!o) close(); }}>
+    <>
+    <Dialog open={open} onOpenChange={guard.handleOpenChange}>
       <DialogContent className="bg-card border-border max-w-3xl max-h-[92vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
             <Zap className="h-5 w-5 text-primary" />
             Saisie rapide — Mode caisse
+            {isDirty && (
+              <span
+                title="Modifications non sauvegardées"
+                className="inline-block h-2 w-2 rounded-full bg-orange-400 animate-pulse"
+              />
+            )}
           </DialogTitle>
           <DialogDescription>
             Sélectionnez la librairie une seule fois, puis enchaînez les livres sans rechargement.
           </DialogDescription>
         </DialogHeader>
+
+        {/* Draft restore banner */}
+        {draftFound && (
+          <div
+            className="rounded-lg border p-3 flex flex-wrap items-center gap-2 text-sm"
+            style={{ background: "rgba(200,146,42,0.08)", border: "1px solid rgba(200,146,42,0.3)" }}
+          >
+            <span className="flex-1">
+              📋 Un brouillon non sauvegardé a été trouvé
+              {draftFound.savedAt && (
+                <span className="text-muted-foreground"> (sauvegardé à {new Date(draftFound.savedAt).toLocaleTimeString("fr-FR", { hour: "2-digit", minute: "2-digit" })})</span>
+              )}
+            </span>
+            <Button size="sm" variant="outline" onClick={discardDraft}>Nouvelle saisie</Button>
+            <Button size="sm" onClick={restoreDraft} className="bg-primary text-primary-foreground hover:bg-primary/90">
+              Restaurer le brouillon
+            </Button>
+          </div>
+        )}
+
+        {/* Progress indicator */}
+        {step === 2 && (lines.length > 0 || isDirty) && (
+          <div className="flex flex-wrap items-center justify-between gap-2 text-xs">
+            <span className="text-[color:var(--gold)] font-semibold">
+              📝 {lines.length} ligne(s) saisie(s) — Non sauvegardé
+            </span>
+            {lastSavedAt && (
+              <span className="text-muted-foreground">
+                💾 Brouillon sauvegardé à {new Date(lastSavedAt).toLocaleTimeString("fr-FR", { hour: "2-digit", minute: "2-digit" })}
+              </span>
+            )}
+          </div>
+        )}
+
 
         {step === 1 ? (
           <div className="space-y-4 py-2">
@@ -175,7 +301,7 @@ export function StockPosDialog({
               </div>
             </div>
             <DialogFooter>
-              <Button variant="outline" onClick={close}>Annuler</Button>
+              <Button variant="outline" onClick={guard.requestClose}>Annuler</Button>
               <Button onClick={startSession} className="bg-primary text-primary-foreground hover:bg-primary/90">
                 <Zap className="h-4 w-4 mr-2" /> Démarrer la saisie
               </Button>
@@ -254,6 +380,15 @@ export function StockPosDialog({
                 <Keyboard className="h-3 w-3" />
                 <span>Astuce&nbsp;: <kbd className="px-1 rounded bg-muted">Entrée</kbd> pour passer au champ suivant · <kbd className="px-1 rounded bg-muted">Ctrl</kbd>+<kbd className="px-1 rounded bg-muted">Entrée</kbd> pour valider tout</span>
               </div>
+              {partialRow && (
+                <div
+                  className="rounded-md px-3 py-2 text-xs flex items-center gap-2"
+                  style={{ background: "rgba(251,146,60,0.1)", border: "1px solid rgba(251,146,60,0.4)", color: "#fb923c" }}
+                >
+                  <AlertTriangle className="h-3.5 w-3.5" />
+                  Ligne incomplète — complétez la quantité et le prix, ou effacez le titre avant de continuer.
+                </div>
+              )}
             </div>
 
             {/* Session totals */}
@@ -305,7 +440,7 @@ export function StockPosDialog({
             </div>
 
             <DialogFooter>
-              <Button variant="outline" onClick={close} disabled={saving}>Annuler</Button>
+              <Button variant="outline" onClick={guard.requestClose} disabled={saving}>Annuler</Button>
               <Button
                 onClick={submit}
                 disabled={saving || lines.length === 0}
@@ -320,6 +455,12 @@ export function StockPosDialog({
         )}
       </DialogContent>
     </Dialog>
+    <UnsavedChangesModal
+      open={guard.showModal}
+      onContinue={guard.cancelClose}
+      onDiscard={() => { try { localStorage.removeItem(DRAFT_KEY); } catch {} guard.confirmDiscard(); }}
+    />
+    </>
   );
 }
 
