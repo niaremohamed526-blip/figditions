@@ -196,8 +196,12 @@ export function StockImportDialog({
     close();
   };
 
+  const isDirty = !!librairieNom || !!librairieAdresse || (rows?.length ?? 0) > 0;
+  const guard = useCloseGuard(isDirty, close);
+
   return (
-    <Dialog open={open} onOpenChange={(o) => { if (!o) close(); }}>
+    <>
+    <Dialog open={open} onOpenChange={guard.handleOpenChange}>
       <DialogContent className="bg-card border-border max-w-3xl max-h-[90vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
