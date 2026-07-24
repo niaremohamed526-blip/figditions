@@ -597,11 +597,12 @@ const PROVENANCE_OPTIONS: { value: ProvenanceKey; label: string }[] = [
 ];
 
 function MouvementForm({
-  entrepriseId, userId, stocks, books, prefillManuscritId, onSaved,
+  entrepriseId, userId, stocks, externalStocks, books, prefillManuscritId, onSaved,
 }: {
   entrepriseId: string;
   userId: string | null;
   stocks: StockInterne[];
+  externalStocks: any[];
   books: PubManuscrit[];
   prefillManuscritId: string | null;
   onSaved: () => void;
@@ -614,15 +615,43 @@ function MouvementForm({
     notes: "",
     date_mouvement: new Date(),
   });
+  // Retour de dépôt state
+  const [provenance, setProvenance] = useState<ProvenanceKey>("librairie");
+  const [librairieStockId, setLibrairieStockId] = useState<string>("");
+  const [provenanceTexte, setProvenanceTexte] = useState("");
+  const [etat, setEtat] = useState<"bon" | "endommage" | "mixte">("bon");
+  const [qteBon, setQteBon] = useState(1);
+  const [qteEndo, setQteEndo] = useState(0);
+
   const [loading, setLoading] = useState(false);
   const [confirmLoss, setConfirmLoss] = useState(false);
 
   const currentStock = stocks.find((s) => s.manuscrit_id === form.manuscrit_id);
   const book = books.find((b) => b.id === form.manuscrit_id);
   const showDestination = ["transfert_librairie", "evenement"].includes(form.type);
+  const isRetour = form.type === "retour_librairie";
   const destinationPlaceholder = form.type === "transfert_librairie"
     ? "ex: Librairie Baobab"
     : "ex: Foire du livre de Bamako";
+
+  // Available bookstores for this manuscript (for retour librairie)
+  const librairiesForBook = useMemo(
+    () => externalStocks.filter((s) => s.manuscrit_id === form.manuscrit_id),
+    [externalStocks, form.manuscrit_id],
+  );
+  const selectedLibrairie = librairiesForBook.find((s) => s.id === librairieStockId);
+
+  // Max returnable
+  const maxRetour = useMemo(() => {
+    if (!isRetour) return Infinity;
+    if (provenance === "librairie") {
+      return selectedLibrairie?.exemplaires_restants ?? 0;
+    }
+    if (provenance === "evenement" || provenance === "exposition") {
+      return currentStock?.quantite_exposee_evenements ?? 0;
+    }
+    return currentStock?.quantite_transferee_librairies ?? Infinity;
+  }, [isRetour, provenance, selectedLibrairie, currentStock]);
 
   const doSubmit = async () => {
     if (!form.manuscrit_id) return toast.error("Sélectionnez un livre");
@@ -631,6 +660,91 @@ function MouvementForm({
     if (form.type === "ajustement" && !form.notes.trim()) return toast.error("Une note est obligatoire pour un ajustement");
     if (showDestination && !form.destination.trim()) return toast.error("Destination requise");
 
+    // ------- RETOUR DE DÉPÔT (dedicated flow) -------
+    if (isRetour) {
+      if (provenance === "librairie" && !librairieStockId) {
+        return toast.error("Sélectionnez la librairie de provenance");
+      }
+      if (provenance !== "librairie" && !provenanceTexte.trim()) {
+        return toast.error("Précisez la provenance");
+      }
+      if (form.quantite > maxRetour) {
+        return toast.error(`Maximum retournable : ${maxRetour} exemplaire(s)`);
+      }
+      let goodQty = form.quantite;
+      let damagedQty = 0;
+      if (etat === "endommage") { goodQty = 0; damagedQty = form.quantite; }
+      if (etat === "mixte") {
+        if (qteBon + qteEndo !== form.quantite) {
+          return toast.error("La somme (bon état + endommagés) doit égaler la quantité retournée");
+        }
+        goodQty = qteBon; damagedQty = qteEndo;
+      }
+
+      setLoading(true);
+      const provLabel = PROVENANCE_OPTIONS.find((p) => p.value === provenance)?.label ?? provenance;
+      const destLabel = provenance === "librairie"
+        ? (selectedLibrairie?.librairie_nom ?? "Librairie")
+        : provenanceTexte.trim();
+      const noteBase = `Provenance : ${provLabel}${form.notes ? " — " + form.notes : ""}`;
+
+      // 1) Good copies → increase disponible + decrement source counter
+      if (goodQty > 0) {
+        const updates: Partial<StockInterne> = {
+          quantite_disponible: currentStock.quantite_disponible + goodQty,
+        };
+        if (provenance === "librairie") {
+          updates.quantite_transferee_librairies = Math.max(0, currentStock.quantite_transferee_librairies - goodQty);
+        } else if (provenance === "evenement" || provenance === "exposition") {
+          updates.quantite_exposee_evenements = Math.max(0, currentStock.quantite_exposee_evenements - goodQty);
+        }
+        const { error: e1 } = await (supabase as any).from("stock_interne").update(updates).eq("id", currentStock.id);
+        if (e1) { setLoading(false); return toast.error(e1.message); }
+
+        // Update external stocks table if librairie
+        if (provenance === "librairie" && selectedLibrairie) {
+          await (supabase as any).from("stocks").update({
+            exemplaires_deposes: Math.max(0, (selectedLibrairie.exemplaires_deposes ?? 0) - goodQty),
+            exemplaires_restants: Math.max(0, (selectedLibrairie.exemplaires_restants ?? 0) - goodQty),
+          }).eq("id", selectedLibrairie.id);
+        }
+
+        await (supabase as any).from("mouvements_stock").insert({
+          entreprise_id: entrepriseId,
+          stock_interne_id: currentStock.id,
+          manuscrit_id: form.manuscrit_id,
+          type_mouvement: "retour_librairie",
+          quantite: goodQty,
+          destination: destLabel,
+          notes: noteBase,
+          effectue_par: userId,
+          date_mouvement: format(form.date_mouvement, "yyyy-MM-dd"),
+        });
+      }
+
+      // 2) Damaged copies → perte movement, disponible unchanged
+      if (damagedQty > 0) {
+        await (supabase as any).from("mouvements_stock").insert({
+          entreprise_id: entrepriseId,
+          stock_interne_id: currentStock.id,
+          manuscrit_id: form.manuscrit_id,
+          type_mouvement: "perte",
+          quantite: damagedQty,
+          destination: destLabel,
+          notes: `Retour endommagé depuis ${provLabel}${form.notes ? " — " + form.notes : ""}`,
+          effectue_par: userId,
+          date_mouvement: format(form.date_mouvement, "yyyy-MM-dd"),
+        });
+        toast.warning(`⚠️ ${damagedQty} exemplaire(s) endommagé(s) enregistré(s) comme perte`);
+      }
+
+      setLoading(false);
+      toast.success("Retour de dépôt enregistré");
+      onSaved();
+      return;
+    }
+
+    // ------- OTHER MOVEMENTS (existing flow) -------
     setLoading(true);
     const updates: Partial<StockInterne> = {};
 
@@ -655,10 +769,6 @@ function MouvementForm({
         }
         updates.quantite_disponible = currentStock.quantite_disponible - form.quantite;
         updates.quantite_exposee_evenements = currentStock.quantite_exposee_evenements + form.quantite;
-        break;
-      case "retour_librairie":
-        updates.quantite_disponible = currentStock.quantite_disponible + form.quantite;
-        updates.quantite_transferee_librairies = Math.max(0, currentStock.quantite_transferee_librairies - form.quantite);
         break;
       case "perte":
         if (form.quantite > currentStock.quantite_disponible) {
@@ -687,13 +797,12 @@ function MouvementForm({
       date_mouvement: format(form.date_mouvement, "yyyy-MM-dd"),
     });
 
-    // Cascades (insertion stocks librairie + vente directe) gérées par
-    // trigger SQL `mouvement_cascade` sur mouvements_stock.
-
     // Low-stock toast
     const newAvail = updates.quantite_disponible ?? currentStock.quantite_disponible;
     if (newAvail <= currentStock.seuil_alerte) {
       toast.error(`⚠️ Attention: Le stock de ${book?.titre ?? "ce livre"} est bas (${newAvail} exemplaires restants)`);
+    } else if (form.type === "vente_directe") {
+      toast.success("Vente libre enregistrée");
     } else {
       toast.success("Mouvement enregistré");
     }
@@ -731,12 +840,115 @@ function MouvementForm({
               {MVT_TYPES.map((t) => <SelectItem key={t.value} value={t.value}>{t.label}</SelectItem>)}
             </SelectContent>
           </Select>
+          {MVT_TYPES.find((t) => t.value === form.type)?.hint && (
+            <p className="text-xs text-muted-foreground">{MVT_TYPES.find((t) => t.value === form.type)?.hint}</p>
+          )}
         </div>
+
+        {/* Retour de dépôt : provenance & état */}
+        {isRetour && (
+          <>
+            <div className="space-y-2">
+              <Label>📍 Provenance du retour</Label>
+              <Select value={provenance} onValueChange={(v) => { setProvenance(v as ProvenanceKey); setLibrairieStockId(""); }}>
+                <SelectTrigger><SelectValue /></SelectTrigger>
+                <SelectContent>
+                  {PROVENANCE_OPTIONS.map((p) => <SelectItem key={p.value} value={p.value}>{p.label}</SelectItem>)}
+                </SelectContent>
+              </Select>
+            </div>
+
+            {provenance === "librairie" ? (
+              <div className="space-y-2">
+                <Label>Sélectionner la librairie</Label>
+                {librairiesForBook.length === 0 ? (
+                  <p className="text-xs text-orange-400">Aucun dépôt trouvé pour ce livre.</p>
+                ) : (
+                  <Select value={librairieStockId} onValueChange={setLibrairieStockId}>
+                    <SelectTrigger><SelectValue placeholder="Choisir…" /></SelectTrigger>
+                    <SelectContent>
+                      {librairiesForBook.map((s) => (
+                        <SelectItem key={s.id} value={s.id}>
+                          {s.librairie_nom} — {s.exemplaires_restants} ex. restants
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                )}
+                {selectedLibrairie && (
+                  <p className="text-xs text-muted-foreground">
+                    {selectedLibrairie.exemplaires_deposes} ex. envoyés — <span className="text-[#C8922A] font-semibold">Maximum retournable : {maxRetour}</span>
+                  </p>
+                )}
+              </div>
+            ) : (
+              <div className="space-y-2">
+                <Label>Préciser la provenance</Label>
+                <Input
+                  value={provenanceTexte}
+                  onChange={(e) => setProvenanceTexte(e.target.value)}
+                  placeholder="ex: Foire du livre de Bamako 2026, Stand principal..."
+                />
+                {(provenance === "evenement" || provenance === "exposition") && currentStock && (
+                  <p className="text-xs text-muted-foreground">
+                    <span className="text-[#C8922A] font-semibold">Maximum retournable : {maxRetour}</span> (exemplaires exposés)
+                  </p>
+                )}
+              </div>
+            )}
+          </>
+        )}
+
         <div className="space-y-2">
-          <Label>{form.type === "ajustement" ? "Nouveau stock disponible" : "Quantité"}</Label>
+          <Label>{form.type === "ajustement" ? "Nouveau stock disponible" : isRetour ? "Quantité retournée" : "Quantité"}</Label>
           <Input type="number" min={form.type === "ajustement" ? 0 : 1} required value={form.quantite}
             onChange={(e) => setForm({ ...form, quantite: Number(e.target.value) })} />
+          {isRetour && form.quantite > maxRetour && (
+            <p className="text-xs text-red-400">Dépasse le maximum retournable ({maxRetour})</p>
+          )}
         </div>
+
+        {/* État des livres retournés */}
+        {isRetour && (
+          <div className="space-y-2">
+            <Label>État des livres retournés</Label>
+            <div className="space-y-2">
+              {[
+                { v: "bon", l: "✅ Bon état (ajouter au stock disponible)" },
+                { v: "endommage", l: "❌ Endommagés (enregistrer comme pertes)" },
+                { v: "mixte", l: "🔀 Mixte (préciser les quantités)" },
+              ].map((o) => (
+                <label key={o.v} className={cn(
+                  "flex items-center gap-2 rounded-lg border px-3 py-2 text-sm cursor-pointer transition-colors",
+                  etat === o.v ? "border-primary bg-primary/10" : "border-border hover:border-primary/40",
+                )}>
+                  <input type="radio" name="etat" value={o.v} checked={etat === o.v}
+                    onChange={() => setEtat(o.v as any)} className="accent-primary" />
+                  {o.l}
+                </label>
+              ))}
+            </div>
+            {etat === "endommage" && (
+              <p className="text-xs text-red-400">⚠️ Ces exemplaires seront enregistrés comme perdus.</p>
+            )}
+            {etat === "mixte" && (
+              <div className="grid grid-cols-2 gap-2 mt-2">
+                <div className="space-y-1">
+                  <Label className="text-xs">En bon état</Label>
+                  <Input type="number" min={0} value={qteBon} onChange={(e) => setQteBon(Number(e.target.value))} />
+                </div>
+                <div className="space-y-1">
+                  <Label className="text-xs">Endommagés</Label>
+                  <Input type="number" min={0} value={qteEndo} onChange={(e) => setQteEndo(Number(e.target.value))} />
+                </div>
+                <p className={cn("text-xs col-span-2", qteBon + qteEndo === form.quantite ? "text-muted-foreground" : "text-red-400")}>
+                  Total : {qteBon + qteEndo} / {form.quantite}
+                </p>
+              </div>
+            )}
+          </div>
+        )}
+
         {showDestination && (
           <div className="space-y-2">
             <Label>Destination</Label>
@@ -763,7 +975,9 @@ function MouvementForm({
         <div className="space-y-2">
           <Label>Notes {form.type === "ajustement" && <span className="text-red-400">*</span>}</Label>
           <Textarea value={form.notes} onChange={(e) => setForm({ ...form, notes: e.target.value })} rows={3}
-            placeholder={form.type === "ajustement" ? "Expliquez la raison de l'ajustement…" : ""} />
+            placeholder={form.type === "ajustement"
+              ? "Expliquez la raison de l'ajustement…"
+              : isRetour ? "Détails sur le retour, conditions des livres..." : ""} />
         </div>
         <Button type="submit" disabled={loading} className="w-full bg-primary text-primary-foreground hover:bg-primary/90">
           {loading ? <Loader2 className="h-4 w-4 animate-spin" /> : "Enregistrer le mouvement"}
