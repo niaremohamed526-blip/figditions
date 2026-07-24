@@ -345,6 +345,12 @@ export function StockImportDialog({
         </DialogFooter>
       </DialogContent>
     </Dialog>
+    <UnsavedChangesModal
+      open={guard.showModal}
+      onContinue={guard.cancelClose}
+      onDiscard={guard.confirmDiscard}
+    />
+    </>
   );
 }
 
