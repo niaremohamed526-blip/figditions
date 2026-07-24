@@ -242,7 +242,7 @@ export function StockInterneTab({ entrepriseId, userId }: { entrepriseId: string
                   <th className="px-4 py-3 font-medium text-center">Disponibles</th>
                   <th className="px-4 py-3 font-medium text-center hidden md:table-cell">Réservés</th>
                   <th className="px-4 py-3 font-medium text-center hidden md:table-cell">Librairies</th>
-                  <th className="px-4 py-3 font-medium text-center hidden lg:table-cell">Vendus direct</th>
+                  <th className="px-4 py-3 font-medium text-center hidden lg:table-cell">Ventes libres</th>
                   <th className="px-4 py-3 font-medium text-center hidden lg:table-cell">Événements</th>
                   <th className="px-4 py-3 font-medium text-right hidden xl:table-cell">Prix direct</th>
                   <th className="px-4 py-3 font-medium text-right hidden xl:table-cell">Coût unit.</th>
