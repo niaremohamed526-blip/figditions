@@ -225,17 +225,58 @@ export function StockPosDialog({
   }, [step, lines.length]);
 
   return (
-    <Dialog open={open} onOpenChange={(o) => { if (!o) close(); }}>
+    <>
+    <Dialog open={open} onOpenChange={guard.handleOpenChange}>
       <DialogContent className="bg-card border-border max-w-3xl max-h-[92vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
             <Zap className="h-5 w-5 text-primary" />
             Saisie rapide — Mode caisse
+            {isDirty && (
+              <span
+                title="Modifications non sauvegardées"
+                className="inline-block h-2 w-2 rounded-full bg-orange-400 animate-pulse"
+              />
+            )}
           </DialogTitle>
           <DialogDescription>
             Sélectionnez la librairie une seule fois, puis enchaînez les livres sans rechargement.
           </DialogDescription>
         </DialogHeader>
+
+        {/* Draft restore banner */}
+        {draftFound && (
+          <div
+            className="rounded-lg border p-3 flex flex-wrap items-center gap-2 text-sm"
+            style={{ background: "rgba(200,146,42,0.08)", border: "1px solid rgba(200,146,42,0.3)" }}
+          >
+            <span className="flex-1">
+              📋 Un brouillon non sauvegardé a été trouvé
+              {draftFound.savedAt && (
+                <span className="text-muted-foreground"> (sauvegardé à {new Date(draftFound.savedAt).toLocaleTimeString("fr-FR", { hour: "2-digit", minute: "2-digit" })})</span>
+              )}
+            </span>
+            <Button size="sm" variant="outline" onClick={discardDraft}>Nouvelle saisie</Button>
+            <Button size="sm" onClick={restoreDraft} className="bg-primary text-primary-foreground hover:bg-primary/90">
+              Restaurer le brouillon
+            </Button>
+          </div>
+        )}
+
+        {/* Progress indicator */}
+        {step === 2 && (lines.length > 0 || isDirty) && (
+          <div className="flex flex-wrap items-center justify-between gap-2 text-xs">
+            <span className="text-[color:var(--gold)] font-semibold">
+              📝 {lines.length} ligne(s) saisie(s) — Non sauvegardé
+            </span>
+            {lastSavedAt && (
+              <span className="text-muted-foreground">
+                💾 Brouillon sauvegardé à {new Date(lastSavedAt).toLocaleTimeString("fr-FR", { hour: "2-digit", minute: "2-digit" })}
+              </span>
+            )}
+          </div>
+        )}
+
 
         {step === 1 ? (
           <div className="space-y-4 py-2">
