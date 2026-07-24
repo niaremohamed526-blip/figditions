@@ -190,10 +190,26 @@ export function StockPosDialog({
     const { error } = await supabase.from("stocks").insert(payload as any);
     setSaving(false);
     if (error) return toast.error(error.message);
+    try { localStorage.removeItem(DRAFT_KEY); } catch {}
     toast.success(`${lines.length} dépôt(s) enregistré(s) chez « ${librairieNom} »`);
     onImported();
-    close();
+    reset();
+    onOpenChange(false);
   };
+
+  // Ctrl+S save shortcut
+  useEffect(() => {
+    if (!open) return;
+    const onKey = (e: KeyboardEvent) => {
+      if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === "s") {
+        e.preventDefault();
+        if (lines.length > 0 && !saving) submit();
+      }
+    };
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [open, lines.length, saving]);
 
   // Enter navigation: title → qte → prix → add
   useEffect(() => {
