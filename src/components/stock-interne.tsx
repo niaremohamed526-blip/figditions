@@ -161,7 +161,7 @@ export function StockInterneTab({ entrepriseId, userId }: { entrepriseId: string
         <SumCard icon={<Truck />} label="🔄 Transférés librairies" value={String(totals.transferees)} accent="#3B82F6" />
         <SumCard
           icon={<ShoppingBag />}
-          label="💰 Vendus directement"
+          label="🛍️ Ventes libres"
           value={String(totals.vendusDirect)}
           sub={fcfa(totals.revenueDirect)}
           accent="#E8B84B"
