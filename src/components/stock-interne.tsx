@@ -573,13 +573,23 @@ function AddStockForm({
 /* Mouvement form                                                     */
 /* ------------------------------------------------------------------ */
 
-const MVT_TYPES: { value: string; label: string }[] = [
-  { value: "transfert_librairie", label: "📤 Transfert vers librairie" },
-  { value: "vente_directe",       label: "💰 Vente directe" },
-  { value: "evenement",           label: "📚 Événement littéraire / Exposition" },
-  { value: "retour_librairie",    label: "🔄 Retour de librairie" },
-  { value: "perte",               label: "❌ Perte / Dommage" },
-  { value: "ajustement",          label: "🔧 Ajustement manuel" },
+const MVT_TYPES: { value: string; label: string; hint?: string }[] = [
+  { value: "transfert_librairie", label: "📤 Transfert vers librairie", hint: "Envoyer des exemplaires en librairie" },
+  { value: "vente_directe",       label: "🛍️ Vente libre",              hint: "Vente hors librairie (événement, particulier, en ligne…)" },
+  { value: "evenement",           label: "📚 Événement / Exposition",   hint: "Exemplaires envoyés pour un événement ou exposition" },
+  { value: "retour_librairie",    label: "🔄 Retour de dépôt",          hint: "Livres retournés depuis une librairie, un événement ou toute autre destination" },
+  { value: "perte",               label: "❌ Perte / Dommage",          hint: "Exemplaires perdus ou endommagés" },
+  { value: "ajustement",          label: "🔧 Ajustement manuel",        hint: "Correction manuelle du stock (note obligatoire)" },
+];
+
+type ProvenanceKey = "librairie" | "evenement" | "exposition" | "scolaire" | "institution" | "autre";
+const PROVENANCE_OPTIONS: { value: ProvenanceKey; label: string }[] = [
+  { value: "librairie",   label: "🏪 Librairie partenaire" },
+  { value: "evenement",   label: "📚 Événement littéraire" },
+  { value: "exposition",  label: "🖼️ Exposition" },
+  { value: "scolaire",    label: "🏫 Établissement scolaire" },
+  { value: "institution", label: "🏛️ Institution / Organisation" },
+  { value: "autre",       label: "📦 Autre" },
 ];
 
 function MouvementForm({
