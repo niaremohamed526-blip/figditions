@@ -6,6 +6,7 @@ const Toaster = ({ ...props }: ToasterProps) => {
   return (
     <Sonner
       className="toaster group"
+      style={{ zIndex: 99999 } as React.CSSProperties}
       toastOptions={{
         classNames: {
           toast:
