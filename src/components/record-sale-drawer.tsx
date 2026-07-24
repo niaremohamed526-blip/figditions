@@ -241,8 +241,15 @@ export function RecordSaleDrawer({
 
   const close = () => { resetForm(); onOpenChange(false); };
 
+  // Dirty tracking — treat any user-edited field as dirty (skip success view).
+  const isDirty =
+    !success &&
+    (!!manuscritId || saleType !== "libre" || qty !== "1" || !!prix || !!notes.trim() || !!stockId);
+  const guard = useCloseGuard(isDirty, close);
+
   return (
-    <Sheet open={open} onOpenChange={(o) => { if (!o) close(); }}>
+    <>
+    <Sheet open={open} onOpenChange={guard.handleOpenChange}>
       <SheetContent side="right" className="bg-card border-border w-full sm:max-w-lg overflow-y-auto">
         <SheetHeader>
           <SheetTitle className="text-xl">💰 Enregistrer une vente</SheetTitle>
