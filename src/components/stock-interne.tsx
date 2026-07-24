@@ -65,11 +65,11 @@ interface Mouvement {
 }
 
 const MOUVEMENT_LABEL: Record<string, { icon: string; label: string; sign: "+" | "-" | "~"; color: string }> = {
-  impression:          { icon: "📥", label: "Impression reçue",        sign: "+", color: "text-[#C8922A]" },
+  impression:          { icon: "📥", label: "Nouveau stock reçu",       sign: "+", color: "text-[#C8922A]" },
   transfert_librairie: { icon: "📤", label: "Transfert vers librairie", sign: "-", color: "text-blue-400" },
-  vente_directe:       { icon: "💰", label: "Vente directe",            sign: "-", color: "text-blue-400" },
+  vente_directe:       { icon: "🛍️", label: "Vente libre",              sign: "-", color: "text-blue-400" },
   evenement:           { icon: "📚", label: "Événement / Exposition",   sign: "-", color: "text-blue-400" },
-  retour_librairie:    { icon: "🔄", label: "Retour de librairie",      sign: "+", color: "text-[#C8922A]" },
+  retour_librairie:    { icon: "🔄", label: "Retour de dépôt",          sign: "+", color: "text-[#C8922A]" },
   perte:               { icon: "❌", label: "Perte / Dommage",          sign: "-", color: "text-red-400" },
   ajustement:          { icon: "🔧", label: "Ajustement manuel",        sign: "~", color: "text-yellow-400" },
 };
