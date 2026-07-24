@@ -1,6 +1,8 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useEffect, useMemo, useState } from "react";
-import { Plus, Search, Package, Loader2, Pencil, Trash2, Calendar as CalendarIcon, Store, BookOpen, TrendingUp, ShoppingBag, Wallet, PenLine, FileSpreadsheet, Zap, BookMarked } from "lucide-react";
+import { Plus, Search, Package, Loader2, Pencil, Trash2, Calendar as CalendarIcon, Store, BookOpen, TrendingUp, ShoppingBag, Wallet, PenLine, FileSpreadsheet, Zap, BookMarked, MoreHorizontal, ChevronRight, ArrowUpRight, ChevronLeft, X as XIcon } from "lucide-react";
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger, DropdownMenuSeparator, DropdownMenuLabel } from "@/components/ui/dropdown-menu";
+import { AnimatedCounter } from "@/components/animated-counter";
 import { generateManuelStocksPdf } from "@/lib/pdf-manuel-stocks";
 import { format } from "date-fns";
 import { fr } from "date-fns/locale";
@@ -71,31 +73,84 @@ function StocksPage() {
   const [importOpen, setImportOpen] = useState(false);
   const [posOpen, setPosOpen] = useState(false);
   const [saleOpen, setSaleOpen] = useState(false);
+  const [auteurs, setAuteurs] = useState<Array<{ id: string; nom: string | null; prenom: string | null }>>([]);
+
+  // Global desktop filters
+  const [periodeFilter, setPeriodeFilter] = useState<string>("all");
+  const [librairieFilter, setLibrairieFilter] = useState<string>("all");
+  const [livreFilter, setLivreFilter] = useState<string>("all");
+  const [statutFilter, setStatutFilter] = useState<string>("all");
+
+  // Pagination (desktop table)
+  const [pageSize, setPageSize] = useState<number>(10);
+  const [page, setPage] = useState<number>(1);
 
   const load = async () => {
     setItems(null);
-    const [{ data: stocks, error }, { data: ms }] = await Promise.all([
+    const [{ data: stocks, error }, { data: ms }, { data: au }] = await Promise.all([
       supabase.from("stocks").select("*").order("created_at", { ascending: false }),
       (supabase as any).from("manuscrits").select("id, titre, statut, auteur_id"),
+      (supabase as any).from("auteurs").select("id, nom, prenom"),
     ]);
     if (error) toast.error(error.message);
     setItems((stocks ?? []) as Stock[]);
     setManuscrits((ms ?? []) as Manuscrit[]);
+    setAuteurs((au ?? []) as any);
   };
 
   useEffect(() => { if (profile?.entreprise_id) load(); }, [profile?.entreprise_id]);
 
   const titreMap = useMemo(() => Object.fromEntries(manuscrits.map((m) => [m.id, m.titre])), [manuscrits]);
+  const authorFullName = (a: { nom: string | null; prenom: string | null } | undefined) =>
+    a ? [a.prenom, a.nom].filter(Boolean).join(" ").trim() : "";
+  const authorMap = useMemo(() => {
+    const byId = Object.fromEntries(auteurs.map((a) => [a.id, a]));
+    const map: Record<string, string> = {};
+    manuscrits.forEach((m) => { if (m.auteur_id && byId[m.auteur_id]) map[m.id] = authorFullName(byId[m.auteur_id]); });
+    return map;
+  }, [auteurs, manuscrits]);
+
+  const uniqueLibrairies = useMemo(() => {
+    const s = new Set<string>();
+    (items ?? []).forEach((x) => { const n = (x.librairie_nom ?? "").trim(); if (n) s.add(n); });
+    return [...s].sort((a, b) => a.localeCompare(b));
+  }, [items]);
+  const uniqueLivres = useMemo(() => {
+    const s = new Set<string>();
+    (items ?? []).forEach((x) => s.add(x.manuscrit_id));
+    return [...s].map((id) => ({ id, titre: titreMap[id] ?? "—" })).sort((a, b) => a.titre.localeCompare(b.titre));
+  }, [items, titreMap]);
+
+  const statutOf = (rest: number, dep: number): { key: string; label: string; cls: string } => {
+    if (rest === 0) return { key: "epuise", label: "Épuisé", cls: "bg-red-500/15 text-red-400 border-red-500/30" };
+    if (rest < 5) return { key: "critique", label: "Critique", cls: "bg-red-500/15 text-red-400 border-red-500/30 animate-pulse" };
+    if (rest <= 20) return { key: "bas", label: "Stock bas", cls: "bg-orange-500/15 text-orange-400 border-orange-500/30" };
+    return { key: "bon", label: "Bon stock", cls: "bg-emerald-500/15 text-emerald-400 border-emerald-500/30" };
+  };
+
+  const monthStart = useMemo(() => { const d = new Date(); return new Date(d.getFullYear(), d.getMonth(), 1); }, []);
+  const weekStart = useMemo(() => { const d = new Date(); const day = (d.getDay() + 6) % 7; return new Date(d.getFullYear(), d.getMonth(), d.getDate() - day); }, []);
 
   const filtered = useMemo(() => {
     if (!items) return null;
     const needle = q.toLowerCase().trim();
-    if (!needle) return items;
-    return items.filter((s) =>
-      (s.librairie_nom ?? "").toLowerCase().includes(needle) ||
-      (titreMap[s.manuscrit_id] ?? "").toLowerCase().includes(needle)
-    );
-  }, [items, q, titreMap]);
+    return items.filter((s) => {
+      if (needle) {
+        const hit = (s.librairie_nom ?? "").toLowerCase().includes(needle) || (titreMap[s.manuscrit_id] ?? "").toLowerCase().includes(needle);
+        if (!hit) return false;
+      }
+      if (librairieFilter !== "all" && (s.librairie_nom ?? "") !== librairieFilter) return false;
+      if (livreFilter !== "all" && s.manuscrit_id !== livreFilter) return false;
+      if (statutFilter !== "all" && statutOf(s.exemplaires_restants ?? 0, s.exemplaires_deposes ?? 0).key !== statutFilter) return false;
+      if (periodeFilter !== "all") {
+        const dv = s.derniere_visite ? new Date(s.derniere_visite) : null;
+        if (!dv) return false;
+        if (periodeFilter === "week" && dv < weekStart) return false;
+        if (periodeFilter === "month" && dv < monthStart) return false;
+      }
+      return true;
+    });
+  }, [items, q, titreMap, librairieFilter, livreFilter, statutFilter, periodeFilter, weekStart, monthStart]);
 
   const totals = useMemo(() => {
     const list = items ?? [];
@@ -108,6 +163,14 @@ function StocksPage() {
       ca: list.reduce((s, x) => s + (x.exemplaires_vendus ?? 0) * Number(x.prix_unitaire_fcfa ?? 0), 0),
     };
   }, [items]);
+
+  const activeFilters = (librairieFilter !== "all" ? 1 : 0) + (livreFilter !== "all" ? 1 : 0) + (statutFilter !== "all" ? 1 : 0) + (periodeFilter !== "all" ? 1 : 0);
+  const resetFilters = () => { setLibrairieFilter("all"); setLivreFilter("all"); setStatutFilter("all"); setPeriodeFilter("all"); };
+
+  useEffect(() => { setPage(1); }, [q, librairieFilter, livreFilter, statutFilter, periodeFilter, pageSize]);
+  const totalRows = filtered?.length ?? 0;
+  const totalPages = Math.max(1, Math.ceil(totalRows / pageSize));
+  const pageRows = useMemo(() => (filtered ? filtered.slice((page - 1) * pageSize, page * pageSize) : null), [filtered, page, pageSize]);
 
   const openNew = () => {
     const uniqueBookstores = new Set((items ?? []).map((s) => (s.librairie_nom ?? "").trim().toLowerCase()).filter(Boolean));
@@ -134,45 +197,84 @@ function StocksPage() {
 
   return (
     <div className="space-y-6">
-      <header className="grid grid-cols-[minmax(0,1fr)_auto] items-start gap-3 sm:flex sm:flex-wrap sm:items-end sm:justify-between sm:gap-4">
+      {/* ============================================================
+          HEADER — mobile (preserved) + desktop (redesigned)
+         ============================================================ */}
+
+      {/* Mobile header */}
+      <header className="sm:hidden grid grid-cols-[minmax(0,1fr)_auto] items-start gap-3">
         <div className="min-w-0">
-          <h1 className="text-2xl sm:text-3xl font-bold tracking-tight">Stocks</h1>
-          <p className="text-xs sm:text-sm text-muted-foreground mt-1">Gérez votre entrepôt interne et vos dépôts en librairie.</p>
+          <h1 className="text-2xl font-bold tracking-tight">Stocks</h1>
+          <p className="text-xs text-muted-foreground mt-1">Gérez votre entrepôt interne et vos dépôts en librairie.</p>
         </div>
         <div className="flex items-center gap-2">
-          {/* Mobile: info icon only */}
           <Button
             variant="outline"
             size="icon"
             onClick={() => generateManuelStocksPdf({ maison: entreprise?.nom ?? null })}
             title="Guide d'utilisation"
-            className="sm:hidden h-10 w-10 rounded-full border-primary/30"
+            className="h-10 w-10 rounded-full border-primary/30"
             aria-label="Guide d'utilisation"
           >
             <BookMarked className="h-4 w-4 text-primary" />
           </Button>
-          {/* Desktop: full button */}
+        </div>
+      </header>
+
+      {/* Desktop header — 2026 SaaS style */}
+      <header className="hidden sm:flex items-end justify-between gap-4 flex-wrap">
+        <div className="min-w-0">
+          <div className="flex items-center gap-1.5 text-xs text-muted-foreground mb-1.5">
+            <Link to="/dashboard" className="hover:text-primary transition-colors">Tableau de bord</Link>
+            <ChevronRight className="h-3 w-3 opacity-60" />
+            <span className="text-foreground/80">Stocks</span>
+          </div>
+          <h1 className="text-[28px] leading-none font-bold tracking-tight text-foreground">Stocks</h1>
+        </div>
+        <div className="flex items-center gap-2">
           <Button
             variant="outline"
-            onClick={() => generateManuelStocksPdf({ maison: entreprise?.nom ?? null })}
-            title="Télécharger le guide d'utilisation en PDF"
-            className="hidden sm:inline-flex"
+            onClick={openNew}
+            className="h-11 border-[color:var(--gold)]/60 text-[color:var(--gold)] hover:bg-[color:var(--gold)]/10 hover:text-[color:var(--gold)]"
           >
-            <BookMarked className="h-4 w-4 mr-2" /> Guide d'utilisation
+            <Plus className="h-4 w-4 mr-2" /> Ajouter un dépôt
           </Button>
-          <div className="hidden sm:block">
-            <RecordSaleTrigger onClick={() => setSaleOpen(true)} />
-          </div>
+          <Button
+            onClick={() => setSaleOpen(true)}
+            className="h-11 px-5 font-semibold text-primary-foreground bg-gradient-to-r from-primary to-[color:var(--gold)] hover:opacity-95 shadow-lg shadow-primary/20"
+          >
+            <Wallet className="h-4 w-4 mr-2" /> Enregistrer une vente
+          </Button>
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button variant="outline" size="icon" className="h-11 w-11" title="Plus d'actions" aria-label="Plus d'actions">
+                <MoreHorizontal className="h-4 w-4" />
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end" className="w-56">
+              <DropdownMenuLabel>Plus d'actions</DropdownMenuLabel>
+              <DropdownMenuSeparator />
+              <DropdownMenuItem onClick={() => setImportOpen(true)}>
+                <FileSpreadsheet className="h-4 w-4 mr-2 text-primary" /> Import Excel
+              </DropdownMenuItem>
+              <DropdownMenuItem onClick={() => setPosOpen(true)}>
+                <Zap className="h-4 w-4 mr-2 text-primary" /> Saisie rapide
+              </DropdownMenuItem>
+              <DropdownMenuSeparator />
+              <DropdownMenuItem onClick={() => generateManuelStocksPdf({ maison: entreprise?.nom ?? null })}>
+                <BookMarked className="h-4 w-4 mr-2 text-primary" /> Guide d'utilisation
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
         </div>
       </header>
 
       <Tabs defaultValue="externe" className="space-y-6">
+        {/* Mobile: existing underline tabs; Desktop: page-level underline tabs with count badges */}
         <TabsList
           className={cn(
-            // Mobile: real underline tabs
             "w-full grid grid-cols-3 gap-0 h-11 rounded-none bg-transparent border-0 border-b border-border p-0",
-            // Desktop: card-style tabs
-            "sm:w-auto sm:inline-flex sm:h-auto sm:rounded-md sm:bg-card sm:border sm:border-border sm:p-1"
+            "sm:h-auto sm:inline-flex sm:w-full sm:justify-start sm:gap-1 sm:border-b sm:border-[color:var(--gold)]/10 sm:rounded-none sm:bg-transparent sm:p-0"
           )}
         >
           <TabsTrigger
@@ -180,224 +282,391 @@ function StocksPage() {
             className={cn(
               "min-h-11 text-sm rounded-none bg-transparent border-b-2 border-transparent text-muted-foreground",
               "data-[state=active]:border-primary data-[state=active]:text-primary data-[state=active]:bg-transparent data-[state=active]:shadow-none",
-              "sm:rounded-md sm:border-b-0 sm:data-[state=active]:bg-primary sm:data-[state=active]:text-primary-foreground sm:data-[state=active]:border-transparent"
+              "sm:min-h-12 sm:px-5 sm:text-[15px] sm:font-medium sm:text-muted-foreground",
+              "sm:data-[state=active]:text-foreground sm:data-[state=active]:border-[color:var(--gold)] sm:data-[state=active]:bg-transparent"
             )}
           >
             <span className="sm:hidden">Externe</span>
-            <span className="hidden sm:inline">🏪 Stock Externe</span>
+            <span className="hidden sm:inline-flex items-center gap-2">
+              Stock Externe
+              <span className="inline-flex items-center justify-center min-w-6 h-5 px-1.5 rounded-full text-[10px] font-semibold bg-[color:var(--gold)]/15 text-[color:var(--gold)] border border-[color:var(--gold)]/25">
+                {items?.length ?? 0}
+              </span>
+            </span>
           </TabsTrigger>
           <TabsTrigger
             value="interne"
             className={cn(
               "min-h-11 text-sm rounded-none bg-transparent border-b-2 border-transparent text-muted-foreground",
               "data-[state=active]:border-primary data-[state=active]:text-primary data-[state=active]:bg-transparent data-[state=active]:shadow-none",
-              "sm:rounded-md sm:border-b-0 sm:data-[state=active]:bg-primary sm:data-[state=active]:text-primary-foreground sm:data-[state=active]:border-transparent"
+              "sm:min-h-12 sm:px-5 sm:text-[15px] sm:font-medium sm:text-muted-foreground",
+              "sm:data-[state=active]:text-foreground sm:data-[state=active]:border-[color:var(--gold)] sm:data-[state=active]:bg-transparent"
             )}
           >
             <span className="sm:hidden">Interne</span>
-            <span className="hidden sm:inline">🏭 Stock Interne</span>
+            <span className="hidden sm:inline">Stock Interne</span>
           </TabsTrigger>
           <TabsTrigger
             value="bordereaux"
             className={cn(
               "min-h-11 text-sm rounded-none bg-transparent border-b-2 border-transparent text-muted-foreground",
               "data-[state=active]:border-primary data-[state=active]:text-primary data-[state=active]:bg-transparent data-[state=active]:shadow-none",
-              "sm:rounded-md sm:border-b-0 sm:data-[state=active]:bg-primary sm:data-[state=active]:text-primary-foreground sm:data-[state=active]:border-transparent"
+              "sm:min-h-12 sm:px-5 sm:text-[15px] sm:font-medium sm:text-muted-foreground",
+              "sm:data-[state=active]:text-foreground sm:data-[state=active]:border-[color:var(--gold)] sm:data-[state=active]:bg-transparent"
             )}
           >
             <span className="sm:hidden">Bordereaux</span>
-            <span className="hidden sm:inline">📄 Bordereaux</span>
+            <span className="hidden sm:inline">Bordereaux</span>
           </TabsTrigger>
         </TabsList>
 
-        <TabsContent value="externe" className="space-y-5 mt-0">
-          {/* Stats — 2x2 grid on mobile, larger numbers */}
-          <div className="grid grid-cols-2 lg:grid-cols-5 gap-3">
+        <TabsContent value="externe" className="space-y-6 mt-0 animate-fade-in">
+          {/* ============================================================
+              STATS — mobile 2x2 preserved; desktop = hero + 4 supporting
+             ============================================================ */}
+
+          {/* Mobile stats (existing) */}
+          <div className="grid grid-cols-2 gap-3 sm:hidden">
             <SummaryCard icon={<BookOpen />} label="En circulation" value={String(totals.deposes)} sublabel="exemplaires" />
             <SummaryCard icon={<ShoppingBag />} label="Vendus" value={String(totals.vendus)} sublabel="exemplaires" accent="primary" />
             <SummaryCard icon={<TrendingUp />} label="Restants" value={String(totals.restants)} sublabel="exemplaires" />
             <SummaryCard icon={<Store />} label="Librairies" value={String(totals.librairies)} sublabel="actives" />
-            <SummaryCard icon={<Wallet />} label="Chiffre d'affaires" value={fcfa(totals.ca)} accent="gold" />
           </div>
 
-          {/* Action buttons — mobile: primary full-width + icon pills row */}
-          <div className="space-y-3 sm:space-y-0">
-            {/* Primary — full width on mobile */}
-            <Button
-              onClick={openNew}
-              className="w-full sm:hidden h-[52px] text-base font-semibold bg-gradient-to-r from-primary to-[color:var(--gold)] text-primary-foreground hover:opacity-95 shadow-lg shadow-primary/20"
-            >
-              <Plus className="h-5 w-5 mr-2" /> Ajouter un dépôt
-            </Button>
-            {/* Secondary — compact pills row on mobile */}
-            <div className="grid grid-cols-3 gap-2 sm:hidden">
-              <button
-                onClick={() => setSaleOpen(true)}
-                className="h-9 rounded-full border border-primary/40 bg-card text-xs font-medium text-foreground inline-flex items-center justify-center gap-1.5 hover:bg-primary/10 transition"
-              >
-                <Wallet className="h-3.5 w-3.5 text-primary" /> Vente
-              </button>
-              <button
-                onClick={() => setImportOpen(true)}
-                className="h-9 rounded-full border border-primary/40 bg-card text-xs font-medium text-foreground inline-flex items-center justify-center gap-1.5 hover:bg-primary/10 transition"
-              >
-                <FileSpreadsheet className="h-3.5 w-3.5 text-primary" /> Import
-              </button>
-              <button
-                onClick={() => setPosOpen(true)}
-                className="h-9 rounded-full border border-primary/40 bg-card text-xs font-medium text-foreground inline-flex items-center justify-center gap-1.5 hover:bg-primary/10 transition"
-              >
-                <Zap className="h-3.5 w-3.5 text-primary" /> Rapide
-              </button>
-            </div>
-            {/* Desktop: original inline actions */}
-            <div className="hidden sm:flex justify-end gap-2 flex-wrap">
-              <Button variant="outline" onClick={() => setImportOpen(true)}>
-                <FileSpreadsheet className="h-4 w-4 mr-2" /> Import Excel
-              </Button>
-              <Button variant="outline" onClick={() => setPosOpen(true)}>
-                <Zap className="h-4 w-4 mr-2" /> Saisie rapide
-              </Button>
-              <Button onClick={openNew} className="bg-primary text-primary-foreground hover:bg-primary/90">
-                <Plus className="h-4 w-4 mr-2" /> Ajouter un dépôt
-              </Button>
-            </div>
-          </div>
-
-
-          <InventoryAnalytics stocks={items ?? []} titreMap={titreMap} />
-
-
-      <div className="relative max-w-md">
-        <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-        <Input placeholder="Rechercher par librairie ou titre…" value={q} onChange={(e) => setQ(e.target.value)} className="pl-9 bg-card" />
-      </div>
-
-      {/* Mobile: card list */}
-      <div className="sm:hidden space-y-3">
-        {filtered === null ? (
-          Array.from({ length: 4 }).map((_, i) => <Skeleton key={i} className="h-32 w-full rounded-2xl" />)
-        ) : filtered.length === 0 ? (
-          <div className="rounded-2xl border border-border bg-card">
-            <EmptyState hasItems={(items?.length ?? 0) > 0} onAdd={openNew} />
-          </div>
-        ) : (
-          filtered.map((s) => {
-            const dep = s.exemplaires_deposes ?? 0;
-            const rest = s.exemplaires_restants ?? 0;
-            const pct = dep > 0 ? Math.round((rest / dep) * 100) : 0;
-            const barColor = pct > 50 ? "bg-emerald-500" : pct >= 20 ? "bg-orange-400" : "bg-red-500";
-            return (
-              <div key={s.id} className="rounded-2xl border border-border bg-card p-4 space-y-3">
-                <div className="flex items-start justify-between gap-3">
-                  <div className="min-w-0 flex-1">
-                    <div className="flex items-center gap-2">
-                      <BookOpen className="h-4 w-4 text-primary shrink-0" />
-                      <h4 className="font-semibold text-sm truncate">{titreMap[s.manuscrit_id] ?? "—"}</h4>
-                    </div>
-                    <p className="text-xs text-muted-foreground truncate mt-0.5 pl-6">{s.librairie_nom ?? "—"}</p>
+          {/* Desktop hero + supporting metrics */}
+          <div className="hidden sm:block space-y-3">
+            {/* Hero — CA total */}
+            <div className="relative rounded-2xl border border-border bg-gradient-to-br from-card via-card to-[color:var(--gold)]/[0.04] pl-8 pr-8 py-6 overflow-hidden">
+              <div className="absolute left-0 top-0 bottom-0 w-1 bg-gradient-to-b from-[color:var(--gold)] to-primary" />
+              <div className="flex items-center justify-between gap-6 flex-wrap">
+                <div className="min-w-0">
+                  <div className="flex items-center gap-2 text-xs uppercase tracking-widest text-muted-foreground">
+                    <Wallet className="h-4 w-4 text-[color:var(--gold)]" /> Chiffre d'affaires total
                   </div>
-                  <div className="flex items-center gap-1 shrink-0">
-                    <Button size="icon" variant="ghost" className="h-9 w-9 hover:bg-primary/15 hover:text-primary" onClick={() => openEdit(s)} aria-label="Modifier">
-                      <Pencil className="h-4 w-4" />
-                    </Button>
-                    <Button size="icon" variant="ghost" className="h-9 w-9 hover:bg-destructive/15 hover:text-destructive" onClick={() => setToDelete(s)} aria-label="Supprimer">
-                      <Trash2 className="h-4 w-4" />
-                    </Button>
+                  <div className="mt-2 flex items-baseline gap-3">
+                    <span className="text-[48px] leading-none font-bold text-[color:var(--gold)] tabular-nums drop-shadow-[0_0_18px_rgba(200,146,42,0.25)]">
+                      <AnimatedCounter value={totals.ca} />
+                    </span>
+                    <span className="text-lg font-semibold text-muted-foreground">FCFA</span>
                   </div>
                 </div>
-                <div className="grid grid-cols-3 text-xs gap-2">
-                  <div>
-                    <div className="text-muted-foreground text-[11px]">Déposés</div>
-                    <div className="font-semibold tabular-nums">{dep}</div>
-                  </div>
-                  <div>
-                    <div className="text-muted-foreground text-[11px]">Vendus</div>
-                    <div className="font-semibold tabular-nums">{s.exemplaires_vendus ?? 0}</div>
-                  </div>
-                  <div>
-                    <div className="text-muted-foreground text-[11px]">Restants</div>
-                    <div className="font-semibold tabular-nums text-primary">{rest}</div>
-                  </div>
-                </div>
-                <div className="space-y-1">
-                  <div className="h-1.5 rounded-full bg-muted/40 overflow-hidden">
-                    <div className={cn("h-full rounded-full transition-all", barColor)} style={{ width: `${Math.min(100, Math.max(0, pct))}%` }} />
-                  </div>
-                </div>
-                <div className="flex items-center justify-between pt-1 border-t border-border">
-                  <span className="text-[11px] text-muted-foreground">Prix</span>
-                  <span className="text-sm font-semibold text-[color:var(--gold)] tabular-nums">
-                    {s.prix_unitaire_fcfa ? fcfa(s.prix_unitaire_fcfa) : "—"}
+                <div className="flex items-center gap-2 text-xs">
+                  <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">
+                    <ArrowUpRight className="h-3 w-3" />
+                    {totals.vendus} exemplaires vendus
                   </span>
                 </div>
               </div>
-            );
-          })
-        )}
-      </div>
+              {/* Progress bar — sell-through */}
+              <div className="mt-5">
+                <div className="flex items-center justify-between text-[11px] text-muted-foreground mb-1.5">
+                  <span>Taux d'écoulement</span>
+                  <span className="tabular-nums text-foreground/80 font-medium">
+                    {totals.deposes > 0 ? Math.round((totals.vendus / totals.deposes) * 100) : 0}%
+                  </span>
+                </div>
+                <div className="h-2 rounded-full bg-muted/40 overflow-hidden">
+                  <div
+                    className="h-full rounded-full bg-gradient-to-r from-primary to-[color:var(--gold)] transition-all duration-700"
+                    style={{ width: `${totals.deposes > 0 ? Math.min(100, Math.round((totals.vendus / totals.deposes) * 100)) : 0}%` }}
+                  />
+                </div>
+              </div>
+            </div>
 
-      {/* Desktop: table */}
-      <div className="hidden sm:block rounded-xl border border-border bg-card overflow-hidden">
-        {filtered === null ? (
-          <div className="p-6 space-y-3">
-            {Array.from({ length: 5 }).map((_, i) => <Skeleton key={i} className="h-12 w-full" />)}
+            {/* Supporting metrics */}
+            <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
+              <MetricCard icon={<BookOpen className="h-5 w-5" />} label="En circulation" value={totals.deposes} sublabel="exemplaires" />
+              <MetricCard icon={<ShoppingBag className="h-5 w-5" />} label="Vendus" value={totals.vendus} sublabel="exemplaires" />
+              <MetricCard icon={<Package className="h-5 w-5" />} label="Restants" value={totals.restants} sublabel="exemplaires" />
+              <MetricCard icon={<Store className="h-5 w-5" />} label="Librairies" value={totals.librairies} sublabel="actives" />
+            </div>
           </div>
-        ) : filtered.length === 0 ? (
-          <EmptyState hasItems={(items?.length ?? 0) > 0} onAdd={openNew} />
-        ) : (
-          <div className="overflow-x-auto">
-            <table className="w-full text-sm">
-              <thead className="bg-muted/30 text-muted-foreground">
-                <tr className="text-left">
-                  <th className="px-4 py-3 font-medium">Titre</th>
-                  <th className="px-4 py-3 font-medium">Librairie</th>
-                  <th className="px-4 py-3 font-medium text-center">Déposés</th>
-                  <th className="px-4 py-3 font-medium text-center">Vendus</th>
-                  <th className="px-4 py-3 font-medium text-center">Restants</th>
-                  <th className="px-4 py-3 font-medium text-right">Prix unit.</th>
-                  <th className="px-4 py-3 font-medium text-right">Chiffre d'affaires</th>
-                  <th className="px-4 py-3 font-medium hidden md:table-cell">Dernière visite</th>
-                  <th className="px-4 py-3 font-medium w-20 text-right">Actions</th>
-                </tr>
-              </thead>
-              <tbody>
-                {filtered.map((s) => {
-                  const ca = (s.exemplaires_vendus ?? 0) * Number(s.prix_unitaire_fcfa ?? 0);
-                  return (
-                    <tr key={s.id} className="group border-t border-border hover:bg-primary/5 transition-colors">
-                      <td className="px-4 py-3 font-medium">{titreMap[s.manuscrit_id] ?? "—"}</td>
-                      <td className="px-4 py-3">{s.librairie_nom ?? "—"}</td>
-                      <td className="px-4 py-3 text-center text-muted-foreground">{s.exemplaires_deposes}</td>
-                      <td className="px-4 py-3 text-center text-muted-foreground">{s.exemplaires_vendus}</td>
-                      <td className="px-4 py-3 text-center">
-                        <span className={cn("inline-flex items-center justify-center min-w-9 px-2 h-6 rounded-full border text-xs font-semibold transition-colors", remainingColor(s.exemplaires_restants))}>
-                          {s.exemplaires_restants}
-                        </span>
-                      </td>
-                      <td className="px-4 py-3 text-right text-muted-foreground">{s.prix_unitaire_fcfa ? fcfa(s.prix_unitaire_fcfa) : "—"}</td>
-                      <td className="px-4 py-3 text-right font-semibold text-[color:var(--gold)]">{fcfa(ca)}</td>
-                      <td className="px-4 py-3 text-muted-foreground hidden md:table-cell">
-                        {s.derniere_visite ? format(new Date(s.derniere_visite), "dd MMM yyyy", { locale: fr }) : "—"}
-                      </td>
-                      <td className="px-4 py-3 text-right">
-                        <div className="flex items-center justify-end gap-1 opacity-0 group-hover:opacity-100 focus-within:opacity-100 transition-opacity">
-                          <Button size="icon" variant="ghost" className="h-8 w-8 hover:bg-primary/15 hover:text-primary" onClick={() => openEdit(s)} title="Modifier">
-                            <Pencil className="h-4 w-4" />
-                          </Button>
-                          <Button size="icon" variant="ghost" className="h-8 w-8 hover:bg-destructive/15 hover:text-destructive" onClick={() => setToDelete(s)} title="Supprimer">
-                            <Trash2 className="h-4 w-4" />
-                          </Button>
+
+          {/* ============================================================
+              MOBILE actions (preserved)
+             ============================================================ */}
+          <div className="sm:hidden space-y-3">
+            <Button
+              onClick={openNew}
+              className="w-full h-[52px] text-base font-semibold bg-gradient-to-r from-primary to-[color:var(--gold)] text-primary-foreground hover:opacity-95 shadow-lg shadow-primary/20"
+            >
+              <Plus className="h-5 w-5 mr-2" /> Ajouter un dépôt
+            </Button>
+            <div className="grid grid-cols-3 gap-2">
+              <button onClick={() => setSaleOpen(true)} className="h-9 rounded-full border border-primary/40 bg-card text-xs font-medium text-foreground inline-flex items-center justify-center gap-1.5 hover:bg-primary/10 transition">
+                <Wallet className="h-3.5 w-3.5 text-primary" /> Vente
+              </button>
+              <button onClick={() => setImportOpen(true)} className="h-9 rounded-full border border-primary/40 bg-card text-xs font-medium text-foreground inline-flex items-center justify-center gap-1.5 hover:bg-primary/10 transition">
+                <FileSpreadsheet className="h-3.5 w-3.5 text-primary" /> Import
+              </button>
+              <button onClick={() => setPosOpen(true)} className="h-9 rounded-full border border-primary/40 bg-card text-xs font-medium text-foreground inline-flex items-center justify-center gap-1.5 hover:bg-primary/10 transition">
+                <Zap className="h-3.5 w-3.5 text-primary" /> Rapide
+              </button>
+            </div>
+          </div>
+
+          {/* ============================================================
+              GLOBAL FILTER BAR — desktop only
+             ============================================================ */}
+          <div className="hidden sm:block rounded-2xl border border-border bg-card p-4 space-y-3">
+            <div className="relative">
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+              <Input
+                placeholder="Rechercher par librairie ou titre…"
+                value={q}
+                onChange={(e) => setQ(e.target.value)}
+                className="pl-9 h-11 bg-background/40 border-border"
+              />
+            </div>
+            <div className="flex items-center gap-2 flex-wrap">
+              <FilterPill label="Période" active={periodeFilter !== "all"}>
+                <Select value={periodeFilter} onValueChange={setPeriodeFilter}>
+                  <SelectTrigger className="h-9 border-0 bg-transparent px-2 focus:ring-0"><SelectValue /></SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="all">Toutes périodes</SelectItem>
+                    <SelectItem value="week">Cette semaine</SelectItem>
+                    <SelectItem value="month">Ce mois</SelectItem>
+                  </SelectContent>
+                </Select>
+              </FilterPill>
+              <FilterPill label="Librairie" active={librairieFilter !== "all"}>
+                <Select value={librairieFilter} onValueChange={setLibrairieFilter}>
+                  <SelectTrigger className="h-9 border-0 bg-transparent px-2 focus:ring-0"><SelectValue /></SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="all">Toutes les librairies</SelectItem>
+                    {uniqueLibrairies.map((n) => <SelectItem key={n} value={n}>{n}</SelectItem>)}
+                  </SelectContent>
+                </Select>
+              </FilterPill>
+              <FilterPill label="Livre" active={livreFilter !== "all"}>
+                <Select value={livreFilter} onValueChange={setLivreFilter}>
+                  <SelectTrigger className="h-9 border-0 bg-transparent px-2 focus:ring-0"><SelectValue /></SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="all">Tous les livres</SelectItem>
+                    {uniqueLivres.map((l) => <SelectItem key={l.id} value={l.id}>{l.titre}</SelectItem>)}
+                  </SelectContent>
+                </Select>
+              </FilterPill>
+              <FilterPill label="Statut" active={statutFilter !== "all"}>
+                <Select value={statutFilter} onValueChange={setStatutFilter}>
+                  <SelectTrigger className="h-9 border-0 bg-transparent px-2 focus:ring-0"><SelectValue /></SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="all">Tous les statuts</SelectItem>
+                    <SelectItem value="bon">Bon stock</SelectItem>
+                    <SelectItem value="bas">Stock bas</SelectItem>
+                    <SelectItem value="critique">Critique</SelectItem>
+                    <SelectItem value="epuise">Épuisé</SelectItem>
+                  </SelectContent>
+                </Select>
+              </FilterPill>
+              {activeFilters > 0 && (
+                <button
+                  onClick={resetFilters}
+                  className="text-xs text-[color:var(--gold)] hover:underline inline-flex items-center gap-1 ml-1 animate-fade-in"
+                >
+                  <XIcon className="h-3 w-3" /> Réinitialiser les filtres
+                </button>
+              )}
+            </div>
+          </div>
+
+          <InventoryAnalytics stocks={items ?? []} titreMap={titreMap} />
+
+          {/* ============================================================
+              MOBILE: card list (preserved)
+             ============================================================ */}
+          <div className="sm:hidden space-y-3">
+            <div className="relative">
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+              <Input placeholder="Rechercher par librairie ou titre…" value={q} onChange={(e) => setQ(e.target.value)} className="pl-9 bg-card" />
+            </div>
+            {filtered === null ? (
+              Array.from({ length: 4 }).map((_, i) => <Skeleton key={i} className="h-32 w-full rounded-2xl" />)
+            ) : filtered.length === 0 ? (
+              <div className="rounded-2xl border border-border bg-card">
+                <EmptyState hasItems={(items?.length ?? 0) > 0} onAdd={openNew} />
+              </div>
+            ) : (
+              filtered.map((s) => {
+                const dep = s.exemplaires_deposes ?? 0;
+                const rest = s.exemplaires_restants ?? 0;
+                const pct = dep > 0 ? Math.round((rest / dep) * 100) : 0;
+                const barColor = pct > 50 ? "bg-emerald-500" : pct >= 20 ? "bg-orange-400" : "bg-red-500";
+                return (
+                  <div key={s.id} className="rounded-2xl border border-border bg-card p-4 space-y-3">
+                    <div className="flex items-start justify-between gap-3">
+                      <div className="min-w-0 flex-1">
+                        <div className="flex items-center gap-2">
+                          <BookOpen className="h-4 w-4 text-primary shrink-0" />
+                          <h4 className="font-semibold text-sm truncate">{titreMap[s.manuscrit_id] ?? "—"}</h4>
                         </div>
-                      </td>
-                    </tr>
-                  );
-                })}
-              </tbody>
-            </table>
+                        <p className="text-xs text-muted-foreground truncate mt-0.5 pl-6">{s.librairie_nom ?? "—"}</p>
+                      </div>
+                      <div className="flex items-center gap-1 shrink-0">
+                        <Button size="icon" variant="ghost" className="h-9 w-9 hover:bg-primary/15 hover:text-primary" onClick={() => openEdit(s)} aria-label="Modifier">
+                          <Pencil className="h-4 w-4" />
+                        </Button>
+                        <Button size="icon" variant="ghost" className="h-9 w-9 hover:bg-destructive/15 hover:text-destructive" onClick={() => setToDelete(s)} aria-label="Supprimer">
+                          <Trash2 className="h-4 w-4" />
+                        </Button>
+                      </div>
+                    </div>
+                    <div className="grid grid-cols-3 text-xs gap-2">
+                      <div>
+                        <div className="text-muted-foreground text-[11px]">Déposés</div>
+                        <div className="font-semibold tabular-nums">{dep}</div>
+                      </div>
+                      <div>
+                        <div className="text-muted-foreground text-[11px]">Vendus</div>
+                        <div className="font-semibold tabular-nums">{s.exemplaires_vendus ?? 0}</div>
+                      </div>
+                      <div>
+                        <div className="text-muted-foreground text-[11px]">Restants</div>
+                        <div className="font-semibold tabular-nums text-primary">{rest}</div>
+                      </div>
+                    </div>
+                    <div className="space-y-1">
+                      <div className="h-1.5 rounded-full bg-muted/40 overflow-hidden">
+                        <div className={cn("h-full rounded-full transition-all", barColor)} style={{ width: `${Math.min(100, Math.max(0, pct))}%` }} />
+                      </div>
+                    </div>
+                    <div className="flex items-center justify-between pt-1 border-t border-border">
+                      <span className="text-[11px] text-muted-foreground">Prix</span>
+                      <span className="text-sm font-semibold text-[color:var(--gold)] tabular-nums">
+                        {s.prix_unitaire_fcfa ? fcfa(s.prix_unitaire_fcfa) : "—"}
+                      </span>
+                    </div>
+                  </div>
+                );
+              })
+            )}
           </div>
-        )}
-      </div>
+
+          {/* ============================================================
+              DESKTOP: redesigned table (Linear/Notion-inspired)
+             ============================================================ */}
+          <div className="hidden sm:block rounded-2xl border border-border bg-card overflow-hidden">
+            {pageRows === null ? (
+              <div className="p-6 space-y-3">
+                {Array.from({ length: 6 }).map((_, i) => <Skeleton key={i} className="h-14 w-full" />)}
+              </div>
+            ) : totalRows === 0 ? (
+              <EmptyState hasItems={(items?.length ?? 0) > 0} onAdd={openNew} />
+            ) : (
+              <>
+                <div className="overflow-x-auto">
+                  <table className="w-full text-sm">
+                    <thead className="bg-[color:var(--gold)]/[0.05]">
+                      <tr className="text-left">
+                        <th className="px-5 h-10 text-[11px] font-semibold uppercase tracking-[1px] text-[color:var(--gold)]">Livre</th>
+                        <th className="px-4 h-10 text-[11px] font-semibold uppercase tracking-[1px] text-[color:var(--gold)]">Librairie</th>
+                        <th className="px-4 h-10 text-[11px] font-semibold uppercase tracking-[1px] text-[color:var(--gold)] text-center">Déposés</th>
+                        <th className="px-4 h-10 text-[11px] font-semibold uppercase tracking-[1px] text-[color:var(--gold)] text-center">Vendus</th>
+                        <th className="px-4 h-10 text-[11px] font-semibold uppercase tracking-[1px] text-[color:var(--gold)] text-center">Restants</th>
+                        <th className="px-4 h-10 text-[11px] font-semibold uppercase tracking-[1px] text-[color:var(--gold)] text-right">Prix unit.</th>
+                        <th className="px-4 h-10 text-[11px] font-semibold uppercase tracking-[1px] text-[color:var(--gold)] text-right">CA généré</th>
+                        <th className="px-4 h-10 text-[11px] font-semibold uppercase tracking-[1px] text-[color:var(--gold)]">Statut</th>
+                        <th className="px-4 h-10 text-[11px] font-semibold uppercase tracking-[1px] text-[color:var(--gold)] w-28 text-right">Actions</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {pageRows.map((s, idx) => {
+                        const dep = s.exemplaires_deposes ?? 0;
+                        const vendus = s.exemplaires_vendus ?? 0;
+                        const rest = s.exemplaires_restants ?? 0;
+                        const ca = vendus * Number(s.prix_unitaire_fcfa ?? 0);
+                        const soldPct = dep > 0 ? Math.round((vendus / dep) * 100) : 0;
+                        const restColor = rest > 20 ? "text-emerald-400" : rest >= 5 ? "text-orange-400" : "text-red-400";
+                        const st = statutOf(rest, dep);
+                        const author = authorMap[s.manuscrit_id];
+                        return (
+                          <tr
+                            key={s.id}
+                            className="group border-b border-[color:var(--gold)]/[0.06] last:border-b-0 hover:bg-[color:var(--gold)]/[0.03] transition-colors duration-150 animate-fade-in"
+                            style={{ animationDelay: `${idx * 40}ms`, animationFillMode: "both" }}
+                          >
+                            <td className="px-5 py-3.5 h-14">
+                              <div className="flex items-start gap-3 min-w-0">
+                                <div className="h-9 w-9 rounded-lg bg-[color:var(--gold)]/10 border border-[color:var(--gold)]/20 flex items-center justify-center shrink-0">
+                                  <BookOpen className="h-4 w-4 text-[color:var(--gold)]" />
+                                </div>
+                                <div className="min-w-0">
+                                  <div className="font-semibold text-sm text-foreground truncate">{titreMap[s.manuscrit_id] ?? "—"}</div>
+                                  {author && <div className="text-xs text-muted-foreground truncate mt-0.5">{author}</div>}
+                                </div>
+                              </div>
+                            </td>
+                            <td className="px-4 py-3.5 text-foreground/90">{s.librairie_nom ?? "—"}</td>
+                            <td className="px-4 py-3.5 text-center text-muted-foreground tabular-nums">{dep}</td>
+                            <td className="px-4 py-3.5 text-center text-muted-foreground tabular-nums">{vendus}</td>
+                            <td className="px-4 py-3.5 text-center">
+                              <div className="inline-flex flex-col items-center gap-1">
+                                <span className={cn("font-bold tabular-nums", restColor)}>{rest}</span>
+                                <div className="w-14 h-1 rounded-full bg-muted/40 overflow-hidden">
+                                  <div className="h-full bg-gradient-to-r from-primary to-[color:var(--gold)]" style={{ width: `${Math.min(100, soldPct)}%` }} />
+                                </div>
+                              </div>
+                            </td>
+                            <td className="px-4 py-3.5 text-right text-muted-foreground tabular-nums">{s.prix_unitaire_fcfa ? fcfa(s.prix_unitaire_fcfa) : "—"}</td>
+                            <td className="px-4 py-3.5 text-right font-bold text-[color:var(--gold)] tabular-nums font-mono">{fcfa(ca)}</td>
+                            <td className="px-4 py-3.5">
+                              <span className={cn("inline-flex items-center px-2.5 h-6 rounded-full border text-[11px] font-semibold", st.cls)}>
+                                {st.label}
+                              </span>
+                            </td>
+                            <td className="px-4 py-3.5 text-right">
+                              <div className="flex items-center justify-end gap-1 opacity-0 group-hover:opacity-100 focus-within:opacity-100 transition-opacity duration-200">
+                                <Button size="icon" variant="ghost" className="h-8 w-8 hover:bg-primary/15 hover:text-primary" onClick={() => openEdit(s)} title="Modifier">
+                                  <Pencil className="h-4 w-4" />
+                                </Button>
+                                <Button size="icon" variant="ghost" className="h-8 w-8 hover:bg-[color:var(--gold)]/15 hover:text-[color:var(--gold)]" onClick={() => setSaleOpen(true)} title="Enregistrer une vente">
+                                  <Wallet className="h-4 w-4" />
+                                </Button>
+                                <Button size="icon" variant="ghost" className="h-8 w-8 hover:bg-destructive/15 hover:text-destructive" onClick={() => setToDelete(s)} title="Supprimer">
+                                  <Trash2 className="h-4 w-4" />
+                                </Button>
+                              </div>
+                            </td>
+                          </tr>
+                        );
+                      })}
+                    </tbody>
+                  </table>
+                </div>
+
+                {/* Pagination footer */}
+                <div className="flex items-center justify-between gap-3 px-5 py-3 border-t border-[color:var(--gold)]/[0.08] bg-card/60 flex-wrap">
+                  <div className="text-xs text-muted-foreground tabular-nums">
+                    {(page - 1) * pageSize + 1}-{Math.min(page * pageSize, totalRows)} sur {totalRows} dépôts
+                  </div>
+                  <div className="flex items-center gap-3">
+                    <div className="flex items-center gap-2 text-xs text-muted-foreground">
+                      <span>Par page</span>
+                      <Select value={String(pageSize)} onValueChange={(v) => setPageSize(Number(v))}>
+                        <SelectTrigger className="h-8 w-[72px]"><SelectValue /></SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="10">10</SelectItem>
+                          <SelectItem value="25">25</SelectItem>
+                          <SelectItem value="50">50</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
+                    <div className="flex items-center gap-1">
+                      <Button size="icon" variant="outline" className="h-8 w-8" disabled={page <= 1} onClick={() => setPage((p) => Math.max(1, p - 1))} aria-label="Précédent">
+                        <ChevronLeft className="h-4 w-4" />
+                      </Button>
+                      <span className="text-xs px-2 tabular-nums">{page} / {totalPages}</span>
+                      <Button size="icon" variant="outline" className="h-8 w-8" disabled={page >= totalPages} onClick={() => setPage((p) => Math.min(totalPages, p + 1))} aria-label="Suivant">
+                        <ChevronRight className="h-4 w-4" />
+                      </Button>
+                    </div>
+                  </div>
+                </div>
+              </>
+            )}
+          </div>
+
 
 
       <Sheet open={sheetOpen} onOpenChange={setSheetOpen}>
@@ -482,6 +751,38 @@ function StocksPage() {
       >
         <Wallet className="h-6 w-6" />
       </button>
+    </div>
+  );
+}
+
+function MetricCard({ icon, label, value, sublabel }: { icon: React.ReactNode; label: string; value: number; sublabel?: string }) {
+  return (
+    <div className="group relative rounded-2xl border border-border bg-card p-5 transition-all duration-200 hover:-translate-y-0.5 hover:border-[color:var(--gold)]/40 hover:shadow-[0_0_0_1px_rgba(200,146,42,0.15),0_10px_30px_-15px_rgba(200,146,42,0.35)]">
+      <div className="flex items-start justify-between">
+        <span className="text-[color:var(--gold)]">{icon}</span>
+      </div>
+      <div className="mt-4">
+        <p className="text-[28px] font-bold text-foreground tabular-nums leading-none">
+          <AnimatedCounter value={value} />
+        </p>
+        <p className="mt-1.5 text-[11px] uppercase tracking-widest text-muted-foreground">{label}</p>
+        {sublabel && <p className="mt-0.5 text-[11px] text-muted-foreground/70">{sublabel}</p>}
+      </div>
+      <div className="absolute bottom-0 left-4 right-4 h-px bg-gradient-to-r from-transparent via-[color:var(--gold)]/40 to-transparent opacity-60" />
+    </div>
+  );
+}
+
+function FilterPill({ label, active, children }: { label: string; active: boolean; children: React.ReactNode }) {
+  return (
+    <div className={cn(
+      "inline-flex items-center gap-1 rounded-full border transition-colors h-9 pl-3 pr-1",
+      active
+        ? "bg-[color:var(--gold)]/12 border-[color:var(--gold)]/40 text-[color:var(--gold)]"
+        : "bg-background/40 border-border text-muted-foreground hover:border-[color:var(--gold)]/30"
+    )}>
+      <span className="text-xs font-medium">{label}:</span>
+      {children}
     </div>
   );
 }
