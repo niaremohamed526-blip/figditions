@@ -755,6 +755,38 @@ function StocksPage() {
   );
 }
 
+function MetricCard({ icon, label, value, sublabel }: { icon: React.ReactNode; label: string; value: number; sublabel?: string }) {
+  return (
+    <div className="group relative rounded-2xl border border-border bg-card p-5 transition-all duration-200 hover:-translate-y-0.5 hover:border-[color:var(--gold)]/40 hover:shadow-[0_0_0_1px_rgba(200,146,42,0.15),0_10px_30px_-15px_rgba(200,146,42,0.35)]">
+      <div className="flex items-start justify-between">
+        <span className="text-[color:var(--gold)]">{icon}</span>
+      </div>
+      <div className="mt-4">
+        <p className="text-[28px] font-bold text-foreground tabular-nums leading-none">
+          <AnimatedCounter value={value} />
+        </p>
+        <p className="mt-1.5 text-[11px] uppercase tracking-widest text-muted-foreground">{label}</p>
+        {sublabel && <p className="mt-0.5 text-[11px] text-muted-foreground/70">{sublabel}</p>}
+      </div>
+      <div className="absolute bottom-0 left-4 right-4 h-px bg-gradient-to-r from-transparent via-[color:var(--gold)]/40 to-transparent opacity-60" />
+    </div>
+  );
+}
+
+function FilterPill({ label, active, children }: { label: string; active: boolean; children: React.ReactNode }) {
+  return (
+    <div className={cn(
+      "inline-flex items-center gap-1 rounded-full border transition-colors h-9 pl-3 pr-1",
+      active
+        ? "bg-[color:var(--gold)]/12 border-[color:var(--gold)]/40 text-[color:var(--gold)]"
+        : "bg-background/40 border-border text-muted-foreground hover:border-[color:var(--gold)]/30"
+    )}>
+      <span className="text-xs font-medium">{label}:</span>
+      {children}
+    </div>
+  );
+}
+
 function SummaryCard({ icon, label, value, sublabel, accent }: { icon: React.ReactNode; label: string; value: string; sublabel?: string; accent?: "primary" | "gold" }) {
   const color = accent === "gold" ? "text-[color:var(--gold)]" : accent === "primary" ? "text-primary" : "text-[color:var(--gold)]";
   return (
