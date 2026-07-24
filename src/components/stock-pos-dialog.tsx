@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { format } from "date-fns";
-import { Loader2, Zap, Trash2, Plus, CheckCircle2, X, Store, Keyboard } from "lucide-react";
+import { Loader2, Zap, Trash2, Plus, CheckCircle2, X, Store, Keyboard, AlertTriangle, Save } from "lucide-react";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
@@ -15,6 +15,19 @@ import {
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { cn } from "@/lib/utils";
 import { fcfa } from "@/lib/format";
+import { UnsavedChangesModal } from "@/components/unsaved-changes-modal";
+import { useUnsavedChanges } from "@/hooks/useUnsavedChanges";
+import { useCloseGuard } from "@/hooks/useCloseGuard";
+
+const DRAFT_KEY = "figeditions:pos-draft";
+
+interface Draft {
+  librairieNom: string;
+  librairieAdresse: string;
+  dateDepot: string;
+  lines: Line[];
+  savedAt: number;
+}
 
 interface Manuscrit { id: string; titre: string; statut: string; }
 
