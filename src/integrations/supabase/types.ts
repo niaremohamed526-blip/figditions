@@ -168,40 +168,118 @@ export type Database = {
       }
       contrats: {
         Row: {
+          adresse_auteur: string | null
           auteur_id: string | null
+          banque: string | null
+          cachet_url: string | null
+          collection: string | null
+          compte_bancaire: string | null
+          contribution_auteur: string | null
           created_at: string
           date_signature: string | null
           duree: string
+          duree_annees: number
           entreprise_id: string
+          exemplaires_auteur: number
+          format: string | null
+          frequence_paiement: string
           id: string
+          lieu_signature: string
+          livres: Json
           manuscrit_id: string
+          nif_editeur: string | null
+          nina_editeur: string | null
+          nom_representant_editeur: string | null
           notes: string | null
           pourcentage_droits: number
+          profession_auteur: string | null
+          qualite_representant: string | null
+          rccm_editeur: string | null
+          reliure: string | null
           statut: Database["public"]["Enums"]["contrat_statut"]
+          telephone_auteur: string | null
+          territoire_ci: number
+          territoire_france: number
+          territoire_mali: number
+          territoire_senegal: number
+          tirage_minimum: number
+          type_couverture: string | null
         }
         Insert: {
+          adresse_auteur?: string | null
           auteur_id?: string | null
+          banque?: string | null
+          cachet_url?: string | null
+          collection?: string | null
+          compte_bancaire?: string | null
+          contribution_auteur?: string | null
           created_at?: string
           date_signature?: string | null
           duree?: string
+          duree_annees?: number
           entreprise_id: string
+          exemplaires_auteur?: number
+          format?: string | null
+          frequence_paiement?: string
           id?: string
+          lieu_signature?: string
+          livres?: Json
           manuscrit_id: string
+          nif_editeur?: string | null
+          nina_editeur?: string | null
+          nom_representant_editeur?: string | null
           notes?: string | null
           pourcentage_droits?: number
+          profession_auteur?: string | null
+          qualite_representant?: string | null
+          rccm_editeur?: string | null
+          reliure?: string | null
           statut?: Database["public"]["Enums"]["contrat_statut"]
+          telephone_auteur?: string | null
+          territoire_ci?: number
+          territoire_france?: number
+          territoire_mali?: number
+          territoire_senegal?: number
+          tirage_minimum?: number
+          type_couverture?: string | null
         }
         Update: {
+          adresse_auteur?: string | null
           auteur_id?: string | null
+          banque?: string | null
+          cachet_url?: string | null
+          collection?: string | null
+          compte_bancaire?: string | null
+          contribution_auteur?: string | null
           created_at?: string
           date_signature?: string | null
           duree?: string
+          duree_annees?: number
           entreprise_id?: string
+          exemplaires_auteur?: number
+          format?: string | null
+          frequence_paiement?: string
           id?: string
+          lieu_signature?: string
+          livres?: Json
           manuscrit_id?: string
+          nif_editeur?: string | null
+          nina_editeur?: string | null
+          nom_representant_editeur?: string | null
           notes?: string | null
           pourcentage_droits?: number
+          profession_auteur?: string | null
+          qualite_representant?: string | null
+          rccm_editeur?: string | null
+          reliure?: string | null
           statut?: Database["public"]["Enums"]["contrat_statut"]
+          telephone_auteur?: string | null
+          territoire_ci?: number
+          territoire_france?: number
+          territoire_mali?: number
+          territoire_senegal?: number
+          tirage_minimum?: number
+          type_couverture?: string | null
         }
         Relationships: []
       }
@@ -299,44 +377,74 @@ export type Database = {
         Row: {
           abonnement_expire_le: string | null
           adresse: string | null
+          banque: string | null
+          cachet_url: string | null
+          compte_bancaire: string | null
           created_at: string
           email: string | null
+          email_contact: string | null
           id: string
           logo_url: string | null
           max_utilisateurs: number
+          nif: string | null
+          nina: string | null
           nom: string
+          nom_representant: string | null
           owner_id: string
           plan: string
+          qualite_representant: string | null
+          rccm: string | null
           telephone: string | null
           ville: string
+          website: string | null
         }
         Insert: {
           abonnement_expire_le?: string | null
           adresse?: string | null
+          banque?: string | null
+          cachet_url?: string | null
+          compte_bancaire?: string | null
           created_at?: string
           email?: string | null
+          email_contact?: string | null
           id?: string
           logo_url?: string | null
           max_utilisateurs?: number
+          nif?: string | null
+          nina?: string | null
           nom: string
+          nom_representant?: string | null
           owner_id: string
           plan?: string
+          qualite_representant?: string | null
+          rccm?: string | null
           telephone?: string | null
           ville?: string
+          website?: string | null
         }
         Update: {
           abonnement_expire_le?: string | null
           adresse?: string | null
+          banque?: string | null
+          cachet_url?: string | null
+          compte_bancaire?: string | null
           created_at?: string
           email?: string | null
+          email_contact?: string | null
           id?: string
           logo_url?: string | null
           max_utilisateurs?: number
+          nif?: string | null
+          nina?: string | null
           nom?: string
+          nom_representant?: string | null
           owner_id?: string
           plan?: string
+          qualite_representant?: string | null
+          rccm?: string | null
           telephone?: string | null
           ville?: string
+          website?: string | null
         }
         Relationships: []
       }
@@ -1185,7 +1293,7 @@ export type Database = {
       }
     }
     Enums: {
-      contrat_statut: "brouillon" | "signe" | "expire"
+      contrat_statut: "brouillon" | "signe" | "expire" | "resilie"
       couverture_type: "Souple" | "Rigide"
       manuscrit_statut:
         | "recu"
@@ -1327,7 +1435,7 @@ export type CompositeTypes<
 export const Constants = {
   public: {
     Enums: {
-      contrat_statut: ["brouillon", "signe", "expire"],
+      contrat_statut: ["brouillon", "signe", "expire", "resilie"],
       couverture_type: ["Souple", "Rigide"],
       manuscrit_statut: [
         "recu",
