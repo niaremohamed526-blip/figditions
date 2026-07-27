@@ -37,10 +37,12 @@ type OpenResult =
       titre: string;
       auteur: string;
       nom_lecteur: string;
+      email_lecteur?: string | null;
       entreprise_lecteur: string;
       vue_actuelle: number;
       vue_max: number;
     };
+
 
 const REASONS: Record<string, string> = {
   not_found: "Ce lien n'existe pas ou a été supprimé.",
