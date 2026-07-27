@@ -492,7 +492,7 @@ function Pricing() {
         { ok: true, fr: "Manuscrits illimités", en: "Unlimited manuscripts" },
         { ok: true, fr: "Stock interne complet", en: "Complete internal stock" },
         { ok: true, fr: "Stocks illimités (librairies)", en: "Unlimited stocks (bookstores)" },
-        { ok: true, fr: "Contrats OHADA + PDF", en: "OHADA contracts + PDF" },
+        { ok: true, fr: "Contrats & Droits + PDF", en: "Contracts & Rights + PDF" },
         { ok: true, fr: "Finances & Royalties complètes", en: "Full Finances & Royalties" },
         { ok: true, fr: "Partage PDF sécurisé (10 liens/mois)", en: "Secure PDF sharing (10 links/month)" },
         { ok: true, fr: "Analytiques avancées", en: "Advanced analytics" },
