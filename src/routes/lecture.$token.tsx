@@ -1,12 +1,11 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useEffect, useRef, useState } from "react";
-import { useServerFn } from "@tanstack/react-start";
 import { Lock, Loader2, ChevronLeft, ChevronRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Logo } from "@/components/logo";
-import { getShareInfo, openSharedPdf } from "@/lib/lecture.functions";
+import { supabase } from "@/integrations/supabase/client";
 
 export const Route = createFileRoute("/lecture/$token")({
   component: LecturePage,
@@ -16,8 +15,32 @@ export const Route = createFileRoute("/lecture/$token")({
   ] }),
 });
 
-type ShareInfo = Awaited<ReturnType<typeof getShareInfo>>;
-type OpenResult = Awaited<ReturnType<typeof openSharedPdf>>;
+type ShareInfo =
+  | { ok: false; reason: "not_found" | "disabled" | "exhausted" | "no_file" }
+  | {
+      ok: true;
+      share: {
+        nom_lecteur: string | null;
+        email_lecteur: string | null;
+        entreprise_lecteur: string | null;
+        nombre_vues_max: number;
+        nombre_vues_actuel: number;
+      };
+      manuscrit: { titre: string; auteur: string };
+    };
+
+type OpenResult =
+  | { ok: false; reason: "not_found" | "disabled" | "exhausted" | "no_file" }
+  | {
+      ok: true;
+      pdfUrl: string;
+      titre: string;
+      auteur: string;
+      nom_lecteur: string;
+      entreprise_lecteur: string;
+      vue_actuelle: number;
+      vue_max: number;
+    };
 
 const REASONS: Record<string, string> = {
   not_found: "Ce lien n'existe pas ou a été supprimé.",
@@ -26,10 +49,14 @@ const REASONS: Record<string, string> = {
   no_file: "Le document n'est pas encore disponible. Contactez l'éditeur.",
 };
 
+async function callLectureShare<T>(payload: Record<string, unknown>): Promise<T> {
+  const { data, error } = await supabase.functions.invoke("lecture-share", { body: payload });
+  if (error) return { ok: false, reason: "not_found" } as T;
+  return data as T;
+}
+
 function LecturePage() {
   const { token } = Route.useParams();
-  const getInfo = useServerFn(getShareInfo);
-  const openPdf = useServerFn(openSharedPdf);
   const [info, setInfo] = useState<ShareInfo | null>(null);
   const [nom, setNom] = useState("");
   const [email, setEmail] = useState("");
@@ -37,7 +64,7 @@ function LecturePage() {
   const [loading, setLoading] = useState(false);
 
   useEffect(() => {
-    getInfo({ data: { token } }).then((r) => {
+    callLectureShare<ShareInfo>({ action: "info", token }).then((r) => {
       setInfo(r);
       if (r.ok) setNom(r.share.nom_lecteur ?? "");
     });
@@ -46,7 +73,12 @@ function LecturePage() {
   const handleOpen = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
-    const r = await openPdf({ data: { token, nom_confirme: nom, email_confirme: email || undefined } });
+    const r = await callLectureShare<OpenResult>({
+      action: "open",
+      token,
+      nom_confirme: nom,
+      email_confirme: email || undefined,
+    });
     setLoading(false);
     setOpened(r);
   };
