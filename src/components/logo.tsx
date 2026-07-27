@@ -1,6 +1,5 @@
+import logoAsset from "@/assets/figditions-logo.png.asset.json";
 import { cn } from "@/lib/utils";
-
-const LOGO_URL = "/assets/figditions-logo.png?v=4";
 
 export function Logo({
   className,
@@ -27,7 +26,7 @@ export function Logo({
 
   return (
     <img
-      src={LOGO_URL}
+      src={logoAsset.url}
       alt={alt}
       className={cn("object-contain logo select-none", className)}
       draggable={false}
