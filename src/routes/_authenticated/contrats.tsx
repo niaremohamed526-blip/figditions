@@ -546,8 +546,11 @@ function ContratSheet({
     e.preventDefault();
     if (!entrepriseId) return;
     const validLivres = form.livres.filter((l) => l.titre.trim());
-    if (validLivres.length === 0) return toast.error("Ajoutez au moins un livre");
     if (!form.auteur_id) return toast.error("Sélectionnez un auteur");
+    if (validLivres.length === 0) return toast.error("Ajoutez au moins un livre (Manuscrit)");
+    if ((form.statut === "signe" || form.statut === "en_attente_signature") && !form.date_signature) {
+      return toast.error("La date de signature est requise pour ce statut");
+    }
 
     // Ensure manuscrit_id (FK required). Use first livre's manuscrit_id or first available manuscript.
     let manuscritId = validLivres[0].manuscrit_id ?? null;
