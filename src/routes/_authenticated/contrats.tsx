@@ -33,7 +33,7 @@ interface Contrat {
   auteur_id: string | null;
   pourcentage_droits: number;
   duree: string;
-  statut: "brouillon" | "signe" | "expire" | "resilie";
+  statut: "brouillon" | "en_attente_signature" | "signe" | "expire" | "resilie";
   notes: string | null;
   date_signature: string | null;
   created_at: string;
@@ -46,7 +46,7 @@ interface Contrat {
   territoire_france?: number;
 }
 interface Manuscrit { id: string; titre: string; auteur: string; auteur_id?: string | null }
-interface Auteur { id: string; nom_complet: string; email?: string | null; telephone?: string | null }
+interface Auteur { id: string; nom_complet: string; email?: string | null; telephone?: string | null; numero_mobile_money?: string | null }
 
 const STATUT_LABELS: Record<string, string> = {
   brouillon: "Brouillon",
