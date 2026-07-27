@@ -106,7 +106,9 @@ function ContratsInner({ entrepriseId, entreprise }: { entrepriseId: string | nu
     const [{ data: c, error }, { data: ms }, { data: as }] = await Promise.all([
       (supabase as any).from("contrats").select("*").order("created_at", { ascending: false }),
       (supabase as any).from("manuscrits").select("id, titre, auteur, auteur_id"),
-      supabase.from("auteurs").select("id, nom_complet, email, telephone"),
+      entrepriseId
+        ? supabase.from("auteurs").select("id, nom_complet, email, telephone, numero_mobile_money").eq("entreprise_id", entrepriseId).order("nom_complet")
+        : Promise.resolve({ data: [] as Auteur[] } as any),
     ]);
     if (error) toast.error(error.message);
     setItems((c ?? []) as Contrat[]);
