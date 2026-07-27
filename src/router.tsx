@@ -6,15 +6,19 @@ export const getRouter = () => {
   const queryClient = new QueryClient({
     defaultOptions: {
       queries: {
-        // Cached data is considered fresh for 1 min — avoids refetch storms
+        // Offline-first: serve cached data instantly, refetch when back online.
+        networkMode: "offlineFirst",
         staleTime: 60 * 1000,
-        // Keep unused cache for 5 min
-        gcTime: 5 * 60 * 1000,
+        // Keep cache 30 days so it persists across sessions (persister rehydrates it).
+        gcTime: 1000 * 60 * 60 * 24 * 30,
         refetchOnWindowFocus: false,
-        retry: 1,
+        refetchOnReconnect: true,
+        retry: 2,
       },
       mutations: {
-        retry: 0,
+        // Queue mutations while offline; React Query resumes them automatically.
+        networkMode: "offlineFirst",
+        retry: 2,
       },
     },
   });
