@@ -261,7 +261,7 @@ function StocksPage() {
                 <Zap className="h-4 w-4 mr-2 text-primary" /> Saisie rapide
               </DropdownMenuItem>
               <DropdownMenuSeparator />
-              <DropdownMenuItem onClick={() => generateManuelStocksPdf({ maison: entreprise?.nom ?? null })}>
+              <DropdownMenuItem onSelect={(e) => { e.preventDefault(); generateManuelStocksPdf({ maison: entreprise?.nom ?? null }); }}>
                 <BookMarked className="h-4 w-4 mr-2 text-primary" /> Guide d'utilisation
               </DropdownMenuItem>
             </DropdownMenuContent>
