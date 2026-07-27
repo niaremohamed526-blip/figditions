@@ -1,4 +1,4 @@
-const logoAsset = { url: "/assets/figditions-logo.png" };
+import logoAsset from "@/assets/figditions-logo.png.asset.json";
 import { cn } from "@/lib/utils";
 
 export function Logo({
@@ -18,7 +18,6 @@ export function Logo({
       style={{
         background: "transparent",
         backgroundColor: "transparent",
-        filter: "drop-shadow(0 2px 12px rgba(0,0,0,0.55))",
         ...style,
       }}
     />
