@@ -1,18 +1,12 @@
 import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
-import type { supabaseAdmin as SupabaseAdminType } from "@/integrations/supabase/client.server";
 import { createJob, getJob, exportedFileFor, type CCFormat } from "./cloudconvert.server";
 
-let _admin: typeof SupabaseAdminType | null = null;
-async function getAdmin(): Promise<typeof SupabaseAdminType> {
-  if (!_admin) {
-    const mod = await import("@/integrations/supabase/client.server");
-    _admin = mod.supabaseAdmin;
-  }
-  return _admin;
-}
-
+// NOTE: This module intentionally does NOT use supabaseAdmin (service role).
+// All operations run through the authenticated user's client so RLS policies
+// scope access to the caller's entreprise. This lets conversions work on
+// hosts (e.g. Vercel) where SUPABASE_SERVICE_ROLE_KEY isn't provisioned.
 
 const metaSchema = z.object({
   titre: z.string().trim().min(1).max(200),
@@ -24,14 +18,24 @@ const metaSchema = z.object({
   annee_publication: z.number().int().min(1900).max(2100).optional().nullable(),
 });
 
-async function getEntrepriseId(supabase: { from: (...args: unknown[]) => any }, userId: string): Promise<string> {
+async function getEntrepriseInfo(
+  supabase: { from: (...args: unknown[]) => any },
+  userId: string,
+): Promise<{ entId: string; plan: string | null }> {
   const { data, error } = await supabase
     .from("profiles")
-    .select("entreprise_id")
+    .select("entreprise_id, entreprises:entreprise_id(plan)")
     .eq("id", userId)
     .single();
   if (error || !data?.entreprise_id) throw new Error("Entreprise introuvable");
-  return data.entreprise_id as string;
+  const plan = (data as any).entreprises?.plan ?? null;
+  return { entId: data.entreprise_id as string, plan };
+}
+
+function assertBusiness(plan: string | null) {
+  if (plan !== "business") {
+    throw new Error("Cette fonctionnalité est réservée au plan Business");
+  }
 }
 
 /** Create signed upload URL so the browser can PUT the source file directly. */
@@ -41,16 +45,10 @@ export const getSourceUploadUrl = createServerFn({ method: "POST" })
     z.object({ extension: z.enum(["pdf", "docx", "txt"]) }).parse(d),
   )
   .handler(async ({ data, context }) => {
-    const supabaseAdmin = await getAdmin();
-    const entId = await getEntrepriseId(context.supabase, context.userId);
-    // Plan gate also on upload URL to short-circuit unauthorized usage.
-    const { data: ent } = await supabaseAdmin
-      .from("entreprises").select("plan").eq("id", entId).single();
-    if (!ent || ent.plan !== "business") {
-      throw new Error("Cette fonctionnalité est réservée au plan Business");
-    }
+    const { entId, plan } = await getEntrepriseInfo(context.supabase, context.userId);
+    assertBusiness(plan);
     const path = `${entId}/sources/${crypto.randomUUID()}.${data.extension}`;
-    const { data: signed, error } = await supabaseAdmin.storage
+    const { data: signed, error } = await context.supabase.storage
       .from("conversions")
       .createSignedUploadUrl(path);
     if (error || !signed) throw new Error(error?.message ?? "Upload URL error");
@@ -74,10 +72,10 @@ export const createAndStartConversion = createServerFn({ method: "POST" })
       .parse(d),
   )
   .handler(async ({ data, context }) => {
-    const supabaseAdmin = await getAdmin();
-    const entId = await getEntrepriseId(context.supabase, context.userId);
+    const { entId, plan } = await getEntrepriseInfo(context.supabase, context.userId);
+    assertBusiness(plan);
 
-    // SECURITY: prevent cross-tenant path injection — file paths MUST live under the caller's tenant prefix.
+    // SECURITY: prevent cross-tenant path injection.
     if (!data.fichier_source_path.startsWith(`${entId}/`)) {
       throw new Error("Accès refusé");
     }
@@ -85,21 +83,14 @@ export const createAndStartConversion = createServerFn({ method: "POST" })
       throw new Error("Accès refusé");
     }
 
-    // PLAN GATE: conversions are reserved for Business plan.
-    const { data: ent } = await supabaseAdmin
-      .from("entreprises").select("plan").eq("id", entId).single();
-    if (!ent || ent.plan !== "business") {
-      throw new Error("Cette fonctionnalité est réservée au plan Business");
-    }
-
     // Sign source URL for CloudConvert (1h)
-    const { data: signed, error: sErr } = await supabaseAdmin.storage
+    const { data: signed, error: sErr } = await context.supabase.storage
       .from("conversions")
       .createSignedUrl(data.fichier_source_path, 3600);
     if (sErr || !signed) throw new Error(sErr?.message ?? "Signed URL error");
 
     // Insert row
-    const { data: row, error: insErr } = await supabaseAdmin
+    const { data: row, error: insErr } = await context.supabase
       .from("conversions")
       .insert({
         entreprise_id: entId,
@@ -131,14 +122,14 @@ export const createAndStartConversion = createServerFn({ method: "POST" })
         targets: data.formats_cibles as CCFormat[],
         metadata: { titre: data.metadata.titre, auteur: data.metadata.auteur },
       });
-      await supabaseAdmin
+      await context.supabase
         .from("conversions")
         .update({ statut: "en_cours", cloudconvert_job_id: job.id })
         .eq("id", row.id);
       return { id: row.id, jobId: job.id };
     } catch (e) {
       const msg = e instanceof Error ? e.message : String(e);
-      await supabaseAdmin
+      await context.supabase
         .from("conversions")
         .update({ statut: "echec", erreur_message: msg })
         .eq("id", row.id);
@@ -151,10 +142,9 @@ export const pollConversion = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .inputValidator((d: { id: string }) => z.object({ id: z.string().uuid() }).parse(d))
   .handler(async ({ data, context }) => {
-    const supabaseAdmin = await getAdmin();
-    const entId = await getEntrepriseId(context.supabase, context.userId);
+    const { entId } = await getEntrepriseInfo(context.supabase, context.userId);
 
-    const { data: row, error } = await supabaseAdmin
+    const { data: row, error } = await context.supabase
       .from("conversions")
       .select("*")
       .eq("id", data.id)
@@ -170,7 +160,7 @@ export const pollConversion = createServerFn({ method: "POST" })
       job = await getJob(row.cloudconvert_job_id);
     } catch (e) {
       const msg = e instanceof Error ? e.message : String(e);
-      await supabaseAdmin
+      await context.supabase
         .from("conversions")
         .update({ statut: "echec", erreur_message: msg })
         .eq("id", row.id);
@@ -180,7 +170,7 @@ export const pollConversion = createServerFn({ method: "POST" })
     if (job.status === "error") {
       const failed = job.tasks.find((t) => t.status === "error");
       const msg = failed?.message ?? "Conversion échouée";
-      await supabaseAdmin
+      await context.supabase
         .from("conversions")
         .update({ statut: "echec", erreur_message: msg })
         .eq("id", row.id);
@@ -189,7 +179,6 @@ export const pollConversion = createServerFn({ method: "POST" })
 
     if (job.status !== "finished") return row;
 
-    // Download exports & upload to our bucket
     let epub_path: string | null = null;
     let mobi_path: string | null = null;
     let taille_epub_kb: number | null = null;
@@ -202,7 +191,7 @@ export const pollConversion = createServerFn({ method: "POST" })
       if (!dl.ok) throw new Error(`Téléchargement ${fmt} échoué`);
       const buf = new Uint8Array(await dl.arrayBuffer());
       const destPath = `${entId}/${row.id}/${f.filename}`;
-      const { error: upErr } = await supabaseAdmin.storage
+      const { error: upErr } = await context.supabase.storage
         .from("conversions")
         .upload(destPath, buf, {
           contentType: fmt === "epub" ? "application/epub+zip" : "application/x-mobipocket-ebook",
@@ -218,7 +207,7 @@ export const pollConversion = createServerFn({ method: "POST" })
       }
     }
 
-    const { data: updated, error: uErr } = await supabaseAdmin
+    const { data: updated, error: uErr } = await context.supabase
       .from("conversions")
       .update({
         statut: "termine",
@@ -237,15 +226,13 @@ export const pollConversion = createServerFn({ method: "POST" })
       .single();
     if (uErr) throw new Error(uErr.message);
     return updated;
-
   });
 
 export const listConversions = createServerFn({ method: "GET" })
   .middleware([requireSupabaseAuth])
   .handler(async ({ context }) => {
-    const supabaseAdmin = await getAdmin();
-    const entId = await getEntrepriseId(context.supabase, context.userId);
-    const { data, error } = await supabaseAdmin
+    const { entId } = await getEntrepriseInfo(context.supabase, context.userId);
+    const { data, error } = await context.supabase
       .from("conversions")
       .select("*")
       .eq("entreprise_id", entId)
@@ -259,10 +246,9 @@ export const getConversionDownloadUrl = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .inputValidator((d: { path: string }) => z.object({ path: z.string().min(1) }).parse(d))
   .handler(async ({ data, context }) => {
-    const supabaseAdmin = await getAdmin();
-    const entId = await getEntrepriseId(context.supabase, context.userId);
+    const { entId } = await getEntrepriseInfo(context.supabase, context.userId);
     if (!data.path.startsWith(`${entId}/`)) throw new Error("Accès refusé");
-    const { data: signed, error } = await supabaseAdmin.storage
+    const { data: signed, error } = await context.supabase.storage
       .from("conversions")
       .createSignedUrl(data.path, 3600);
     if (error || !signed) throw new Error(error?.message ?? "Signed URL error");
@@ -273,9 +259,8 @@ export const deleteConversion = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .inputValidator((d: { id: string }) => z.object({ id: z.string().uuid() }).parse(d))
   .handler(async ({ data, context }) => {
-    const supabaseAdmin = await getAdmin();
-    const entId = await getEntrepriseId(context.supabase, context.userId);
-    const { data: row } = await supabaseAdmin
+    const { entId } = await getEntrepriseInfo(context.supabase, context.userId);
+    const { data: row } = await context.supabase
       .from("conversions")
       .select("*")
       .eq("id", data.id)
@@ -286,8 +271,8 @@ export const deleteConversion = createServerFn({ method: "POST" })
       Boolean,
     ) as string[];
     if (paths.length) {
-      await supabaseAdmin.storage.from("conversions").remove(paths);
+      await context.supabase.storage.from("conversions").remove(paths);
     }
-    await supabaseAdmin.from("conversions").delete().eq("id", data.id);
+    await context.supabase.from("conversions").delete().eq("id", data.id);
     return { ok: true };
   });
