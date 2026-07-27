@@ -626,10 +626,10 @@ function ContratSheet({
               <div className="rounded-lg border border-primary/20 bg-primary/5 p-4 space-y-1 text-sm">
                 <p className="font-semibold">{entreprise?.nom ?? "—"}</p>
                 <p className="text-xs text-muted-foreground">
-                  {[entreprise?.nif && `NIF ${entreprise.nif}`, entreprise?.rccm && `RCCM ${entreprise.rccm}`, entreprise?.nina && `NINA ${entreprise.nina}`].filter(Boolean).join(" · ") || "Renseignez vos identifiants légaux dans Paramètres."}
+                  {[entreprise?.nif && `NIF ${(entreprise as any)?.nif}`, entreprise?.rccm && `RCCM ${(entreprise as any)?.rccm}`, entreprise?.nina && `NINA ${(entreprise as any)?.nina}`].filter(Boolean).join(" · ") || "Renseignez vos identifiants légaux dans Paramètres."}
                 </p>
                 <p className="text-xs text-muted-foreground">
-                  {entreprise?.nom_representant ? `Représenté par ${entreprise.nom_representant}${entreprise?.qualite_representant ? ` (${entreprise.qualite_representant})` : ""}` : "Représentant non défini"}
+                  {entreprise?.nom_representant ? `Représenté par ${(entreprise as any)?.nom_representant}${entreprise?.qualite_representant ? ` (${(entreprise as any)?.qualite_representant})` : ""}` : "Représentant non défini"}
                 </p>
               </div>
 
