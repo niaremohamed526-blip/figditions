@@ -50,12 +50,14 @@ interface Auteur { id: string; nom_complet: string; email?: string | null; telep
 
 const STATUT_LABELS: Record<string, string> = {
   brouillon: "Brouillon",
+  en_attente_signature: "En attente",
   signe: "Signé",
   expire: "Expiré",
   resilie: "Résilié",
 };
 const STATUT_CLS: Record<string, string> = {
-  brouillon: "bg-muted/60 text-muted-foreground border-border",
+  brouillon: "bg-slate-500/15 text-slate-400 border-slate-500/30",
+  en_attente_signature: "bg-blue-500/15 text-blue-400 border-blue-500/30",
   signe: "bg-emerald-500/15 text-emerald-500 border-emerald-500/40",
   expire: "bg-destructive/15 text-destructive border-destructive/40",
   resilie: "bg-orange-500/15 text-orange-500 border-orange-500/40",
