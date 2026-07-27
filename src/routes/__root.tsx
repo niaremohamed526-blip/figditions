@@ -169,6 +169,7 @@ function RootComponent() {
 
   return (
     <QueryClientProvider client={queryClient}>
+      <PwaSplash />
       <RouteProgress />
       <OfflineBanner />
       <Outlet />
