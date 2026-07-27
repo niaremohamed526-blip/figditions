@@ -569,7 +569,7 @@ function ContratSheet({
       duree_annees: form.duree_annees,
       statut: form.statut,
       notes: form.notes || null,
-      date_signature: form.statut === "signe" ? form.date_signature : (editing?.date_signature ?? null),
+      date_signature: form.date_signature || (editing?.date_signature ?? null),
       livres: validLivres,
       collection: form.collection || null,
       adresse_auteur: form.adresse_auteur || null,
