@@ -15,6 +15,7 @@ import { Toaster } from "@/components/ui/sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { RouteProgress } from "@/components/route-progress";
 import { OfflineBanner } from "@/components/offline-banner";
+import { PwaSplash } from "@/components/pwa-splash";
 import { registerPwa } from "@/lib/pwa-register";
 import { FIGDITIONS_APP_ICON_VERSION, FIGDITIONS_SITE_LOGO_ABSOLUTE_URL } from "@/lib/brand-assets";
 
@@ -168,6 +169,7 @@ function RootComponent() {
 
   return (
     <QueryClientProvider client={queryClient}>
+      <PwaSplash />
       <RouteProgress />
       <OfflineBanner />
       <Outlet />
