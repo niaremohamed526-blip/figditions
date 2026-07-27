@@ -230,6 +230,8 @@ function ContratsInner({ entrepriseId, entreprise }: { entrepriseId: string | nu
                   <th className="px-4 py-3 font-medium">Livre(s)</th>
                   <th className="px-4 py-3 font-medium">Auteur</th>
                   <th className="px-4 py-3 font-medium hidden sm:table-cell">% Droits</th>
+                  <th className="px-4 py-3 font-medium hidden lg:table-cell">Couverture</th>
+                  <th className="px-4 py-3 font-medium hidden lg:table-cell">Reliure</th>
                   <th className="px-4 py-3 font-medium hidden md:table-cell">Territoires</th>
                   <th className="px-4 py-3 font-medium hidden md:table-cell">Durée</th>
                   <th className="px-4 py-3 font-medium">Statut</th>
