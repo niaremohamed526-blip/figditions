@@ -1,6 +1,6 @@
 import jsPDF from "jspdf";
 import { fcfa } from "@/lib/format";
-import figditionsLogoUrl from "@/assets/figditions-logo.png";
+import { FIGDITIONS_SITE_LOGO_URL as figditionsLogoUrl } from "@/lib/brand-assets";
 
 export interface BordereauLigne {
   titre: string;

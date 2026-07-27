@@ -1,5 +1,5 @@
 import jsPDF from "jspdf";
-import figditionsLogoUrl from "@/assets/figditions-logo.png";
+import { FIGDITIONS_SITE_LOGO_URL as figditionsLogoUrl } from "@/lib/brand-assets";
 
 async function urlToDataUrl(url: string): Promise<string> {
   const res = await fetch(url);

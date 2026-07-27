@@ -59,7 +59,15 @@ export async function registerPwa() {
 
   try {
     // vite-plugin-pwa emits /sw.js at build time
-    await navigator.serviceWorker.register(APP_SW_PATH, { scope: "/" });
+    let reloadingForUpdate = false;
+    navigator.serviceWorker.addEventListener("controllerchange", () => {
+      if (reloadingForUpdate) return;
+      reloadingForUpdate = true;
+      window.location.reload();
+    });
+
+    const registration = await navigator.serviceWorker.register(APP_SW_PATH, { scope: "/" });
+    await registration.update();
   } catch (err) {
     console.warn("[PWA] Service worker registration failed:", err);
   }

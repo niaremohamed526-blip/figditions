@@ -1,4 +1,4 @@
-import logoAsset from "@/assets/figditions-logo.png.asset.json";
+import { FIGDITIONS_SITE_LOGO_URL } from "@/lib/brand-assets";
 import { cn } from "@/lib/utils";
 
 export function Logo({
@@ -26,7 +26,7 @@ export function Logo({
 
   return (
     <img
-      src={logoAsset.url}
+      src={FIGDITIONS_SITE_LOGO_URL}
       alt={alt}
       className={cn("object-contain logo select-none", className)}
       draggable={false}
