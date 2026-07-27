@@ -37,10 +37,12 @@ type OpenResult =
       titre: string;
       auteur: string;
       nom_lecteur: string;
+      email_lecteur?: string | null;
       entreprise_lecteur: string;
       vue_actuelle: number;
       vue_max: number;
     };
+
 
 const REASONS: Record<string, string> = {
   not_found: "Ce lien n'existe pas ou a été supprimé.",
@@ -165,26 +167,66 @@ function SecureViewer({ data }: { data: Extract<OpenResult, { ok: true }> }) {
   const [page, setPage] = useState(1);
   const [rendering, setRendering] = useState(true);
   const [now, setNow] = useState(new Date());
+  const [obscured, setObscured] = useState(false);
+  const [obscureReason, setObscureReason] = useState<string>("");
 
-  // Security: disable right-click, common shortcuts, devtools, selection
+  // Flash the blur overlay for N ms (used on PrintScreen, blur, devtools).
+  const flashObscure = (reason: string, ms = 3000) => {
+    setObscureReason(reason);
+    setObscured(true);
+    try { navigator.clipboard?.writeText("— Contenu protégé FIGDITIONS —").catch(() => {}); } catch {}
+    window.setTimeout(() => setObscured(false), ms);
+  };
+
+  // Security: disable right-click, common shortcuts, block screenshot triggers
   useEffect(() => {
     const onCtx = (e: MouseEvent) => e.preventDefault();
     const onKey = (e: KeyboardEvent) => {
       const k = e.key.toLowerCase();
-      if (e.key === "PrintScreen") { e.preventDefault(); return; }
-      if ((e.ctrlKey || e.metaKey) && ["s", "p", "c", "u"].includes(k)) e.preventDefault();
-      if ((e.ctrlKey || e.metaKey) && e.shiftKey && ["i", "j", "c"].includes(k)) e.preventDefault();
+      if (e.key === "PrintScreen") {
+        e.preventDefault();
+        flashObscure("Capture d'écran détectée — contenu masqué");
+        return;
+      }
+      // macOS screenshot shortcuts: Cmd+Shift+3, Cmd+Shift+4, Cmd+Shift+5
+      if (e.metaKey && e.shiftKey && ["3", "4", "5"].includes(e.key)) {
+        e.preventDefault();
+        flashObscure("Capture d'écran détectée — contenu masqué");
+        return;
+      }
+      if ((e.ctrlKey || e.metaKey) && ["s", "p", "c", "u", "a"].includes(k)) e.preventDefault();
+      if ((e.ctrlKey || e.metaKey) && e.shiftKey && ["i", "j", "c", "s"].includes(k)) e.preventDefault();
       if (e.key === "F12") e.preventDefault();
+    };
+    // Blur automatically when window loses focus (Alt+Tab, Snipping Tool, screen-record app)
+    const onBlur = () => flashObscure("Fenêtre inactive — contenu masqué", 60_000);
+    const onFocus = () => setObscured(false);
+    const onVis = () => {
+      if (document.visibilityState === "hidden") flashObscure("Onglet inactif — contenu masqué", 60_000);
+      else setObscured(false);
+    };
+    // Detect DevTools open via viewport gap heuristic
+    const devtoolsCheck = () => {
+      const gap = Math.max(window.outerWidth - window.innerWidth, window.outerHeight - window.innerHeight);
+      if (gap > 200) flashObscure("Outils de développement détectés — contenu masqué", 5000);
     };
     document.addEventListener("contextmenu", onCtx);
     document.addEventListener("keydown", onKey);
+    window.addEventListener("blur", onBlur);
+    window.addEventListener("focus", onFocus);
+    document.addEventListener("visibilitychange", onVis);
+    const devInt = window.setInterval(devtoolsCheck, 1500);
     document.body.style.userSelect = "none";
-    const t = setInterval(() => setNow(new Date()), 30_000);
+    const t = window.setInterval(() => setNow(new Date()), 5_000);
     return () => {
       document.removeEventListener("contextmenu", onCtx);
       document.removeEventListener("keydown", onKey);
+      window.removeEventListener("blur", onBlur);
+      window.removeEventListener("focus", onFocus);
+      document.removeEventListener("visibilitychange", onVis);
+      window.clearInterval(devInt);
       document.body.style.userSelect = "";
-      clearInterval(t);
+      window.clearInterval(t);
     };
   }, []);
 
@@ -204,7 +246,7 @@ function SecureViewer({ data }: { data: Extract<OpenResult, { ok: true }> }) {
     return () => { cancelled = true; };
   }, [data.pdfUrl]);
 
-  // Render current page + watermark
+  // Render current page + dense diagonal watermark with identity + timestamp
   useEffect(() => {
     if (!pdfRef.current || !canvasRef.current || numPages === 0) return;
     let cancelled = false;
@@ -225,25 +267,30 @@ function SecureViewer({ data }: { data: Extract<OpenResult, { ok: true }> }) {
       canvas.style.height = `${viewport.height}px`;
       await pg.render({ canvasContext: ctx, viewport, canvas }).promise;
       if (cancelled) return;
-      // Watermark
-      const text = `Lecture exclusive — ${data.nom_lecteur}${data.entreprise_lecteur ? " · " + data.entreprise_lecteur : ""} — FIGDITIONS`;
+      // Dense diagonal watermark
+      const stamp = new Date().toLocaleString("fr-FR");
+      const idLine = `${data.nom_lecteur}${data.email_lecteur ? " · " + data.email_lecteur : ""}${data.entreprise_lecteur ? " · " + data.entreprise_lecteur : ""}`;
+      const text = `FIGDITIONS · ${idLine} · ${stamp}`;
       ctx.save();
-      ctx.fillStyle = "rgba(232,184,75,0.15)";
-      ctx.font = "bold 28px sans-serif";
+      ctx.fillStyle = "rgba(232,184,75,0.18)";
+      ctx.font = "bold 22px sans-serif";
       ctx.textAlign = "center";
       ctx.textBaseline = "middle";
       ctx.translate(canvas.width / 2, canvas.height / 2);
-      ctx.rotate((-35 * Math.PI) / 180);
-      const positions = [-canvas.height * 0.35, 0, canvas.height * 0.35];
-      for (const y of positions) ctx.fillText(text, 0, y);
+      ctx.rotate((-30 * Math.PI) / 180);
+      const step = 140;
+      const range = Math.ceil(Math.max(canvas.width, canvas.height) / step) + 2;
+      for (let i = -range; i <= range; i++) {
+        ctx.fillText(text, 0, i * step);
+      }
       ctx.restore();
       setRendering(false);
     })();
     return () => { cancelled = true; };
-  }, [page, numPages, data.nom_lecteur, data.entreprise_lecteur]);
+  }, [page, numPages, data.nom_lecteur, data.email_lecteur, data.entreprise_lecteur]);
 
   return (
-    <div className="min-h-screen flex flex-col" style={{ background: "#0D0A06" }} onCopy={(e) => e.preventDefault()}>
+    <div className="min-h-screen flex flex-col relative" style={{ background: "#0D0A06" }} onCopy={(e) => e.preventDefault()}>
       {/* Top bar */}
       <header className="sticky top-0 z-10 flex items-center justify-between gap-3 px-4 py-3 border-b border-border/60 bg-background/80 backdrop-blur">
         <Logo className="h-7" />
@@ -277,6 +324,27 @@ function SecureViewer({ data }: { data: Extract<OpenResult, { ok: true }> }) {
         <span>{now.toLocaleString("fr-FR")}</span>
         <span>Lecteur : {data.nom_lecteur}</span>
       </footer>
+
+      {/* Blur overlay — masque le contenu lors d'événements suspects */}
+      {obscured && (
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center backdrop-blur-2xl"
+          style={{ background: "rgba(13,10,6,0.85)" }}
+        >
+          <div className="max-w-md text-center space-y-4 px-6">
+            <Lock className="h-14 w-14 mx-auto" style={{ color: "#E8B84B" }} />
+            <p className="text-white text-lg font-semibold">{obscureReason}</p>
+            <p className="text-sm text-muted-foreground">
+              Cette tentative a été enregistrée avec votre identité, votre adresse IP et l'horodatage.
+              Revenez sur la fenêtre pour reprendre la lecture.
+            </p>
+            <p className="text-xs" style={{ color: "#E8B84B" }}>
+              {data.nom_lecteur}{data.email_lecteur ? " · " + data.email_lecteur : ""}
+            </p>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
+
