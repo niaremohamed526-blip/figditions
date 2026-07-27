@@ -519,3 +519,66 @@ button {
     scroll-behavior: auto !important;
   }
 }
+
+/* ─────────────────────────────────────────────────────────────
+   Global form styling — native inputs & selects (dark theme)
+   Shadcn/Radix components have their own styling; these rules
+   target NATIVE elements only so they match the warm gold theme.
+   ───────────────────────────────────────────────────────────── */
+
+select:not([data-radix-select-trigger]) {
+  background-color: rgba(200,146,42,0.05);
+  border: 1px solid rgba(200,146,42,0.15);
+  border-radius: 10px;
+  color: white;
+  height: 44px;
+  padding: 0 40px 0 16px;
+  width: 100%;
+  cursor: pointer;
+  color-scheme: dark;
+  appearance: none;
+  -webkit-appearance: none;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%23C8922A' d='M6 8L1 3h10z'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 16px center;
+  font-size: 14px;
+}
+select:not([data-radix-select-trigger]):focus {
+  border-color: #C8922A;
+  box-shadow: 0 0 0 3px rgba(200,146,42,0.1);
+  outline: none;
+}
+select:not([data-radix-select-trigger]) option {
+  background-color: #1A1208;
+  color: white;
+  padding: 8px;
+}
+
+/* Date & datetime inputs */
+input[type="date"],
+input[type="datetime-local"],
+input[type="time"] {
+  color-scheme: dark;
+}
+input[type="date"]::-webkit-calendar-picker-indicator,
+input[type="datetime-local"]::-webkit-calendar-picker-indicator,
+input[type="time"]::-webkit-calendar-picker-indicator {
+  filter: invert(0.7) sepia(1) saturate(5) hue-rotate(5deg);
+  opacity: 0.8;
+  cursor: pointer;
+}
+
+/* Remove ugly spinners on number inputs */
+input[type="number"]::-webkit-inner-spin-button,
+input[type="number"]::-webkit-outer-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+input[type="number"] {
+  -moz-appearance: textfield;
+}
+
+/* Ensure Radix Select popover always renders above sheets/drawers */
+[data-radix-popper-content-wrapper] {
+  z-index: 500 !important;
+}
