@@ -32,7 +32,7 @@ const NAV: NavItem[] = [
   { to: "/imprimeries", labelFr: "Imprimeries", labelEn: "Print Directory", icon: Factory, permission: "imprimeries" },
   { to: "/conversions", labelFr: "Conversions", labelEn: "Conversions", icon: RefreshCw, permission: "conversions", feature: "conversions" },
   { to: "/finances", labelFr: "Finances", labelEn: "Finances", icon: Wallet, permission: "finances", feature: "finances" },
-  { to: "/contrats", labelFr: "Contrats", labelEn: "Contracts", icon: FileText, permission: "contrats", feature: "contrats" },
+  { to: "/contrats", labelFr: "Contrats & Droits", labelEn: "Contracts & Rights", icon: FileText, permission: "contrats", feature: "contrats" },
   { to: "/parametres", labelFr: "Paramètres", labelEn: "Settings", icon: Settings, permission: "parametres" },
 ];
 
