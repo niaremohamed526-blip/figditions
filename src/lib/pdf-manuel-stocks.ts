@@ -21,6 +21,22 @@ const BG_TIP = "#eef6ee";
 const BG_WARN = "#fdf3e3";
 const BG_EX = "#eef2fb";
 
+// Strip characters not supported by jsPDF built-in (WinAnsi) fonts.
+function clean(s: string): string {
+  if (!s) return "";
+  return String(s)
+    .replace(/[\u2018\u2019\u201A\u2039\u203A]/g, "'")
+    .replace(/[\u201C\u201D\u201E\u00AB\u00BB]/g, '"')
+    .replace(/[\u2013\u2014\u2212]/g, "-")
+    .replace(/\u2026/g, "...")
+    .replace(/\u2192/g, "->")
+    .replace(/\u2022/g, "-")
+    .replace(/[\u202F\u00A0\u2007\u2009\u200A\u200B]/g, " ")
+    .replace(/[^\x20-\x7EÀ-ÖØ-öø-ÿ€œŒŸ]/g, "")
+    .replace(/\s{2,}/g, " ")
+    .trim();
+}
+
 export async function generateManuelStocksPdf(opts: { maison?: string | null } = {}) {
   const doc = new jsPDF({ unit: "pt", format: "a4" });
   const W = doc.internal.pageSize.getWidth();
