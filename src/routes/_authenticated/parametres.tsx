@@ -23,6 +23,7 @@ import { PromoCodeCard } from "@/components/promo-code-card";
 import { PaymentResultModal } from "@/components/payment-result-modal";
 import { fcfa } from "@/lib/format";
 import { SecurityCard } from "@/components/security-card";
+import { NotificationsCard } from "@/components/notifications-card";
 import { ConfigStatusSection } from "@/components/config-status-section";
 import {
   PAGES, PRESETS, applyPreset, defaultInvitationPermissions, fullPermissions,
