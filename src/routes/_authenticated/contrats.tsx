@@ -640,12 +640,34 @@ function ContratSheet({
 
               <div className="space-y-2">
                 <Label>Auteur *</Label>
-                <Select value={form.auteur_id} onValueChange={(v) => upd("auteur_id", v)}>
-                  <SelectTrigger><SelectValue placeholder="Choisir un auteur" /></SelectTrigger>
-                  <SelectContent>
-                    {auteurs.map((a) => <SelectItem key={a.id} value={a.id}>{a.nom_complet}</SelectItem>)}
-                  </SelectContent>
-                </Select>
+                {auteurs.length === 0 ? (
+                  <div className="rounded-lg border border-dashed border-primary/30 bg-primary/5 p-4 text-sm space-y-2">
+                    <p className="text-muted-foreground">Aucun auteur trouvé — ajoutez d'abord un auteur.</p>
+                    <Link to="/auteurs" className="inline-flex items-center gap-1 text-primary hover:underline text-xs font-medium">
+                      → Aller à la page Auteurs
+                    </Link>
+                  </div>
+                ) : (
+                  <>
+                    <Select value={form.auteur_id} onValueChange={(v) => upd("auteur_id", v)}>
+                      <SelectTrigger><SelectValue placeholder="Choisir un auteur" /></SelectTrigger>
+                      <SelectContent className="z-[400]">
+                        {auteurs.map((a) => <SelectItem key={a.id} value={a.id}>{a.nom_complet}</SelectItem>)}
+                      </SelectContent>
+                    </Select>
+                    {form.auteur_id && (() => {
+                      const a = auteurs.find((x) => x.id === form.auteur_id);
+                      if (!a) return null;
+                      const bits = [a.email, a.telephone, a.numero_mobile_money].filter(Boolean).join(" · ");
+                      return (
+                        <div className="rounded-lg border border-primary/40 bg-primary/5 p-3 text-xs animate-in fade-in slide-in-from-top-1 duration-200">
+                          <p className="font-semibold text-primary">✓ {a.nom_complet}</p>
+                          {bits && <p className="text-muted-foreground mt-0.5">{bits}</p>}
+                        </div>
+                      );
+                    })()}
+                  </>
+                )}
               </div>
 
               <div className="grid sm:grid-cols-2 gap-3">
