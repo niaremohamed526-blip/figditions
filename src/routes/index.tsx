@@ -470,7 +470,7 @@ function Pricing() {
         { ok: true, fr: "Stock interne basique", en: "Basic internal stock" },
         { ok: true, fr: "Suivi des stocks (2 librairies max)", en: "Stock tracking (2 bookstores max)" },
         { ok: true, fr: "Estimateur de coûts FCFA", en: "FCFA cost estimator" },
-        { ok: false, fr: "Contrats OHADA", en: "OHADA contracts" },
+        { ok: false, fr: "Contrats & Droits", en: "Contracts & Rights" },
         { ok: false, fr: "Finances & Royalties", en: "Finances & Royalties" },
         { ok: false, fr: "Partage PDF sécurisé", en: "Secure PDF sharing" },
         { ok: false, fr: "Analytiques avancées", en: "Advanced analytics" },
