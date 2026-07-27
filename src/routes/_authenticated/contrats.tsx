@@ -844,7 +844,13 @@ function ContratSheet({
                 </div>
                 <div className="space-y-2">
                   <Label>Date de signature</Label>
-                  <Input type="date" value={form.date_signature} onChange={(e) => upd("date_signature", e.target.value)} />
+                  <Input
+                    type="date"
+                    value={form.date_signature}
+                    onChange={(e) => upd("date_signature", e.target.value)}
+                    className="bg-background border-border/60 [color-scheme:dark] focus:ring-primary/40"
+                  />
+                  <p className="text-xs text-muted-foreground">Format: JJ/MM/AAAA</p>
                 </div>
               </div>
             </Section>
