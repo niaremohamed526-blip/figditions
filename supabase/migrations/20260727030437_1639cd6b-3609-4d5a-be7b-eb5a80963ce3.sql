@@ -1,0 +1,1 @@
+ALTER TYPE public.contrat_statut ADD VALUE IF NOT EXISTS 'en_attente_signature';

@@ -1293,7 +1293,12 @@ export type Database = {
       }
     }
     Enums: {
-      contrat_statut: "brouillon" | "signe" | "expire" | "resilie"
+      contrat_statut:
+        | "brouillon"
+        | "signe"
+        | "expire"
+        | "resilie"
+        | "en_attente_signature"
       couverture_type: "Souple" | "Rigide"
       manuscrit_statut:
         | "recu"
@@ -1435,7 +1440,13 @@ export type CompositeTypes<
 export const Constants = {
   public: {
     Enums: {
-      contrat_statut: ["brouillon", "signe", "expire", "resilie"],
+      contrat_statut: [
+        "brouillon",
+        "signe",
+        "expire",
+        "resilie",
+        "en_attente_signature",
+      ],
       couverture_type: ["Souple", "Rigide"],
       manuscrit_statut: [
         "recu",
