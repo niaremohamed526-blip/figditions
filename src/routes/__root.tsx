@@ -17,7 +17,7 @@ import { RouteProgress } from "@/components/route-progress";
 import { OfflineBanner } from "@/components/offline-banner";
 import { PwaSplash } from "@/components/pwa-splash";
 import { registerPwa } from "@/lib/pwa-register";
-import { FIGDITIONS_APP_ICON_VERSION, FIGDITIONS_SITE_LOGO_ABSOLUTE_URL } from "@/lib/brand-assets";
+import { FIGDITIONS_APP_ICON_VERSION, FIGDITIONS_SITE_LOGO_ABSOLUTE_URL, FIGDITIONS_SITE_LOGO_URL } from "@/lib/brand-assets";
 
 import appCss from "../styles.css?url";
 
