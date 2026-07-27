@@ -246,7 +246,8 @@ export async function generateManuelStocksPdf(opts: { maison?: string | null } =
     "7. Questions fréquentes",
     "8. Support",
   ];
-  toc.forEach((t) => {
+  toc.forEach((raw) => {
+    const t = clean(raw);
     setColor("#333333");
     doc.setFont("helvetica", "normal");
     doc.setFontSize(11);
