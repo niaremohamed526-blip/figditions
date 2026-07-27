@@ -204,8 +204,8 @@ function ContratsInner({ entrepriseId, entreprise }: { entrepriseId: string | nu
     <div className="space-y-6">
       <header className="flex flex-wrap items-end justify-between gap-3">
         <div>
-          <h1 className="text-3xl font-bold tracking-tight">Contrats</h1>
-          <p className="text-muted-foreground mt-1">Contrats d'édition professionnels au format Malien.</p>
+          <h1 className="text-3xl font-bold tracking-tight">Contrats & Droits</h1>
+          <p className="text-muted-foreground mt-1">Gérez vos contrats d'édition et droits d'auteur.</p>
         </div>
         <Button onClick={openCreate} className="bg-primary text-primary-foreground hover:bg-primary/90">
           <Plus className="h-4 w-4" /> Nouveau contrat
