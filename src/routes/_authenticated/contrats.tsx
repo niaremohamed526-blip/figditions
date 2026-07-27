@@ -80,7 +80,8 @@ function computeExpiry(c: Contrat): { daysLeft: number | null; expired: boolean 
 
 function ContratsPage() {
   const { user } = useAuth();
-  const { profile, entreprise, loading: pLoading } = useProfile(user?.id);
+  const { profile, entreprise: entrepriseRaw, loading: pLoading } = useProfile(user?.id);
+  const entreprise = entrepriseRaw as any;
 
   if (pLoading) return <div className="space-y-4"><Skeleton className="h-12 w-64" /><Skeleton className="h-96 w-full" /></div>;
   const plan = planFor(entreprise?.plan);

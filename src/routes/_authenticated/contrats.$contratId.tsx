@@ -27,7 +27,8 @@ const STATUT_CLS: Record<string, string> = {
 function ContratDetailPage() {
   const { contratId } = Route.useParams();
   const { user } = useAuth();
-  const { profile, entreprise, loading: pLoading } = useProfile(user?.id);
+  const { profile, entreprise: entrepriseRaw, loading: pLoading } = useProfile(user?.id);
+  const entreprise = entrepriseRaw as any;
   const [contrat, setContrat] = useState<any>(null);
   const [manuscrit, setManuscrit] = useState<any>(null);
   const [auteur, setAuteur] = useState<any>(null);
