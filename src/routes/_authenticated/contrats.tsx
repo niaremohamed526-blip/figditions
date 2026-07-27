@@ -363,7 +363,7 @@ interface FormState {
   territoire_france: number;
   lieu_signature: string;
   date_signature: string;
-  statut: "brouillon" | "signe" | "expire" | "resilie";
+  statut: "brouillon" | "en_attente_signature" | "signe" | "expire" | "resilie";
   notes: string;
 }
 
