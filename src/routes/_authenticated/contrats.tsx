@@ -805,8 +805,8 @@ function ContratSheet({
                 <div className="space-y-2">
                   <Label>Fréquence de paiement</Label>
                   <Select value={form.frequence_paiement} onValueChange={(v) => upd("frequence_paiement", v)}>
-                    <SelectTrigger><SelectValue /></SelectTrigger>
-                    <SelectContent>
+                    <SelectTrigger className="bg-background border-border/60 focus:ring-primary/40"><SelectValue /></SelectTrigger>
+                    <SelectContent className="z-[400]">
                       <SelectItem value="annuel">Une fois par an (décembre)</SelectItem>
                       <SelectItem value="semestriel">Deux fois par an</SelectItem>
                       <SelectItem value="trimestriel">Trimestriel</SelectItem>
