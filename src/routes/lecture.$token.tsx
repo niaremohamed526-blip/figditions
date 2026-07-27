@@ -30,7 +30,7 @@ type ShareInfo =
     };
 
 type OpenResult =
-  | { ok: false; reason: "not_found" | "disabled" | "exhausted" | "no_file" }
+  | { ok: false; reason: "not_found" | "disabled" | "exhausted" | "no_file" | "identity_mismatch" | "rate_limited" }
   | {
       ok: true;
       pdfUrl: string;
@@ -47,7 +47,13 @@ const REASONS: Record<string, string> = {
   disabled: "Ce lien a été désactivé par l'éditeur.",
   exhausted: "Vous avez atteint le nombre maximum de consultations autorisées pour ce document.",
   no_file: "Le document n'est pas encore disponible. Contactez l'éditeur.",
+  identity_mismatch: "Les informations saisies ne correspondent pas au destinataire enregistré. Vérifiez votre nom (et votre email s'il vous a été demandé).",
+  rate_limited: "Trop de tentatives échouées. Veuillez patienter 10 minutes avant de réessayer.",
 };
+
+// Erreurs "retryables" : on garde le formulaire et on affiche l'erreur inline
+// au lieu de bloquer la page — l'utilisateur peut corriger et réessayer.
+const RETRYABLE = new Set(["identity_mismatch", "rate_limited"]);
 
 async function callLectureShare<T>(payload: Record<string, unknown>): Promise<T> {
   const { data, error } = await supabase.functions.invoke("lecture-share", { body: payload });
@@ -61,18 +67,17 @@ function LecturePage() {
   const [nom, setNom] = useState("");
   const [email, setEmail] = useState("");
   const [opened, setOpened] = useState<OpenResult | null>(null);
+  const [inlineError, setInlineError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
 
   useEffect(() => {
-    callLectureShare<ShareInfo>({ action: "info", token }).then((r) => {
-      setInfo(r);
-      if (r.ok) setNom(r.share.nom_lecteur ?? "");
-    });
+    callLectureShare<ShareInfo>({ action: "info", token }).then(setInfo);
   }, [token]);
 
   const handleOpen = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
+    setInlineError(null);
     const r = await callLectureShare<OpenResult>({
       action: "open",
       token,
@@ -80,6 +85,10 @@ function LecturePage() {
       email_confirme: email || undefined,
     });
     setLoading(false);
+    if (!r.ok && RETRYABLE.has(r.reason)) {
+      setInlineError(REASONS[r.reason]);
+      return;
+    }
     setOpened(r);
   };
 
