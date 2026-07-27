@@ -270,6 +270,8 @@ function ContratsInner({ entrepriseId, entreprise }: { entrepriseId: string | nu
                       </td>
                       <td className="px-4 py-3 text-muted-foreground">{authorName(c)}</td>
                       <td className="px-4 py-3 hidden sm:table-cell"><span className="text-[color:var(--gold)] font-semibold">{c.pourcentage_droits}%</span></td>
+                      <td className="px-4 py-3 text-muted-foreground hidden lg:table-cell text-xs">{(c as any).type_couverture ?? "—"}</td>
+                      <td className="px-4 py-3 text-muted-foreground hidden lg:table-cell text-xs">{(c as any).reliure ?? "—"}</td>
                       <td className="px-4 py-3 text-muted-foreground hidden md:table-cell text-xs">
                         ML {c.territoire_mali ?? 20}% · CI {c.territoire_ci ?? 30}% · SN {c.territoire_senegal ?? 30}% · FR {c.territoire_france ?? 40}%
                       </td>
