@@ -57,7 +57,7 @@ function ContratDetailPage() {
 
   if (pLoading) return <Skeleton className="h-64 w-full" />;
   const plan = planFor(entreprise?.plan);
-  if (!plan.contrats) return <LockedPage feature="le générateur de contrats OHADA" requiredPlan="pro" />;
+  if (!plan.contrats) return <LockedPage feature="Contrats & Droits" requiredPlan="pro" />;
   if (loading) return <div className="space-y-4"><Skeleton className="h-12 w-64" /><Skeleton className="h-96 w-full" /></div>;
   if (!contrat) return <div className="p-12 text-center text-muted-foreground">Contrat introuvable</div>;
 
