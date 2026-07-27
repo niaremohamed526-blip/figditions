@@ -21,6 +21,22 @@ const BG_TIP = "#eef6ee";
 const BG_WARN = "#fdf3e3";
 const BG_EX = "#eef2fb";
 
+// Strip characters not supported by jsPDF built-in (WinAnsi) fonts.
+function clean(s: string): string {
+  if (!s) return "";
+  return String(s)
+    .replace(/[\u2018\u2019\u201A\u2039\u203A]/g, "'")
+    .replace(/[\u201C\u201D\u201E\u00AB\u00BB]/g, '"')
+    .replace(/[\u2013\u2014\u2212]/g, "-")
+    .replace(/\u2026/g, "...")
+    .replace(/\u2192/g, "->")
+    .replace(/\u2022/g, "-")
+    .replace(/[\u202F\u00A0\u2007\u2009\u200A\u200B]/g, " ")
+    .replace(/[^\x20-\x7EÀ-ÖØ-öø-ÿ€œŒŸ]/g, "")
+    .replace(/\s{2,}/g, " ")
+    .trim();
+}
+
 export async function generateManuelStocksPdf(opts: { maison?: string | null } = {}) {
   const doc = new jsPDF({ unit: "pt", format: "a4" });
   const W = doc.internal.pageSize.getWidth();
@@ -62,8 +78,8 @@ export async function generateManuelStocksPdf(opts: { maison?: string | null } =
     setColor(MUTED);
     doc.setFont("helvetica", "normal");
     doc.setFontSize(8);
-    doc.text("FIGDITIONS — Manuel Stocks", M, 24);
-    doc.text(String(pageNumber), W - M, 24, { align: "right" });
+    doc.text("FIGDITIONS - Manuel Stocks", M, 24);
+    doc.text(`Page ${pageNumber}`, W - M, 24, { align: "right" });
     setDraw(RULE);
     doc.setLineWidth(0.5);
     doc.line(M, 30, W - M, 30);
@@ -72,7 +88,7 @@ export async function generateManuelStocksPdf(opts: { maison?: string | null } =
   const addFooter = () => {
     setColor(MUTED);
     doc.setFontSize(8);
-    doc.text("© FIGDITIONS — Guide d'utilisation", M, H - 20);
+    doc.text("(c) FIGDITIONS - Guide d'utilisation", M, H - 20);
   };
 
   // ─── COVER ─────────────────────────────────────────────
@@ -92,7 +108,7 @@ export async function generateManuelStocksPdf(opts: { maison?: string | null } =
   setColor(MUTED);
   doc.setFont("helvetica", "normal");
   doc.setFontSize(11);
-  doc.text("Stock interne · Stock externe · Ventes · Bordereaux", W / 2, 356, { align: "center" });
+  doc.text("Stock interne - Stock externe - Ventes - Bordereaux", W / 2, 356, { align: "center" });
 
   // Decorative rule
   setDraw(GOLD);
@@ -103,7 +119,7 @@ export async function generateManuelStocksPdf(opts: { maison?: string | null } =
   doc.setFont("helvetica", "bold");
   doc.setFontSize(12);
   if (opts.maison) {
-    doc.text(opts.maison, W / 2, 420, { align: "center" });
+    doc.text(clean(opts.maison), W / 2, 420, { align: "center" });
   }
 
   setColor(MUTED);
@@ -123,7 +139,7 @@ export async function generateManuelStocksPdf(opts: { maison?: string | null } =
     setColor(BRAND);
     doc.setFont("times", "bold");
     doc.setFontSize(22);
-    doc.text(text, M, y + 20);
+    doc.text(clean(text), M, y + 20);
     setDraw(GOLD);
     doc.setLineWidth(1.2);
     doc.line(M, y + 28, M + 60, y + 28);
@@ -134,14 +150,14 @@ export async function generateManuelStocksPdf(opts: { maison?: string | null } =
     setColor(BRAND);
     doc.setFont("helvetica", "bold");
     doc.setFontSize(13);
-    doc.text(text, M, y + 14);
+    doc.text(clean(text), M, y + 14);
     y += 26;
   };
   const p = (text: string, opts: { bold?: boolean } = {}) => {
     setColor("#222222");
     doc.setFont("helvetica", opts.bold ? "bold" : "normal");
     doc.setFontSize(10.5);
-    const lines = doc.splitTextToSize(text, W - 2 * M);
+    const lines = doc.splitTextToSize(clean(text), W - 2 * M);
     for (const line of lines) {
       ensureSpace(16);
       doc.text(line, M, y + 12);
@@ -153,12 +169,12 @@ export async function generateManuelStocksPdf(opts: { maison?: string | null } =
     setColor("#222222");
     doc.setFont("helvetica", "normal");
     doc.setFontSize(10.5);
-    const lines = doc.splitTextToSize(text, W - 2 * M - 16);
+    const lines = doc.splitTextToSize(clean(text), W - 2 * M - 16);
     lines.forEach((line: string, i: number) => {
       ensureSpace(16);
       if (i === 0) {
         setColor(GOLD);
-        doc.text("•", M + 4, y + 12);
+        doc.text("-", M + 4, y + 12);
         setColor("#222222");
       }
       doc.text(line, M + 16, y + 12);
@@ -170,7 +186,7 @@ export async function generateManuelStocksPdf(opts: { maison?: string | null } =
     setColor("#222222");
     doc.setFont("helvetica", "normal");
     doc.setFontSize(10.5);
-    const lines = doc.splitTextToSize(text, W - 2 * M - 26);
+    const lines = doc.splitTextToSize(clean(text), W - 2 * M - 26);
     lines.forEach((line: string, i: number) => {
       ensureSpace(18);
       if (i === 0) {
@@ -192,10 +208,10 @@ export async function generateManuelStocksPdf(opts: { maison?: string | null } =
   const callout = (title: string, body: string, tone: "tip" | "warn" | "example") => {
     const bg = tone === "tip" ? BG_TIP : tone === "warn" ? BG_WARN : BG_EX;
     const border = tone === "tip" ? "#5b9d5b" : tone === "warn" ? "#d89b3a" : "#5b7bd0";
-    const icon = tone === "tip" ? "💡" : tone === "warn" ? "⚠" : "✓";
+    const prefix = tone === "tip" ? "ASTUCE" : tone === "warn" ? "ATTENTION" : "NOTE";
     doc.setFont("helvetica", "normal");
     doc.setFontSize(10);
-    const lines = doc.splitTextToSize(body, W - 2 * M - 24);
+    const lines = doc.splitTextToSize(clean(body), W - 2 * M - 24);
     const boxH = 22 + lines.length * 13 + 8;
     ensureSpace(boxH + 6);
     setFill(bg);
@@ -206,7 +222,7 @@ export async function generateManuelStocksPdf(opts: { maison?: string | null } =
     setColor(border);
     doc.setFont("helvetica", "bold");
     doc.setFontSize(10);
-    doc.text(`${icon}  ${title}`, M + 10, y + 14);
+    doc.text(`${prefix} : ${clean(title)}`, M + 10, y + 14);
     setColor("#222222");
     doc.setFont("helvetica", "normal");
     doc.setFontSize(10);
@@ -230,7 +246,8 @@ export async function generateManuelStocksPdf(opts: { maison?: string | null } =
     "7. Questions fréquentes",
     "8. Support",
   ];
-  toc.forEach((t) => {
+  toc.forEach((raw) => {
+    const t = clean(raw);
     setColor("#333333");
     doc.setFont("helvetica", "normal");
     doc.setFontSize(11);
