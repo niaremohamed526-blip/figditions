@@ -713,7 +713,7 @@ function ContratSheet({
                           }
                         }}>
                           <SelectTrigger><SelectValue placeholder="Depuis le catalogue" /></SelectTrigger>
-                          <SelectContent>
+                          <SelectContent className="z-[400]">
                             <SelectItem value="_manual">✍️ Saisie manuelle</SelectItem>
                             {manuscrits.map((m) => <SelectItem key={m.id} value={m.id}>{m.titre}</SelectItem>)}
                           </SelectContent>
