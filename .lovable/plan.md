@@ -1,62 +1,29 @@
-# Rebuild Contract Generator — Professional Malian Publishing Contract
+# Configuration des variables Vercel pour les notifications push
 
-## Scope
-Full rebuild across DB, settings, form, PDF, and list. Estimated 6 files touched/created plus 2 migrations. This is a large change (~1500 lines of new code, mainly the PDF generator).
+## Ce que vous pouvez coller tout de suite dans Vercel
 
-## 1. Database migrations (2 migrations)
+| Variable | Valeur |
+|---|---|
+| `VAPID_PUBLIC_KEY` | `BJWxqit4Asas6CGXI_TPIbqt020oxkGefCQKVoaFyceUovkkVR7jjXeW-CEMVrdhEZH2OraZASFjcBuwFR59AXw` |
+| `PUSH_TRIGGER_SECRET` | `8a48db41e0c770d8596be13c11aa9a88ea26e2526f8000f9045dcf304670e153` |
+| `VAPID_SUBJECT` | `mailto:contact@figditions.xyz` (remplacez par votre email si vous préférez) |
 
-**Migration A — `contrats` table**: add nif_editeur, rccm_editeur, nina_editeur, compte_bancaire, banque, livres jsonb, territoire_mali/ci/senegal/france, duree_annees, contribution_auteur, lieu_signature, date_signature, nom_representant_editeur, qualite_representant, adresse_auteur, telephone_auteur, profession_auteur, tirage_minimum, exemplaires_auteur, cachet_url, plus new fields: collection, format, type_couverture, reliure, frequence_paiement. Also add `'resilie'` to statut check constraint.
+## Le cas de `VAPID_PRIVATE_KEY`
 
-**Migration B — `entreprises` table**: add nif, rccm, nina, compte_bancaire, banque, nom_representant, qualite_representant, cachet_url, adresse, telephone, email_contact, website.
+Une clé privée, une fois stockée dans le coffre sécurisé Lovable, ne se relit plus — elle ne peut qu'être utilisée côté serveur. Je ne peux donc pas vous l'afficher, même si c'est moi qui l'ai générée.
 
-## 2. Paramètres — Maison d'édition section
+Solution proposée : **régénérer une paire VAPID complète** et vous fournir les deux clés à copier dans Vercel.
 
-In `src/routes/_authenticated/parametres.tsx`, extend the company form with the new legal fields (NIF, RCCM, NINA, banque, compte, représentant, qualité) and a cachet upload (reusing `logos` bucket, path `cachets/{entreprise_id}/...`).
+## Étapes d'implémentation (en mode build)
 
-## 3. Contract form rebuild — `src/routes/_authenticated/contrats.tsx`
+1. Générer une nouvelle paire VAPID (P-256).
+2. Afficher **les deux clés** (publique + privée) directement dans le chat pour que vous les colliez dans Vercel.
+3. Mettre à jour la clé publique dans le code : `src/lib/push.ts` (constante `VAPID_PUBLIC_KEY`).
+4. Purger la table `push_subscriptions` (les abonnements existants deviennent invalides avec une nouvelle paire).
+5. Résumé final avec la liste des 4 variables à coller dans Vercel + rappel de redéployer sans cache.
 
-Replace the `ContratSheet` with a multi-section form:
-- **Parties**: éditeur auto-filled read-only card from `entreprises`; auteur dropdown + adresse/profession fields.
-- **Objet**: collection name + dynamic books list (add/remove up to 10, each pick from manuscrits or manual title).
-- **Conditions**: durée, %droits, tirage minimum, contribution auteur, format, couverture, reliure, exemplaires auteur, fréquence paiement, commissions 4 territoires, lieu/date signature.
-- **Statut**: brouillon/signé/expiré/résilié.
-- Auto-save draft to localStorage every 30s; "Aperçu PDF" button generates without saving.
-- Uses existing `useCloseGuard` for unsaved changes.
+## Ce que vous ferez ensuite dans Vercel
 
-Persist `livres` as jsonb `[{manuscrit_id?, titre}]`. Keep `manuscrit_id` = first book (existing FK required).
-
-## 4. Professional PDF — new `src/lib/pdf-contrat-pro.ts`
-
-Replace `src/lib/pdf-contrat.ts` usage. jsPDF A4, 25mm margins, Times (built-in `times`), 1.6 line height. Header on every page (logo + company + tagline + contact line + separator). Footer on every page (NIF/RCCM/NINA + banque/compte + Page X/Y). Title "Contrat d'édition" centered underlined. Parties block. All 18 articles with exact French templates from spec, variables interpolated. Signature block with two columns; if `cachet_url` present, embed image on éditeur side. Book list formatted `« Titre1 » et « Titre2 »`. French date format via `date-fns/locale/fr`.
-
-Called from both the form's "Aperçu" button and the list/detail "Télécharger PDF" action.
-
-## 5. List page updates
-
-In `contrats.tsx` table:
-- Books count badge (from `livres` array length, fallback to 1).
-- Territory coverage summary (e.g. "ML/CI/SN/FR").
-- Duration remaining (computed from `date_signature + duree_annees`).
-- Status badges with 4 colors (add résilié = orange).
-- Expiry warning `⚠️ Expire dans X jours` when < 90 days.
-
-## Out of scope
-- Cachet re-crop UI (simple upload only).
-- Server-side PDF (all client-side per spec).
-- Detail page rewrite — will only swap the PDF generator; layout stays.
-
-## Technical notes
-- jsPDF ships Times/Helvetica/Courier built-in — no font registration needed.
-- Cachet image loaded via `fetch → blob → dataURL` then `doc.addImage`.
-- New `livres` jsonb kept alongside existing `manuscrit_id` for back-compat; existing contracts read fine.
-- No RLS changes needed — new columns inherit table policies.
-
-## Deliverables checklist
-1. Migration A + B
-2. Updated parametres.tsx (company legal fields + cachet upload)
-3. New pdf-contrat-pro.ts (~800 lines)
-4. Rebuilt ContratSheet in contrats.tsx with all sections + auto-save
-5. Updated list table with books count, territories, expiry warning
-6. Wire the new PDF generator into list/detail download actions
-
-Confirm and I'll ship it in one pass.
+1. Ajouter les 4 variables ci-dessus dans **Settings → Environment Variables** (Production + Preview).
+2. Redéployer sans cache.
+3. Ouvrir FIGDITIONS → Paramètres → Compte → **Activer les notifications**.
