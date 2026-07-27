@@ -1,0 +1,17 @@
+{
+  "name": "FIGDITIONS",
+  "short_name": "FIGDITIONS",
+  "description": "Plateforme éditoriale — gestion hors ligne des manuscrits, stocks, ventes et contrats.",
+  "start_url": "/",
+  "scope": "/",
+  "display": "standalone",
+  "orientation": "portrait",
+  "theme_color": "#0D0A06",
+  "background_color": "#0D0A06",
+  "lang": "fr",
+  "icons": [
+    { "src": "/pwa-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any" },
+    { "src": "/pwa-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any" },
+    { "src": "/pwa-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
+  ]
+}
