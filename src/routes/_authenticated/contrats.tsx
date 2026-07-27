@@ -861,9 +861,10 @@ function ContratSheet({
                 <div className="space-y-2">
                   <Label>Statut</Label>
                   <Select value={form.statut} onValueChange={(v) => upd("statut", v as any)}>
-                    <SelectTrigger><SelectValue /></SelectTrigger>
-                    <SelectContent>
+                    <SelectTrigger className="bg-background border-border/60 focus:ring-primary/40"><SelectValue /></SelectTrigger>
+                    <SelectContent className="z-[400]">
                       <SelectItem value="brouillon">Brouillon</SelectItem>
+                      <SelectItem value="en_attente_signature">En attente de signature</SelectItem>
                       <SelectItem value="signe">Signé</SelectItem>
                       <SelectItem value="expire">Expiré</SelectItem>
                       <SelectItem value="resilie">Résilié</SelectItem>
