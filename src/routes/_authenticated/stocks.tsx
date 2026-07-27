@@ -254,10 +254,10 @@ function StocksPage() {
             <DropdownMenuContent align="end" className="w-56">
               <DropdownMenuLabel>Plus d'actions</DropdownMenuLabel>
               <DropdownMenuSeparator />
-              <DropdownMenuItem onClick={() => setImportOpen(true)}>
+              <DropdownMenuItem onSelect={(e) => { e.preventDefault(); setTimeout(() => setImportOpen(true), 0); }}>
                 <FileSpreadsheet className="h-4 w-4 mr-2 text-primary" /> Import Excel
               </DropdownMenuItem>
-              <DropdownMenuItem onClick={() => setPosOpen(true)}>
+              <DropdownMenuItem onSelect={(e) => { e.preventDefault(); setTimeout(() => setPosOpen(true), 0); }}>
                 <Zap className="h-4 w-4 mr-2 text-primary" /> Saisie rapide
               </DropdownMenuItem>
               <DropdownMenuSeparator />
