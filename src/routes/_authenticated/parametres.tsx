@@ -136,6 +136,7 @@ function ParametresPage() {
 
         <TabsContent value="compte" className="mt-6 space-y-6">
           <AccountSection profile={profile} email={user?.email ?? ""} entrepriseName={entreprise?.nom ?? ""} role={profile?.role ?? "admin"} />
+          <NotificationsCard userId={user?.id} entrepriseId={entreprise?.id ?? null} />
           <SecurityCard />
         </TabsContent>
 
