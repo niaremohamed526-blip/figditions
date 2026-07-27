@@ -16,6 +16,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { RouteProgress } from "@/components/route-progress";
 import { OfflineBanner } from "@/components/offline-banner";
 import { registerPwa } from "@/lib/pwa-register";
+import { FIGDITIONS_APP_ICON_VERSION, FIGDITIONS_SITE_LOGO_ABSOLUTE_URL } from "@/lib/brand-assets";
 
 import appCss from "../styles.css?url";
 
@@ -79,11 +80,11 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
     ],
     links: [
       { rel: "stylesheet", href: appCss },
-      { rel: "manifest", href: "/manifest.webmanifest?v=4" },
-      { rel: "icon", type: "image/png", sizes: "192x192", href: "/pwa-192.png?v=4" },
-      { rel: "icon", type: "image/png", sizes: "512x512", href: "/pwa-512.png?v=4" },
-      { rel: "apple-touch-icon", sizes: "180x180", href: "/apple-touch-icon.png?v=4" },
-      { rel: "shortcut icon", href: "/favicon.ico?v=4" },
+      { rel: "manifest", href: `/manifest.webmanifest?v=${FIGDITIONS_APP_ICON_VERSION}` },
+      { rel: "icon", type: "image/png", sizes: "192x192", href: `/pwa-192.png?v=${FIGDITIONS_APP_ICON_VERSION}` },
+      { rel: "icon", type: "image/png", sizes: "512x512", href: `/pwa-512.png?v=${FIGDITIONS_APP_ICON_VERSION}` },
+      { rel: "apple-touch-icon", sizes: "180x180", href: `/apple-touch-icon.png?v=${FIGDITIONS_APP_ICON_VERSION}` },
+      { rel: "shortcut icon", href: `/favicon.ico?v=${FIGDITIONS_APP_ICON_VERSION}` },
       { rel: "preconnect", href: "https://fonts.googleapis.com" },
       { rel: "preconnect", href: "https://fonts.gstatic.com", crossOrigin: "anonymous" },
       { rel: "stylesheet", href: "https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&family=Plus+Jakarta+Sans:wght@600;700&family=JetBrains+Mono:wght@500&display=swap" },
@@ -99,7 +100,7 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
               "@type": "Organization",
               name: "FIGDITIONS",
               url: "https://figditions.xyz",
-              logo: "https://figditions.xyz/favicon.ico",
+              logo: FIGDITIONS_SITE_LOGO_ABSOLUTE_URL,
               description: "Plateforme éditoriale tout-en-un pour les maisons d'édition d'Afrique de l'Ouest.",
             },
             {
