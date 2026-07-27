@@ -290,11 +290,11 @@ function SignupPage() {
               />
               <span>
                 J'accepte les{" "}
-                <Link to="/conditions-utilisation" target="_blank" className="hover:underline" style={{ color: "#C8922A" }}>
+                <Link to="/conditions-utilisation" target="_blank" rel="noopener noreferrer" className="hover:underline" style={{ color: "#C8922A" }}>
                   Conditions d'Utilisation
                 </Link>{" "}
                 et la{" "}
-                <Link to="/politique-de-confidentialite" target="_blank" className="hover:underline" style={{ color: "#C8922A" }}>
+                <Link to="/politique-de-confidentialite" target="_blank" rel="noopener noreferrer" className="hover:underline" style={{ color: "#C8922A" }}>
                   Politique de Confidentialité
                 </Link>
               </span>
