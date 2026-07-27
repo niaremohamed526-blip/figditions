@@ -128,6 +128,7 @@ export function ConfirmationModal({
           WebkitBackdropFilter: "blur(8px)",
           zIndex: Z_INDEX.confirmationBackdrop,
           animation: "figd-fade-in 200ms ease-out",
+          pointerEvents: "auto",
         }}
       />
       <div
@@ -142,6 +143,7 @@ export function ConfirmationModal({
           zIndex: Z_INDEX.confirmation,
           width: "calc(100% - 32px)",
           maxWidth: 360,
+          pointerEvents: "auto",
         }}
       >
         <div
