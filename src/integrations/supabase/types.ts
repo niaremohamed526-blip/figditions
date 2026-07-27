@@ -1093,6 +1093,50 @@ export type Database = {
         }
         Relationships: []
       }
+      push_subscriptions: {
+        Row: {
+          auth: string
+          created_at: string
+          endpoint: string
+          entreprise_id: string | null
+          id: string
+          p256dh: string
+          updated_at: string
+          user_agent: string | null
+          user_id: string
+        }
+        Insert: {
+          auth: string
+          created_at?: string
+          endpoint: string
+          entreprise_id?: string | null
+          id?: string
+          p256dh: string
+          updated_at?: string
+          user_agent?: string | null
+          user_id: string
+        }
+        Update: {
+          auth?: string
+          created_at?: string
+          endpoint?: string
+          entreprise_id?: string | null
+          id?: string
+          p256dh?: string
+          updated_at?: string
+          user_agent?: string | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "push_subscriptions_entreprise_id_fkey"
+            columns: ["entreprise_id"]
+            isOneToOne: false
+            referencedRelation: "entreprises"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       stock_interne: {
         Row: {
           cout_unitaire_impression_fcfa: number
