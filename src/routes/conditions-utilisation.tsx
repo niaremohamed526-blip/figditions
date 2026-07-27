@@ -6,9 +6,11 @@ export const Route = createFileRoute("/conditions-utilisation")({
   head: () => ({
     meta: [
       { title: "Conditions Générales d'Utilisation — FIGDITIONS" },
-      { name: "description", content: "Conditions générales d'utilisation de la plateforme FIGDITIONS." },
+      { name: "description", content: "Conditions générales d'utilisation de FIGDITIONS : plans, responsabilités, propriété des contenus, IA, paiements et droit applicable." },
       { property: "og:title", content: "Conditions d'Utilisation — FIGDITIONS" },
       { property: "og:description", content: "Les règles d'utilisation de FIGDITIONS, plans, responsabilités et droit applicable." },
+      { property: "og:type", content: "website" },
+      { name: "twitter:card", content: "summary" },
     ],
   }),
 });
@@ -16,93 +18,176 @@ export const Route = createFileRoute("/conditions-utilisation")({
 const toc = [
   { id: "acceptation", label: "1. Acceptation" },
   { id: "description", label: "2. Description du service" },
-  { id: "plans", label: "3. Plans & abonnements" },
-  { id: "propriete", label: "4. Propriété des données" },
-  { id: "responsabilites", label: "5. Responsabilités" },
-  { id: "limitation", label: "6. Limitation de responsabilité" },
-  { id: "droit", label: "7. Droit applicable" },
-  { id: "contact", label: "8. Contact" },
+  { id: "compte", label: "3. Compte & équipe" },
+  { id: "plans", label: "4. Plans & abonnements" },
+  { id: "paiement", label: "5. Paiement" },
+  { id: "propriete", label: "6. Propriété des contenus" },
+  { id: "documents", label: "7. Documents générés" },
+  { id: "conversion", label: "8. Conversion & partage" },
+  { id: "ia", label: "9. Fonctionnalités IA" },
+  { id: "responsabilites", label: "10. Responsabilités" },
+  { id: "disponibilite", label: "11. Disponibilité & sous-traitants" },
+  { id: "limitation", label: "12. Limitation de responsabilité" },
+  { id: "resiliation", label: "13. Résiliation" },
+  { id: "droit", label: "14. Droit applicable" },
+  { id: "contact", label: "15. Contact" },
 ];
 
 function TermsPage() {
   return (
     <LegalShell
       title="Conditions Générales d'Utilisation"
-      subtitle="Dernière mise à jour : Mai 2026"
+      subtitle="Dernière mise à jour : Juillet 2026"
       toc={toc}
     >
       <Section id="acceptation" title="1. Acceptation">
         <p>
-          En utilisant FIGDITIONS, vous acceptez les présentes conditions d'utilisation.
-          Si vous n'acceptez pas ces conditions, veuillez ne pas utiliser notre service.
+          En créant un compte ou en utilisant FIGDITIONS, vous acceptez les présentes
+          conditions générales d'utilisation ainsi que la Politique de Confidentialité.
+          Si vous n'acceptez pas ces conditions, veuillez ne pas utiliser le service.
         </p>
       </Section>
 
       <Section id="description" title="2. Description du service">
         <p>
-          FIGDITIONS est une plateforme SaaS de gestion éditoriale permettant aux maisons
-          d'édition de gérer leurs manuscrits, auteurs, stocks, contrats et finances depuis
-          un tableau de bord unifié.
+          FIGDITIONS est une plateforme SaaS destinée aux maisons d'édition, principalement
+          en zone OHADA, pour gérer manuscrits, auteurs, contrats, stocks, ventes, bordereaux,
+          finances, partage sécurisé de lecture et conversion de fichiers. Elle est
+          accessible via le web et installable en tant qu'application (PWA) avec un mode
+          hors-ligne.
         </p>
       </Section>
 
-      <Section id="plans" title="3. Plans et abonnements">
+      <Section id="compte" title="3. Compte et équipe">
+        <ul>
+          <li>La création de compte se fait par email/mot de passe ou via Google.</li>
+          <li>Chaque maison d'édition dispose d'un espace isolé (multi-tenant) avec ses propres membres et rôles.</li>
+          <li>L'administrateur peut inviter des membres par email et leur attribuer un rôle. Chaque membre est responsable de la confidentialité de ses identifiants.</li>
+          <li>Toute activité effectuée depuis un compte est réputée réalisée sous la responsabilité de son titulaire.</li>
+        </ul>
+      </Section>
+
+      <Section id="plans" title="4. Plans et abonnements">
         <table>
           <thead>
-            <tr><th>Plan</th><th>Prix</th><th>Utilisateurs</th><th>Manuscrits</th></tr>
+            <tr><th>Plan</th><th>Prix</th><th>Utilisateurs</th><th>Périmètre</th></tr>
           </thead>
           <tbody>
-            <tr><td>Starter</td><td>Gratuit</td><td>1</td><td>5 max</td></tr>
-            <tr><td>Pro</td><td>20 000 FCFA / mois</td><td>3</td><td>Illimité</td></tr>
-            <tr><td>Business</td><td>50 000 FCFA / mois</td><td>Illimité</td><td>Illimité</td></tr>
+            <tr><td>Starter</td><td>Gratuit</td><td>1</td><td>Fonctionnalités de base, limites d'usage</td></tr>
+            <tr><td>Pro</td><td>20 000 FCFA / mois</td><td>Jusqu'à 3</td><td>Manuscrits illimités, contrats, stocks</td></tr>
+            <tr><td>Business</td><td>50 000 FCFA / mois</td><td>Illimité</td><td>Toutes les fonctionnalités (conversion EPUB/MOBI, partage sécurisé, bordereaux, IA, etc.)</td></tr>
           </tbody>
         </table>
         <p>
-          Les abonnements sont renouvelés automatiquement. Vous pouvez annuler à tout moment
-          depuis vos paramètres. Aucun remboursement n'est effectué pour les périodes entamées.
+          Certaines fonctionnalités (par exemple la conversion PDF vers EPUB/MOBI, le partage
+          de lecture sécurisé, les bordereaux avancés) sont réservées au plan Business.
         </p>
-      </Section>
-
-      <Section id="propriete" title="4. Propriété des données">
         <p>
-          Vous conservez l'intégralité des droits sur vos données et manuscrits uploadés sur
-          FIGDITIONS. Nous ne revendiquons aucun droit de propriété intellectuelle sur vos contenus.
+          Des codes promotionnels peuvent être proposés ponctuellement. Ils sont soumis à
+          leurs propres conditions (durée, plan attribué, usage unique par utilisateur).
         </p>
       </Section>
 
-      <Section id="responsabilites" title="5. Responsabilités">
+      <Section id="paiement" title="5. Paiement">
+        <ul>
+          <li>Les paiements sont opérés par PayDunya (carte bancaire, mobile money selon la disponibilité).</li>
+          <li>Les abonnements sont facturés d'avance et se renouvellent automatiquement selon la périodicité choisie.</li>
+          <li>Vous pouvez annuler le renouvellement à tout moment depuis vos paramètres. L'accès reste ouvert jusqu'à la fin de la période payée.</li>
+          <li>Sauf disposition légale contraire, les périodes entamées ne sont pas remboursables.</li>
+        </ul>
+      </Section>
+
+      <Section id="propriete" title="6. Propriété des contenus">
+        <p>
+          Vous conservez l'intégralité des droits sur vos manuscrits, œuvres, contrats,
+          logos et données uploadés sur FIGDITIONS. Nous ne revendiquons aucun droit de
+          propriété intellectuelle sur vos contenus. Vous nous accordez uniquement la
+          licence technique strictement nécessaire à l'exécution du service (stockage,
+          affichage à votre équipe, génération de PDF, conversion sur votre demande).
+        </p>
+      </Section>
+
+      <Section id="documents" title="7. Documents générés (contrats, bordereaux, factures)">
+        <p>
+          FIGDITIONS fournit des modèles de contrats d'édition, bordereaux de vente et
+          factures adaptés au contexte malien / OHADA. Ces documents sont fournis à titre
+          d'aide et ne constituent pas un conseil juridique. Il vous appartient de les
+          relire, de les faire valider si nécessaire par un professionnel et d'y faire
+          apposer les signatures requises.
+        </p>
+      </Section>
+
+      <Section id="conversion" title="8. Conversion et partage sécurisé">
+        <ul>
+          <li>La conversion de fichiers (PDF, DOCX, TXT vers EPUB / MOBI) est effectuée via CloudConvert. Le fichier source est transmis via une URL signée temporaire et n'est pas conservé au-delà de la durée nécessaire à la conversion.</li>
+          <li>Le partage sécurisé génère un lien signé avec durée de validité, filigrane et protections anti-capture. Ces protections dissuasives ne peuvent garantir l'impossibilité absolue de copie hors-ligne.</li>
+          <li>Vous êtes responsable de la légalité des contenus que vous partagez et de la vérification des droits associés.</li>
+        </ul>
+      </Section>
+
+      <Section id="ia" title="9. Fonctionnalités IA">
+        <p>
+          Certaines fonctionnalités utilisent Google Gemini via le Lovable AI Gateway. Les
+          contenus générés par IA sont fournis « en l'état ». Vous devez les relire et les
+          valider avant tout usage contractuel, commercial ou éditorial. FIGDITIONS ne
+          garantit ni l'exactitude ni l'exhaustivité des sorties générées.
+        </p>
+      </Section>
+
+      <Section id="responsabilites" title="10. Responsabilités">
         <h3>FIGDITIONS s'engage à :</h3>
         <ul>
-          <li>✅ Maintenir une disponibilité de 99,5%</li>
-          <li>✅ Sauvegarder vos données quotidiennement</li>
-          <li>✅ Notifier en cas d'incident sous 24h</li>
-          <li>✅ Protéger la confidentialité de vos données</li>
+          <li>Mettre en œuvre les moyens raisonnables pour assurer la disponibilité et la sécurité du service</li>
+          <li>Sauvegarder régulièrement les données via l'infrastructure de son hébergeur</li>
+          <li>Notifier tout incident de sécurité majeur dans les meilleurs délais</li>
+          <li>Protéger la confidentialité de vos données selon la Politique de Confidentialité</li>
         </ul>
         <h3>L'utilisateur s'engage à :</h3>
         <ul>
-          <li>✅ Ne pas uploader de contenu illégal</li>
-          <li>✅ Ne pas tenter de pirater la plateforme</li>
-          <li>✅ Maintenir la confidentialité de son mot de passe</li>
-          <li>✅ Utiliser la plateforme conformément aux lois maliennes et internationales</li>
+          <li>Ne pas uploader de contenu illégal, contrefait ou pour lequel il ne détient pas les droits</li>
+          <li>Ne pas tenter d'accéder à des données d'autres tenants, de contourner l'authentification, de scraper ou de surcharger la plateforme</li>
+          <li>Maintenir la confidentialité de ses identifiants et de ceux de son équipe</li>
+          <li>Utiliser la plateforme conformément aux lois maliennes, OHADA et internationales applicables</li>
         </ul>
       </Section>
 
-      <Section id="limitation" title="6. Limitation de responsabilité">
+      <Section id="disponibilite" title="11. Disponibilité et sous-traitants">
         <p>
-          FIGDITIONS ne peut être tenu responsable des pertes commerciales résultant d'une
-          interruption de service ou d'une perte de données au-delà de ce qui est couvert
-          par nos sauvegardes.
+          Le service repose sur des sous-traitants tiers (Lovable Cloud / Supabase, Vercel,
+          PayDunya, CloudConvert, Google Gemini). Une interruption de leur part peut
+          entraîner une indisponibilité temporaire du service. Nous mettons en œuvre les
+          moyens raisonnables pour rétablir le service dès que possible.
         </p>
       </Section>
 
-      <Section id="droit" title="7. Droit applicable">
+      <Section id="limitation" title="12. Limitation de responsabilité">
+        <p>
+          Dans les limites autorisées par la loi applicable, FIGDITIONS ne peut être tenu
+          responsable des pertes indirectes (perte de chiffre d'affaires, perte de clientèle,
+          dommage à la réputation) résultant d'une interruption du service, d'une perte de
+          données au-delà de nos sauvegardes, ou d'un usage non conforme de la plateforme.
+          La responsabilité totale de FIGDITIONS est en tout état de cause limitée au montant
+          effectivement payé par l'utilisateur au titre des 12 derniers mois d'abonnement.
+        </p>
+      </Section>
+
+      <Section id="resiliation" title="13. Résiliation">
+        <ul>
+          <li>Vous pouvez résilier votre abonnement à tout moment depuis vos paramètres. Vos données restent accessibles jusqu'à la fin de la période payée.</li>
+          <li>FIGDITIONS peut suspendre ou fermer un compte en cas de violation grave des présentes conditions (contenu illégal, tentative de piratage, fraude au paiement), après notification lorsque cela est possible.</li>
+          <li>À la fermeture du compte, vous pouvez demander l'export ou la suppression de vos données conformément à la Politique de Confidentialité.</li>
+        </ul>
+      </Section>
+
+      <Section id="droit" title="14. Droit applicable">
         <p>
           Les présentes conditions sont régies par le droit malien et les dispositions de
-          l'OHADA. Tout litige sera soumis aux tribunaux compétents de Bamako, Mali.
+          l'OHADA. À défaut d'accord amiable, tout litige sera soumis aux tribunaux
+          compétents de Bamako, Mali.
         </p>
       </Section>
 
-      <Section id="contact" title="8. Contact">
+      <Section id="contact" title="15. Contact">
         <ul>
           <li>Email : <a href="mailto:Figditions@gmail.com">Figditions@gmail.com</a></li>
           <li>Adresse : Bamako, Mali</li>
