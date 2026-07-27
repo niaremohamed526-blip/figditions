@@ -307,8 +307,8 @@ export async function generateBordereauPdf(
     const droits = Math.round(d.droitsAuteurFcfa ?? d.totalFcfa * 0.1);
     const net = d.totalFcfa - commission - droits;
     const rows: [string, string, readonly [number, number, number]][] = [
-      ["Commission librairie (20%)", `− ${fcfa(commission)}`, [200, 120, 60]],
-      ["Droits d'auteur (10%)", `− ${fcfa(droits)}`, GOLD],
+      ["Commission librairie (20%)", `- ${fcfa(commission)}`, [200, 120, 60]],
+      ["Droits d'auteur (10%)", `- ${fcfa(droits)}`, GOLD],
     ];
     doc.setFont("helvetica", "normal");
     doc.setFontSize(10);
