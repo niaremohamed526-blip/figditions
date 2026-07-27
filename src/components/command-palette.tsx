@@ -41,7 +41,7 @@ export function CommandPalette() {
     { to: "/estimateur", labelFr: "Estimateur", labelEn: "Estimator", icon: Calculator },
     { to: "/imprimeries", labelFr: "Imprimeries", labelEn: "Printers", icon: Factory },
     { to: "/finances", labelFr: "Finances", labelEn: "Finances", icon: Wallet },
-    { to: "/contrats", labelFr: "Contrats", labelEn: "Contracts", icon: FileText },
+    { to: "/contrats", labelFr: "Contrats & Droits", labelEn: "Contracts & Rights", icon: FileText },
     { to: "/parametres", labelFr: "Paramètres", labelEn: "Settings", icon: Settings },
   ];
 

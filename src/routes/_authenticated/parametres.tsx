@@ -1257,7 +1257,7 @@ function PlansComparison({ currentPlan, canChange, entrepriseId, onChoose }: {
     { key: "maxManuscrits", label: "Manuscrits" },
     { key: "maxBookstores", label: "Librairies" },
     { key: "maxUsers", label: "Utilisateurs" },
-    { key: "contrats", label: "Contrats OHADA" },
+    { key: "contrats", label: "Contrats & Droits" },
     { key: "finances", label: "Finances & royalties" },
     { key: "exportPdf", label: "Export PDF" },
     { key: "exportEpub", label: "Export ePub" },

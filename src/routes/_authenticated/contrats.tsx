@@ -24,7 +24,7 @@ import { UnsavedChangesModal } from "@/components/unsaved-changes-modal";
 
 export const Route = createFileRoute("/_authenticated/contrats")({
   component: ContratsPage,
-  head: () => ({ meta: [{ title: "Contrats — FIGDITIONS" }] }),
+  head: () => ({ meta: [{ title: "Contrats & Droits — FIGDITIONS" }] }),
 });
 
 interface Contrat {
@@ -33,7 +33,7 @@ interface Contrat {
   auteur_id: string | null;
   pourcentage_droits: number;
   duree: string;
-  statut: "brouillon" | "signe" | "expire" | "resilie";
+  statut: "brouillon" | "en_attente_signature" | "signe" | "expire" | "resilie";
   notes: string | null;
   date_signature: string | null;
   created_at: string;
@@ -46,16 +46,18 @@ interface Contrat {
   territoire_france?: number;
 }
 interface Manuscrit { id: string; titre: string; auteur: string; auteur_id?: string | null }
-interface Auteur { id: string; nom_complet: string; email?: string | null; telephone?: string | null }
+interface Auteur { id: string; nom_complet: string; email?: string | null; telephone?: string | null; numero_mobile_money?: string | null }
 
 const STATUT_LABELS: Record<string, string> = {
   brouillon: "Brouillon",
+  en_attente_signature: "En attente",
   signe: "Signé",
   expire: "Expiré",
   resilie: "Résilié",
 };
 const STATUT_CLS: Record<string, string> = {
-  brouillon: "bg-muted/60 text-muted-foreground border-border",
+  brouillon: "bg-slate-500/15 text-slate-400 border-slate-500/30",
+  en_attente_signature: "bg-blue-500/15 text-blue-400 border-blue-500/30",
   signe: "bg-emerald-500/15 text-emerald-500 border-emerald-500/40",
   expire: "bg-destructive/15 text-destructive border-destructive/40",
   resilie: "bg-orange-500/15 text-orange-500 border-orange-500/40",
@@ -85,7 +87,7 @@ function ContratsPage() {
 
   if (pLoading) return <div className="space-y-4"><Skeleton className="h-12 w-64" /><Skeleton className="h-96 w-full" /></div>;
   const plan = planFor(entreprise?.plan);
-  if (!plan.contrats) return <LockedPage feature="le générateur de contrats OHADA" requiredPlan="pro" />;
+  if (!plan.contrats) return <LockedPage feature="Contrats & Droits" requiredPlan="pro" />;
   return <ContratsInner entrepriseId={profile?.entreprise_id ?? null} entreprise={entreprise} />;
 }
 
@@ -104,7 +106,9 @@ function ContratsInner({ entrepriseId, entreprise }: { entrepriseId: string | nu
     const [{ data: c, error }, { data: ms }, { data: as }] = await Promise.all([
       (supabase as any).from("contrats").select("*").order("created_at", { ascending: false }),
       (supabase as any).from("manuscrits").select("id, titre, auteur, auteur_id"),
-      supabase.from("auteurs").select("id, nom_complet, email, telephone"),
+      entrepriseId
+        ? supabase.from("auteurs").select("id, nom_complet, email, telephone, numero_mobile_money").eq("entreprise_id", entrepriseId).order("nom_complet")
+        : Promise.resolve({ data: [] as Auteur[] } as any),
     ]);
     if (error) toast.error(error.message);
     setItems((c ?? []) as Contrat[]);
@@ -200,8 +204,8 @@ function ContratsInner({ entrepriseId, entreprise }: { entrepriseId: string | nu
     <div className="space-y-6">
       <header className="flex flex-wrap items-end justify-between gap-3">
         <div>
-          <h1 className="text-3xl font-bold tracking-tight">Contrats</h1>
-          <p className="text-muted-foreground mt-1">Contrats d'édition professionnels au format Malien.</p>
+          <h1 className="text-3xl font-bold tracking-tight">Contrats & Droits</h1>
+          <p className="text-muted-foreground mt-1">Gérez vos contrats d'édition et droits d'auteur.</p>
         </div>
         <Button onClick={openCreate} className="bg-primary text-primary-foreground hover:bg-primary/90">
           <Plus className="h-4 w-4" /> Nouveau contrat
@@ -226,6 +230,8 @@ function ContratsInner({ entrepriseId, entreprise }: { entrepriseId: string | nu
                   <th className="px-4 py-3 font-medium">Livre(s)</th>
                   <th className="px-4 py-3 font-medium">Auteur</th>
                   <th className="px-4 py-3 font-medium hidden sm:table-cell">% Droits</th>
+                  <th className="px-4 py-3 font-medium hidden lg:table-cell">Couverture</th>
+                  <th className="px-4 py-3 font-medium hidden lg:table-cell">Reliure</th>
                   <th className="px-4 py-3 font-medium hidden md:table-cell">Territoires</th>
                   <th className="px-4 py-3 font-medium hidden md:table-cell">Durée</th>
                   <th className="px-4 py-3 font-medium">Statut</th>
@@ -264,6 +270,8 @@ function ContratsInner({ entrepriseId, entreprise }: { entrepriseId: string | nu
                       </td>
                       <td className="px-4 py-3 text-muted-foreground">{authorName(c)}</td>
                       <td className="px-4 py-3 hidden sm:table-cell"><span className="text-[color:var(--gold)] font-semibold">{c.pourcentage_droits}%</span></td>
+                      <td className="px-4 py-3 text-muted-foreground hidden lg:table-cell text-xs">{(c as any).type_couverture ?? "—"}</td>
+                      <td className="px-4 py-3 text-muted-foreground hidden lg:table-cell text-xs">{(c as any).reliure ?? "—"}</td>
                       <td className="px-4 py-3 text-muted-foreground hidden md:table-cell text-xs">
                         ML {c.territoire_mali ?? 20}% · CI {c.territoire_ci ?? 30}% · SN {c.territoire_senegal ?? 30}% · FR {c.territoire_france ?? 40}%
                       </td>
@@ -361,7 +369,7 @@ interface FormState {
   territoire_france: number;
   lieu_signature: string;
   date_signature: string;
-  statut: "brouillon" | "signe" | "expire" | "resilie";
+  statut: "brouillon" | "en_attente_signature" | "signe" | "expire" | "resilie";
   notes: string;
 }
 
@@ -542,8 +550,11 @@ function ContratSheet({
     e.preventDefault();
     if (!entrepriseId) return;
     const validLivres = form.livres.filter((l) => l.titre.trim());
-    if (validLivres.length === 0) return toast.error("Ajoutez au moins un livre");
     if (!form.auteur_id) return toast.error("Sélectionnez un auteur");
+    if (validLivres.length === 0) return toast.error("Ajoutez au moins un livre (Manuscrit)");
+    if ((form.statut === "signe" || form.statut === "en_attente_signature") && !form.date_signature) {
+      return toast.error("La date de signature est requise pour ce statut");
+    }
 
     // Ensure manuscrit_id (FK required). Use first livre's manuscrit_id or first available manuscript.
     let manuscritId = validLivres[0].manuscrit_id ?? null;
@@ -562,7 +573,7 @@ function ContratSheet({
       duree_annees: form.duree_annees,
       statut: form.statut,
       notes: form.notes || null,
-      date_signature: form.statut === "signe" ? form.date_signature : (editing?.date_signature ?? null),
+      date_signature: form.date_signature || (editing?.date_signature ?? null),
       livres: validLivres,
       collection: form.collection || null,
       adresse_auteur: form.adresse_auteur || null,
@@ -636,12 +647,34 @@ function ContratSheet({
 
               <div className="space-y-2">
                 <Label>Auteur *</Label>
-                <Select value={form.auteur_id} onValueChange={(v) => upd("auteur_id", v)}>
-                  <SelectTrigger><SelectValue placeholder="Choisir un auteur" /></SelectTrigger>
-                  <SelectContent>
-                    {auteurs.map((a) => <SelectItem key={a.id} value={a.id}>{a.nom_complet}</SelectItem>)}
-                  </SelectContent>
-                </Select>
+                {auteurs.length === 0 ? (
+                  <div className="rounded-lg border border-dashed border-primary/30 bg-primary/5 p-4 text-sm space-y-2">
+                    <p className="text-muted-foreground">Aucun auteur trouvé — ajoutez d'abord un auteur.</p>
+                    <Link to="/auteurs" className="inline-flex items-center gap-1 text-primary hover:underline text-xs font-medium">
+                      → Aller à la page Auteurs
+                    </Link>
+                  </div>
+                ) : (
+                  <>
+                    <Select value={form.auteur_id} onValueChange={(v) => upd("auteur_id", v)}>
+                      <SelectTrigger><SelectValue placeholder="Choisir un auteur" /></SelectTrigger>
+                      <SelectContent className="z-[400]">
+                        {auteurs.map((a) => <SelectItem key={a.id} value={a.id}>{a.nom_complet}</SelectItem>)}
+                      </SelectContent>
+                    </Select>
+                    {form.auteur_id && (() => {
+                      const a = auteurs.find((x) => x.id === form.auteur_id);
+                      if (!a) return null;
+                      const bits = [a.email, a.telephone, a.numero_mobile_money].filter(Boolean).join(" · ");
+                      return (
+                        <div className="rounded-lg border border-primary/40 bg-primary/5 p-3 text-xs animate-in fade-in slide-in-from-top-1 duration-200">
+                          <p className="font-semibold text-primary">✓ {a.nom_complet}</p>
+                          {bits && <p className="text-muted-foreground mt-0.5">{bits}</p>}
+                        </div>
+                      );
+                    })()}
+                  </>
+                )}
               </div>
 
               <div className="grid sm:grid-cols-2 gap-3">
@@ -687,7 +720,7 @@ function ContratSheet({
                           }
                         }}>
                           <SelectTrigger><SelectValue placeholder="Depuis le catalogue" /></SelectTrigger>
-                          <SelectContent>
+                          <SelectContent className="z-[400]">
                             <SelectItem value="_manual">✍️ Saisie manuelle</SelectItem>
                             {manuscrits.map((m) => <SelectItem key={m.id} value={m.id}>{m.titre}</SelectItem>)}
                           </SelectContent>
@@ -744,22 +777,28 @@ function ContratSheet({
                 <div className="space-y-2">
                   <Label>Couverture</Label>
                   <Select value={form.type_couverture} onValueChange={(v) => upd("type_couverture", v)}>
-                    <SelectTrigger><SelectValue /></SelectTrigger>
-                    <SelectContent>
+                    <SelectTrigger className="bg-background border-border/60 focus:ring-primary/40"><SelectValue /></SelectTrigger>
+                    <SelectContent className="z-[400]">
                       <SelectItem value="Quadrichromie cartonnée">Quadrichromie cartonnée</SelectItem>
                       <SelectItem value="Souple pelliculée brillante">Souple pelliculée brillante</SelectItem>
-                      <SelectItem value="Souple matte">Souple matte</SelectItem>
+                      <SelectItem value="Souple pelliculée mate">Souple pelliculée mate</SelectItem>
+                      <SelectItem value="Rigide">Rigide</SelectItem>
+                      <SelectItem value="Rigide toilée">Rigide toilée</SelectItem>
+                      <SelectItem value="Souple standard">Souple standard</SelectItem>
                     </SelectContent>
                   </Select>
                 </div>
                 <div className="space-y-2">
                   <Label>Reliure</Label>
                   <Select value={form.reliure} onValueChange={(v) => upd("reliure", v)}>
-                    <SelectTrigger><SelectValue /></SelectTrigger>
-                    <SelectContent>
+                    <SelectTrigger className="bg-background border-border/60 focus:ring-primary/40"><SelectValue /></SelectTrigger>
+                    <SelectContent className="z-[400]">
                       <SelectItem value="Dos carré-collé">Dos carré-collé</SelectItem>
-                      <SelectItem value="Piqué à cheval">Piqué à cheval</SelectItem>
+                      <SelectItem value="Dos cousu">Dos cousu</SelectItem>
+                      <SelectItem value="Piqué à cheval">Piqué à cheval (agrafé)</SelectItem>
                       <SelectItem value="Spirale">Spirale</SelectItem>
+                      <SelectItem value="Wire-O">Wire-O</SelectItem>
+                      <SelectItem value="Reliure suisse">Reliure suisse</SelectItem>
                     </SelectContent>
                   </Select>
                 </div>
@@ -773,8 +812,8 @@ function ContratSheet({
                 <div className="space-y-2">
                   <Label>Fréquence de paiement</Label>
                   <Select value={form.frequence_paiement} onValueChange={(v) => upd("frequence_paiement", v)}>
-                    <SelectTrigger><SelectValue /></SelectTrigger>
-                    <SelectContent>
+                    <SelectTrigger className="bg-background border-border/60 focus:ring-primary/40"><SelectValue /></SelectTrigger>
+                    <SelectContent className="z-[400]">
                       <SelectItem value="annuel">Une fois par an (décembre)</SelectItem>
                       <SelectItem value="semestriel">Deux fois par an</SelectItem>
                       <SelectItem value="trimestriel">Trimestriel</SelectItem>
@@ -812,7 +851,13 @@ function ContratSheet({
                 </div>
                 <div className="space-y-2">
                   <Label>Date de signature</Label>
-                  <Input type="date" value={form.date_signature} onChange={(e) => upd("date_signature", e.target.value)} />
+                  <Input
+                    type="date"
+                    value={form.date_signature}
+                    onChange={(e) => upd("date_signature", e.target.value)}
+                    className="bg-background border-border/60 [color-scheme:dark] focus:ring-primary/40"
+                  />
+                  <p className="text-xs text-muted-foreground">Format: JJ/MM/AAAA</p>
                 </div>
               </div>
             </Section>
@@ -823,9 +868,10 @@ function ContratSheet({
                 <div className="space-y-2">
                   <Label>Statut</Label>
                   <Select value={form.statut} onValueChange={(v) => upd("statut", v as any)}>
-                    <SelectTrigger><SelectValue /></SelectTrigger>
-                    <SelectContent>
+                    <SelectTrigger className="bg-background border-border/60 focus:ring-primary/40"><SelectValue /></SelectTrigger>
+                    <SelectContent className="z-[400]">
                       <SelectItem value="brouillon">Brouillon</SelectItem>
+                      <SelectItem value="en_attente_signature">En attente de signature</SelectItem>
                       <SelectItem value="signe">Signé</SelectItem>
                       <SelectItem value="expire">Expiré</SelectItem>
                       <SelectItem value="resilie">Résilié</SelectItem>

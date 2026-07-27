@@ -27,7 +27,7 @@ interface Props {
 const FEATURES: Record<Plan, string[]> = {
   pro: [
     "Manuscrits illimités",
-    "Contrats OHADA & Finances",
+    "Contrats & Droits & Finances",
     "Jusqu'à 3 utilisateurs",
   ],
   business: [

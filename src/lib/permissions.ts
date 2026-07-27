@@ -32,7 +32,7 @@ export const PAGES: PageDef[] = [
   { key: "stocks_interne", emoji: "🏭", label: "Stock Interne", description: "Gérer l'entrepôt et les mouvements", defaultOn: false },
   { key: "stocks_externe", emoji: "🏪", label: "Stock Externe", description: "Gérer les dépôts en librairies", defaultOn: false },
   { key: "finances", emoji: "💰", label: "Finances", description: "Accéder aux ventes et royalties", defaultOn: false },
-  { key: "contrats", emoji: "📄", label: "Contrats", description: "Créer et gérer les contrats", defaultOn: false },
+  { key: "contrats", emoji: "📄", label: "Contrats & Droits", description: "Créer et gérer les contrats d'édition et droits d'auteur", defaultOn: false },
   { key: "conversions", emoji: "🔄", label: "Conversions", description: "Convertir des documents en ebook", defaultOn: false },
   { key: "estimateur", emoji: "🧮", label: "Estimateur", description: "Calculer les coûts d'impression", defaultOn: false },
   { key: "imprimeries", emoji: "🏭", label: "Imprimeries", description: "Consulter le répertoire des imprimeurs", defaultOn: false },
