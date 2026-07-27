@@ -770,22 +770,28 @@ function ContratSheet({
                 <div className="space-y-2">
                   <Label>Couverture</Label>
                   <Select value={form.type_couverture} onValueChange={(v) => upd("type_couverture", v)}>
-                    <SelectTrigger><SelectValue /></SelectTrigger>
-                    <SelectContent>
+                    <SelectTrigger className="bg-background border-border/60 focus:ring-primary/40"><SelectValue /></SelectTrigger>
+                    <SelectContent className="z-[400]">
                       <SelectItem value="Quadrichromie cartonnée">Quadrichromie cartonnée</SelectItem>
                       <SelectItem value="Souple pelliculée brillante">Souple pelliculée brillante</SelectItem>
-                      <SelectItem value="Souple matte">Souple matte</SelectItem>
+                      <SelectItem value="Souple pelliculée mate">Souple pelliculée mate</SelectItem>
+                      <SelectItem value="Rigide">Rigide</SelectItem>
+                      <SelectItem value="Rigide toilée">Rigide toilée</SelectItem>
+                      <SelectItem value="Souple standard">Souple standard</SelectItem>
                     </SelectContent>
                   </Select>
                 </div>
                 <div className="space-y-2">
                   <Label>Reliure</Label>
                   <Select value={form.reliure} onValueChange={(v) => upd("reliure", v)}>
-                    <SelectTrigger><SelectValue /></SelectTrigger>
-                    <SelectContent>
+                    <SelectTrigger className="bg-background border-border/60 focus:ring-primary/40"><SelectValue /></SelectTrigger>
+                    <SelectContent className="z-[400]">
                       <SelectItem value="Dos carré-collé">Dos carré-collé</SelectItem>
-                      <SelectItem value="Piqué à cheval">Piqué à cheval</SelectItem>
+                      <SelectItem value="Dos cousu">Dos cousu</SelectItem>
+                      <SelectItem value="Piqué à cheval">Piqué à cheval (agrafé)</SelectItem>
                       <SelectItem value="Spirale">Spirale</SelectItem>
+                      <SelectItem value="Wire-O">Wire-O</SelectItem>
+                      <SelectItem value="Reliure suisse">Reliure suisse</SelectItem>
                     </SelectContent>
                   </Select>
                 </div>
