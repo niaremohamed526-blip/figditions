@@ -24,7 +24,7 @@ import { UnsavedChangesModal } from "@/components/unsaved-changes-modal";
 
 export const Route = createFileRoute("/_authenticated/contrats")({
   component: ContratsPage,
-  head: () => ({ meta: [{ title: "Contrats — FIGDITIONS" }] }),
+  head: () => ({ meta: [{ title: "Contrats & Droits — FIGDITIONS" }] }),
 });
 
 interface Contrat {
