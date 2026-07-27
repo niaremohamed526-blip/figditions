@@ -1,8 +1,6 @@
 import { useEffect, useState } from "react";
 import { Logo } from "@/components/logo";
 
-const SESSION_KEY = "figditions-splash-shown";
-
 function isStandalone() {
   if (typeof window === "undefined") return false;
   return (
@@ -13,21 +11,22 @@ function isStandalone() {
 }
 
 export function PwaSplash() {
-  const [visible, setVisible] = useState(false);
+  // Start visible immediately so the app content never flashes behind it.
+  const [visible, setVisible] = useState(() =>
+    typeof window === "undefined" ? false : isStandalone()
+  );
   const [fading, setFading] = useState(false);
 
   useEffect(() => {
     if (typeof window === "undefined") return;
-    if (!isStandalone()) return;
-    try {
-      if (sessionStorage.getItem(SESSION_KEY)) return;
-      sessionStorage.setItem(SESSION_KEY, "1");
-    } catch {
-      /* ignore */
+    if (!isStandalone()) {
+      setVisible(false);
+      return;
     }
-    setVisible(true);
-    const fadeAt = window.setTimeout(() => setFading(true), 1600);
-    const hideAt = window.setTimeout(() => setVisible(false), 2200);
+
+    // Hold the splash a little longer so the logo animation feels complete.
+    const fadeAt = window.setTimeout(() => setFading(true), 2800);
+    const hideAt = window.setTimeout(() => setVisible(false), 4000);
     return () => {
       window.clearTimeout(fadeAt);
       window.clearTimeout(hideAt);
@@ -50,7 +49,7 @@ export function PwaSplash() {
         flexDirection: "column",
         gap: 24,
         opacity: fading ? 0 : 1,
-        transition: "opacity 600ms ease",
+        transition: "opacity 900ms ease",
         pointerEvents: fading ? "none" : "auto",
       }}
     >
@@ -72,7 +71,7 @@ export function PwaSplash() {
           letterSpacing: 4,
           textTransform: "uppercase",
           fontWeight: 600,
-          animation: "splash-fade-in 900ms ease 400ms both",
+          animation: "splash-fade-in 1200ms ease 600ms both",
         }}
       >
         FIGDITIONS
@@ -95,14 +94,14 @@ export function PwaSplash() {
           position: relative;
           display: grid;
           place-items: center;
-          animation: splash-logo-in 900ms cubic-bezier(0.22, 1, 0.36, 1) both;
+          animation: splash-logo-in 1200ms cubic-bezier(0.22, 1, 0.36, 1) both;
         }
         .splash-glow {
           position: absolute;
           inset: -40px;
           border-radius: 50%;
           background: radial-gradient(closest-side, rgba(200,146,42,0.45), rgba(200,146,42,0) 70%);
-          animation: splash-glow-pulse 1.6s ease-in-out infinite;
+          animation: splash-glow-pulse 2s ease-in-out infinite;
         }
       `}</style>
     </div>
