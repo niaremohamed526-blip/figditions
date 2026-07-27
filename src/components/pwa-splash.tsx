@@ -24,9 +24,9 @@ export function PwaSplash() {
       return;
     }
 
-    // Hold the splash a little longer so the logo animation feels complete.
-    const fadeAt = window.setTimeout(() => setFading(true), 2800);
-    const hideAt = window.setTimeout(() => setVisible(false), 4000);
+    // Hold the splash for 10 seconds total for a premium app launch feel.
+    const fadeAt = window.setTimeout(() => setFading(true), 9000);
+    const hideAt = window.setTimeout(() => setVisible(false), 10000);
     return () => {
       window.clearTimeout(fadeAt);
       window.clearTimeout(hideAt);
