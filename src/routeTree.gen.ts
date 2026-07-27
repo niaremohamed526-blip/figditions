@@ -35,6 +35,7 @@ import { Route as ApiPublicPaydunyaWebhookRouteImport } from './routes/api/publi
 import { Route as AuthenticatedManuscritsManuscritIdRouteImport } from './routes/_authenticated/manuscrits.$manuscritId'
 import { Route as AuthenticatedContratsContratIdRouteImport } from './routes/_authenticated/contrats.$contratId'
 import { Route as AuthenticatedAuteursAuteurIdRouteImport } from './routes/_authenticated/auteurs.$auteurId'
+import { Route as ApiPublicHooksSendPushRouteImport } from './routes/api/public/hooks/send-push'
 import { Route as ApiPublicHooksCheckRemindersRouteImport } from './routes/api/public/hooks/check-reminders'
 
 const SitemapDotxmlRoute = SitemapDotxmlRouteImport.update({
@@ -174,6 +175,11 @@ const AuthenticatedAuteursAuteurIdRoute =
     path: '/$auteurId',
     getParentRoute: () => AuthenticatedAuteursRoute,
   } as any)
+const ApiPublicHooksSendPushRoute = ApiPublicHooksSendPushRouteImport.update({
+  id: '/api/public/hooks/send-push',
+  path: '/api/public/hooks/send-push',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ApiPublicHooksCheckRemindersRoute =
   ApiPublicHooksCheckRemindersRouteImport.update({
     id: '/api/public/hooks/check-reminders',
@@ -208,6 +214,7 @@ export interface FileRoutesByFullPath {
   '/api/public/paydunya-webhook': typeof ApiPublicPaydunyaWebhookRoute
   '/manuscrits/': typeof AuthenticatedManuscritsIndexRoute
   '/api/public/hooks/check-reminders': typeof ApiPublicHooksCheckRemindersRoute
+  '/api/public/hooks/send-push': typeof ApiPublicHooksSendPushRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -236,6 +243,7 @@ export interface FileRoutesByTo {
   '/api/public/paydunya-webhook': typeof ApiPublicPaydunyaWebhookRoute
   '/manuscrits': typeof AuthenticatedManuscritsIndexRoute
   '/api/public/hooks/check-reminders': typeof ApiPublicHooksCheckRemindersRoute
+  '/api/public/hooks/send-push': typeof ApiPublicHooksSendPushRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -266,6 +274,7 @@ export interface FileRoutesById {
   '/api/public/paydunya-webhook': typeof ApiPublicPaydunyaWebhookRoute
   '/_authenticated/manuscrits/': typeof AuthenticatedManuscritsIndexRoute
   '/api/public/hooks/check-reminders': typeof ApiPublicHooksCheckRemindersRoute
+  '/api/public/hooks/send-push': typeof ApiPublicHooksSendPushRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -296,6 +305,7 @@ export interface FileRouteTypes {
     | '/api/public/paydunya-webhook'
     | '/manuscrits/'
     | '/api/public/hooks/check-reminders'
+    | '/api/public/hooks/send-push'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -324,6 +334,7 @@ export interface FileRouteTypes {
     | '/api/public/paydunya-webhook'
     | '/manuscrits'
     | '/api/public/hooks/check-reminders'
+    | '/api/public/hooks/send-push'
   id:
     | '__root__'
     | '/'
@@ -353,6 +364,7 @@ export interface FileRouteTypes {
     | '/api/public/paydunya-webhook'
     | '/_authenticated/manuscrits/'
     | '/api/public/hooks/check-reminders'
+    | '/api/public/hooks/send-push'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -370,6 +382,7 @@ export interface RootRouteChildren {
   RejoindreTokenRoute: typeof RejoindreTokenRoute
   ApiPublicPaydunyaWebhookRoute: typeof ApiPublicPaydunyaWebhookRoute
   ApiPublicHooksCheckRemindersRoute: typeof ApiPublicHooksCheckRemindersRoute
+  ApiPublicHooksSendPushRoute: typeof ApiPublicHooksSendPushRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -556,6 +569,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedAuteursAuteurIdRouteImport
       parentRoute: typeof AuthenticatedAuteursRoute
     }
+    '/api/public/hooks/send-push': {
+      id: '/api/public/hooks/send-push'
+      path: '/api/public/hooks/send-push'
+      fullPath: '/api/public/hooks/send-push'
+      preLoaderRoute: typeof ApiPublicHooksSendPushRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/api/public/hooks/check-reminders': {
       id: '/api/public/hooks/check-reminders'
       path: '/api/public/hooks/check-reminders'
@@ -638,6 +658,7 @@ const rootRouteChildren: RootRouteChildren = {
   RejoindreTokenRoute: RejoindreTokenRoute,
   ApiPublicPaydunyaWebhookRoute: ApiPublicPaydunyaWebhookRoute,
   ApiPublicHooksCheckRemindersRoute: ApiPublicHooksCheckRemindersRoute,
+  ApiPublicHooksSendPushRoute: ApiPublicHooksSendPushRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
