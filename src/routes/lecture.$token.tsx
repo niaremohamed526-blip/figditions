@@ -122,7 +122,7 @@ function LecturePage() {
               <Input required value={nom} onChange={(e) => setNom(e.target.value)} />
             </div>
             <div className="space-y-2">
-              <Label>Votre email (optionnel)</Label>
+              <Label>Votre email (si demandé par l'éditeur)</Label>
               <Input type="email" value={email} onChange={(e) => setEmail(e.target.value)} />
             </div>
             <Button type="submit" disabled={loading} className="w-full bg-primary text-primary-foreground hover:bg-primary/90">
