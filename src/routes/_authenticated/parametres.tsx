@@ -321,31 +321,59 @@ function PasswordModal({ open, onOpenChange }: { open: boolean; onOpenChange: (o
 }
 
 function MaisonSection({ entreprise }: { entreprise: any }) {
-  const [nom, setNom] = useState("");
-  const [adresse, setAdresse] = useState("");
-  const [ville, setVille] = useState("Bamako");
-  const [telephone, setTelephone] = useState("");
-  const [email, setEmail] = useState("");
+  const [form, setForm] = useState<any>({
+    nom: "",
+    ville: "Bamako",
+    adresse: "",
+    telephone: "",
+    email: "",
+    website: "",
+    nif: "",
+    rccm: "",
+    nina: "",
+    banque: "",
+    compte_bancaire: "",
+    nom_representant: "",
+    qualite_representant: "",
+  });
   const [logoUrl, setLogoUrl] = useState<string | null>(null);
+  const [cachetUrl, setCachetUrl] = useState<string | null>(null);
   const [saving, setSaving] = useState(false);
   const [uploading, setUploading] = useState(false);
+  const [uploadingCachet, setUploadingCachet] = useState(false);
   const fileRef = useRef<HTMLInputElement>(null);
+  const cachetRef = useRef<HTMLInputElement>(null);
+
+  const upd = (k: string, v: string) => setForm((f: any) => ({ ...f, [k]: v }));
 
   useEffect(() => {
     if (!entreprise) return;
-    setNom(entreprise.nom ?? "");
-    setAdresse(entreprise.adresse ?? "");
-    setVille(entreprise.ville ?? "Bamako");
-    setTelephone(entreprise.telephone ?? "");
-    setEmail(entreprise.email ?? "");
+    setForm({
+      nom: entreprise.nom ?? "",
+      ville: entreprise.ville ?? "Bamako",
+      adresse: entreprise.adresse ?? "",
+      telephone: entreprise.telephone ?? "",
+      email: entreprise.email ?? entreprise.email_contact ?? "",
+      website: entreprise.website ?? "",
+      nif: entreprise.nif ?? "",
+      rccm: entreprise.rccm ?? "",
+      nina: entreprise.nina ?? "",
+      banque: entreprise.banque ?? "",
+      compte_bancaire: entreprise.compte_bancaire ?? "",
+      nom_representant: entreprise.nom_representant ?? "",
+      qualite_representant: entreprise.qualite_representant ?? "",
+    });
     setLogoUrl(entreprise.logo_url ?? null);
+    setCachetUrl(entreprise.cachet_url ?? null);
   }, [entreprise]);
 
   const save = async () => {
     if (!entreprise?.id) return;
     setSaving(true);
     const { error } = await supabase.from("entreprises").update({
-      nom, ville, adresse, telephone, email, logo_url: logoUrl,
+      ...form,
+      logo_url: logoUrl,
+      cachet_url: cachetUrl,
     } as any).eq("id", entreprise.id);
     setSaving(false);
     if (error) return toast.error(error.message);
@@ -353,26 +381,41 @@ function MaisonSection({ entreprise }: { entreprise: any }) {
     toast.success("Paramètres sauvegardés");
   };
 
+  const uploadTo = async (file: File, folder: string): Promise<string | null> => {
+    if (!entreprise?.id) return null;
+    const ext = file.name.split(".").pop();
+    const path = `${entreprise.id}/${folder}-${Date.now()}.${ext}`;
+    const { error: upErr } = await supabase.storage.from("logos").upload(path, file, { upsert: true });
+    if (upErr) { toast.error(upErr.message); return null; }
+    const { data } = supabase.storage.from("logos").getPublicUrl(path);
+    return data.publicUrl;
+  };
+
   const onLogoChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file || !entreprise?.id) return;
     setUploading(true);
-    const ext = file.name.split(".").pop();
-    const path = `${entreprise.id}/logo-${Date.now()}.${ext}`;
-    const { error: upErr } = await supabase.storage.from("logos").upload(path, file, { upsert: true });
-    if (upErr) { setUploading(false); return toast.error(upErr.message); }
-    const { data } = supabase.storage.from("logos").getPublicUrl(path);
-    const newUrl = data.publicUrl;
-    setLogoUrl(newUrl);
-    // Persist immediately so the sidebar updates without waiting for "Save"
-    const { error: updErr } = await supabase
-      .from("entreprises")
-      .update({ logo_url: newUrl } as any)
-      .eq("id", entreprise.id);
+    const newUrl = await uploadTo(file, "logo");
+    if (newUrl) {
+      setLogoUrl(newUrl);
+      await supabase.from("entreprises").update({ logo_url: newUrl } as any).eq("id", entreprise.id);
+      notifyEntrepriseUpdated();
+      toast.success("Logo mis à jour");
+    }
     setUploading(false);
-    if (updErr) return toast.error(updErr.message);
-    notifyEntrepriseUpdated();
-    toast.success("Logo mis à jour");
+  };
+
+  const onCachetChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file || !entreprise?.id) return;
+    setUploadingCachet(true);
+    const newUrl = await uploadTo(file, "cachet");
+    if (newUrl) {
+      setCachetUrl(newUrl);
+      await supabase.from("entreprises").update({ cachet_url: newUrl } as any).eq("id", entreprise.id);
+      toast.success("Cachet mis à jour");
+    }
+    setUploadingCachet(false);
   };
 
   return (
@@ -382,39 +425,103 @@ function MaisonSection({ entreprise }: { entreprise: any }) {
         <h2 className="font-semibold">Profil de la maison d'édition</h2>
       </div>
 
-      <div className="flex items-center gap-4">
-        <div className="h-20 w-20 rounded-xl border border-border bg-background flex items-center justify-center overflow-hidden">
-          {logoUrl ? <img src={logoUrl} alt="Logo" className="h-full w-full object-contain" /> : <Building2 className="h-8 w-8 text-muted-foreground" />}
+      <div className="grid sm:grid-cols-2 gap-6">
+        <div className="flex items-center gap-4">
+          <div className="h-20 w-20 rounded-xl border border-border bg-background flex items-center justify-center overflow-hidden">
+            {logoUrl ? <img src={logoUrl} alt="Logo" className="h-full w-full object-contain" /> : <Building2 className="h-8 w-8 text-muted-foreground" />}
+          </div>
+          <div>
+            <input ref={fileRef} type="file" accept="image/*" className="hidden" onChange={onLogoChange} />
+            <Button variant="outline" onClick={() => fileRef.current?.click()} disabled={uploading}>
+              {uploading ? <Loader2 className="h-4 w-4 animate-spin" /> : <><Upload className="h-4 w-4" /> Logo</>}
+            </Button>
+            <p className="text-xs text-muted-foreground mt-1">PNG/JPG · max 2 Mo</p>
+          </div>
         </div>
-        <div>
-          <input ref={fileRef} type="file" accept="image/*" className="hidden" onChange={onLogoChange} />
-          <Button variant="outline" onClick={() => fileRef.current?.click()} disabled={uploading}>
-            {uploading ? <Loader2 className="h-4 w-4 animate-spin" /> : <><Upload className="h-4 w-4" /> Téléverser un logo</>}
-          </Button>
-          <p className="text-xs text-muted-foreground mt-1">PNG ou JPG · max 2 Mo</p>
+        <div className="flex items-center gap-4">
+          <div className="h-20 w-20 rounded-xl border border-border bg-background flex items-center justify-center overflow-hidden">
+            {cachetUrl ? <img src={cachetUrl} alt="Cachet" className="h-full w-full object-contain" /> : <span className="text-xs text-muted-foreground text-center px-1">Cachet / tampon</span>}
+          </div>
+          <div>
+            <input ref={cachetRef} type="file" accept="image/*" className="hidden" onChange={onCachetChange} />
+            <Button variant="outline" onClick={() => cachetRef.current?.click()} disabled={uploadingCachet}>
+              {uploadingCachet ? <Loader2 className="h-4 w-4 animate-spin" /> : <><Upload className="h-4 w-4" /> Cachet</>}
+            </Button>
+            <p className="text-xs text-muted-foreground mt-1">Apparaît sur les contrats</p>
+          </div>
         </div>
       </div>
 
       <div className="grid sm:grid-cols-2 gap-4">
         <div className="space-y-2">
           <Label>Nom *</Label>
-          <Input value={nom} onChange={(e) => setNom(e.target.value)} />
+          <Input value={form.nom} onChange={(e) => upd("nom", e.target.value)} />
         </div>
         <div className="space-y-2">
           <Label>Ville</Label>
-          <Input value={ville} onChange={(e) => setVille(e.target.value)} />
+          <Input value={form.ville} onChange={(e) => upd("ville", e.target.value)} />
         </div>
         <div className="space-y-2 sm:col-span-2">
           <Label>Adresse</Label>
-          <Input value={adresse} onChange={(e) => setAdresse(e.target.value)} />
+          <Input value={form.adresse} onChange={(e) => upd("adresse", e.target.value)} />
         </div>
         <div className="space-y-2">
           <Label>Téléphone</Label>
-          <Input value={telephone} onChange={(e) => setTelephone(e.target.value)} placeholder="+223 ..." />
+          <Input value={form.telephone} onChange={(e) => upd("telephone", e.target.value)} placeholder="+223 ..." />
         </div>
         <div className="space-y-2">
           <Label>Email</Label>
-          <Input type="email" value={email} onChange={(e) => setEmail(e.target.value)} />
+          <Input type="email" value={form.email} onChange={(e) => upd("email", e.target.value)} />
+        </div>
+        <div className="space-y-2 sm:col-span-2">
+          <Label>Site web</Label>
+          <Input value={form.website} onChange={(e) => upd("website", e.target.value)} placeholder="https://..." />
+        </div>
+      </div>
+
+      <div className="pt-4 border-t border-border">
+        <h3 className="font-medium mb-3 text-sm text-muted-foreground uppercase tracking-wider">Identifiants légaux</h3>
+        <div className="grid sm:grid-cols-3 gap-4">
+          <div className="space-y-2">
+            <Label>NIF</Label>
+            <Input value={form.nif} onChange={(e) => upd("nif", e.target.value)} />
+          </div>
+          <div className="space-y-2">
+            <Label>RCCM</Label>
+            <Input value={form.rccm} onChange={(e) => upd("rccm", e.target.value)} />
+          </div>
+          <div className="space-y-2">
+            <Label>NINA</Label>
+            <Input value={form.nina} onChange={(e) => upd("nina", e.target.value)} />
+          </div>
+        </div>
+      </div>
+
+      <div className="pt-4 border-t border-border">
+        <h3 className="font-medium mb-3 text-sm text-muted-foreground uppercase tracking-wider">Coordonnées bancaires</h3>
+        <div className="grid sm:grid-cols-2 gap-4">
+          <div className="space-y-2">
+            <Label>Banque</Label>
+            <Input value={form.banque} onChange={(e) => upd("banque", e.target.value)} placeholder="Ex: BDM-SA" />
+          </div>
+          <div className="space-y-2">
+            <Label>Compte bancaire</Label>
+            <Input value={form.compte_bancaire} onChange={(e) => upd("compte_bancaire", e.target.value)} placeholder="N° de compte" />
+          </div>
+        </div>
+      </div>
+
+      <div className="pt-4 border-t border-border">
+        <h3 className="font-medium mb-3 text-sm text-muted-foreground uppercase tracking-wider">Représentant légal</h3>
+        <div className="grid sm:grid-cols-2 gap-4">
+          <div className="space-y-2">
+            <Label>Nom du représentant</Label>
+            <Input value={form.nom_representant} onChange={(e) => upd("nom_representant", e.target.value)} />
+          </div>
+          <div className="space-y-2">
+            <Label>Qualité / Titre</Label>
+            <Input value={form.qualite_representant} onChange={(e) => upd("qualite_representant", e.target.value)} placeholder="Ex: Directeur général" />
+          </div>
         </div>
       </div>
 
