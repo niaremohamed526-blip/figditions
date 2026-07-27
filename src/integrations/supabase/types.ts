@@ -915,6 +915,53 @@ export type Database = {
           },
         ]
       }
+      pdf_partages_acces_log: {
+        Row: {
+          created_at: string
+          entreprise_id: string | null
+          id: string
+          ip_addr: string | null
+          nom_saisi: string | null
+          partage_id: string | null
+          raison: string | null
+          resultat: string
+          token: string
+          user_agent: string | null
+        }
+        Insert: {
+          created_at?: string
+          entreprise_id?: string | null
+          id?: string
+          ip_addr?: string | null
+          nom_saisi?: string | null
+          partage_id?: string | null
+          raison?: string | null
+          resultat: string
+          token: string
+          user_agent?: string | null
+        }
+        Update: {
+          created_at?: string
+          entreprise_id?: string | null
+          id?: string
+          ip_addr?: string | null
+          nom_saisi?: string | null
+          partage_id?: string | null
+          raison?: string | null
+          resultat?: string
+          token?: string
+          user_agent?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "pdf_partages_acces_log_partage_id_fkey"
+            columns: ["partage_id"]
+            isOneToOne: false
+            referencedRelation: "pdf_partages"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       profiles: {
         Row: {
           created_at: string
