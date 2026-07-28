@@ -136,7 +136,7 @@ const SPLASH_CSS = `
 @keyframes dotPulse{0%,80%,100%{transform:scale(.6);opacity:.4}40%{transform:scale(1);opacity:1}}
 `;
 
-const SPLASH_JS = `(function(){try{var s=document.getElementById('figditions-splash');if(!s)return;var standalone=(window.matchMedia&&window.matchMedia('(display-mode: standalone)').matches)||window.navigator.standalone===true;var hold=standalone?10000:0;var fade=standalone?9500:0;if(!standalone){s.parentNode&&s.parentNode.removeChild(s);return;}setTimeout(function(){s.classList.add('splash-hidden');},fade);setTimeout(function(){s.parentNode&&s.parentNode.removeChild(s);},hold);}catch(e){var s2=document.getElementById('figditions-splash');s2&&s2.parentNode&&s2.parentNode.removeChild(s2);}})();`;
+const SPLASH_JS = `(function(){try{var s=document.getElementById('figditions-splash');if(!s)return;var standalone=(window.matchMedia&&window.matchMedia('(display-mode: standalone)').matches)||window.navigator.standalone===true;if(!standalone){s.classList.add('splash-hidden');s.style.display='none';return;}setTimeout(function(){s.classList.add('splash-hidden');},9500);setTimeout(function(){s.style.display='none';},10000);}catch(e){var s2=document.getElementById('figditions-splash');if(s2){s2.classList.add('splash-hidden');s2.style.display='none';}}})();`;
 
 function RootShell({ children }: { children: React.ReactNode }) {
   return (
