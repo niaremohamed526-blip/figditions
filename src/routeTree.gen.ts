@@ -32,6 +32,7 @@ import { Route as AuthenticatedContratsRouteImport } from './routes/_authenticat
 import { Route as AuthenticatedAuteursRouteImport } from './routes/_authenticated/auteurs'
 import { Route as AuthenticatedManuscritsIndexRouteImport } from './routes/_authenticated/manuscrits.index'
 import { Route as ApiPublicPaydunyaWebhookRouteImport } from './routes/api/public/paydunya-webhook'
+import { Route as ApiPublicFlutterwaveWebhookRouteImport } from './routes/api/public/flutterwave-webhook'
 import { Route as AuthenticatedManuscritsManuscritIdRouteImport } from './routes/_authenticated/manuscrits.$manuscritId'
 import { Route as AuthenticatedContratsContratIdRouteImport } from './routes/_authenticated/contrats.$contratId'
 import { Route as AuthenticatedAuteursAuteurIdRouteImport } from './routes/_authenticated/auteurs.$auteurId'
@@ -157,6 +158,12 @@ const ApiPublicPaydunyaWebhookRoute =
     path: '/api/public/paydunya-webhook',
     getParentRoute: () => rootRouteImport,
   } as any)
+const ApiPublicFlutterwaveWebhookRoute =
+  ApiPublicFlutterwaveWebhookRouteImport.update({
+    id: '/api/public/flutterwave-webhook',
+    path: '/api/public/flutterwave-webhook',
+    getParentRoute: () => rootRouteImport,
+  } as any)
 const AuthenticatedManuscritsManuscritIdRoute =
   AuthenticatedManuscritsManuscritIdRouteImport.update({
     id: '/manuscrits/$manuscritId',
@@ -211,6 +218,7 @@ export interface FileRoutesByFullPath {
   '/auteurs/$auteurId': typeof AuthenticatedAuteursAuteurIdRoute
   '/contrats/$contratId': typeof AuthenticatedContratsContratIdRoute
   '/manuscrits/$manuscritId': typeof AuthenticatedManuscritsManuscritIdRoute
+  '/api/public/flutterwave-webhook': typeof ApiPublicFlutterwaveWebhookRoute
   '/api/public/paydunya-webhook': typeof ApiPublicPaydunyaWebhookRoute
   '/manuscrits/': typeof AuthenticatedManuscritsIndexRoute
   '/api/public/hooks/check-reminders': typeof ApiPublicHooksCheckRemindersRoute
@@ -240,6 +248,7 @@ export interface FileRoutesByTo {
   '/auteurs/$auteurId': typeof AuthenticatedAuteursAuteurIdRoute
   '/contrats/$contratId': typeof AuthenticatedContratsContratIdRoute
   '/manuscrits/$manuscritId': typeof AuthenticatedManuscritsManuscritIdRoute
+  '/api/public/flutterwave-webhook': typeof ApiPublicFlutterwaveWebhookRoute
   '/api/public/paydunya-webhook': typeof ApiPublicPaydunyaWebhookRoute
   '/manuscrits': typeof AuthenticatedManuscritsIndexRoute
   '/api/public/hooks/check-reminders': typeof ApiPublicHooksCheckRemindersRoute
@@ -271,6 +280,7 @@ export interface FileRoutesById {
   '/_authenticated/auteurs/$auteurId': typeof AuthenticatedAuteursAuteurIdRoute
   '/_authenticated/contrats/$contratId': typeof AuthenticatedContratsContratIdRoute
   '/_authenticated/manuscrits/$manuscritId': typeof AuthenticatedManuscritsManuscritIdRoute
+  '/api/public/flutterwave-webhook': typeof ApiPublicFlutterwaveWebhookRoute
   '/api/public/paydunya-webhook': typeof ApiPublicPaydunyaWebhookRoute
   '/_authenticated/manuscrits/': typeof AuthenticatedManuscritsIndexRoute
   '/api/public/hooks/check-reminders': typeof ApiPublicHooksCheckRemindersRoute
@@ -302,6 +312,7 @@ export interface FileRouteTypes {
     | '/auteurs/$auteurId'
     | '/contrats/$contratId'
     | '/manuscrits/$manuscritId'
+    | '/api/public/flutterwave-webhook'
     | '/api/public/paydunya-webhook'
     | '/manuscrits/'
     | '/api/public/hooks/check-reminders'
@@ -331,6 +342,7 @@ export interface FileRouteTypes {
     | '/auteurs/$auteurId'
     | '/contrats/$contratId'
     | '/manuscrits/$manuscritId'
+    | '/api/public/flutterwave-webhook'
     | '/api/public/paydunya-webhook'
     | '/manuscrits'
     | '/api/public/hooks/check-reminders'
@@ -361,6 +373,7 @@ export interface FileRouteTypes {
     | '/_authenticated/auteurs/$auteurId'
     | '/_authenticated/contrats/$contratId'
     | '/_authenticated/manuscrits/$manuscritId'
+    | '/api/public/flutterwave-webhook'
     | '/api/public/paydunya-webhook'
     | '/_authenticated/manuscrits/'
     | '/api/public/hooks/check-reminders'
@@ -380,6 +393,7 @@ export interface RootRouteChildren {
   SitemapDotxmlRoute: typeof SitemapDotxmlRoute
   LectureTokenRoute: typeof LectureTokenRoute
   RejoindreTokenRoute: typeof RejoindreTokenRoute
+  ApiPublicFlutterwaveWebhookRoute: typeof ApiPublicFlutterwaveWebhookRoute
   ApiPublicPaydunyaWebhookRoute: typeof ApiPublicPaydunyaWebhookRoute
   ApiPublicHooksCheckRemindersRoute: typeof ApiPublicHooksCheckRemindersRoute
   ApiPublicHooksSendPushRoute: typeof ApiPublicHooksSendPushRoute
@@ -548,6 +562,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiPublicPaydunyaWebhookRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/public/flutterwave-webhook': {
+      id: '/api/public/flutterwave-webhook'
+      path: '/api/public/flutterwave-webhook'
+      fullPath: '/api/public/flutterwave-webhook'
+      preLoaderRoute: typeof ApiPublicFlutterwaveWebhookRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/_authenticated/manuscrits/$manuscritId': {
       id: '/_authenticated/manuscrits/$manuscritId'
       path: '/manuscrits/$manuscritId'
@@ -656,6 +677,7 @@ const rootRouteChildren: RootRouteChildren = {
   SitemapDotxmlRoute: SitemapDotxmlRoute,
   LectureTokenRoute: LectureTokenRoute,
   RejoindreTokenRoute: RejoindreTokenRoute,
+  ApiPublicFlutterwaveWebhookRoute: ApiPublicFlutterwaveWebhookRoute,
   ApiPublicPaydunyaWebhookRoute: ApiPublicPaydunyaWebhookRoute,
   ApiPublicHooksCheckRemindersRoute: ApiPublicHooksCheckRemindersRoute,
   ApiPublicHooksSendPushRoute: ApiPublicHooksSendPushRoute,
@@ -663,13 +685,3 @@ const rootRouteChildren: RootRouteChildren = {
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
-
-import type { getRouter } from './router.tsx'
-import type { startInstance } from './start.ts'
-declare module '@tanstack/react-start' {
-  interface Register {
-    ssr: true
-    router: Awaited<ReturnType<typeof getRouter>>
-    config: Awaited<ReturnType<typeof startInstance.getOptions>>
-  }
-}

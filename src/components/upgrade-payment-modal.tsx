@@ -5,7 +5,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Loader2, Lock, Smartphone, CreditCard, ShieldCheck, RotateCcw, Sparkles, Ticket, ChevronDown, CheckCircle2 } from "lucide-react";
 import { useServerFn } from "@tanstack/react-start";
-import { createPaymentInvoice, getPaydunyaModeFn } from "@/lib/paiements.functions";
+import { createPaymentInvoice, getPaymentModeFn } from "@/lib/paiements.functions";
 import { toast } from "sonner";
 import { PLANS } from "@/lib/plans";
 import { fcfa } from "@/lib/format";
@@ -102,7 +102,7 @@ export function UpgradePaymentModal({ open, onOpenChange, plan, defaultPeriode =
 
           <div className="mb-4 flex items-center justify-center gap-1.5 rounded-lg border border-emerald-500/30 bg-emerald-500/10 p-2.5 text-xs text-emerald-300">
             <ShieldCheck className="h-4 w-4" />
-            <span className="font-medium">Paiement sécurisé par PayDunya</span>
+            <span className="font-medium">Paiement sécurisé par Flutterwave</span>
           </div>
 
 
@@ -250,7 +250,7 @@ export function UpgradePaymentModal({ open, onOpenChange, plan, defaultPeriode =
               <span>Total</span><span className="text-[color:var(--gold)] text-lg">{fcfa(amount)}</span>
             </div>
             <p className="text-[11px] text-muted-foreground flex items-center gap-1 pt-1">
-              <Lock className="h-3 w-3" /> Paiement sécurisé par PayDunya
+              <Lock className="h-3 w-3" /> Paiement sécurisé par Flutterwave
             </p>
           </div>
 
