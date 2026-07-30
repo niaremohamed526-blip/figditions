@@ -90,7 +90,7 @@ function TermsPage() {
 
       <Section id="paiement" title="5. Paiement">
         <ul>
-          <li>Les paiements sont opérés par PayDunya (carte bancaire, mobile money selon la disponibilité).</li>
+          <li>Les paiements sont opérés par Flutterwave (carte bancaire, mobile money selon la disponibilité).</li>
           <li>Les abonnements sont facturés d'avance et se renouvellent automatiquement selon la périodicité choisie.</li>
           <li>Vous pouvez annuler le renouvellement à tout moment depuis vos paramètres. L'accès reste ouvert jusqu'à la fin de la période payée.</li>
           <li>Sauf disposition légale contraire, les périodes entamées ne sont pas remboursables.</li>
@@ -154,7 +154,7 @@ function TermsPage() {
       <Section id="disponibilite" title="11. Disponibilité et sous-traitants">
         <p>
           Le service repose sur des sous-traitants tiers (Lovable Cloud / Supabase, Vercel,
-          PayDunya, CloudConvert, Google Gemini). Une interruption de leur part peut
+          Flutterwave, CloudConvert, Google Gemini). Une interruption de leur part peut
           entraîner une indisponibilité temporaire du service. Nous mettons en œuvre les
           moyens raisonnables pour rétablir le service dès que possible.
         </p>

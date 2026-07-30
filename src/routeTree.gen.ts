@@ -31,7 +31,6 @@ import { Route as AuthenticatedConversionsRouteImport } from './routes/_authenti
 import { Route as AuthenticatedContratsRouteImport } from './routes/_authenticated/contrats'
 import { Route as AuthenticatedAuteursRouteImport } from './routes/_authenticated/auteurs'
 import { Route as AuthenticatedManuscritsIndexRouteImport } from './routes/_authenticated/manuscrits.index'
-import { Route as ApiPublicPaydunyaWebhookRouteImport } from './routes/api/public/paydunya-webhook'
 import { Route as ApiPublicFlutterwaveWebhookRouteImport } from './routes/api/public/flutterwave-webhook'
 import { Route as AuthenticatedManuscritsManuscritIdRouteImport } from './routes/_authenticated/manuscrits.$manuscritId'
 import { Route as AuthenticatedContratsContratIdRouteImport } from './routes/_authenticated/contrats.$contratId'
@@ -152,12 +151,6 @@ const AuthenticatedManuscritsIndexRoute =
     path: '/manuscrits/',
     getParentRoute: () => AuthenticatedRoute,
   } as any)
-const ApiPublicPaydunyaWebhookRoute =
-  ApiPublicPaydunyaWebhookRouteImport.update({
-    id: '/api/public/paydunya-webhook',
-    path: '/api/public/paydunya-webhook',
-    getParentRoute: () => rootRouteImport,
-  } as any)
 const ApiPublicFlutterwaveWebhookRoute =
   ApiPublicFlutterwaveWebhookRouteImport.update({
     id: '/api/public/flutterwave-webhook',
@@ -219,7 +212,6 @@ export interface FileRoutesByFullPath {
   '/contrats/$contratId': typeof AuthenticatedContratsContratIdRoute
   '/manuscrits/$manuscritId': typeof AuthenticatedManuscritsManuscritIdRoute
   '/api/public/flutterwave-webhook': typeof ApiPublicFlutterwaveWebhookRoute
-  '/api/public/paydunya-webhook': typeof ApiPublicPaydunyaWebhookRoute
   '/manuscrits/': typeof AuthenticatedManuscritsIndexRoute
   '/api/public/hooks/check-reminders': typeof ApiPublicHooksCheckRemindersRoute
   '/api/public/hooks/send-push': typeof ApiPublicHooksSendPushRoute
@@ -249,7 +241,6 @@ export interface FileRoutesByTo {
   '/contrats/$contratId': typeof AuthenticatedContratsContratIdRoute
   '/manuscrits/$manuscritId': typeof AuthenticatedManuscritsManuscritIdRoute
   '/api/public/flutterwave-webhook': typeof ApiPublicFlutterwaveWebhookRoute
-  '/api/public/paydunya-webhook': typeof ApiPublicPaydunyaWebhookRoute
   '/manuscrits': typeof AuthenticatedManuscritsIndexRoute
   '/api/public/hooks/check-reminders': typeof ApiPublicHooksCheckRemindersRoute
   '/api/public/hooks/send-push': typeof ApiPublicHooksSendPushRoute
@@ -281,7 +272,6 @@ export interface FileRoutesById {
   '/_authenticated/contrats/$contratId': typeof AuthenticatedContratsContratIdRoute
   '/_authenticated/manuscrits/$manuscritId': typeof AuthenticatedManuscritsManuscritIdRoute
   '/api/public/flutterwave-webhook': typeof ApiPublicFlutterwaveWebhookRoute
-  '/api/public/paydunya-webhook': typeof ApiPublicPaydunyaWebhookRoute
   '/_authenticated/manuscrits/': typeof AuthenticatedManuscritsIndexRoute
   '/api/public/hooks/check-reminders': typeof ApiPublicHooksCheckRemindersRoute
   '/api/public/hooks/send-push': typeof ApiPublicHooksSendPushRoute
@@ -313,7 +303,6 @@ export interface FileRouteTypes {
     | '/contrats/$contratId'
     | '/manuscrits/$manuscritId'
     | '/api/public/flutterwave-webhook'
-    | '/api/public/paydunya-webhook'
     | '/manuscrits/'
     | '/api/public/hooks/check-reminders'
     | '/api/public/hooks/send-push'
@@ -343,7 +332,6 @@ export interface FileRouteTypes {
     | '/contrats/$contratId'
     | '/manuscrits/$manuscritId'
     | '/api/public/flutterwave-webhook'
-    | '/api/public/paydunya-webhook'
     | '/manuscrits'
     | '/api/public/hooks/check-reminders'
     | '/api/public/hooks/send-push'
@@ -374,7 +362,6 @@ export interface FileRouteTypes {
     | '/_authenticated/contrats/$contratId'
     | '/_authenticated/manuscrits/$manuscritId'
     | '/api/public/flutterwave-webhook'
-    | '/api/public/paydunya-webhook'
     | '/_authenticated/manuscrits/'
     | '/api/public/hooks/check-reminders'
     | '/api/public/hooks/send-push'
@@ -394,7 +381,6 @@ export interface RootRouteChildren {
   LectureTokenRoute: typeof LectureTokenRoute
   RejoindreTokenRoute: typeof RejoindreTokenRoute
   ApiPublicFlutterwaveWebhookRoute: typeof ApiPublicFlutterwaveWebhookRoute
-  ApiPublicPaydunyaWebhookRoute: typeof ApiPublicPaydunyaWebhookRoute
   ApiPublicHooksCheckRemindersRoute: typeof ApiPublicHooksCheckRemindersRoute
   ApiPublicHooksSendPushRoute: typeof ApiPublicHooksSendPushRoute
 }
@@ -555,13 +541,6 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedManuscritsIndexRouteImport
       parentRoute: typeof AuthenticatedRoute
     }
-    '/api/public/paydunya-webhook': {
-      id: '/api/public/paydunya-webhook'
-      path: '/api/public/paydunya-webhook'
-      fullPath: '/api/public/paydunya-webhook'
-      preLoaderRoute: typeof ApiPublicPaydunyaWebhookRouteImport
-      parentRoute: typeof rootRouteImport
-    }
     '/api/public/flutterwave-webhook': {
       id: '/api/public/flutterwave-webhook'
       path: '/api/public/flutterwave-webhook'
@@ -678,7 +657,6 @@ const rootRouteChildren: RootRouteChildren = {
   LectureTokenRoute: LectureTokenRoute,
   RejoindreTokenRoute: RejoindreTokenRoute,
   ApiPublicFlutterwaveWebhookRoute: ApiPublicFlutterwaveWebhookRoute,
-  ApiPublicPaydunyaWebhookRoute: ApiPublicPaydunyaWebhookRoute,
   ApiPublicHooksCheckRemindersRoute: ApiPublicHooksCheckRemindersRoute,
   ApiPublicHooksSendPushRoute: ApiPublicHooksSendPushRoute,
 }
