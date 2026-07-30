@@ -174,7 +174,7 @@ function TechStack() {
     { icon: Database, title: "Supabase", desc: "Base de données PostgreSQL avec sauvegardes automatiques quotidiennes hébergée sur AWS Europe" },
     { icon: Zap, title: "Cloudflare", desc: "Déploiement mondial avec CDN pour des performances optimales même au Mali" },
     { icon: Lock, title: "SSL/TLS", desc: "Chiffrement de bout en bout de toutes vos données" },
-    { icon: CreditCard, title: "PayDunya", desc: "Paiements sécurisés via Orange Money et Carte Bancaire" },
+    { icon: CreditCard, title: "Flutterwave", desc: "Paiements sécurisés via Mobile Money et Carte Bancaire" },
   ];
   return (
     <section className="py-20 px-4">

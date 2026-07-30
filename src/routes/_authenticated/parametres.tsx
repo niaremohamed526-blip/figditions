@@ -1240,7 +1240,7 @@ function PlansComparison({ currentPlan, canChange, entrepriseId, onChoose }: {
 
   const switchPlan = async (plan: AppPlan) => {
     if (!entrepriseId || plan === currentPlan) return;
-    // Paid plans go through PayDunya checkout
+    // Paid plans go through Flutterwave checkout
     if (plan === "pro" || plan === "business") {
       onChoose(plan);
       return;

@@ -75,7 +75,7 @@ function PrivacyPage() {
         </ul>
         <h3>Données de paiement</h3>
         <ul>
-          <li>Traitées exclusivement par PayDunya. FIGDITIONS ne stocke <strong>aucune</strong> donnée de carte bancaire ni de mobile money.</li>
+          <li>Traitées exclusivement par Flutterwave. FIGDITIONS ne stocke <strong>aucune</strong> donnée de carte bancaire ni de mobile money.</li>
           <li>Nous recevons uniquement le statut de la transaction et l'identifiant de paiement.</li>
         </ul>
       </Section>
@@ -105,7 +105,7 @@ function PrivacyPage() {
           L'infrastructure applicative (base de données, authentification, stockage de fichiers)
           est fournie par Lovable Cloud, qui s'appuie sur Supabase. Les serveurs applicatifs
           (SSR, fonctions serveur) sont hébergés sur Vercel. Les paiements sont opérés par
-          PayDunya.
+          Flutterwave.
         </p>
         <table>
           <thead>
@@ -115,7 +115,7 @@ function PrivacyPage() {
             <tr><td>Base de données, comptes, contenu applicatif</td><td>Lovable Cloud (Supabase)</td><td>Hébergement et stockage</td></tr>
             <tr><td>Manuscrits, couvertures, exports (EPUB/MOBI), logos</td><td>Lovable Cloud Storage (Supabase Storage)</td><td>Stockage de fichiers</td></tr>
             <tr><td>Rendu du site et fonctions serveur</td><td>Vercel</td><td>Hébergement front / edge</td></tr>
-            <tr><td>Paiements et abonnements</td><td>PayDunya</td><td>Traitement des paiements</td></tr>
+            <tr><td>Paiements et abonnements</td><td>Flutterwave</td><td>Traitement des paiements</td></tr>
             <tr><td>Conversion PDF → EPUB/MOBI</td><td>CloudConvert</td><td>Conversion de fichiers</td></tr>
             <tr><td>Emails transactionnels</td><td>Service email par défaut de Supabase</td><td>Envoi d'emails</td></tr>
             <tr><td>Assistant / génération IA</td><td>Google Gemini via Lovable AI Gateway</td><td>Fonctionnalités IA</td></tr>
@@ -132,7 +132,7 @@ function PrivacyPage() {
         <ul>
           <li><strong>Lovable Cloud / Supabase</strong> — base de données, authentification, stockage</li>
           <li><strong>Vercel</strong> — hébergement du site et des fonctions serveur</li>
-          <li><strong>PayDunya</strong> — paiement et abonnement</li>
+          <li><strong>Flutterwave</strong> — paiement et abonnement</li>
           <li><strong>CloudConvert</strong> — conversion de manuscrits ; le fichier source est transmis via une URL signée temporaire et supprimé côté CloudConvert selon leur politique de rétention</li>
           <li><strong>Google Gemini (via Lovable AI Gateway)</strong> — génération assistée par IA lorsque vous utilisez explicitement ces fonctionnalités</li>
           <li><strong>Google</strong> — uniquement si vous choisissez la connexion Google (OAuth)</li>

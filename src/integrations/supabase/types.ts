@@ -16,6 +16,7 @@ export type Database = {
     Tables: {
       abonnements: {
         Row: {
+          checkout_url: string | null
           created_at: string
           created_by: string | null
           date_debut: string | null
@@ -23,14 +24,15 @@ export type Database = {
           entreprise_id: string
           id: string
           montant_fcfa: number
-          paydunya_checkout_url: string | null
-          paydunya_token: string | null
+          payment_ref: string | null
           periode: string
           plan: string
+          provider: string
           statut: string
           updated_at: string
         }
         Insert: {
+          checkout_url?: string | null
           created_at?: string
           created_by?: string | null
           date_debut?: string | null
@@ -38,14 +40,15 @@ export type Database = {
           entreprise_id: string
           id?: string
           montant_fcfa: number
-          paydunya_checkout_url?: string | null
-          paydunya_token?: string | null
+          payment_ref?: string | null
           periode: string
           plan: string
+          provider?: string
           statut?: string
           updated_at?: string
         }
         Update: {
+          checkout_url?: string | null
           created_at?: string
           created_by?: string | null
           date_debut?: string | null
@@ -53,10 +56,10 @@ export type Database = {
           entreprise_id?: string
           id?: string
           montant_fcfa?: number
-          paydunya_checkout_url?: string | null
-          paydunya_token?: string | null
+          payment_ref?: string | null
           periode?: string
           plan?: string
+          provider?: string
           statut?: string
           updated_at?: string
         }
@@ -828,9 +831,10 @@ export type Database = {
           id: string
           methode: string | null
           montant_fcfa: number
-          paydunya_reference: string | null
-          paydunya_token: string | null
           payload: Json | null
+          payment_ref: string | null
+          payment_reference: string | null
+          provider: string
           statut: string
           updated_at: string
         }
@@ -841,9 +845,10 @@ export type Database = {
           id?: string
           methode?: string | null
           montant_fcfa: number
-          paydunya_reference?: string | null
-          paydunya_token?: string | null
           payload?: Json | null
+          payment_ref?: string | null
+          payment_reference?: string | null
+          provider?: string
           statut?: string
           updated_at?: string
         }
@@ -854,9 +859,10 @@ export type Database = {
           id?: string
           methode?: string | null
           montant_fcfa?: number
-          paydunya_reference?: string | null
-          paydunya_token?: string | null
           payload?: Json | null
+          payment_ref?: string | null
+          payment_reference?: string | null
+          provider?: string
           statut?: string
           updated_at?: string
         }
