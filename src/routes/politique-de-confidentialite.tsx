@@ -36,7 +36,7 @@ function PrivacyPage() {
   return (
     <LegalShell
       title="Politique de Confidentialité"
-      subtitle="Dernière mise à jour : Juillet 2026"
+      subtitle="Dernière mise à jour : Août 2026"
       toc={toc}
     >
       <Section id="qui" title="1. Qui sommes-nous ?">
