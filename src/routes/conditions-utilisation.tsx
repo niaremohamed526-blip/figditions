@@ -37,7 +37,7 @@ function TermsPage() {
   return (
     <LegalShell
       title="Conditions Générales d'Utilisation"
-      subtitle="Dernière mise à jour : Juillet 2026"
+      subtitle="Dernière mise à jour : Août 2026"
       toc={toc}
     >
       <Section id="acceptation" title="1. Acceptation">
