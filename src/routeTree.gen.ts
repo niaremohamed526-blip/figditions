@@ -35,6 +35,7 @@ import { Route as ApiPublicFlutterwaveWebhookRouteImport } from './routes/api/pu
 import { Route as AuthenticatedManuscritsManuscritIdRouteImport } from './routes/_authenticated/manuscrits.$manuscritId'
 import { Route as AuthenticatedContratsContratIdRouteImport } from './routes/_authenticated/contrats.$contratId'
 import { Route as AuthenticatedAuteursAuteurIdRouteImport } from './routes/_authenticated/auteurs.$auteurId'
+import { Route as AuthenticatedAdminPaiementsRouteImport } from './routes/_authenticated/admin.paiements'
 import { Route as ApiPublicHooksSendPushRouteImport } from './routes/api/public/hooks/send-push'
 import { Route as ApiPublicHooksCheckRemindersRouteImport } from './routes/api/public/hooks/check-reminders'
 
@@ -175,6 +176,12 @@ const AuthenticatedAuteursAuteurIdRoute =
     path: '/$auteurId',
     getParentRoute: () => AuthenticatedAuteursRoute,
   } as any)
+const AuthenticatedAdminPaiementsRoute =
+  AuthenticatedAdminPaiementsRouteImport.update({
+    id: '/admin/paiements',
+    path: '/admin/paiements',
+    getParentRoute: () => AuthenticatedRoute,
+  } as any)
 const ApiPublicHooksSendPushRoute = ApiPublicHooksSendPushRouteImport.update({
   id: '/api/public/hooks/send-push',
   path: '/api/public/hooks/send-push',
@@ -208,6 +215,7 @@ export interface FileRoutesByFullPath {
   '/stocks': typeof AuthenticatedStocksRoute
   '/lecture/$token': typeof LectureTokenRoute
   '/rejoindre/$token': typeof RejoindreTokenRoute
+  '/admin/paiements': typeof AuthenticatedAdminPaiementsRoute
   '/auteurs/$auteurId': typeof AuthenticatedAuteursAuteurIdRoute
   '/contrats/$contratId': typeof AuthenticatedContratsContratIdRoute
   '/manuscrits/$manuscritId': typeof AuthenticatedManuscritsManuscritIdRoute
@@ -237,6 +245,7 @@ export interface FileRoutesByTo {
   '/stocks': typeof AuthenticatedStocksRoute
   '/lecture/$token': typeof LectureTokenRoute
   '/rejoindre/$token': typeof RejoindreTokenRoute
+  '/admin/paiements': typeof AuthenticatedAdminPaiementsRoute
   '/auteurs/$auteurId': typeof AuthenticatedAuteursAuteurIdRoute
   '/contrats/$contratId': typeof AuthenticatedContratsContratIdRoute
   '/manuscrits/$manuscritId': typeof AuthenticatedManuscritsManuscritIdRoute
@@ -268,6 +277,7 @@ export interface FileRoutesById {
   '/_authenticated/stocks': typeof AuthenticatedStocksRoute
   '/lecture/$token': typeof LectureTokenRoute
   '/rejoindre/$token': typeof RejoindreTokenRoute
+  '/_authenticated/admin/paiements': typeof AuthenticatedAdminPaiementsRoute
   '/_authenticated/auteurs/$auteurId': typeof AuthenticatedAuteursAuteurIdRoute
   '/_authenticated/contrats/$contratId': typeof AuthenticatedContratsContratIdRoute
   '/_authenticated/manuscrits/$manuscritId': typeof AuthenticatedManuscritsManuscritIdRoute
@@ -299,6 +309,7 @@ export interface FileRouteTypes {
     | '/stocks'
     | '/lecture/$token'
     | '/rejoindre/$token'
+    | '/admin/paiements'
     | '/auteurs/$auteurId'
     | '/contrats/$contratId'
     | '/manuscrits/$manuscritId'
@@ -328,6 +339,7 @@ export interface FileRouteTypes {
     | '/stocks'
     | '/lecture/$token'
     | '/rejoindre/$token'
+    | '/admin/paiements'
     | '/auteurs/$auteurId'
     | '/contrats/$contratId'
     | '/manuscrits/$manuscritId'
@@ -358,6 +370,7 @@ export interface FileRouteTypes {
     | '/_authenticated/stocks'
     | '/lecture/$token'
     | '/rejoindre/$token'
+    | '/_authenticated/admin/paiements'
     | '/_authenticated/auteurs/$auteurId'
     | '/_authenticated/contrats/$contratId'
     | '/_authenticated/manuscrits/$manuscritId'
@@ -569,6 +582,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedAuteursAuteurIdRouteImport
       parentRoute: typeof AuthenticatedAuteursRoute
     }
+    '/_authenticated/admin/paiements': {
+      id: '/_authenticated/admin/paiements'
+      path: '/admin/paiements'
+      fullPath: '/admin/paiements'
+      preLoaderRoute: typeof AuthenticatedAdminPaiementsRouteImport
+      parentRoute: typeof AuthenticatedRoute
+    }
     '/api/public/hooks/send-push': {
       id: '/api/public/hooks/send-push'
       path: '/api/public/hooks/send-push'
@@ -620,6 +640,7 @@ interface AuthenticatedRouteChildren {
   AuthenticatedImprimeriesRoute: typeof AuthenticatedImprimeriesRoute
   AuthenticatedParametresRoute: typeof AuthenticatedParametresRoute
   AuthenticatedStocksRoute: typeof AuthenticatedStocksRoute
+  AuthenticatedAdminPaiementsRoute: typeof AuthenticatedAdminPaiementsRoute
   AuthenticatedManuscritsManuscritIdRoute: typeof AuthenticatedManuscritsManuscritIdRoute
   AuthenticatedManuscritsIndexRoute: typeof AuthenticatedManuscritsIndexRoute
 }
@@ -634,6 +655,7 @@ const AuthenticatedRouteChildren: AuthenticatedRouteChildren = {
   AuthenticatedImprimeriesRoute: AuthenticatedImprimeriesRoute,
   AuthenticatedParametresRoute: AuthenticatedParametresRoute,
   AuthenticatedStocksRoute: AuthenticatedStocksRoute,
+  AuthenticatedAdminPaiementsRoute: AuthenticatedAdminPaiementsRoute,
   AuthenticatedManuscritsManuscritIdRoute:
     AuthenticatedManuscritsManuscritIdRoute,
   AuthenticatedManuscritsIndexRoute: AuthenticatedManuscritsIndexRoute,

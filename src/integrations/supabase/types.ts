@@ -825,46 +825,79 @@ export type Database = {
       }
       paiements: {
         Row: {
-          abonnement_id: string
+          abonnement_id: string | null
+          confirme_le: string | null
+          confirme_par: string | null
           created_at: string
+          created_by: string | null
           entreprise_id: string
           id: string
           methode: string | null
+          methode_paiement: string | null
           montant_fcfa: number
+          notification_email: boolean
+          notification_whatsapp: boolean
           payload: Json | null
           payment_ref: string | null
           payment_reference: string | null
+          periode: string | null
+          plan_demande: string | null
           provider: string
+          raison_rejet: string | null
+          reference_paiement: string | null
           statut: string
           updated_at: string
+          user_email: string | null
         }
         Insert: {
-          abonnement_id: string
+          abonnement_id?: string | null
+          confirme_le?: string | null
+          confirme_par?: string | null
           created_at?: string
+          created_by?: string | null
           entreprise_id: string
           id?: string
           methode?: string | null
+          methode_paiement?: string | null
           montant_fcfa: number
+          notification_email?: boolean
+          notification_whatsapp?: boolean
           payload?: Json | null
           payment_ref?: string | null
           payment_reference?: string | null
+          periode?: string | null
+          plan_demande?: string | null
           provider?: string
+          raison_rejet?: string | null
+          reference_paiement?: string | null
           statut?: string
           updated_at?: string
+          user_email?: string | null
         }
         Update: {
-          abonnement_id?: string
+          abonnement_id?: string | null
+          confirme_le?: string | null
+          confirme_par?: string | null
           created_at?: string
+          created_by?: string | null
           entreprise_id?: string
           id?: string
           methode?: string | null
+          methode_paiement?: string | null
           montant_fcfa?: number
+          notification_email?: boolean
+          notification_whatsapp?: boolean
           payload?: Json | null
           payment_ref?: string | null
           payment_reference?: string | null
+          periode?: string | null
+          plan_demande?: string | null
           provider?: string
+          raison_rejet?: string | null
+          reference_paiement?: string | null
           statut?: string
           updated_at?: string
+          user_email?: string | null
         }
         Relationships: [
           {
@@ -992,6 +1025,7 @@ export type Database = {
           entreprise_id: string | null
           full_name: string
           id: string
+          is_superadmin: boolean
           permissions: Json
           role: string
           role_label: string | null
@@ -1001,6 +1035,7 @@ export type Database = {
           entreprise_id?: string | null
           full_name: string
           id: string
+          is_superadmin?: boolean
           permissions?: Json
           role?: string
           role_label?: string | null
@@ -1010,6 +1045,7 @@ export type Database = {
           entreprise_id?: string | null
           full_name?: string
           id?: string
+          is_superadmin?: boolean
           permissions?: Json
           role?: string
           role_label?: string | null
@@ -1371,6 +1407,13 @@ export type Database = {
     }
     Functions: {
       accept_invitation: { Args: { p_token: string }; Returns: Json }
+      admin_confirm_paiement: { Args: { p_id: string }; Returns: Json }
+      admin_list_paiements: { Args: { p_statut?: string }; Returns: Json }
+      admin_paiements_stats: { Args: never; Returns: Json }
+      admin_reject_paiement: {
+        Args: { p_id: string; p_raison: string }
+        Returns: Json
+      }
       create_bordereau: {
         Args: {
           p_librairie_adresse: string
@@ -1382,6 +1425,16 @@ export type Database = {
           p_total_exemplaires: number
           p_total_fcfa: number
           p_type: string
+        }
+        Returns: Json
+      }
+      create_qr_payment_request: {
+        Args: {
+          p_montant: number
+          p_periode: string
+          p_plan: string
+          p_reference: string
+          p_user_email: string
         }
         Returns: Json
       }
@@ -1398,6 +1451,8 @@ export type Database = {
       }
       get_invitation_public: { Args: { p_token: string }; Returns: Json }
       increment_pdf_view: { Args: { p_token: string }; Returns: Json }
+      is_superadmin: { Args: { _user_id: string }; Returns: boolean }
+      my_pending_qr_payment: { Args: never; Returns: Json }
       pourcentage_droits_pour: {
         Args: { p_auteur: string; p_manuscrit: string }
         Returns: number
