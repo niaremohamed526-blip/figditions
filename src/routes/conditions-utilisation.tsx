@@ -90,8 +90,9 @@ function TermsPage() {
 
       <Section id="paiement" title="5. Paiement">
         <ul>
-          <li>Les paiements sont opérés par Flutterwave (carte bancaire, mobile money selon la disponibilité).</li>
-          <li>Les abonnements sont facturés d'avance et se renouvellent automatiquement selon la périodicité choisie.</li>
+          <li>Les paiements automatiques sont opérés par Flutterwave (carte bancaire, mobile money selon la disponibilité).</li>
+          <li>Les paiements manuels par QR code se font via Orange Money Mali ou Wave Mali. Vous scannez le QR affiché, effectuez le transfert, puis transmettez la référence à FIGDITIONS par WhatsApp ou email. L'activation de l'abonnement est validée manuellement par FIGDITIONS dans les meilleurs délais.</li>
+          <li>Les abonnements sont facturés d'avance et se renouvellent automatiquement selon la périodicité choisie (pour les paiements automatiques) ou doivent être renouvelés manuellement (pour les paiements par QR code).</li>
           <li>Vous pouvez annuler le renouvellement à tout moment depuis vos paramètres. L'accès reste ouvert jusqu'à la fin de la période payée.</li>
           <li>Sauf disposition légale contraire, les périodes entamées ne sont pas remboursables.</li>
         </ul>
