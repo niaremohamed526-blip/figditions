@@ -1439,6 +1439,7 @@ export type Database = {
         }
         Returns: Json
       }
+      expire_subscriptions: { Args: never; Returns: number }
       fn_notify: {
         Args: {
           p_entreprise: string
