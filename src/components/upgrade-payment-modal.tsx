@@ -76,25 +76,32 @@ export function UpgradePaymentModal({ open, onOpenChange, plan, defaultPeriode =
     [reference, planDef.label, periode, amount, entreprise?.nom, user?.email, methode],
   );
 
-  const startPayment = async () => {
-    const ref = generatePaymentReference();
+  // Étape 1 → 2 : on affiche seulement le QR + la référence, rien n'est envoyé à l'admin.
+  const startPayment = () => {
+    setReference(generatePaymentReference());
+    setStep("qr");
+  };
+
+  // Étape 2 → 3 : c'est ici que la demande est réellement envoyée à l'admin.
+  const declarePayment = async () => {
+    if (!reference) return;
     setLoading(true);
     const res = await createQrPaymentRequest({
       plan,
       periode,
       montant: amount,
-      reference: ref,
+      reference,
       userEmail: user?.email ?? null,
       methode,
     });
     setLoading(false);
     if (!res.ok) {
-      toast.error(res.error ?? "Impossible de créer la demande de paiement");
+      toast.error(res.error ?? "Impossible d'enregistrer votre paiement");
       return;
     }
-    setReference(ref);
-    setStep("qr");
+    setStep("confirme");
   };
+
 
   const copyRef = () => {
     navigator.clipboard.writeText(reference);
@@ -318,16 +325,22 @@ export function UpgradePaymentModal({ open, onOpenChange, plan, defaultPeriode =
               </div>
 
               <Button
-                onClick={() => setStep("confirme")}
+                onClick={declarePayment}
+                disabled={loading}
                 className="w-full h-12 text-base font-semibold"
                 style={{ backgroundColor: "#C8922A", color: "#0D0A06" }}
               >
-                <CheckCircle2 className="h-5 w-5" /> J'ai effectué le paiement
+                {loading ? (
+                  <><Loader2 className="h-5 w-5 animate-spin" /> Envoi à FIGDITIONS...</>
+                ) : (
+                  <><CheckCircle2 className="h-5 w-5" /> J'ai effectué le paiement</>
+                )}
               </Button>
 
               <button
                 type="button"
-                onClick={() => setStep("choix")}
+                onClick={() => { setStep("choix"); setReference(""); }}
+                disabled={loading}
                 className="w-full text-xs text-muted-foreground hover:text-foreground flex items-center justify-center gap-1"
               >
                 <ArrowLeft className="h-3 w-3" /> Revenir au choix du plan
