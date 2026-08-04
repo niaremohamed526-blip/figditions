@@ -5,8 +5,8 @@ import { supabase } from "@/integrations/supabase/client";
 export const ORANGE_MONEY_QR_URL =
   "https://yqufxcfllbyoadhedypc.supabase.co/storage/v1/object/public/logos/payments%2Forange-money-qr.jpeg";
 
-/** ⚠️ Remplacez par le vrai numéro WhatsApp FIGDITIONS (format international, sans +). */
-export const FIGDITIONS_WHATSAPP = "22300000000";
+/** Numéro WhatsApp FIGDITIONS pour les notifications de paiement (Mali). */
+export const FIGDITIONS_WHATSAPP = "22382876546";
 export const FIGDITIONS_EMAIL = "figditions@gmail.com";
 
 const ALPHABET = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
