@@ -118,9 +118,11 @@ function PrivacyPage() {
             <tr><td>Base de données, comptes, contenu applicatif</td><td>Lovable Cloud (Supabase)</td><td>Hébergement et stockage</td></tr>
             <tr><td>Manuscrits, couvertures, exports (EPUB/MOBI), logos</td><td>Lovable Cloud Storage (Supabase Storage)</td><td>Stockage de fichiers</td></tr>
             <tr><td>Rendu du site et fonctions serveur</td><td>Vercel</td><td>Hébergement front / edge</td></tr>
-            <tr><td>Paiements et abonnements</td><td>Flutterwave</td><td>Traitement des paiements</td></tr>
+            <tr><td>Paiements automatiques (carte, mobile money)</td><td>Flutterwave</td><td>Traitement des paiements</td></tr>
+            <tr><td>Paiements manuels par QR code</td><td>FIGDITIONS (validation manuelle des paiements Orange Money / Wave)</td><td>Validation et activation d'abonnement</td></tr>
             <tr><td>Conversion PDF → EPUB/MOBI</td><td>CloudConvert</td><td>Conversion de fichiers</td></tr>
             <tr><td>Emails transactionnels</td><td>Service email par défaut de Supabase</td><td>Envoi d'emails</td></tr>
+            <tr><td>Notifications push installées (PWA)</td><td>Navigateur / Service Worker de l'appareil, avec Lovable Cloud pour le routage côté serveur</td><td>Notifications hors application</td></tr>
             <tr><td>Assistant / génération IA</td><td>Google Gemini via Lovable AI Gateway</td><td>Fonctionnalités IA</td></tr>
           </tbody>
         </table>
