@@ -105,8 +105,10 @@ function PrivacyPage() {
         <p>
           L'infrastructure applicative (base de données, authentification, stockage de fichiers)
           est fournie par Lovable Cloud, qui s'appuie sur Supabase. Les serveurs applicatifs
-          (SSR, fonctions serveur) sont hébergés sur Vercel. Les paiements sont opérés par
-          Flutterwave.
+          (SSR, fonctions serveur) sont hébergés sur Vercel. Les paiements automatiques sont
+          opérés par Flutterwave ; les paiements manuels par QR code (Orange Money / Wave) sont
+          traités directement par FIGDITIONS, qui valide la transaction avant activation de
+          l'abonnement.
         </p>
         <table>
           <thead>
