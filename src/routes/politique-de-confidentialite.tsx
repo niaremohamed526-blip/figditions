@@ -26,10 +26,11 @@ const toc = [
   { id: "conservation", label: "8. Durée de conservation" },
   { id: "droits", label: "9. Vos droits" },
   { id: "cookies", label: "10. Cookies & stockage local" },
-  { id: "ia", label: "11. Intelligence artificielle" },
-  { id: "ohada", label: "12. Conformité OHADA" },
-  { id: "contact", label: "13. Contact & réclamations" },
-  { id: "modifs", label: "14. Modifications" },
+  { id: "notifications", label: "11. Notifications push" },
+  { id: "ia", label: "12. Intelligence artificielle" },
+  { id: "ohada", label: "13. Conformité OHADA" },
+  { id: "contact", label: "14. Contact & réclamations" },
+  { id: "modifs", label: "15. Modifications" },
 ];
 
 function PrivacyPage() {
