@@ -12,8 +12,8 @@ import { cn } from "@/lib/utils";
 import { PromoCodeCard } from "@/components/promo-code-card";
 import { useAuth, useProfile } from "@/hooks/use-auth";
 import {
-  ORANGE_MONEY_QR_URL, createQrPaymentRequest, generatePaymentReference,
-  mailtoLink, paymentMessage, whatsappLink,
+  PAYMENT_METHODS, createQrPaymentRequest, generatePaymentReference,
+  mailtoLink, paymentMessage, whatsappLink, type PaymentMethod,
 } from "@/lib/manual-payment";
 
 type Plan = "pro" | "business";
@@ -39,6 +39,7 @@ export function UpgradePaymentModal({ open, onOpenChange, plan, defaultPeriode =
   const isAdmin = profile?.role === "admin";
 
   const [periode, setPeriode] = useState<Periode>(defaultPeriode);
+  const [methode, setMethode] = useState<PaymentMethod>("orange_money");
   const [step, setStep] = useState<Step>("choix");
   const [reference, setReference] = useState("");
   const [loading, setLoading] = useState(false);
@@ -48,12 +49,15 @@ export function UpgradePaymentModal({ open, onOpenChange, plan, defaultPeriode =
   useEffect(() => {
     if (!open) return;
     setPeriode(defaultPeriode);
+    setMethode("orange_money");
     setStep("choix");
     setReference("");
     setLoading(false);
     setPromoOpen(false);
     setPromoApplied(false);
   }, [open, defaultPeriode]);
+
+  const m = PAYMENT_METHODS[methode];
 
   const amount = periode === "mensuel" ? planDef.monthlyFcfa : planDef.yearlyFcfa;
   const annualSavings = useMemo(() => planDef.monthlyFcfa * 12 - planDef.yearlyFcfa, [planDef]);
@@ -67,8 +71,9 @@ export function UpgradePaymentModal({ open, onOpenChange, plan, defaultPeriode =
         montant: fcfa(amount),
         entreprise: entreprise?.nom ?? "—",
         email: user?.email ?? null,
+        methode,
       }),
-    [reference, planDef.label, periode, amount, entreprise?.nom, user?.email],
+    [reference, planDef.label, periode, amount, entreprise?.nom, user?.email, methode],
   );
 
   const startPayment = async () => {
@@ -80,6 +85,7 @@ export function UpgradePaymentModal({ open, onOpenChange, plan, defaultPeriode =
       montant: amount,
       reference: ref,
       userEmail: user?.email ?? null,
+      methode,
     });
     setLoading(false);
     if (!res.ok) {
@@ -110,13 +116,16 @@ export function UpgradePaymentModal({ open, onOpenChange, plan, defaultPeriode =
             </div>
             <h2 className="text-xl font-bold">Passer au plan {planDef.label}</h2>
             <p className="text-sm text-muted-foreground">
-              {step === "choix" ? "Débloquez toutes les fonctionnalités" : "Paiement par Orange Money"}
+              {step === "choix" ? "Débloquez toutes les fonctionnalités" : `Paiement par ${m.label}`}
             </p>
           </div>
 
-          <div className="mb-4 flex items-center justify-center gap-1.5 rounded-lg border border-orange-500/30 bg-orange-500/10 p-2.5 text-xs text-orange-300">
+          <div
+            className="mb-4 flex items-center justify-center gap-1.5 rounded-lg border p-2.5 text-xs"
+            style={{ borderColor: `${m.color}55`, backgroundColor: `${m.color}1A`, color: m.color }}
+          >
             <ShieldCheck className="h-4 w-4" />
-            <span className="font-medium">Paiement Orange Money — validation manuelle par FIGDITIONS</span>
+            <span className="font-medium">Paiement {m.label} — validation manuelle par FIGDITIONS</span>
           </div>
 
           {/* ---------- Étape 1 : choix ---------- */}
@@ -169,6 +178,40 @@ export function UpgradePaymentModal({ open, onOpenChange, plan, defaultPeriode =
                 )}
               </div>
 
+              {/* Méthode de paiement */}
+              <div className="mb-5">
+                <div className="text-sm font-medium mb-2">Méthode de paiement</div>
+                <div className="grid gap-2 sm:grid-cols-2">
+                  {(Object.values(PAYMENT_METHODS)).map((pm) => {
+                    const active = methode === pm.id;
+                    return (
+                      <button
+                        key={pm.id}
+                        type="button"
+                        onClick={() => setMethode(pm.id)}
+                        className={cn(
+                          "flex items-center gap-3 rounded-xl border-2 p-3 text-left transition-all",
+                          active ? "shadow-lg" : "border-border hover:border-muted-foreground/40",
+                        )}
+                        style={active ? { borderColor: pm.color, backgroundColor: `${pm.color}14` } : undefined}
+                      >
+                        <span
+                          className="h-9 w-9 shrink-0 rounded-full flex items-center justify-center"
+                          style={{ backgroundColor: pm.color }}
+                        >
+                          <Smartphone className="h-5 w-5 text-white" />
+                        </span>
+                        <span className="min-w-0">
+                          <span className="block text-sm font-semibold truncate">{pm.label}</span>
+                          <span className="block text-[11px] text-muted-foreground">{pm.phone}</span>
+                        </span>
+                        {active && <CheckCircle2 className="ml-auto h-4 w-4" style={{ color: pm.color }} />}
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
+
               {/* Promo code collapsible */}
               <div className="mb-5">
                 <button
@@ -205,7 +248,7 @@ export function UpgradePaymentModal({ open, onOpenChange, plan, defaultPeriode =
                 {loading ? (
                   <><Loader2 className="h-5 w-5 animate-spin" /> Préparation...</>
                 ) : (
-                  <><Smartphone className="h-5 w-5" /> Payer {fcfa(amount)} par Orange Money</>
+                  <><Smartphone className="h-5 w-5" /> Payer {fcfa(amount)} par {m.id === "wave" ? "Wave" : "Orange Money"}</>
                 )}
               </Button>
               {!isAdmin && (
@@ -220,21 +263,31 @@ export function UpgradePaymentModal({ open, onOpenChange, plan, defaultPeriode =
           {step === "qr" && (
             <div className="space-y-4">
               <ol className="text-sm space-y-1.5 text-muted-foreground">
-                <li>1. Scannez le QR code ci-dessous avec Orange Money.</li>
+                <li>1. Scannez le QR code ci-dessous avec {m.id === "wave" ? "l'application Wave" : "Orange Money"}, ou payez au {m.phone}.</li>
                 <li>2. Payez exactement <span className="text-foreground font-semibold">{fcfa(amount)}</span>.</li>
                 <li>3. Envoyez-nous votre référence pour activation.</li>
               </ol>
 
-              <div className="rounded-2xl border border-[color:var(--gold)]/30 bg-background/50 p-4 flex flex-col items-center">
+              <div
+                className="rounded-2xl border-2 bg-background/50 p-4 flex flex-col items-center"
+                style={{ borderColor: `${m.color}66` }}
+              >
+                <div className="mb-2 flex items-center gap-2 text-sm font-semibold" style={{ color: m.color }}>
+                  <span className="h-6 w-6 rounded-full flex items-center justify-center" style={{ backgroundColor: m.color }}>
+                    <Smartphone className="h-3.5 w-3.5 text-white" />
+                  </span>
+                  {m.label}
+                </div>
                 <img
-                  src={ORANGE_MONEY_QR_URL}
-                  alt="QR code Orange Money FIGDITIONS"
+                  src={m.qr}
+                  alt={`QR code ${m.label} FIGDITIONS`}
                   className="w-56 h-56 object-contain rounded-xl bg-white p-2"
                   loading="lazy"
                 />
                 <div className="mt-3 text-center">
                   <div className="text-2xl font-bold text-[color:var(--gold)]">{fcfa(amount)}</div>
                   <div className="text-[11px] text-muted-foreground">{planDef.label} · {periode}</div>
+                  <div className="text-[11px] text-muted-foreground mt-0.5">{m.phone}</div>
                 </div>
               </div>
 
@@ -307,7 +360,7 @@ export function UpgradePaymentModal({ open, onOpenChange, plan, defaultPeriode =
 
           <div className="mt-4 grid grid-cols-2 gap-1.5 text-[11px] text-muted-foreground">
             <span className="flex items-center gap-1"><Lock className="h-3 w-3" /> Paiement 100% sécurisé</span>
-            <span className="flex items-center gap-1"><Smartphone className="h-3 w-3" /> Orange Money Mali</span>
+            <span className="flex items-center gap-1"><Smartphone className="h-3 w-3" /> {m.label}</span>
           </div>
           <div className="mt-2 flex items-center justify-center gap-1 text-[10px] text-muted-foreground">
             <ShieldCheck className="h-3 w-3 text-emerald-400" /> Vos données bancaires ne transitent jamais par FIGDITIONS
