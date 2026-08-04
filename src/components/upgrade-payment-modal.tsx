@@ -76,25 +76,32 @@ export function UpgradePaymentModal({ open, onOpenChange, plan, defaultPeriode =
     [reference, planDef.label, periode, amount, entreprise?.nom, user?.email, methode],
   );
 
-  const startPayment = async () => {
-    const ref = generatePaymentReference();
+  // Étape 1 → 2 : on affiche seulement le QR + la référence, rien n'est envoyé à l'admin.
+  const startPayment = () => {
+    setReference(generatePaymentReference());
+    setStep("qr");
+  };
+
+  // Étape 2 → 3 : c'est ici que la demande est réellement envoyée à l'admin.
+  const declarePayment = async () => {
+    if (!reference) return;
     setLoading(true);
     const res = await createQrPaymentRequest({
       plan,
       periode,
       montant: amount,
-      reference: ref,
+      reference,
       userEmail: user?.email ?? null,
       methode,
     });
     setLoading(false);
     if (!res.ok) {
-      toast.error(res.error ?? "Impossible de créer la demande de paiement");
+      toast.error(res.error ?? "Impossible d'enregistrer votre paiement");
       return;
     }
-    setReference(ref);
-    setStep("qr");
+    setStep("confirme");
   };
+
 
   const copyRef = () => {
     navigator.clipboard.writeText(reference);
