@@ -667,18 +667,27 @@ function CtaBanner() {
 
 function Footer() {
   const { t } = useI18n();
+  const [adminOpen, setAdminOpen] = useState(false);
   const scrollTo = (id: string) => (e: React.MouseEvent) => {
     e.preventDefault();
     document.getElementById(id)?.scrollIntoView({ behavior: "smooth" });
   };
   return (
     <footer className="border-t border-border bg-card/40 py-12 px-4">
+      <AdminAccessGate open={adminOpen} onOpenChange={setAdminOpen} />
       <div className="max-w-7xl mx-auto grid sm:grid-cols-2 lg:grid-cols-5 gap-8 items-start">
         <div>
-          <Logo
-            className="h-[60px] w-auto"
-            style={{ filter: "brightness(1.5) drop-shadow(0px 0px 12px rgba(232,184,75,0.5))" }}
-          />
+          <button
+            type="button"
+            onClick={() => setAdminOpen(true)}
+            aria-label="FIGDITIONS"
+            className="block cursor-pointer bg-transparent border-0 p-0"
+          >
+            <Logo
+              className="h-[60px] w-auto"
+              style={{ filter: "brightness(1.5) drop-shadow(0px 0px 12px rgba(232,184,75,0.5))" }}
+            />
+          </button>
           <p
             className="mt-2 font-bold"
             style={{ color: "#E8B84B", fontSize: "20px", letterSpacing: "3px" }}
@@ -689,6 +698,7 @@ function Footer() {
             {t("La plateforme éditoriale de l'Afrique de l'Ouest", "The publishing platform of West Africa")}
           </p>
         </div>
+
 
 
         <div>
