@@ -325,16 +325,22 @@ export function UpgradePaymentModal({ open, onOpenChange, plan, defaultPeriode =
               </div>
 
               <Button
-                onClick={() => setStep("confirme")}
+                onClick={declarePayment}
+                disabled={loading}
                 className="w-full h-12 text-base font-semibold"
                 style={{ backgroundColor: "#C8922A", color: "#0D0A06" }}
               >
-                <CheckCircle2 className="h-5 w-5" /> J'ai effectué le paiement
+                {loading ? (
+                  <><Loader2 className="h-5 w-5 animate-spin" /> Envoi à FIGDITIONS...</>
+                ) : (
+                  <><CheckCircle2 className="h-5 w-5" /> J'ai effectué le paiement</>
+                )}
               </Button>
 
               <button
                 type="button"
-                onClick={() => setStep("choix")}
+                onClick={() => { setStep("choix"); setReference(""); }}
+                disabled={loading}
                 className="w-full text-xs text-muted-foreground hover:text-foreground flex items-center justify-center gap-1"
               >
                 <ArrowLeft className="h-3 w-3" /> Revenir au choix du plan
