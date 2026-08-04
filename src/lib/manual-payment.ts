@@ -1,9 +1,40 @@
-// Manual QR-code payment (Orange Money) helpers — client-safe.
+// Manual QR-code payment (Orange Money / Wave) helpers — client-safe.
 import { supabase } from "@/integrations/supabase/client";
 
 /** Orange Money QR code (stored in the `logos` bucket). */
 export const ORANGE_MONEY_QR_URL =
   "https://yqufxcfllbyoadhedypc.supabase.co/storage/v1/object/public/logos/payments%2Forange-money-qr.jpeg";
+
+/** Wave QR code (stored in the `logos` bucket). */
+export const WAVE_QR_URL =
+  "https://yqufxcfllbyoadhedypc.supabase.co/storage/v1/object/public/logos/payments%2Fwave-qr.png";
+
+export type PaymentMethod = "orange_money" | "wave";
+
+export interface PaymentMethodDef {
+  id: PaymentMethod;
+  label: string;
+  color: string;
+  qr: string;
+  phone: string;
+}
+
+export const PAYMENT_METHODS: Record<PaymentMethod, PaymentMethodDef> = {
+  orange_money: {
+    id: "orange_money",
+    label: "Orange Money Mali",
+    color: "#FF6600",
+    qr: ORANGE_MONEY_QR_URL,
+    phone: "+223 82 87 65 46",
+  },
+  wave: {
+    id: "wave",
+    label: "Wave Mali",
+    color: "#1DC8FF",
+    qr: WAVE_QR_URL,
+    phone: "+223 82 87 65 46",
+  },
+};
 
 /** Numéro WhatsApp FIGDITIONS pour les notifications de paiement (Mali). */
 export const FIGDITIONS_WHATSAPP = "22382876546";
@@ -26,6 +57,7 @@ export interface QrPaymentInput {
   montant: number;
   reference: string;
   userEmail: string | null;
+  methode: PaymentMethod;
 }
 
 interface RpcResult {
@@ -47,6 +79,7 @@ export async function createQrPaymentRequest(input: QrPaymentInput): Promise<Rpc
     p_montant: input.montant,
     p_reference: input.reference,
     p_user_email: input.userEmail,
+    p_methode: input.methode,
   });
   if (error) return { ok: false, error: error.message };
   return (data as RpcResult) ?? { ok: false, error: "Réponse invalide" };
@@ -123,11 +156,14 @@ export function paymentMessage(args: {
   montant: string;
   entreprise: string;
   email: string | null;
+  methode: PaymentMethod;
 }): string {
+  const methode = PAYMENT_METHODS[args.methode];
   return [
     "Bonjour FIGDITIONS,",
     "",
-    "Je viens d'effectuer un paiement par Orange Money.",
+    `Je viens d'effectuer un paiement par ${methode.label}.`,
+    `Méthode : ${args.methode === "wave" ? "Wave" : "Orange Money"}`,
     `Référence : ${args.reference}`,
     `Maison d'édition : ${args.entreprise}`,
     `Plan : ${args.plan} (${args.periode})`,
