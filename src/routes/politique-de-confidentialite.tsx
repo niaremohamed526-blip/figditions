@@ -234,7 +234,7 @@ function PrivacyPage() {
         </p>
       </Section>
 
-      <Section id="contact" title="13. Contact et réclamations">
+      <Section id="contact" title="14. Contact et réclamations">
         <p>Pour toute question relative à cette politique :</p>
         <ul>
           <li>Email : <a href="mailto:Figditions@gmail.com">Figditions@gmail.com</a></li>
@@ -246,7 +246,7 @@ function PrivacyPage() {
         </p>
       </Section>
 
-      <Section id="modifs" title="14. Modifications">
+      <Section id="modifs" title="15. Modifications">
         <p>
           Nous nous réservons le droit de modifier cette politique. En cas de changement
           important, vous serez notifié par email et/ou via l'application. La version en
