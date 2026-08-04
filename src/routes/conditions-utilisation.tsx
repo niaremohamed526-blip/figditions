@@ -155,9 +155,11 @@ function TermsPage() {
       <Section id="disponibilite" title="11. Disponibilité et sous-traitants">
         <p>
           Le service repose sur des sous-traitants tiers (Lovable Cloud / Supabase, Vercel,
-          Flutterwave, CloudConvert, Google Gemini). Une interruption de leur part peut
-          entraîner une indisponibilité temporaire du service. Nous mettons en œuvre les
-          moyens raisonnables pour rétablir le service dès que possible.
+          Flutterwave, CloudConvert, Google Gemini) et sur des services validés manuellement par
+          FIGDITIONS (paiements Orange Money / Wave). Les notifications push installées
+          dépendent du navigateur et du système de l'utilisateur. Une interruption de la part
+          de ces fournisseurs peut entraîner une indisponibilité temporaire du service. Nous
+          mettons en œuvre les moyens raisonnables pour rétablir le service dès que possible.
         </p>
       </Section>
 
