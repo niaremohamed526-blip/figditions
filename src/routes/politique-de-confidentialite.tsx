@@ -206,7 +206,17 @@ function PrivacyPage() {
         </ul>
       </Section>
 
-      <Section id="ia" title="11. Intelligence artificielle">
+      <Section id="notifications" title="11. Notifications push">
+        <p>
+          Si vous installez FIGDITIONS en tant qu'application (PWA) et que vous acceptez les
+          notifications, votre navigateur enregistre un identifiant technique (push token)
+          sur votre appareil. Cet identifiant permet d'envoyer des notifications même lorsque
+          l'application n'est pas ouverte. Vous pouvez révoquer cette autorisation à tout moment
+          dans les paramètres de votre appareil ou navigateur.
+        </p>
+      </Section>
+
+      <Section id="ia" title="12. Intelligence artificielle">
         <p>
           Certaines fonctionnalités s'appuient sur Google Gemini via le Lovable AI Gateway.
           Elles ne sont exécutées que lorsque vous les déclenchez explicitement. Les données
@@ -216,7 +226,7 @@ function PrivacyPage() {
         </p>
       </Section>
 
-      <Section id="ohada" title="12. Conformité OHADA">
+      <Section id="ohada" title="13. Conformité OHADA">
         <p>
           En tant que plateforme opérant en zone OHADA, FIGDITIONS respecte les dispositions
           de l'Acte Uniforme OHADA relatif au droit commercial général concernant la
