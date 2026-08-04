@@ -75,8 +75,9 @@ function PrivacyPage() {
         </ul>
         <h3>Données de paiement</h3>
         <ul>
-          <li>Traitées exclusivement par Flutterwave. FIGDITIONS ne stocke <strong>aucune</strong> donnée de carte bancaire ni de mobile money.</li>
-          <li>Nous recevons uniquement le statut de la transaction et l'identifiant de paiement.</li>
+          <li>Les paiements par carte bancaire et mobile-money automatiques sont traités par Flutterwave. FIGDITIONS ne stocke <strong>aucune</strong> donnée de carte bancaire.</li>
+          <li>Les paiements manuels par QR code (Orange Money Mali et Wave Mali) sont validés manuellement par FIGDITIONS après réception de la transaction. Nous recevons la référence de paiement, le plan choisi, la période et le montant, mais <strong>aucun</strong> mot de passe, code PIN ou numéro de compte financier.</li>
+          <li>Quel que soit le mode de paiement, nous ne stockons que le statut de la transaction, l'identifiant ou la référence de paiement, et les détails de l'abonnement associé.</li>
         </ul>
       </Section>
 
