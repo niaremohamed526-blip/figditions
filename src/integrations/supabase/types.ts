@@ -1430,6 +1430,7 @@ export type Database = {
       }
       create_qr_payment_request: {
         Args: {
+          p_methode?: string
           p_montant: number
           p_periode: string
           p_plan: string
