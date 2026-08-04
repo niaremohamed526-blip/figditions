@@ -37,7 +37,7 @@ function TermsPage() {
   return (
     <LegalShell
       title="Conditions Générales d'Utilisation"
-      subtitle="Dernière mise à jour : Juillet 2026"
+      subtitle="Dernière mise à jour : Août 2026"
       toc={toc}
     >
       <Section id="acceptation" title="1. Acceptation">
@@ -52,9 +52,9 @@ function TermsPage() {
         <p>
           FIGDITIONS est une plateforme SaaS destinée aux maisons d'édition, principalement
           en zone OHADA, pour gérer manuscrits, auteurs, contrats, stocks, ventes, bordereaux,
-          finances, partage sécurisé de lecture et conversion de fichiers. Elle est
-          accessible via le web et installable en tant qu'application (PWA) avec un mode
-          hors-ligne.
+          finances, partage sécurisé de lecture et conversion de fichiers. Elle est accessible
+          via le web et installable en tant qu'application (PWA) avec un mode hors-ligne et
+          des notifications push optionnelles.
         </p>
       </Section>
 
@@ -90,8 +90,9 @@ function TermsPage() {
 
       <Section id="paiement" title="5. Paiement">
         <ul>
-          <li>Les paiements sont opérés par Flutterwave (carte bancaire, mobile money selon la disponibilité).</li>
-          <li>Les abonnements sont facturés d'avance et se renouvellent automatiquement selon la périodicité choisie.</li>
+          <li>Les paiements automatiques sont opérés par Flutterwave (carte bancaire, mobile money selon la disponibilité).</li>
+          <li>Les paiements manuels par QR code se font via Orange Money Mali ou Wave Mali. Vous scannez le QR affiché, effectuez le transfert, puis transmettez la référence à FIGDITIONS par WhatsApp ou email. L'activation de l'abonnement est validée manuellement par FIGDITIONS dans les meilleurs délais.</li>
+          <li>Les abonnements sont facturés d'avance et se renouvellent automatiquement selon la périodicité choisie (pour les paiements automatiques) ou doivent être renouvelés manuellement (pour les paiements par QR code).</li>
           <li>Vous pouvez annuler le renouvellement à tout moment depuis vos paramètres. L'accès reste ouvert jusqu'à la fin de la période payée.</li>
           <li>Sauf disposition légale contraire, les périodes entamées ne sont pas remboursables.</li>
         </ul>
@@ -154,9 +155,11 @@ function TermsPage() {
       <Section id="disponibilite" title="11. Disponibilité et sous-traitants">
         <p>
           Le service repose sur des sous-traitants tiers (Lovable Cloud / Supabase, Vercel,
-          Flutterwave, CloudConvert, Google Gemini). Une interruption de leur part peut
-          entraîner une indisponibilité temporaire du service. Nous mettons en œuvre les
-          moyens raisonnables pour rétablir le service dès que possible.
+          Flutterwave, CloudConvert, Google Gemini) et sur des services validés manuellement par
+          FIGDITIONS (paiements Orange Money / Wave). Les notifications push installées
+          dépendent du navigateur et du système de l'utilisateur. Une interruption de la part
+          de ces fournisseurs peut entraîner une indisponibilité temporaire du service. Nous
+          mettons en œuvre les moyens raisonnables pour rétablir le service dès que possible.
         </p>
       </Section>
 

@@ -26,17 +26,18 @@ const toc = [
   { id: "conservation", label: "8. Durée de conservation" },
   { id: "droits", label: "9. Vos droits" },
   { id: "cookies", label: "10. Cookies & stockage local" },
-  { id: "ia", label: "11. Intelligence artificielle" },
-  { id: "ohada", label: "12. Conformité OHADA" },
-  { id: "contact", label: "13. Contact & réclamations" },
-  { id: "modifs", label: "14. Modifications" },
+  { id: "notifications", label: "11. Notifications push" },
+  { id: "ia", label: "12. Intelligence artificielle" },
+  { id: "ohada", label: "13. Conformité OHADA" },
+  { id: "contact", label: "14. Contact & réclamations" },
+  { id: "modifs", label: "15. Modifications" },
 ];
 
 function PrivacyPage() {
   return (
     <LegalShell
       title="Politique de Confidentialité"
-      subtitle="Dernière mise à jour : Juillet 2026"
+      subtitle="Dernière mise à jour : Août 2026"
       toc={toc}
     >
       <Section id="qui" title="1. Qui sommes-nous ?">
@@ -75,8 +76,9 @@ function PrivacyPage() {
         </ul>
         <h3>Données de paiement</h3>
         <ul>
-          <li>Traitées exclusivement par Flutterwave. FIGDITIONS ne stocke <strong>aucune</strong> donnée de carte bancaire ni de mobile money.</li>
-          <li>Nous recevons uniquement le statut de la transaction et l'identifiant de paiement.</li>
+          <li>Les paiements par carte bancaire et mobile-money automatiques sont traités par Flutterwave. FIGDITIONS ne stocke <strong>aucune</strong> donnée de carte bancaire.</li>
+          <li>Les paiements manuels par QR code (Orange Money Mali et Wave Mali) sont validés manuellement par FIGDITIONS après réception de la transaction. Nous recevons la référence de paiement, le plan choisi, la période et le montant, mais <strong>aucun</strong> mot de passe, code PIN ou numéro de compte financier.</li>
+          <li>Quel que soit le mode de paiement, nous ne stockons que le statut de la transaction, l'identifiant ou la référence de paiement, et les détails de l'abonnement associé.</li>
         </ul>
       </Section>
 
@@ -104,8 +106,10 @@ function PrivacyPage() {
         <p>
           L'infrastructure applicative (base de données, authentification, stockage de fichiers)
           est fournie par Lovable Cloud, qui s'appuie sur Supabase. Les serveurs applicatifs
-          (SSR, fonctions serveur) sont hébergés sur Vercel. Les paiements sont opérés par
-          Flutterwave.
+          (SSR, fonctions serveur) sont hébergés sur Vercel. Les paiements automatiques sont
+          opérés par Flutterwave ; les paiements manuels par QR code (Orange Money / Wave) sont
+          traités directement par FIGDITIONS, qui valide la transaction avant activation de
+          l'abonnement.
         </p>
         <table>
           <thead>
@@ -115,9 +119,11 @@ function PrivacyPage() {
             <tr><td>Base de données, comptes, contenu applicatif</td><td>Lovable Cloud (Supabase)</td><td>Hébergement et stockage</td></tr>
             <tr><td>Manuscrits, couvertures, exports (EPUB/MOBI), logos</td><td>Lovable Cloud Storage (Supabase Storage)</td><td>Stockage de fichiers</td></tr>
             <tr><td>Rendu du site et fonctions serveur</td><td>Vercel</td><td>Hébergement front / edge</td></tr>
-            <tr><td>Paiements et abonnements</td><td>Flutterwave</td><td>Traitement des paiements</td></tr>
+            <tr><td>Paiements automatiques (carte, mobile money)</td><td>Flutterwave</td><td>Traitement des paiements</td></tr>
+            <tr><td>Paiements manuels par QR code</td><td>FIGDITIONS (validation manuelle des paiements Orange Money / Wave)</td><td>Validation et activation d'abonnement</td></tr>
             <tr><td>Conversion PDF → EPUB/MOBI</td><td>CloudConvert</td><td>Conversion de fichiers</td></tr>
             <tr><td>Emails transactionnels</td><td>Service email par défaut de Supabase</td><td>Envoi d'emails</td></tr>
+            <tr><td>Notifications push installées (PWA)</td><td>Navigateur / Service Worker de l'appareil, avec Lovable Cloud pour le routage côté serveur</td><td>Notifications hors application</td></tr>
             <tr><td>Assistant / génération IA</td><td>Google Gemini via Lovable AI Gateway</td><td>Fonctionnalités IA</td></tr>
           </tbody>
         </table>
@@ -130,9 +136,10 @@ function PrivacyPage() {
           engagements de sécurité et de confidentialité.
         </p>
         <ul>
-          <li><strong>Lovable Cloud / Supabase</strong> — base de données, authentification, stockage</li>
+          <li><strong>Lovable Cloud / Supabase</strong> — base de données, authentification, stockage, service email et routage des notifications serveur</li>
           <li><strong>Vercel</strong> — hébergement du site et des fonctions serveur</li>
-          <li><strong>Flutterwave</strong> — paiement et abonnement</li>
+          <li><strong>Flutterwave</strong> — paiements automatiques par carte et mobile money</li>
+          <li><strong>Orange Money Mali / Wave Mali</strong> — traitement des paiements manuels par QR code, validés par FIGDITIONS</li>
           <li><strong>CloudConvert</strong> — conversion de manuscrits ; le fichier source est transmis via une URL signée temporaire et supprimé côté CloudConvert selon leur politique de rétention</li>
           <li><strong>Google Gemini (via Lovable AI Gateway)</strong> — génération assistée par IA lorsque vous utilisez explicitement ces fonctionnalités</li>
           <li><strong>Google</strong> — uniquement si vous choisissez la connexion Google (OAuth)</li>
@@ -199,7 +206,17 @@ function PrivacyPage() {
         </ul>
       </Section>
 
-      <Section id="ia" title="11. Intelligence artificielle">
+      <Section id="notifications" title="11. Notifications push">
+        <p>
+          Si vous installez FIGDITIONS en tant qu'application (PWA) et que vous acceptez les
+          notifications, votre navigateur enregistre un identifiant technique (push token)
+          sur votre appareil. Cet identifiant permet d'envoyer des notifications même lorsque
+          l'application n'est pas ouverte. Vous pouvez révoquer cette autorisation à tout moment
+          dans les paramètres de votre appareil ou navigateur.
+        </p>
+      </Section>
+
+      <Section id="ia" title="12. Intelligence artificielle">
         <p>
           Certaines fonctionnalités s'appuient sur Google Gemini via le Lovable AI Gateway.
           Elles ne sont exécutées que lorsque vous les déclenchez explicitement. Les données
@@ -209,7 +226,7 @@ function PrivacyPage() {
         </p>
       </Section>
 
-      <Section id="ohada" title="12. Conformité OHADA">
+      <Section id="ohada" title="13. Conformité OHADA">
         <p>
           En tant que plateforme opérant en zone OHADA, FIGDITIONS respecte les dispositions
           de l'Acte Uniforme OHADA relatif au droit commercial général concernant la
@@ -217,7 +234,7 @@ function PrivacyPage() {
         </p>
       </Section>
 
-      <Section id="contact" title="13. Contact et réclamations">
+      <Section id="contact" title="14. Contact et réclamations">
         <p>Pour toute question relative à cette politique :</p>
         <ul>
           <li>Email : <a href="mailto:Figditions@gmail.com">Figditions@gmail.com</a></li>
@@ -229,7 +246,7 @@ function PrivacyPage() {
         </p>
       </Section>
 
-      <Section id="modifs" title="14. Modifications">
+      <Section id="modifs" title="15. Modifications">
         <p>
           Nous nous réservons le droit de modifier cette politique. En cas de changement
           important, vous serez notifié par email et/ou via l'application. La version en
