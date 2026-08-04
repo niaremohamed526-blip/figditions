@@ -52,9 +52,9 @@ function TermsPage() {
         <p>
           FIGDITIONS est une plateforme SaaS destinée aux maisons d'édition, principalement
           en zone OHADA, pour gérer manuscrits, auteurs, contrats, stocks, ventes, bordereaux,
-          finances, partage sécurisé de lecture et conversion de fichiers. Elle est
-          accessible via le web et installable en tant qu'application (PWA) avec un mode
-          hors-ligne.
+          finances, partage sécurisé de lecture et conversion de fichiers. Elle est accessible
+          via le web et installable en tant qu'application (PWA) avec un mode hors-ligne et
+          des notifications push optionnelles.
         </p>
       </Section>
 
