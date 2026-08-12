@@ -19,6 +19,10 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { BookCombobox } from "@/components/book-combobox";
+import {
+  StockSearchBar, StockBar, Highlight, norm, useDebounced,
+  type StockLevelFilter, type StockSort,
+} from "@/components/stock-search-bar";
 
 import {
   Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
