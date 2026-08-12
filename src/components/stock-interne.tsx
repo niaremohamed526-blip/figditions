@@ -133,13 +133,37 @@ export function StockInterneTab({ entrepriseId, userId }: { entrepriseId: string
           quantite_transferee_librairies: 0, quantite_vendue_directement: 0,
           quantite_exposee_evenements: 0, seuil_alerte: 10,
           prix_vente_direct_fcfa: 0, cout_unitaire_impression_fcfa: 0,
-          emplacement: "Entrepôt principal", date_impression: null,
+          emplacement: "Entrepôt principal", date_impression: null, created_at: null,
           titre: m.titre, auteur: m.auteur,
         });
       }
     });
     return [...map.values()];
   }, [stocks, publishedBooks, mMap]);
+
+  const visibleRows = useMemo(() => {
+    const t = norm(term).trim();
+    let list = rows.filter((r) => {
+      if (t && !norm(`${r.titre} ${r.auteur} ${r.emplacement ?? ""}`).includes(t)) return false;
+      if (level === "epuise") return r.quantite_disponible === 0;
+      if (level === "bas") return r.quantite_disponible > 0 && r.quantite_disponible <= r.seuil_alerte;
+      if (level === "bon") return r.quantite_disponible > r.seuil_alerte;
+      return true;
+    });
+    const byDate = (r: typeof rows[number]) => new Date(r.created_at ?? 0).getTime();
+    list = [...list].sort((a, b) => {
+      switch (sort) {
+        case "titre_desc": return b.titre.localeCompare(a.titre, "fr");
+        case "dispo_asc": return a.quantite_disponible - b.quantite_disponible;
+        case "dispo_desc": return b.quantite_disponible - a.quantite_disponible;
+        case "date_desc": return byDate(b) - byDate(a);
+        case "date_asc": return byDate(a) - byDate(b);
+        default: return a.titre.localeCompare(b.titre, "fr");
+      }
+    });
+    return list;
+  }, [rows, term, level, sort]);
+
 
   const totals = useMemo(() => {
     const list = stocks ?? [];
