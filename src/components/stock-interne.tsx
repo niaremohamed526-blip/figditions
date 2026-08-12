@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useState } from "react";
 import {
   Warehouse, Truck, ShoppingBag, BellRing, Plus, ArrowUpDown, History, Pencil,
-  Loader2, AlertTriangle, ChevronDown, Calendar as CalendarIcon, BookOpen,
+  Loader2, AlertTriangle, ChevronDown, Calendar as CalendarIcon, BookOpen, Search,
 } from "lucide-react";
 import { format } from "date-fns";
 import { fr } from "date-fns/locale";
@@ -19,6 +19,10 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { BookCombobox } from "@/components/book-combobox";
+import {
+  StockSearchBar, StockBar, Highlight, norm, useDebounced,
+  type StockLevelFilter, type StockSort,
+} from "@/components/stock-search-bar";
 
 import {
   Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
@@ -52,6 +56,7 @@ interface StockInterne {
   cout_unitaire_impression_fcfa: number;
   emplacement: string | null;
   date_impression: string | null;
+  created_at?: string | null;
 }
 interface Mouvement {
   id: string;
@@ -87,6 +92,11 @@ export function StockInterneTab({ entrepriseId, userId }: { entrepriseId: string
   const [historyFor, setHistoryFor] = useState<StockInterne | null>(null);
   const [editThresholdFor, setEditThresholdFor] = useState<StockInterne | null>(null);
   const [alertsOpen, setAlertsOpen] = useState(true);
+  const [query, setQuery] = useState("");
+  const [level, setLevel] = useState<StockLevelFilter>("tous");
+  const [sort, setSort] = useState<StockSort>("titre_asc");
+  const term = useDebounced(query, 200);
+
 
   const load = async () => {
     setStocks(null);
@@ -123,13 +133,37 @@ export function StockInterneTab({ entrepriseId, userId }: { entrepriseId: string
           quantite_transferee_librairies: 0, quantite_vendue_directement: 0,
           quantite_exposee_evenements: 0, seuil_alerte: 10,
           prix_vente_direct_fcfa: 0, cout_unitaire_impression_fcfa: 0,
-          emplacement: "Entrepôt principal", date_impression: null,
+          emplacement: "Entrepôt principal", date_impression: null, created_at: null,
           titre: m.titre, auteur: m.auteur,
         });
       }
     });
     return [...map.values()];
   }, [stocks, publishedBooks, mMap]);
+
+  const visibleRows = useMemo(() => {
+    const t = norm(term).trim();
+    let list = rows.filter((r) => {
+      if (t && !norm(`${r.titre} ${r.auteur} ${r.emplacement ?? ""}`).includes(t)) return false;
+      if (level === "epuise") return r.quantite_disponible === 0;
+      if (level === "bas") return r.quantite_disponible > 0 && r.quantite_disponible <= r.seuil_alerte;
+      if (level === "bon") return r.quantite_disponible > r.seuil_alerte;
+      return true;
+    });
+    const byDate = (r: typeof rows[number]) => new Date(r.created_at ?? 0).getTime();
+    list = [...list].sort((a, b) => {
+      switch (sort) {
+        case "titre_desc": return b.titre.localeCompare(a.titre, "fr");
+        case "dispo_asc": return a.quantite_disponible - b.quantite_disponible;
+        case "dispo_desc": return b.quantite_disponible - a.quantite_disponible;
+        case "date_desc": return byDate(b) - byDate(a);
+        case "date_asc": return byDate(a) - byDate(b);
+        default: return a.titre.localeCompare(b.titre, "fr");
+      }
+    });
+    return list;
+  }, [rows, term, level, sort]);
+
 
   const totals = useMemo(() => {
     const list = stocks ?? [];
@@ -229,6 +263,21 @@ export function StockInterneTab({ entrepriseId, userId }: { entrepriseId: string
         </Button>
       </div>
 
+      {/* Search + filters */}
+      {rows.length > 0 && (
+        <StockSearchBar
+          query={query}
+          onQuery={setQuery}
+          level={level}
+          onLevel={setLevel}
+          sort={sort}
+          onSort={setSort}
+          resultCount={visibleRows.length}
+          totalCount={rows.length}
+          activeTerm={term}
+        />
+      )}
+
       {/* Inventory table */}
       <div className="rounded-xl border border-border bg-card overflow-hidden">
         {rows.length === 0 ? (
@@ -236,6 +285,14 @@ export function StockInterneTab({ entrepriseId, userId }: { entrepriseId: string
             <Warehouse className="h-10 w-10 mx-auto text-muted-foreground/60" />
             <p className="mt-3 font-medium">Aucun livre publié</p>
             <p className="text-sm text-muted-foreground">Publiez un manuscrit pour commencer à gérer votre stock interne.</p>
+          </div>
+        ) : visibleRows.length === 0 ? (
+          <div className="py-14 text-center px-4 animate-[fade-up_0.3s_ease-out_both]">
+            <Search className="h-10 w-10 mx-auto text-[#C8922A]" />
+            <p className="mt-3 font-medium">
+              {term.trim() ? `Aucun résultat pour « ${term.trim()} »` : "Aucun livre pour ce filtre"}
+            </p>
+            <p className="text-sm text-muted-foreground">Essayez avec un autre titre ou nom d'auteur.</p>
           </div>
         ) : (
           <div className="overflow-x-auto">
@@ -257,7 +314,7 @@ export function StockInterneTab({ entrepriseId, userId }: { entrepriseId: string
                 </tr>
               </thead>
               <tbody>
-                {rows.map((r) => {
+                {visibleRows.map((r) => {
                   const dispoCls =
                     r.quantite_disponible === 0
                       ? "text-red-400 bg-red-500/15 border-red-500/30"
@@ -268,11 +325,19 @@ export function StockInterneTab({ entrepriseId, userId }: { entrepriseId: string
                   return (
                     <tr key={r.manuscrit_id} className="group border-t border-border hover:bg-primary/5 transition-colors">
                       <td className="px-4 py-3">
-                        <div className="flex items-center gap-2">
+                        <div className="flex items-start gap-2">
                           <span className="text-lg">📚</span>
-                          <div>
-                            <p className="font-medium">{r.titre}</p>
-                            <p className="text-xs text-muted-foreground">{r.auteur}</p>
+                          <div className="min-w-0">
+                            <p className="font-medium"><Highlight text={r.titre} term={term} /></p>
+                            <p className="text-xs text-[#C8922A]"><Highlight text={r.auteur} term={term} /></p>
+                            {r.emplacement && (
+                              <span className="mt-1 inline-flex rounded-full bg-muted px-2 py-0.5 text-[10px] text-muted-foreground">
+                                <Highlight text={r.emplacement} term={term} />
+                              </span>
+                            )}
+                            <div className="mt-1.5">
+                              <StockBar dispo={r.quantite_disponible} imprimes={r.quantite_imprimee} />
+                            </div>
                           </div>
                         </div>
                       </td>
