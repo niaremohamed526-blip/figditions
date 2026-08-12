@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useState } from "react";
 import {
   Warehouse, Truck, ShoppingBag, BellRing, Plus, ArrowUpDown, History, Pencil,
-  Loader2, AlertTriangle, ChevronDown, Calendar as CalendarIcon, BookOpen,
+  Loader2, AlertTriangle, ChevronDown, Calendar as CalendarIcon, BookOpen, Search,
 } from "lucide-react";
 import { format } from "date-fns";
 import { fr } from "date-fns/locale";
