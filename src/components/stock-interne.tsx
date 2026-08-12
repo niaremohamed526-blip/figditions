@@ -92,6 +92,7 @@ export function StockInterneTab({ entrepriseId, userId }: { entrepriseId: string
   const [historyFor, setHistoryFor] = useState<StockInterne | null>(null);
   const [editThresholdFor, setEditThresholdFor] = useState<StockInterne | null>(null);
   const [alertsOpen, setAlertsOpen] = useState(true);
+  const [alertsAll, setAlertsAll] = useState(false);
   const [query, setQuery] = useState("");
   const [level, setLevel] = useState<StockLevelFilter>("tous");
   const [sort, setSort] = useState<StockSort>("titre_asc");
