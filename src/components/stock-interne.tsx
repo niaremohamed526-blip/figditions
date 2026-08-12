@@ -263,6 +263,21 @@ export function StockInterneTab({ entrepriseId, userId }: { entrepriseId: string
         </Button>
       </div>
 
+      {/* Search + filters */}
+      {rows.length > 0 && (
+        <StockSearchBar
+          query={query}
+          onQuery={setQuery}
+          level={level}
+          onLevel={setLevel}
+          sort={sort}
+          onSort={setSort}
+          resultCount={visibleRows.length}
+          totalCount={rows.length}
+          activeTerm={term}
+        />
+      )}
+
       {/* Inventory table */}
       <div className="rounded-xl border border-border bg-card overflow-hidden">
         {rows.length === 0 ? (
@@ -270,6 +285,14 @@ export function StockInterneTab({ entrepriseId, userId }: { entrepriseId: string
             <Warehouse className="h-10 w-10 mx-auto text-muted-foreground/60" />
             <p className="mt-3 font-medium">Aucun livre publié</p>
             <p className="text-sm text-muted-foreground">Publiez un manuscrit pour commencer à gérer votre stock interne.</p>
+          </div>
+        ) : visibleRows.length === 0 ? (
+          <div className="py-14 text-center px-4 animate-[fade-up_0.3s_ease-out_both]">
+            <Search className="h-10 w-10 mx-auto text-[#C8922A]" />
+            <p className="mt-3 font-medium">
+              {term.trim() ? `Aucun résultat pour « ${term.trim()} »` : "Aucun livre pour ce filtre"}
+            </p>
+            <p className="text-sm text-muted-foreground">Essayez avec un autre titre ou nom d'auteur.</p>
           </div>
         ) : (
           <div className="overflow-x-auto">
@@ -291,7 +314,7 @@ export function StockInterneTab({ entrepriseId, userId }: { entrepriseId: string
                 </tr>
               </thead>
               <tbody>
-                {rows.map((r) => {
+                {visibleRows.map((r) => {
                   const dispoCls =
                     r.quantite_disponible === 0
                       ? "text-red-400 bg-red-500/15 border-red-500/30"
