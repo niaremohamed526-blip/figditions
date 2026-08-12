@@ -516,13 +516,12 @@ function AddStockForm({
     <form onSubmit={submit} className="space-y-4 mt-6">
       <div className="space-y-2">
         <Label>Livre publié</Label>
-        <Select value={form.manuscrit_id} onValueChange={(v) => setForm({ ...form, manuscrit_id: v })}>
-          <SelectTrigger><SelectValue placeholder="Sélectionner…" /></SelectTrigger>
-          <SelectContent>
-            {books.length === 0 && <div className="px-3 py-2 text-xs text-muted-foreground">Aucun livre publié</div>}
-            {books.map((b) => <SelectItem key={b.id} value={b.id}>{b.titre}</SelectItem>)}
-          </SelectContent>
-        </Select>
+        <BookCombobox
+          items={books}
+          value={form.manuscrit_id}
+          onChange={(v) => setForm({ ...form, manuscrit_id: v })}
+        />
+
       </div>
       <div className="space-y-2">
         <Label>Quantité imprimée reçue</Label>
