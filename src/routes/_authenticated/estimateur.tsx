@@ -22,6 +22,8 @@ import {
 import { toast } from "sonner";
 import { fcfa } from "@/lib/format";
 import { cn } from "@/lib/utils";
+import { BookCombobox } from "@/components/book-combobox";
+
 
 const searchSchema = z.object({ manuscrit: z.string().uuid().optional() });
 
