@@ -325,11 +325,19 @@ export function StockInterneTab({ entrepriseId, userId }: { entrepriseId: string
                   return (
                     <tr key={r.manuscrit_id} className="group border-t border-border hover:bg-primary/5 transition-colors">
                       <td className="px-4 py-3">
-                        <div className="flex items-center gap-2">
+                        <div className="flex items-start gap-2">
                           <span className="text-lg">📚</span>
-                          <div>
-                            <p className="font-medium">{r.titre}</p>
-                            <p className="text-xs text-muted-foreground">{r.auteur}</p>
+                          <div className="min-w-0">
+                            <p className="font-medium"><Highlight text={r.titre} term={term} /></p>
+                            <p className="text-xs text-[#C8922A]"><Highlight text={r.auteur} term={term} /></p>
+                            {r.emplacement && (
+                              <span className="mt-1 inline-flex rounded-full bg-muted px-2 py-0.5 text-[10px] text-muted-foreground">
+                                <Highlight text={r.emplacement} term={term} />
+                              </span>
+                            )}
+                            <div className="mt-1.5">
+                              <StockBar dispo={r.quantite_disponible} imprimes={r.quantite_imprimee} />
+                            </div>
                           </div>
                         </div>
                       </td>
