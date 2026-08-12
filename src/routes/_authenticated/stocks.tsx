@@ -930,13 +930,13 @@ function StockForm({
     <form onSubmit={submit} className="space-y-4 mt-6">
       <div className="space-y-2">
         <Label>Manuscrit publié</Label>
-        <Select value={form.manuscrit_id} onValueChange={(v) => setForm({ ...form, manuscrit_id: v })}>
-          <SelectTrigger><SelectValue placeholder="Sélectionner…" /></SelectTrigger>
-          <SelectContent>
-            {manuscrits.length === 0 && <div className="px-3 py-2 text-xs text-muted-foreground">Aucun manuscrit publié</div>}
-            {manuscrits.map((m) => <SelectItem key={m.id} value={m.id}>{m.titre}</SelectItem>)}
-          </SelectContent>
-        </Select>
+        <BookCombobox
+          items={manuscrits}
+          value={form.manuscrit_id}
+          onChange={(v) => setForm({ ...form, manuscrit_id: v })}
+          emptyLabel="Aucun manuscrit publié"
+        />
+
       </div>
       <div className="space-y-2">
         <Label>Nom de la librairie</Label>
