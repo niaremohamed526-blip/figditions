@@ -18,6 +18,8 @@ import { Textarea } from "@/components/ui/textarea";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { BookCombobox } from "@/components/book-combobox";
+
 import {
   Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
 } from "@/components/ui/select";
@@ -516,13 +518,12 @@ function AddStockForm({
     <form onSubmit={submit} className="space-y-4 mt-6">
       <div className="space-y-2">
         <Label>Livre publié</Label>
-        <Select value={form.manuscrit_id} onValueChange={(v) => setForm({ ...form, manuscrit_id: v })}>
-          <SelectTrigger><SelectValue placeholder="Sélectionner…" /></SelectTrigger>
-          <SelectContent>
-            {books.length === 0 && <div className="px-3 py-2 text-xs text-muted-foreground">Aucun livre publié</div>}
-            {books.map((b) => <SelectItem key={b.id} value={b.id}>{b.titre}</SelectItem>)}
-          </SelectContent>
-        </Select>
+        <BookCombobox
+          items={books}
+          value={form.manuscrit_id}
+          onChange={(v) => setForm({ ...form, manuscrit_id: v })}
+        />
+
       </div>
       <div className="space-y-2">
         <Label>Quantité imprimée reçue</Label>
@@ -822,12 +823,12 @@ function MouvementForm({
       <form onSubmit={submit} className="space-y-4 mt-6">
         <div className="space-y-2">
           <Label>Livre</Label>
-          <Select value={form.manuscrit_id} onValueChange={(v) => setForm({ ...form, manuscrit_id: v })}>
-            <SelectTrigger><SelectValue placeholder="Sélectionner…" /></SelectTrigger>
-            <SelectContent>
-              {books.map((b) => <SelectItem key={b.id} value={b.id}>{b.titre}</SelectItem>)}
-            </SelectContent>
-          </Select>
+          <BookCombobox
+            items={books}
+            value={form.manuscrit_id}
+            onChange={(v) => setForm({ ...form, manuscrit_id: v })}
+          />
+
           {currentStock && (
             <p className="text-xs text-muted-foreground">Stock disponible: <span className="text-[#C8922A] font-semibold">{currentStock.quantite_disponible}</span></p>
           )}

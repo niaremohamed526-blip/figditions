@@ -22,6 +22,8 @@ import {
 import { toast } from "sonner";
 import { fcfa } from "@/lib/format";
 import { cn } from "@/lib/utils";
+import { BookCombobox } from "@/components/book-combobox";
+
 
 const searchSchema = z.object({ manuscrit: z.string().uuid().optional() });
 
@@ -336,13 +338,15 @@ function EstimateurPage() {
           <Group title="Informations du livre" icon={<BookOpen className="h-4 w-4" />} open={openGroups.g1}
             onToggle={() => setOpenGroups((o) => ({ ...o, g1: !o.g1 }))}>
             <Field label="Lier à un manuscrit">
-              <Select value={manuscritId} onValueChange={setManuscritId}>
-                <SelectTrigger><SelectValue placeholder="Aucun (optionnel)" /></SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="none">Aucun</SelectItem>
-                  {manuscrits.map((m) => <SelectItem key={m.id} value={m.id}>{m.titre}</SelectItem>)}
-                </SelectContent>
-              </Select>
+              <BookCombobox
+                items={manuscrits}
+                value={manuscritId === "none" ? "" : manuscritId}
+                onChange={(v) => setManuscritId(v || "none")}
+                placeholder="Rechercher un manuscrit… (optionnel)"
+                extraOption={{ value: "none", label: "Aucun" }}
+                emptyLabel="Aucun manuscrit"
+              />
+
             </Field>
             <Field label="Nom de l'estimation *">
               <Input value={nom} onChange={(e) => setNom(e.target.value)}

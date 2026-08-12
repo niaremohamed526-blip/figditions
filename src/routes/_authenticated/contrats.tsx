@@ -21,6 +21,8 @@ import { LockedPage } from "@/components/locked-page";
 import { generateContratProPdf, type Livre } from "@/lib/pdf-contrat-pro";
 import { useCloseGuard } from "@/hooks/useCloseGuard";
 import { UnsavedChangesModal } from "@/components/unsaved-changes-modal";
+import { BookCombobox } from "@/components/book-combobox";
+
 
 export const Route = createFileRoute("/_authenticated/contrats")({
   component: ContratsPage,
@@ -711,20 +713,22 @@ function ContratSheet({
                   {form.livres.map((l, i) => (
                     <div key={i} className="flex gap-2 items-start">
                       <div className="flex-1 space-y-1">
-                        <Select value={l.manuscrit_id ?? "_manual"} onValueChange={(v) => {
-                          if (v === "_manual") {
-                            setLivre(i, { manuscrit_id: null });
-                          } else {
-                            const m = manuscrits.find((x) => x.id === v);
-                            setLivre(i, { manuscrit_id: v, titre: m?.titre ?? l.titre });
-                          }
-                        }}>
-                          <SelectTrigger><SelectValue placeholder="Depuis le catalogue" /></SelectTrigger>
-                          <SelectContent className="z-[400]">
-                            <SelectItem value="_manual">✍️ Saisie manuelle</SelectItem>
-                            {manuscrits.map((m) => <SelectItem key={m.id} value={m.id}>{m.titre}</SelectItem>)}
-                          </SelectContent>
-                        </Select>
+                        <BookCombobox
+                          items={manuscrits}
+                          value={l.manuscrit_id ?? "_manual"}
+                          extraOption={{ value: "_manual", label: "✍️ Saisie manuelle" }}
+                          placeholder="Rechercher dans le catalogue…"
+                          emptyLabel="Aucun manuscrit"
+                          onChange={(v) => {
+                            if (v === "_manual" || !v) {
+                              setLivre(i, { manuscrit_id: null });
+                            } else {
+                              const m = manuscrits.find((x) => x.id === v);
+                              setLivre(i, { manuscrit_id: v, titre: m?.titre ?? l.titre });
+                            }
+                          }}
+                        />
+
                         <Input
                           value={l.titre}
                           onChange={(e) => setLivre(i, { titre: e.target.value })}
