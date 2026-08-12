@@ -823,12 +823,12 @@ function MouvementForm({
       <form onSubmit={submit} className="space-y-4 mt-6">
         <div className="space-y-2">
           <Label>Livre</Label>
-          <Select value={form.manuscrit_id} onValueChange={(v) => setForm({ ...form, manuscrit_id: v })}>
-            <SelectTrigger><SelectValue placeholder="Sélectionner…" /></SelectTrigger>
-            <SelectContent>
-              {books.map((b) => <SelectItem key={b.id} value={b.id}>{b.titre}</SelectItem>)}
-            </SelectContent>
-          </Select>
+          <BookCombobox
+            items={books}
+            value={form.manuscrit_id}
+            onChange={(v) => setForm({ ...form, manuscrit_id: v })}
+          />
+
           {currentStock && (
             <p className="text-xs text-muted-foreground">Stock disponible: <span className="text-[#C8922A] font-semibold">{currentStock.quantite_disponible}</span></p>
           )}
