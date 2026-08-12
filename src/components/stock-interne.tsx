@@ -52,6 +52,7 @@ interface StockInterne {
   cout_unitaire_impression_fcfa: number;
   emplacement: string | null;
   date_impression: string | null;
+  created_at?: string | null;
 }
 interface Mouvement {
   id: string;
