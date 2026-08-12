@@ -260,7 +260,7 @@ export function StockInterneTab({ entrepriseId, userId }: { entrepriseId: string
                         <p className="text-[11px] text-muted-foreground whitespace-nowrap">seuil: {s.seuil_alerte}</p>
                       </div>
                     </div>
-                    <div className="flex flex-col xs:flex-row gap-2 w-full">
+                    <div className="flex flex-col min-[420px]:flex-row gap-2 w-full">
                       <Button asChild size="sm" variant="outline" className="flex-1 min-w-0 text-[10px] sm:text-xs px-2">
                         <Link to="/estimateur" search={{ manuscrit: s.manuscrit_id }} className="truncate">
                           <span className="truncate sm:hidden">🖨️ Réimprimer</span>
