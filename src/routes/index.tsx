@@ -196,7 +196,7 @@ function Hero() {
           {/* Social icons */}
           <div className="mt-8 flex items-center gap-5">
             {[
-              { Icon: Instagram, href: "https://www.instagram.com/medmo_05?igsh=MTBxMHpueTBucHEyMQ%3D%3D&utm_source=qr", label: "Instagram" },
+              { Icon: Instagram, href: "https://www.instagram.com/[À COMPLÉTER — compte de marque]", label: "FIGDITIONS sur Instagram" },
             ].map(({ Icon, href, label }) => (
               <a
                 key={label}
