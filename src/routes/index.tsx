@@ -692,17 +692,17 @@ function Footer() {
 
         <div className="flex md:justify-end gap-3">
           {[
-            { Icon: Linkedin, href: "https://www.linkedin.com/in/figuira-éditions-113118301/", label: "LinkedIn" },
-            { Icon: Instagram, href: "https://www.instagram.com/medmo_05?igsh=MTBxMHpueTBucHEyMQ%3D%3D&utm_source=qr", label: "Instagram" },
+            { Icon: Linkedin, href: "https://www.linkedin.com/in/figuira-éditions-113118301/", label: "FIGDITIONS sur LinkedIn" },
+            { Icon: Instagram, href: "https://www.instagram.com/[À COMPLÉTER — compte de marque]", label: "FIGDITIONS sur Instagram" },
           ].map(({ Icon, href, label }) => (
             <a key={label} href={href} target="_blank" rel="noopener noreferrer" aria-label={label} className="h-10 w-10 rounded-full border border-border flex items-center justify-center text-muted-foreground hover:text-primary hover:border-primary transition-colors">
-              <Icon className="h-4 w-4" />
+              <Icon className="h-4 w-4" aria-hidden="true" />
             </a>
           ))}
         </div>
       </div>
       <div className="max-w-7xl mx-auto mt-8 pt-6 border-t border-border text-center text-xs text-muted-foreground space-y-1">
-        <p>© 2025 FIGDITIONS. {t("Tous droits réservés.", "All rights reserved.")}</p>
+        <p>© {new Date().getFullYear()} FIGDITIONS. {t("Tous droits réservés.", "All rights reserved.")}</p>
         <p>{t("Conçu pour l'Afrique de l'Ouest 🌍", "Designed for West Africa 🌍")}</p>
       </div>
     </footer>
