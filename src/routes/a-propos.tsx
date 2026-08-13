@@ -120,10 +120,10 @@ function Story() {
 
 function Numbers() {
   const stats = [
-    { icon: "🏢", value: "126+", label: "Maisons d'édition ciblées au Mali" },
+    { icon: "🏢", value: "126+", label: "Maisons d'édition recensées au Mali — notre marché" },
     { icon: "📚", value: "10", label: "Étapes de workflow éditorial" },
     { icon: "🌍", value: "8+", label: "Pays d'Afrique de l'Ouest supportés" },
-    { icon: "⚡", value: "99,5%", label: "Disponibilité de la plateforme garantie" },
+    { icon: "⚡", value: "99,5%", label: "Objectif de disponibilité de la plateforme" },
   ];
   return (
     <section className="py-20 px-4">
@@ -171,10 +171,9 @@ function Values() {
 
 function TechStack() {
   const stack = [
-    { icon: Database, title: "Supabase", desc: "Base de données PostgreSQL avec sauvegardes automatiques quotidiennes hébergée sur AWS Europe" },
-    { icon: Zap, title: "Cloudflare", desc: "Déploiement mondial avec CDN pour des performances optimales même au Mali" },
-    { icon: Lock, title: "SSL/TLS", desc: "Chiffrement de bout en bout de toutes vos données" },
-    { icon: CreditCard, title: "Flutterwave", desc: "Paiements sécurisés via Mobile Money et Carte Bancaire" },
+    { icon: Database, title: "Lovable Cloud (Supabase)", desc: "Base de données PostgreSQL, authentification et stockage de fichiers, avec sauvegardes automatiques." },
+    { icon: Zap, title: "Vercel", desc: "Hébergement du site et des fonctions serveur, avec un réseau de diffusion mondial pour de bonnes performances au Mali." },
+    { icon: Lock, title: "Chiffrement SSL/TLS", desc: "Toutes vos données sont chiffrées en transit, et au repos par notre infrastructure d'hébergement." },
   ];
   return (
     <section className="py-20 px-4">
