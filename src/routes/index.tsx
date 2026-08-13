@@ -225,6 +225,9 @@ function Hero() {
           minWidth: "200px",
         }}
       >
+        <div className="text-[10px] uppercase tracking-wider" style={{ color: "rgba(184,168,152,0.7)" }}>
+          Aperçu de l'interface
+        </div>
         <div className="flex items-center gap-2">
           <BookOpen className="h-5 w-5 text-[#C8922A]" />
           <span className="text-[#E8B84B] font-bold tracking-wide text-sm">MANUSCRIT MANAGEMENT</span>
