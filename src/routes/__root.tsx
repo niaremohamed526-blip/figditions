@@ -74,8 +74,6 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
       { name: "twitter:title", content: "FIGDITIONS Plateforme éditoriale" },
       { property: "og:description", content: "FIGDITIONS, La plateforme éditoriale de l'Afrique de l'Ouest. Gérez vos manuscrits, stocks et finances." },
       { name: "twitter:description", content: "FIGDITIONS, La plateforme éditoriale de l'Afrique de l'Ouest. Gérez vos manuscrits, stocks et finances." },
-      { property: "og:image", content: "https://storage.googleapis.com/gpt-engineer-file-uploads/JSHBUzgLmibojOxOY6mX0ak2Kpz1/social-images/social-1781365968538-Figditions_logo.webp" },
-      { name: "twitter:image", content: "https://storage.googleapis.com/gpt-engineer-file-uploads/JSHBUzgLmibojOxOY6mX0ak2Kpz1/social-images/social-1781365968538-Figditions_logo.webp" },
       { name: "twitter:card", content: "summary_large_image" },
       { property: "og:type", content: "website" },
     ],
