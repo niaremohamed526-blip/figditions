@@ -8,6 +8,13 @@ import {
 import { Logo } from "@/components/logo";
 import { useI18n } from "@/hooks/use-i18n";
 import { Button } from "@/components/ui/button";
+import {
+  Accordion,
+  AccordionContent,
+  AccordionItem,
+  AccordionTrigger,
+} from "@/components/ui/accordion";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { cn } from "@/lib/utils";
 import { CookieBanner } from "@/components/cookie-banner";
 import { AdminAccessGate } from "@/components/admin-access-gate";
@@ -15,6 +22,40 @@ import { PLANS } from "@/config/plans";
 const figuiraLogo = "/assets/figuira-logo.png";
 const heroAsset = { url: "/assets/hero-figditions.png" };
 
+const FAQS = [
+  {
+    question: "Mes manuscrits sont-ils confidentiels ?",
+    answer: "Oui. Vous conservez l'intégralité des droits sur vos manuscrits et vos données. Chaque maison d'édition dispose d'un espace totalement isolé, protégé par une politique de sécurité au niveau des lignes de la base de données. Notre équipe n'accède jamais au contenu de vos manuscrits sans votre autorisation explicite.",
+  },
+  {
+    question: "Est-ce que ça fonctionne sans internet ?",
+    answer: "Oui. FIGDITIONS s'installe comme une application sur votre téléphone ou votre ordinateur et fonctionne en mode hors-ligne. Vous pouvez consulter et modifier vos données pendant une coupure ; tout se synchronise automatiquement au retour de la connexion.",
+  },
+  {
+    question: "Comment payer si je n'ai pas de carte bancaire ?",
+    answer: "Vous pouvez payer par Orange Money ou Wave en scannant un QR code depuis votre espace. Vous nous transmettez ensuite la référence de la transaction et nous activons votre abonnement. La carte bancaire reste disponible pour ceux qui la préfèrent.",
+  },
+  {
+    question: "Puis-je récupérer mes données si j'arrête ?",
+    answer: "Oui, à tout moment. Vous pouvez exporter l'ensemble de vos données dans un format lisible depuis vos paramètres, et demander leur suppression complète à la fermeture de votre compte.",
+  },
+  {
+    question: "Les contrats générés sont-ils valables au Mali ?",
+    answer: "Nos modèles de contrats d'édition, bordereaux et factures sont conçus pour le contexte malien et la zone OHADA. Ils constituent une aide à la rédaction et non un conseil juridique : nous vous recommandons de les faire relire avant signature.",
+  },
+  {
+    question: "J'ai déjà tout dans des cahiers. Comment je migre ?",
+    answer: "Nous vous accompagnons. Envoyez-nous vos fichiers existants, sous n'importe quel format, et nous importons gratuitement votre catalogue et vos stocks lors de votre mise en route.",
+  },
+  {
+    question: "Combien de personnes de mon équipe peuvent utiliser la plateforme ?",
+    answer: "Le plan Starter est prévu pour un seul utilisateur, le plan Pro pour trois, et le plan Business n'a aucune limite. Chaque membre reçoit un rôle qui détermine ce qu'il peut voir et modifier.",
+  },
+  {
+    question: "Puis-je essayer avant de payer ?",
+    answer: "Oui. Le plan Starter est gratuit et sans limite de durée : vous pouvez gérer jusqu'à 5 manuscrits, vos auteurs et votre stock interne sans jamais payer. Vous passez à un plan supérieur uniquement quand vous en avez besoin.",
+  },
+];
 
 const OG_IMAGE = "https://figditions.xyz/assets/og-figditions.png";
 
@@ -58,6 +99,21 @@ export const Route = createFileRoute("/")({
           })),
         }),
       },
+      {
+        type: "application/ld+json",
+        children: JSON.stringify({
+          "@context": "https://schema.org",
+          "@type": "FAQPage",
+          mainEntity: FAQS.map((f) => ({
+            "@type": "Question",
+            name: f.question,
+            acceptedAnswer: {
+              "@type": "Answer",
+              text: f.answer,
+            },
+          })),
+        }),
+      },
     ],
   }),
 });
@@ -68,10 +124,12 @@ function Landing() {
     <div className="min-h-screen bg-[#0A0704] text-foreground overflow-x-hidden">
       <Navbar />
       <Hero />
+      <Screenshots />
       <Features />
       <Partners />
       <HowItWorks />
       <Pricing />
+      <Faq />
       <CtaBanner />
       <Footer />
       <CookieBanner />
@@ -218,11 +276,17 @@ function Hero() {
                 {t("Commencer gratuitement", "Get started")} <ArrowRight className="ml-2 h-4 w-4" />
               </Button>
             </Link>
-            <Link to="/login">
+            <a
+              href="#demo"
+              onClick={(e) => {
+                e.preventDefault();
+                document.getElementById("demo")?.scrollIntoView({ behavior: "smooth" });
+              }}
+            >
               <Button size="lg" variant="outline" className="border-[rgba(200,146,42,0.4)] text-white hover:border-[#C8922A] hover:text-[#C8922A] bg-transparent h-12 px-7 rounded-full">
-                {t("Se connecter", "Sign in")}
+                Voir la démo
               </Button>
-            </Link>
+            </a>
           </div>
 
           {/* Social icons */}
@@ -324,6 +388,57 @@ function Hero() {
           50% { transform: translate(-50%, 8px); }
         }
       `}</style>
+    </section>
+  );
+}
+
+
+const SCREENS = [
+  { id: "manuscrits", label: "Manuscrits", src: "/assets/screens/manuscrits.png", caption: "Suivez chaque titre à travers les 10 étapes éditoriales, de la réception au dépôt légal." },
+  { id: "stock", label: "Stock", src: "/assets/screens/stock.png", caption: "Entrepôt interne et dépôts en librairie, avec alertes automatiques de stock bas." },
+  { id: "contrats", label: "Contrats", src: "/assets/screens/contrats.png", caption: "Générez un contrat d'édition conforme au droit malien et à l'OHADA en quelques clics." },
+  { id: "royalties", label: "Royalties", src: "/assets/screens/royalties.png", caption: "Calcul automatique des droits d'auteur en FCFA, prêts à être versés." },
+];
+
+function Screenshots() {
+  return (
+    <section id="demo" className="py-24 px-4 bg-[#1A1208]">
+      <div className="max-w-7xl mx-auto">
+        <div className="text-center mb-12">
+          <h2 className="text-3xl md:text-5xl font-bold tracking-tight">Voyez la plateforme en action</h2>
+          <p className="mt-3 text-muted-foreground max-w-2xl mx-auto">
+            Pas de promesses abstraites — voici l'interface que vous utiliserez au quotidien.
+          </p>
+        </div>
+        <Tabs defaultValue="manuscrits" className="w-full">
+          <TabsList className="w-full max-w-2xl mx-auto mb-8 h-auto flex flex-wrap justify-center gap-2 bg-transparent p-0">
+            {SCREENS.map((s) => (
+              <TabsTrigger
+                key={s.id}
+                value={s.id}
+                className="px-4 py-2 rounded-full border border-border bg-[#0D0A06] text-muted-foreground data-[state=active]:bg-[#C8922A] data-[state=active]:text-white data-[state=active]:border-[#C8922A]"
+              >
+                {s.label}
+              </TabsTrigger>
+            ))}
+          </TabsList>
+          {SCREENS.map((s) => (
+            <TabsContent key={s.id} value={s.id} className="mt-0">
+              <div className="rounded-2xl border border-border bg-[#0D0A06] overflow-hidden">
+                <img
+                  src={s.src}
+                  alt={s.label}
+                  className="w-full h-auto"
+                  loading="lazy"
+                  width={1280}
+                  height={720}
+                />
+              </div>
+              <p className="mt-4 text-center text-sm text-muted-foreground">{s.caption}</p>
+            </TabsContent>
+          ))}
+        </Tabs>
+      </div>
     </section>
   );
 }
@@ -628,6 +743,30 @@ function Pricing() {
   );
 }
 
+
+function Faq() {
+  return (
+    <section id="faq" className="py-24 px-4 bg-background">
+      <div className="max-w-3xl mx-auto">
+        <div className="text-center mb-12">
+          <h2 className="text-3xl md:text-5xl font-bold tracking-tight">Questions fréquentes</h2>
+        </div>
+        <Accordion type="single" collapsible className="rounded-2xl border border-border bg-[#1A1208] px-4 md:px-6">
+          {FAQS.map((f, i) => (
+            <AccordionItem key={i} value={`item-${i}`} className="border-border">
+              <AccordionTrigger className="text-base font-semibold text-white hover:text-[#C8922A] hover:no-underline">
+                {f.question}
+              </AccordionTrigger>
+              <AccordionContent className="text-muted-foreground leading-relaxed">
+                {f.answer}
+              </AccordionContent>
+            </AccordionItem>
+          ))}
+        </Accordion>
+      </div>
+    </section>
+  );
+}
 
 function CtaBanner() {
   const { t } = useI18n();
