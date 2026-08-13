@@ -324,24 +324,40 @@ function SignupPage() {
             Rejoignez les éditeurs africains
           </p>
 
+          <div
+            className="mb-6 flex items-center justify-between gap-3 rounded-xl px-4 py-3"
+            style={{ background: "rgba(200,146,42,0.08)", border: "1px solid rgba(200,146,42,0.25)" }}
+          >
+            <p className="text-sm" style={{ color: "#E8D9C5", margin: 0 }}>
+              Plan sélectionné : <strong style={{ color: "#C8922A" }}>{selectedPlan.name}</strong>
+              {" — "}
+              {selectedPlan.priceMonthly === 0 ? "Gratuit" : `${fcfa(selectedPlan.priceMonthly)} / mois`}
+            </p>
+            <a href="/#pricing" className="text-xs font-medium hover:underline shrink-0" style={{ color: "#C8922A" }}>
+              Modifier
+            </a>
+          </div>
+
           <form onSubmit={onSubmit} className="space-y-4">
             <div className="space-y-2">
-              <Label className="text-white/90">Nom complet</Label>
-              <GoldInput required value={form.full_name} placeholder="Votre nom complet" onChange={onChange("full_name")} />
+              <Label htmlFor="full_name" className="text-white/90">Nom complet</Label>
+              <GoldInput id="full_name" name="full_name" required value={form.full_name} placeholder="Votre nom complet" onChange={onChange("full_name")} />
             </div>
             <div className="space-y-2">
-              <Label className="text-white/90">Nom de la maison d'édition</Label>
-              <GoldInput required value={form.entreprise_nom} placeholder="ex: Éditions Jamana" onChange={onChange("entreprise_nom")} />
+              <Label htmlFor="entreprise_nom" className="text-white/90">Nom de la maison d'édition</Label>
+              <GoldInput id="entreprise_nom" name="entreprise_nom" required value={form.entreprise_nom} placeholder="ex: Éditions Jamana" onChange={onChange("entreprise_nom")} />
             </div>
             <div className="space-y-2">
-              <Label className="text-white/90">Email</Label>
-              <GoldInput type="email" required value={form.email} placeholder="votre@email.com" onChange={onChange("email")} />
+              <Label htmlFor="email" className="text-white/90">Email</Label>
+              <GoldInput id="email" name="email" type="email" required value={form.email} placeholder="votre@email.com" onChange={onChange("email")} />
             </div>
 
             <div className="space-y-2">
-              <Label className="text-white/90">Mot de passe</Label>
+              <Label htmlFor="password" className="text-white/90">Mot de passe</Label>
               <div className="relative">
                 <GoldInput
+                  id="password"
+                  name="password"
                   type={showPwd ? "text" : "password"}
                   required
                   minLength={6}
@@ -372,9 +388,11 @@ function SignupPage() {
             </div>
 
             <div className="space-y-2">
-              <Label className="text-white/90">Confirmer le mot de passe</Label>
+              <Label htmlFor="confirm" className="text-white/90">Confirmer le mot de passe</Label>
               <div className="relative">
                 <GoldInput
+                  id="confirm"
+                  name="confirm"
                   type={showPwd ? "text" : "password"}
                   required
                   value={form.confirm}
@@ -391,8 +409,8 @@ function SignupPage() {
             </div>
 
             <div className="space-y-2">
-              <Label className="text-white/90">Ville</Label>
-              <GoldInput required value={form.ville} placeholder="Bamako" onChange={onChange("ville")} />
+              <Label htmlFor="ville" className="text-white/90">Ville</Label>
+              <CitySelect value={form.ville} onChange={(v) => setForm((f) => ({ ...f, ville: v }))} />
             </div>
 
             <label className="flex items-start gap-2.5 text-xs cursor-pointer select-none pt-1" style={{ color: "#B8A898" }}>
@@ -430,6 +448,10 @@ function SignupPage() {
             >
               {loading ? <Loader2 className="h-4 w-4 animate-spin" /> : "Créer mon compte"}
             </button>
+
+            <p className="text-center text-xs" style={{ color: "#B8A898" }}>
+              Aucune carte bancaire requise. Vos manuscrits restent votre propriété exclusive.
+            </p>
 
             <p className="text-center text-sm pt-2" style={{ color: "#B8A898" }}>
               Déjà un compte ?{" "}
