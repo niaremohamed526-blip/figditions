@@ -8,10 +8,16 @@ export const Route = createFileRoute("/politique-de-confidentialite")({
       { title: "Politique de Confidentialité — FIGDITIONS" },
       { name: "description", content: "Politique de confidentialité de FIGDITIONS : données collectées, sous-traitants, sécurité, RGPD/OHADA et droits des utilisateurs." },
       { property: "og:title", content: "Politique de Confidentialité — FIGDITIONS" },
-      { property: "og:description", content: "Comment FIGDITIONS protège vos données personnelles et éditoriales." },
+      { property: "og:description", content: "Politique de confidentialité de FIGDITIONS : données collectées, sous-traitants, sécurité, RGPD/OHADA et droits des utilisateurs." },
+      { name: "twitter:title", content: "Politique de Confidentialité — FIGDITIONS" },
+      { name: "twitter:description", content: "Politique de confidentialité de FIGDITIONS : données collectées, sous-traitants, sécurité, RGPD/OHADA et droits des utilisateurs." },
+      { property: "og:image", content: "https://figditions.xyz/assets/og-figditions.png" },
+      { name: "twitter:image", content: "https://figditions.xyz/assets/og-figditions.png" },
+      { property: "og:url", content: "https://figditions.xyz/politique-de-confidentialite" },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary" },
     ],
+    links: [{ rel: "canonical", href: "https://figditions.xyz/politique-de-confidentialite" }],
   }),
 });
 

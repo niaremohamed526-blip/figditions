@@ -15,8 +15,16 @@ export const Route = createFileRoute("/a-propos")({
       { title: "À propos — FIGDITIONS" },
       { name: "description", content: "FIGDITIONS, la première plateforme éditoriale conçue pour l'Afrique de l'Ouest. Fondée à Bamako en 2026." },
       { property: "og:title", content: "À propos de FIGDITIONS" },
-      { property: "og:description", content: "Notre mission : démocratiser les outils éditoriaux pour les maisons d'édition africaines." },
+      { property: "og:description", content: "FIGDITIONS, la première plateforme éditoriale conçue pour l'Afrique de l'Ouest. Fondée à Bamako en 2026." },
+      { name: "twitter:title", content: "À propos de FIGDITIONS" },
+      { name: "twitter:description", content: "FIGDITIONS, la première plateforme éditoriale conçue pour l'Afrique de l'Ouest. Fondée à Bamako en 2026." },
+      { property: "og:image", content: "https://figditions.xyz/assets/og-figditions.png" },
+      { name: "twitter:image", content: "https://figditions.xyz/assets/og-figditions.png" },
+      { property: "og:url", content: "https://figditions.xyz/a-propos" },
+      { property: "og:type", content: "website" },
+      { name: "twitter:card", content: "summary_large_image" },
     ],
+    links: [{ rel: "canonical", href: "https://figditions.xyz/a-propos" }],
   }),
 });
 

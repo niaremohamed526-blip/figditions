@@ -10,10 +10,16 @@ export const Route = createFileRoute("/conditions-utilisation")({
       { title: "Conditions Générales d'Utilisation — FIGDITIONS" },
       { name: "description", content: "Conditions générales d'utilisation de FIGDITIONS : plans, responsabilités, propriété des contenus, IA, paiements et droit applicable." },
       { property: "og:title", content: "Conditions d'Utilisation — FIGDITIONS" },
-      { property: "og:description", content: "Les règles d'utilisation de FIGDITIONS, plans, responsabilités et droit applicable." },
+      { property: "og:description", content: "Conditions générales d'utilisation de FIGDITIONS : plans, responsabilités, propriété des contenus, IA, paiements et droit applicable." },
+      { name: "twitter:title", content: "Conditions d'Utilisation — FIGDITIONS" },
+      { name: "twitter:description", content: "Conditions générales d'utilisation de FIGDITIONS : plans, responsabilités, propriété des contenus, IA, paiements et droit applicable." },
+      { property: "og:image", content: "https://figditions.xyz/assets/og-figditions.png" },
+      { name: "twitter:image", content: "https://figditions.xyz/assets/og-figditions.png" },
+      { property: "og:url", content: "https://figditions.xyz/conditions-utilisation" },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary" },
     ],
+    links: [{ rel: "canonical", href: "https://figditions.xyz/conditions-utilisation" }],
   }),
 });
 

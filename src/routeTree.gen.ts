@@ -14,6 +14,7 @@ import { Route as SignupRouteImport } from './routes/signup'
 import { Route as ReinitialiserMotDePasseRouteImport } from './routes/reinitialiser-mot-de-passe'
 import { Route as PolitiqueDeConfidentialiteRouteImport } from './routes/politique-de-confidentialite'
 import { Route as MotDePasseOublieRouteImport } from './routes/mot-de-passe-oublie'
+import { Route as MentionsLegalesRouteImport } from './routes/mentions-legales'
 import { Route as LoginRouteImport } from './routes/login'
 import { Route as ConditionsUtilisationRouteImport } from './routes/conditions-utilisation'
 import { Route as AProposRouteImport } from './routes/a-propos'
@@ -63,6 +64,11 @@ const PolitiqueDeConfidentialiteRoute =
 const MotDePasseOublieRoute = MotDePasseOublieRouteImport.update({
   id: '/mot-de-passe-oublie',
   path: '/mot-de-passe-oublie',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const MentionsLegalesRoute = MentionsLegalesRouteImport.update({
+  id: '/mentions-legales',
+  path: '/mentions-legales',
   getParentRoute: () => rootRouteImport,
 } as any)
 const LoginRoute = LoginRouteImport.update({
@@ -199,6 +205,7 @@ export interface FileRoutesByFullPath {
   '/a-propos': typeof AProposRoute
   '/conditions-utilisation': typeof ConditionsUtilisationRoute
   '/login': typeof LoginRoute
+  '/mentions-legales': typeof MentionsLegalesRoute
   '/mot-de-passe-oublie': typeof MotDePasseOublieRoute
   '/politique-de-confidentialite': typeof PolitiqueDeConfidentialiteRoute
   '/reinitialiser-mot-de-passe': typeof ReinitialiserMotDePasseRoute
@@ -229,6 +236,7 @@ export interface FileRoutesByTo {
   '/a-propos': typeof AProposRoute
   '/conditions-utilisation': typeof ConditionsUtilisationRoute
   '/login': typeof LoginRoute
+  '/mentions-legales': typeof MentionsLegalesRoute
   '/mot-de-passe-oublie': typeof MotDePasseOublieRoute
   '/politique-de-confidentialite': typeof PolitiqueDeConfidentialiteRoute
   '/reinitialiser-mot-de-passe': typeof ReinitialiserMotDePasseRoute
@@ -261,6 +269,7 @@ export interface FileRoutesById {
   '/a-propos': typeof AProposRoute
   '/conditions-utilisation': typeof ConditionsUtilisationRoute
   '/login': typeof LoginRoute
+  '/mentions-legales': typeof MentionsLegalesRoute
   '/mot-de-passe-oublie': typeof MotDePasseOublieRoute
   '/politique-de-confidentialite': typeof PolitiqueDeConfidentialiteRoute
   '/reinitialiser-mot-de-passe': typeof ReinitialiserMotDePasseRoute
@@ -293,6 +302,7 @@ export interface FileRouteTypes {
     | '/a-propos'
     | '/conditions-utilisation'
     | '/login'
+    | '/mentions-legales'
     | '/mot-de-passe-oublie'
     | '/politique-de-confidentialite'
     | '/reinitialiser-mot-de-passe'
@@ -323,6 +333,7 @@ export interface FileRouteTypes {
     | '/a-propos'
     | '/conditions-utilisation'
     | '/login'
+    | '/mentions-legales'
     | '/mot-de-passe-oublie'
     | '/politique-de-confidentialite'
     | '/reinitialiser-mot-de-passe'
@@ -354,6 +365,7 @@ export interface FileRouteTypes {
     | '/a-propos'
     | '/conditions-utilisation'
     | '/login'
+    | '/mentions-legales'
     | '/mot-de-passe-oublie'
     | '/politique-de-confidentialite'
     | '/reinitialiser-mot-de-passe'
@@ -386,6 +398,7 @@ export interface RootRouteChildren {
   AProposRoute: typeof AProposRoute
   ConditionsUtilisationRoute: typeof ConditionsUtilisationRoute
   LoginRoute: typeof LoginRoute
+  MentionsLegalesRoute: typeof MentionsLegalesRoute
   MotDePasseOublieRoute: typeof MotDePasseOublieRoute
   PolitiqueDeConfidentialiteRoute: typeof PolitiqueDeConfidentialiteRoute
   ReinitialiserMotDePasseRoute: typeof ReinitialiserMotDePasseRoute
@@ -433,6 +446,13 @@ declare module '@tanstack/react-router' {
       path: '/mot-de-passe-oublie'
       fullPath: '/mot-de-passe-oublie'
       preLoaderRoute: typeof MotDePasseOublieRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/mentions-legales': {
+      id: '/mentions-legales'
+      path: '/mentions-legales'
+      fullPath: '/mentions-legales'
+      preLoaderRoute: typeof MentionsLegalesRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/login': {
@@ -671,6 +691,7 @@ const rootRouteChildren: RootRouteChildren = {
   AProposRoute: AProposRoute,
   ConditionsUtilisationRoute: ConditionsUtilisationRoute,
   LoginRoute: LoginRoute,
+  MentionsLegalesRoute: MentionsLegalesRoute,
   MotDePasseOublieRoute: MotDePasseOublieRoute,
   PolitiqueDeConfidentialiteRoute: PolitiqueDeConfidentialiteRoute,
   ReinitialiserMotDePasseRoute: ReinitialiserMotDePasseRoute,
