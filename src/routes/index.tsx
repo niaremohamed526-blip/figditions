@@ -63,8 +63,8 @@ function Navbar() {
   const navLinks = [
     { label: t("Accueil", "Home"), href: "#top" },
     { label: t("Fonctionnalités", "Features"), href: "#features" },
-    { label: t("Prix", "Pricing"), href: "#pricing" },
-    { label: t("Contact", "Contact"), href: "#contact" },
+    { label: t("Tarifs", "Pricing"), href: "#pricing" },
+    { label: t("Contact", "Contact"), href: "/a-propos#contact" },
   ];
 
   return (
