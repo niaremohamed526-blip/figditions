@@ -1,5 +1,7 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { LegalShell, Section } from "@/components/legal-shell";
+import { PLANS } from "@/config/plans";
+import { fcfa } from "@/lib/format";
 
 export const Route = createFileRoute("/conditions-utilisation")({
   component: TermsPage,
@@ -60,7 +62,7 @@ function TermsPage() {
 
       <Section id="compte" title="3. Compte et équipe">
         <ul>
-          <li>La création de compte se fait par email/mot de passe ou via Google.</li>
+          <li>La création de compte se fait par email et mot de passe.</li>
           <li>Chaque maison d'édition dispose d'un espace isolé (multi-tenant) avec ses propres membres et rôles.</li>
           <li>L'administrateur peut inviter des membres par email et leur attribuer un rôle. Chaque membre est responsable de la confidentialité de ses identifiants.</li>
           <li>Toute activité effectuée depuis un compte est réputée réalisée sous la responsabilité de son titulaire.</li>
@@ -73,14 +75,22 @@ function TermsPage() {
             <tr><th>Plan</th><th>Prix</th><th>Utilisateurs</th><th>Périmètre</th></tr>
           </thead>
           <tbody>
-            <tr><td>Starter</td><td>Gratuit</td><td>1</td><td>Fonctionnalités de base, limites d'usage</td></tr>
-            <tr><td>Pro</td><td>20 000 FCFA / mois</td><td>Jusqu'à 3</td><td>Manuscrits illimités, contrats, stocks</td></tr>
-            <tr><td>Business</td><td>50 000 FCFA / mois</td><td>Illimité</td><td>Toutes les fonctionnalités (conversion EPUB/MOBI, partage sécurisé, bordereaux, IA, etc.)</td></tr>
+            {PLANS.map((p) => (
+              <tr key={p.id}>
+                <td>{p.name}</td>
+                <td>
+                  {p.priceMonthly === 0
+                    ? "Gratuit"
+                    : `${fcfa(p.priceMonthly)} par mois ou ${fcfa(p.priceYearly)} par an`}
+                </td>
+                <td>{p.seatsLabel}</td>
+                <td>{p.tagline}</td>
+              </tr>
+            ))}
           </tbody>
         </table>
         <p>
-          Certaines fonctionnalités (par exemple la conversion PDF vers EPUB/MOBI, le partage
-          de lecture sécurisé, les bordereaux avancés) sont réservées au plan Business.
+          Le plan Pro inclut la conversion ePub &amp; MOBI et le partage de lecture sécurisé dans la limite de 10 liens actifs par mois. Le plan Business lève ces limites et ajoute les bordereaux avancés, le branding personnalisé et le support prioritaire 24/7.
         </p>
         <p>
           Des codes promotionnels peuvent être proposés ponctuellement. Ils sont soumis à
@@ -90,7 +100,8 @@ function TermsPage() {
 
       <Section id="paiement" title="5. Paiement">
         <ul>
-          <li>Les paiements automatiques sont opérés par Flutterwave (carte bancaire, mobile money selon la disponibilité).</li>
+          <li>Les moyens de paiement acceptés sont : Orange Money Mali, Wave Mali et la carte bancaire via Flutterwave.</li>
+          <li>Les paiements automatiques par carte bancaire sont opérés par Flutterwave.</li>
           <li>Les paiements manuels par QR code se font via Orange Money Mali ou Wave Mali. Vous scannez le QR affiché, effectuez le transfert, puis transmettez la référence à FIGDITIONS par WhatsApp ou email. L'activation de l'abonnement est validée manuellement par FIGDITIONS dans les meilleurs délais.</li>
           <li>Les abonnements sont facturés d'avance et se renouvellent automatiquement selon la périodicité choisie (pour les paiements automatiques) ou doivent être renouvelés manuellement (pour les paiements par QR code).</li>
           <li>Vous pouvez annuler le renouvellement à tout moment depuis vos paramètres. L'accès reste ouvert jusqu'à la fin de la période payée.</li>

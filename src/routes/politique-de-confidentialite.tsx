@@ -55,7 +55,7 @@ function PrivacyPage() {
         <ul>
           <li>Nom, prénom, adresse email, mot de passe (haché côté fournisseur d'authentification)</li>
           <li>Numéro de téléphone (facultatif), photo de profil (facultatif)</li>
-          <li>En cas de connexion Google : identifiant Google, nom et email fournis par Google</li>
+          
         </ul>
         <h3>Données de la maison d'édition</h3>
         <ul>
@@ -96,7 +96,7 @@ function PrivacyPage() {
       <Section id="base-legale" title="4. Base légale du traitement">
         <ul>
           <li><strong>Exécution du contrat</strong> : fournir le service souscrit</li>
-          <li><strong>Consentement</strong> : connexion via Google, envoi d'emails non essentiels</li>
+          <li><strong>Consentement</strong> : envoi d'emails non essentiels</li>
           <li><strong>Intérêt légitime</strong> : sécurité de la plateforme, prévention des abus</li>
           <li><strong>Obligation légale</strong> : conservation comptable et fiscale</li>
         </ul>
@@ -142,7 +142,7 @@ function PrivacyPage() {
           <li><strong>Orange Money Mali / Wave Mali</strong> — traitement des paiements manuels par QR code, validés par FIGDITIONS</li>
           <li><strong>CloudConvert</strong> — conversion de manuscrits ; le fichier source est transmis via une URL signée temporaire et supprimé côté CloudConvert selon leur politique de rétention</li>
           <li><strong>Google Gemini (via Lovable AI Gateway)</strong> — génération assistée par IA lorsque vous utilisez explicitement ces fonctionnalités</li>
-          <li><strong>Google</strong> — uniquement si vous choisissez la connexion Google (OAuth)</li>
+          
           <li><strong>Figuira Éditions</strong> — partenaire officiel, uniquement pour les fonctionnalités contractuellement partagées avec votre autorisation</li>
         </ul>
       </Section>
@@ -241,8 +241,7 @@ function PrivacyPage() {
           <li>Adresse : Bamako, Mali</li>
         </ul>
         <p>
-          Si vous estimez que vos droits ne sont pas respectés, vous pouvez saisir l'autorité
-          de protection des données personnelles compétente.
+          Si vous estimez que vos droits ne sont pas respectés, vous pouvez saisir l'Autorité de Protection des Données à caractère Personnel (APDP) du Mali.
         </p>
       </Section>
 

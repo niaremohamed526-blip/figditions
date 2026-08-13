@@ -1,6 +1,6 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useState, type FormEvent } from "react";
-import { ArrowLeft, ArrowRight, Mail, MapPin, Shield, Globe, Rocket, Zap, Lock, CreditCard, Database } from "lucide-react";
+import { ArrowLeft, ArrowRight, Mail, MapPin, Shield, Globe, Rocket, Zap, Lock, Database } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -120,10 +120,10 @@ function Story() {
 
 function Numbers() {
   const stats = [
-    { icon: "🏢", value: "126+", label: "Maisons d'édition ciblées au Mali" },
+    { icon: "🏢", value: "126+", label: "Maisons d'édition recensées au Mali — notre marché" },
     { icon: "📚", value: "10", label: "Étapes de workflow éditorial" },
     { icon: "🌍", value: "8+", label: "Pays d'Afrique de l'Ouest supportés" },
-    { icon: "⚡", value: "99,5%", label: "Disponibilité de la plateforme garantie" },
+    { icon: "⚡", value: "99,5%", label: "Objectif de disponibilité de la plateforme" },
   ];
   return (
     <section className="py-20 px-4">
@@ -171,10 +171,9 @@ function Values() {
 
 function TechStack() {
   const stack = [
-    { icon: Database, title: "Supabase", desc: "Base de données PostgreSQL avec sauvegardes automatiques quotidiennes hébergée sur AWS Europe" },
-    { icon: Zap, title: "Cloudflare", desc: "Déploiement mondial avec CDN pour des performances optimales même au Mali" },
-    { icon: Lock, title: "SSL/TLS", desc: "Chiffrement de bout en bout de toutes vos données" },
-    { icon: CreditCard, title: "Flutterwave", desc: "Paiements sécurisés via Mobile Money et Carte Bancaire" },
+    { icon: Database, title: "Lovable Cloud (Supabase)", desc: "Base de données PostgreSQL, authentification et stockage de fichiers, avec sauvegardes automatiques." },
+    { icon: Zap, title: "Vercel", desc: "Hébergement du site et des fonctions serveur, avec un réseau de diffusion mondial pour de bonnes performances au Mali." },
+    { icon: Lock, title: "Chiffrement SSL/TLS", desc: "Toutes vos données sont chiffrées en transit, et au repos par notre infrastructure d'hébergement." },
   ];
   return (
     <section className="py-20 px-4">
@@ -183,7 +182,7 @@ function TechStack() {
         <p className="mt-3 text-center text-muted-foreground max-w-2xl mx-auto">
           FIGDITIONS est construit sur des technologies de pointe pour garantir sécurité et performance.
         </p>
-        <div className="mt-12 grid sm:grid-cols-2 lg:grid-cols-4 gap-5">
+        <div className="mt-12 grid sm:grid-cols-2 lg:grid-cols-3 gap-5">
           {stack.map((s, i) => (
             <div key={i} className="rounded-2xl border border-border bg-[#1A1208] p-6 hover:border-[color:var(--gold)] transition-colors">
               <div className="h-11 w-11 rounded-xl bg-[color:var(--gold)]/15 text-[color:var(--gold)] flex items-center justify-center">
@@ -194,6 +193,9 @@ function TechStack() {
             </div>
           ))}
         </div>
+        <p className="mt-8 text-center text-sm text-muted-foreground max-w-2xl mx-auto leading-relaxed">
+          Les paiements automatiques par carte bancaire sont opérés par Flutterwave. Les paiements par Orange Money et Wave sont validés manuellement par notre équipe.
+        </p>
       </div>
     </section>
   );
