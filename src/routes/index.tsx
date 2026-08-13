@@ -3,7 +3,7 @@ import { useEffect, useState } from "react";
 import {
   Menu, X, BookOpen, Users, Package, Wallet, FileText, Calculator,
   Linkedin, Instagram, Facebook, Youtube, ArrowRight, Check,
-  Factory, Shield, BarChart3, Store, Sparkles, Boxes, MousePointer2,
+  Factory, Shield, BarChart3, Store, Sparkles, Boxes, MousePointer2, WifiOff, Receipt, Printer,
 } from "lucide-react";
 import { Logo } from "@/components/logo";
 import { useI18n } from "@/hooks/use-i18n";
