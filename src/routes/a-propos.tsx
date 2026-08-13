@@ -241,7 +241,7 @@ function Contact() {
     window.location.href = `mailto:contact@figditions.xyz?subject=${subject}&body=${body}`;
   };
   return (
-    <section className="py-20 px-4">
+    <section id="contact" className="py-20 px-4">
       <div className="max-w-5xl mx-auto">
         <h2 className="text-3xl md:text-4xl font-bold tracking-tight text-center">Nous Contacter</h2>
 
