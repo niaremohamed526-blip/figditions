@@ -609,7 +609,7 @@ function CtaBanner() {
             {t("Prêt à moderniser votre maison d'édition ?", "Ready to modernize your publishing house?")}
           </h2>
           <p className="mt-4 text-muted-foreground max-w-2xl mx-auto">
-            {t("Rejoignez les éditeurs africains qui font confiance à FIGDITIONS", "Join African publishers who trust FIGDITIONS")}
+            Créez votre compte gratuitement. Sans carte bancaire, sans engagement.
           </p>
           <Link to="/signup" className="inline-block mt-8">
             <Button size="lg" className="bg-primary text-primary-foreground hover:bg-primary/90 shadow-glow text-base px-8 h-12">
