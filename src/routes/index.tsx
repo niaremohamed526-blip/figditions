@@ -299,7 +299,11 @@ function Hero() {
 
 function Features() {
   const { t } = useI18n();
+  const offlineFr = "Continuez à travailler pendant les délestages et les coupures de réseau. Vos données se synchronisent automatiquement dès le retour de la connexion.";
+  const bordereauxFr = "Générez vos bordereaux de dépôt et de vente en quelques clics, prêts à signer avec vos libraires.";
+  const imprimeriesFr = "Accédez aux tarifs et contacts des imprimeries de Bamako et de la sous-région pour comparer avant d'imprimer.";
   const items = [
+    { icon: WifiOff, fr: "Fonctionne hors-ligne", en: "Fonctionne hors-ligne", dfr: offlineFr, den: offlineFr },
     { icon: BookOpen, fr: "Gestion des manuscrits", en: "Manuscript management", dfr: "Suivez chaque livre à travers 10 étapes éditoriales, de la réception à la publication", den: "Track every book through 10 editorial stages, from reception to publication" },
     { icon: Users, fr: "Gestion des auteurs", en: "Author management", dfr: "Centralisez les informations, contrats et droits de vos auteurs en un seul endroit", den: "Centralize information, contracts and royalties of your authors in one place" },
     { icon: Factory, fr: "Stock interne", en: "Internal stock", dfr: "Gérez votre entrepôt, suivez chaque exemplaire imprimé et automatisez les mouvements de stock", den: "Manage your warehouse, track every printed copy and automate stock movements" },
@@ -310,6 +314,8 @@ function Features() {
     { icon: Shield, fr: "Partage PDF sécurisé", en: "Secure PDF sharing", dfr: "Partagez vos manuscrits avec des filigranes personnalisés et un nombre de vues limité", den: "Share manuscripts with custom watermarks and limited view counts" },
     { icon: Sparkles, fr: "Conversion ePub & MOBI", en: "ePub & MOBI conversion", dfr: "Convertissez vos manuscrits en ebooks prêts pour Amazon Kindle, Apple Books et Google Play Books", den: "Convert your manuscripts into ebooks ready for Amazon Kindle, Apple Books and Google Play Books" },
     { icon: BarChart3, fr: "Analytiques avancées", en: "Advanced analytics", dfr: "Tableaux de bord complets pour piloter votre maison d'édition avec des données en temps réel", den: "Complete dashboards to manage your publishing house with real-time data" },
+    { icon: Receipt, fr: "Bordereaux de vente", en: "Bordereaux de vente", dfr: bordereauxFr, den: bordereauxFr },
+    { icon: Printer, fr: "Répertoire des imprimeries", en: "Répertoire des imprimeries", dfr: imprimeriesFr, den: imprimeriesFr },
   ];
   return (
     <section id="features" className="py-24 px-4 bg-background relative">
