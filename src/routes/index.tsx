@@ -706,7 +706,7 @@ function Footer() {
           <ul className="space-y-2 text-sm">
             <li><Link to="/politique-de-confidentialite" className="text-muted-foreground hover:text-primary">{t("Politique de confidentialité", "Privacy Policy")}</Link></li>
             <li><Link to="/conditions-utilisation" className="text-muted-foreground hover:text-primary">{t("Conditions d'utilisation", "Terms of Service")}</Link></li>
-            <li><a href="/mentions-legales" className="text-muted-foreground hover:text-primary">Mentions légales</a></li>
+            <li><Link to="/mentions-legales" className="text-muted-foreground hover:text-primary">Mentions légales</Link></li>
           </ul>
         </div>
 
