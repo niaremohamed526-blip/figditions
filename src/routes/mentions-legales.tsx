@@ -42,7 +42,7 @@ const rows: { label: string; value: string }[] = [
 
 function LegalNoticePage() {
   return (
-    <LegalShell title="Mentions Légales" toc={toc}>
+    <LegalShell title="Mentions Légales" subtitle="Informations juridiques relatives à l'éditeur du site FIGDITIONS." toc={toc}>
       <Section id="editeur" title="1. Éditeur du site">
         <dl className="space-y-3">
           {rows.map((r) => (
