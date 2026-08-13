@@ -256,6 +256,9 @@ function Hero() {
           minWidth: "180px",
         }}
       >
+        <div className="text-[10px] uppercase tracking-wider" style={{ color: "rgba(184,168,152,0.7)" }}>
+          Aperçu de l'interface
+        </div>
         <div className="flex items-center gap-2">
           <Boxes className="h-5 w-5 text-[#C8922A]" />
           <span className="text-[#E8B84B] font-bold tracking-wide text-sm">STOCK</span>
