@@ -11,18 +11,126 @@ const Ballpit = lazy(() => import("@/components/Ballpit"));
 
 export const Route = createFileRoute("/signup")({
   component: SignupPage,
+  validateSearch: (search: Record<string, unknown>): { plan: "starter" | "pro" | "business" } => {
+    const p = String(search.plan ?? "starter").toLowerCase();
+    return { plan: p === "pro" || p === "business" ? p : "starter" };
+  },
   head: () => ({
     meta: [
       { title: "Inscription — FIGDITIONS" },
       { name: "description", content: "Créez votre compte FIGDITIONS et digitalisez la gestion de votre maison d'édition : manuscrits, contrats, stocks et finances." },
       { property: "og:title", content: "Inscription — FIGDITIONS" },
-      { property: "og:description", content: "Créez votre compte FIGDITIONS pour votre maison d'édition." },
+      { property: "og:description", content: "Créez votre compte FIGDITIONS et digitalisez la gestion de votre maison d'édition : manuscrits, contrats, stocks et finances." },
+      { name: "twitter:title", content: "Inscription — FIGDITIONS" },
+      { name: "twitter:description", content: "Créez votre compte FIGDITIONS et digitalisez la gestion de votre maison d'édition : manuscrits, contrats, stocks et finances." },
+      { property: "og:image", content: "https://figditions.xyz/assets/og-figditions.png" },
+      { name: "twitter:image", content: "https://figditions.xyz/assets/og-figditions.png" },
       { property: "og:url", content: "https://figditions.xyz/signup" },
       { property: "og:type", content: "website" },
+      { name: "twitter:card", content: "summary_large_image" },
     ],
     links: [{ rel: "canonical", href: "https://figditions.xyz/signup" }],
   }),
 });
+
+const MALI_CITIES = [
+  "Bamako", "Sikasso", "Ségou", "Mopti", "Koutiala", "Kayes",
+  "Gao", "Kati", "Tombouctou", "Koulikoro", "San", "Bougouni",
+] as const;
+
+function normalize(s: string) {
+  return s.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase();
+}
+
+function CitySelect({
+  value,
+  onChange,
+}: {
+  value: string;
+  onChange: (v: string) => void;
+}) {
+  const isKnown = (MALI_CITIES as readonly string[]).includes(value);
+  const [other, setOther] = useState(!isKnown && value.length > 0);
+  const [query, setQuery] = useState("");
+  const [open, setOpen] = useState(false);
+
+  const results = useMemo(
+    () => MALI_CITIES.filter((c) => normalize(c).includes(normalize(query))),
+    [query],
+  );
+
+  if (other) {
+    return (
+      <div className="space-y-2">
+        <GoldInput
+          id="ville"
+          name="ville"
+          required
+          value={value}
+          placeholder="Nom de votre ville"
+          onChange={(e) => onChange(e.target.value)}
+        />
+        <button
+          type="button"
+          className="text-xs hover:underline"
+          style={{ color: "#C8922A" }}
+          onClick={() => { setOther(false); onChange("Bamako"); }}
+        >
+          ← Choisir dans la liste
+        </button>
+      </div>
+    );
+  }
+
+  return (
+    <div className="relative">
+      <GoldInput
+        id="ville"
+        name="ville"
+        autoComplete="off"
+        required
+        value={open ? query : value}
+        placeholder="Rechercher une ville…"
+        onFocus={() => { setQuery(""); setOpen(true); }}
+        onChange={(e) => { setQuery(e.target.value); setOpen(true); }}
+        onBlur={() => setTimeout(() => setOpen(false), 150)}
+      />
+      {open && (
+        <div
+          className="absolute left-0 right-0 mt-1 rounded-lg overflow-hidden max-h-56 overflow-y-auto"
+          style={{
+            zIndex: 30,
+            background: "rgba(13,10,6,0.97)",
+            border: "1px solid rgba(200,146,42,0.25)",
+            boxShadow: "0 12px 40px rgba(0,0,0,0.6)",
+          }}
+        >
+          {results.map((c) => (
+            <button
+              key={c}
+              type="button"
+              className="w-full text-left px-4 py-2 text-sm text-white hover:bg-[#C8922A]/15"
+              onMouseDown={(e) => e.preventDefault()}
+              onClick={() => { onChange(c); setOpen(false); }}
+            >
+              {c}
+            </button>
+          ))}
+          <button
+            type="button"
+            className="w-full text-left px-4 py-2 text-sm hover:bg-[#C8922A]/15"
+            style={{ color: "#C8922A" }}
+            onMouseDown={(e) => e.preventDefault()}
+            onClick={() => { setOther(true); onChange(""); setOpen(false); }}
+          >
+            Autre…
+          </button>
+        </div>
+      )}
+    </div>
+  );
+}
+
 
 const BALL_COLORS = [0xc8922a, 0xe8b84b, 0xa67420, 0xf5d07a, 0x8b6914];
 
