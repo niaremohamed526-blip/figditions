@@ -11,10 +11,12 @@ const Ballpit = lazy(() => import("@/components/Ballpit"));
 
 export const Route = createFileRoute("/signup")({
   component: SignupPage,
-  validateSearch: (search: Record<string, unknown>): { plan: "starter" | "pro" | "business" } => {
-    const p = String(search.plan ?? "starter").toLowerCase();
+  validateSearch: (search: Record<string, unknown>): { plan?: "starter" | "pro" | "business" } => {
+    if (search.plan == null) return {};
+    const p = String(search.plan).toLowerCase();
     return { plan: p === "pro" || p === "business" ? p : "starter" };
   },
+
   head: () => ({
     meta: [
       { title: "Inscription — FIGDITIONS" },
