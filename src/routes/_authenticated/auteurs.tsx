@@ -279,7 +279,6 @@ function AuteurForm({
             <SelectTrigger><SelectValue placeholder="—" /></SelectTrigger>
             <SelectContent>
               <SelectItem value="Orange Money">Orange Money</SelectItem>
-              <SelectItem value="Moov Money">Moov Money</SelectItem>
             </SelectContent>
           </Select>
         </div>

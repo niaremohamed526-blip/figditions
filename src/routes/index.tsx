@@ -3,7 +3,7 @@ import { useEffect, useState } from "react";
 import {
   Menu, X, BookOpen, Users, Package, Wallet, FileText, Calculator,
   Linkedin, Instagram, Facebook, Youtube, ArrowRight, Check,
-  Factory, Shield, BarChart3, Store, Sparkles, Boxes, MousePointer2,
+  Factory, Shield, BarChart3, Store, Sparkles, Boxes, MousePointer2, WifiOff, Receipt, Printer,
 } from "lucide-react";
 import { Logo } from "@/components/logo";
 import { useI18n } from "@/hooks/use-i18n";
@@ -11,6 +11,7 @@ import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { CookieBanner } from "@/components/cookie-banner";
 import { AdminAccessGate } from "@/components/admin-access-gate";
+import { PLANS } from "@/config/plans";
 const figuiraLogo = "/assets/figuira-logo.png";
 const heroAsset = { url: "/assets/hero-figditions.png" };
 
@@ -62,8 +63,8 @@ function Navbar() {
   const navLinks = [
     { label: t("Accueil", "Home"), href: "#top" },
     { label: t("Fonctionnalités", "Features"), href: "#features" },
-    { label: t("Prix", "Pricing"), href: "#pricing" },
-    { label: t("Contact", "Contact"), href: "#contact" },
+    { label: t("Tarifs", "Pricing"), href: "#pricing" },
+    { label: t("Contact", "Contact"), href: "/a-propos#contact" },
   ];
 
   return (
@@ -195,7 +196,7 @@ function Hero() {
           {/* Social icons */}
           <div className="mt-8 flex items-center gap-5">
             {[
-              { Icon: Instagram, href: "https://www.instagram.com/medmo_05?igsh=MTBxMHpueTBucHEyMQ%3D%3D&utm_source=qr", label: "Instagram" },
+              { Icon: Instagram, href: "https://www.instagram.com/[À COMPLÉTER — compte de marque]", label: "FIGDITIONS sur Instagram" },
             ].map(({ Icon, href, label }) => (
               <a
                 key={label}
@@ -224,6 +225,9 @@ function Hero() {
           minWidth: "200px",
         }}
       >
+        <div className="text-[10px] uppercase tracking-wider" style={{ color: "rgba(184,168,152,0.7)" }}>
+          Aperçu de l'interface
+        </div>
         <div className="flex items-center gap-2">
           <BookOpen className="h-5 w-5 text-[#C8922A]" />
           <span className="text-[#E8B84B] font-bold tracking-wide text-sm">MANUSCRIT MANAGEMENT</span>
@@ -252,6 +256,9 @@ function Hero() {
           minWidth: "180px",
         }}
       >
+        <div className="text-[10px] uppercase tracking-wider" style={{ color: "rgba(184,168,152,0.7)" }}>
+          Aperçu de l'interface
+        </div>
         <div className="flex items-center gap-2">
           <Boxes className="h-5 w-5 text-[#C8922A]" />
           <span className="text-[#E8B84B] font-bold tracking-wide text-sm">STOCK</span>
@@ -292,7 +299,11 @@ function Hero() {
 
 function Features() {
   const { t } = useI18n();
+  const offlineFr = "Continuez à travailler pendant les délestages et les coupures de réseau. Vos données se synchronisent automatiquement dès le retour de la connexion.";
+  const bordereauxFr = "Générez vos bordereaux de dépôt et de vente en quelques clics, prêts à signer avec vos libraires.";
+  const imprimeriesFr = "Accédez aux tarifs et contacts des imprimeries de Bamako et de la sous-région pour comparer avant d'imprimer.";
   const items = [
+    { icon: WifiOff, fr: "Fonctionne hors-ligne", en: "Fonctionne hors-ligne", dfr: offlineFr, den: offlineFr },
     { icon: BookOpen, fr: "Gestion des manuscrits", en: "Manuscript management", dfr: "Suivez chaque livre à travers 10 étapes éditoriales, de la réception à la publication", den: "Track every book through 10 editorial stages, from reception to publication" },
     { icon: Users, fr: "Gestion des auteurs", en: "Author management", dfr: "Centralisez les informations, contrats et droits de vos auteurs en un seul endroit", den: "Centralize information, contracts and royalties of your authors in one place" },
     { icon: Factory, fr: "Stock interne", en: "Internal stock", dfr: "Gérez votre entrepôt, suivez chaque exemplaire imprimé et automatisez les mouvements de stock", den: "Manage your warehouse, track every printed copy and automate stock movements" },
@@ -303,6 +314,8 @@ function Features() {
     { icon: Shield, fr: "Partage PDF sécurisé", en: "Secure PDF sharing", dfr: "Partagez vos manuscrits avec des filigranes personnalisés et un nombre de vues limité", den: "Share manuscripts with custom watermarks and limited view counts" },
     { icon: Sparkles, fr: "Conversion ePub & MOBI", en: "ePub & MOBI conversion", dfr: "Convertissez vos manuscrits en ebooks prêts pour Amazon Kindle, Apple Books et Google Play Books", den: "Convert your manuscripts into ebooks ready for Amazon Kindle, Apple Books and Google Play Books" },
     { icon: BarChart3, fr: "Analytiques avancées", en: "Advanced analytics", dfr: "Tableaux de bord complets pour piloter votre maison d'édition avec des données en temps réel", den: "Complete dashboards to manage your publishing house with real-time data" },
+    { icon: Receipt, fr: "Bordereaux de vente", en: "Bordereaux de vente", dfr: bordereauxFr, den: bordereauxFr },
+    { icon: Printer, fr: "Répertoire des imprimeries", en: "Répertoire des imprimeries", dfr: imprimeriesFr, den: imprimeriesFr },
   ];
   return (
     <section id="features" className="py-24 px-4 bg-background relative">
@@ -344,13 +357,10 @@ function Partners() {
       <div className="max-w-7xl mx-auto">
         <div className="text-center mb-12">
           <h2 className="text-3xl md:text-5xl font-bold tracking-tight">
-            🤝 {t("Ils nous font confiance", "They trust us")}
+            Notre premier partenaire officiel
           </h2>
           <p className="mt-3 text-muted-foreground max-w-2xl mx-auto">
-            {t(
-              "FIGDITIONS est fier de collaborer avec les meilleures maisons d'édition africaines",
-              "FIGDITIONS is proud to collaborate with the best African publishing houses"
-            )}
+            FIGDITIONS est développé main dans la main avec une maison d'édition malienne, sur des cas d'usage réels.
           </p>
         </div>
 
@@ -410,7 +420,7 @@ function Partners() {
 
         <p className="mt-8 text-center text-sm text-muted-foreground">
           {t("Vous êtes une maison d'édition ? Rejoignez nos partenaires.", "Are you a publishing house? Join our partners.")}{" "}
-          <a href="mailto:contact@figditions.com" className="text-[color:var(--gold)] hover:underline font-semibold">
+          <a href="mailto:contact@figditions.xyz" className="text-[color:var(--gold)] hover:underline font-semibold">
             {t("Nous contacter", "Contact us")}
           </a>
         </p>
@@ -457,78 +467,18 @@ function Pricing() {
   const { t } = useI18n();
   const [yearly, setYearly] = useState(false);
 
-  const tiers = [
-    {
-      key: "starter",
-      badge: t("Gratuit", "Free"),
-      title: "Starter",
-      subtitle: t("Pour démarrer votre maison d'édition", "To start your publishing house"),
-      monthly: 0, yearly: 0,
-      features: [
-        { ok: true, fr: "Tableau de bord", en: "Dashboard" },
-        { ok: true, fr: "Jusqu'à 5 manuscrits (10 étapes éditoriales)", en: "Up to 5 manuscripts (10 editorial stages)" },
-        { ok: true, fr: "Gestion des auteurs", en: "Author management" },
-        { ok: true, fr: "Stock interne basique", en: "Basic internal stock" },
-        { ok: true, fr: "Suivi des stocks (2 librairies max)", en: "Stock tracking (2 bookstores max)" },
-        { ok: true, fr: "Estimateur de coûts FCFA", en: "FCFA cost estimator" },
-        { ok: false, fr: "Contrats & Droits", en: "Contracts & Rights" },
-        { ok: false, fr: "Finances & Royalties", en: "Finances & Royalties" },
-        { ok: false, fr: "Partage PDF sécurisé", en: "Secure PDF sharing" },
-        { ok: false, fr: "Analytiques avancées", en: "Advanced analytics" },
-        { ok: false, fr: "Support prioritaire", en: "Priority support" },
-      ],
-      cta: t("Commencer gratuitement", "Get started for free"),
-      ctaVariant: "outline" as const,
-      cardClass: "border-border bg-card",
-      btnClass: "border-primary text-primary hover:bg-primary hover:text-primary-foreground",
-    },
-    {
-      key: "pro",
-      badge: t("Le plus populaire ⭐", "Most popular ⭐"),
-      title: "Pro",
-      subtitle: t("Pour les maisons d'édition en croissance", "For growing publishing houses"),
-      monthly: 20000, yearly: 200000,
-      features: [
-        { ok: true, fr: "Tout ce qui est dans Starter", en: "Everything in Starter" },
-        { ok: true, fr: "Manuscrits illimités", en: "Unlimited manuscripts" },
-        { ok: true, fr: "Stock interne complet", en: "Complete internal stock" },
-        { ok: true, fr: "Stocks illimités (librairies)", en: "Unlimited stocks (bookstores)" },
-        { ok: true, fr: "Contrats & Droits + PDF", en: "Contracts & Rights + PDF" },
-        { ok: true, fr: "Finances & Royalties complètes", en: "Full Finances & Royalties" },
-        { ok: true, fr: "Partage PDF sécurisé (10 liens/mois)", en: "Secure PDF sharing (10 links/month)" },
-        { ok: true, fr: "Analytiques avancées", en: "Advanced analytics" },
-        { ok: true, fr: "Répertoire des imprimeries", en: "Print directory" },
-        { ok: false, fr: "Conversion ePub & MOBI", en: "ePub & MOBI conversion" },
-        { ok: false, fr: "Support prioritaire", en: "Priority support" },
-      ],
-      cta: t("Choisir Pro", "Choose Pro"),
-      ctaVariant: "default" as const,
-      cardClass: "border-primary shadow-glow bg-gradient-to-b from-[#1A1208] to-[#0D0A06] lg:scale-105 lg:-my-2 relative",
-      btnClass: "bg-primary text-primary-foreground hover:bg-primary/90",
-      highlighted: true,
-    },
-    {
-      key: "business",
-      badge: t("Complet", "Complete"),
-      title: "Business",
-      subtitle: t("Pour les grandes maisons d'édition", "For large publishing houses"),
-      monthly: 50000, yearly: 500000,
-      features: [
-        { ok: true, fr: "Tout ce qui est dans Pro", en: "Everything in Pro" },
-        { ok: true, fr: "Utilisateurs illimités", en: "Unlimited users" },
-        { ok: true, fr: "Partage PDF illimité", en: "Unlimited PDF sharing" },
-        { ok: true, fr: "Conversion ePub & MOBI illimitée (Kindle, Apple Books)", en: "Unlimited ePub & MOBI conversion (Kindle, Apple Books)" },
-        { ok: true, fr: "Assistant subventions", en: "Grants assistant" },
-        { ok: true, fr: "Branding personnalisé", en: "Custom branding" },
-        { ok: true, fr: "Support prioritaire 24/7", en: "Priority support 24/7" },
-        { ok: true, fr: "Accès API", en: "API access" },
-      ],
-      cta: t("Choisir Business", "Choose Business"),
-      ctaVariant: "default" as const,
-      cardClass: "border-[color:var(--gold)]/60 shadow-[0_0_30px_-10px_var(--gold)] bg-card",
-      btnClass: "bg-[color:var(--gold)] text-background hover:bg-[color:var(--gold)]/90",
-    },
-  ];
+  const cardClass: Record<string, string> = {
+    starter: "border-border bg-card",
+    pro: "border-primary shadow-glow bg-gradient-to-b from-[#1A1208] to-[#0D0A06] lg:scale-105 lg:-my-2 relative",
+    business: "border-[color:var(--gold)]/60 shadow-[0_0_30px_-10px_var(--gold)] bg-card",
+  };
+  const btnClass: Record<string, string> = {
+    starter: "border-primary text-primary hover:bg-primary hover:text-primary-foreground",
+    pro: "bg-primary text-primary-foreground hover:bg-primary/90",
+    business: "bg-[color:var(--gold)] text-background hover:bg-[color:var(--gold)]/90",
+  };
+
+  const fmt = (n: number) => n.toLocaleString("fr-FR");
 
   return (
     <section id="pricing" className="py-24 px-4 bg-background">
@@ -559,61 +509,72 @@ function Pricing() {
         </div>
 
         <div className="grid md:grid-cols-3 gap-6 items-stretch">
-          {tiers.map((tier) => {
-            const monthlyEquivalent = yearly ? Math.round(tier.yearly / 12) : tier.monthly;
-            const savings = tier.monthly * 12 - tier.yearly;
+          {PLANS.map((plan) => {
+            const isFree = plan.priceMonthly === 0;
+            const highlighted = plan.id === "pro";
+            const badge = plan.badge ?? t("Gratuit", "Free");
+            const monthlyFromYearly = Math.round(plan.priceYearly / 12);
             return (
-              <div key={tier.key} className={cn("rounded-2xl border p-7 flex flex-col transition-all duration-300", tier.cardClass)}>
-                {tier.highlighted && (
+              <div key={plan.id} className={cn("rounded-2xl border p-7 flex flex-col transition-all duration-300", cardClass[plan.id])}>
+                {highlighted ? (
                   <div className="absolute -top-3 left-1/2 -translate-x-1/2">
                     <span className="text-xs font-bold px-3 py-1 rounded-full bg-[color:var(--gold)] text-background shadow-glow">
-                      {tier.badge}
+                      {badge}
                     </span>
                   </div>
-                )}
-                {!tier.highlighted && (
+                ) : (
                   <span className={cn(
                     "self-start text-xs font-semibold border rounded-full px-2.5 py-0.5 mb-3",
-                    tier.key === "business" ? "bg-[color:var(--gold)]/15 text-[color:var(--gold)] border-[color:var(--gold)]/30"
+                    plan.id === "business" ? "bg-[color:var(--gold)]/15 text-[color:var(--gold)] border-[color:var(--gold)]/30"
                       : "bg-muted text-muted-foreground border-border",
-                  )}>{tier.badge}</span>
+                  )}>{badge}</span>
                 )}
-                <h3 className="text-2xl font-bold">{tier.title}</h3>
-                <p className="text-sm text-muted-foreground mt-1">{tier.subtitle}</p>
+                <h3 className="text-2xl font-bold">{plan.name}</h3>
+                <p className="text-sm text-muted-foreground mt-1">{plan.tagline}</p>
 
                 <div className="mt-5">
-                  {tier.monthly === 0 ? (
-                    <p className="text-4xl font-bold">{t("0 FCFA", "0 FCFA")}<span className="text-sm font-normal text-muted-foreground"> / {t("mois", "month")}</span></p>
-                  ) : (
+                  {isFree ? (
+                    <p className="text-4xl font-bold">0 FCFA<span className="text-sm font-normal text-muted-foreground"> / {t("mois", "month")}</span></p>
+                  ) : yearly ? (
                     <>
-                      <p className="text-4xl font-bold">{monthlyEquivalent.toLocaleString("fr-FR")} <span className="text-sm font-normal text-muted-foreground">FCFA / {t("mois", "month")}</span></p>
-                      {yearly ? (
-                        <p className="mt-1 text-xs text-primary font-semibold">
-                          {tier.yearly.toLocaleString("fr-FR")} FCFA / {t("an", "year")} · {t("Économisez", "Save")} {savings.toLocaleString("fr-FR")} FCFA
-                        </p>
-                      ) : (
-                        <p className="mt-1 text-xs text-muted-foreground">
-                          {t("ou", "or")} {tier.yearly.toLocaleString("fr-FR")} FCFA / {t("an", "year")}
-                        </p>
-                      )}
+                      <p className="text-4xl font-bold">{fmt(plan.priceYearly)} <span className="text-sm font-normal text-muted-foreground">FCFA / an</span></p>
+                      <p className="mt-1 text-xs text-muted-foreground">soit {fmt(monthlyFromYearly)} FCFA / mois</p>
+                      <span className="mt-2 inline-block text-xs font-semibold px-2.5 py-1 rounded-full bg-emerald-500/15 text-emerald-400 border border-emerald-500/30">
+                        Économisez 2 mois
+                      </span>
                     </>
+                  ) : (
+                    <p className="text-4xl font-bold">{fmt(plan.priceMonthly)} <span className="text-sm font-normal text-muted-foreground">FCFA / {t("mois", "month")}</span></p>
                   )}
+                  <p className="mt-3 text-sm font-semibold text-foreground">{plan.seatsLabel}</p>
                 </div>
 
                 <ul className="mt-6 space-y-2.5 text-sm flex-1">
-                  {tier.features.map((f, i) => (
-                    <li key={i} className="flex items-start gap-2">
-                      {f.ok
-                        ? <Check className="h-4 w-4 text-primary shrink-0 mt-0.5" />
-                        : <X className="h-4 w-4 text-muted-foreground shrink-0 mt-0.5" />}
-                      <span className={f.ok ? "" : "text-muted-foreground line-through"}>{t(f.fr, f.en)}</span>
+                  {plan.included.map((f) => (
+                    <li key={f} className="flex items-start gap-2">
+                      <Check className="h-4 w-4 text-primary shrink-0 mt-0.5" />
+                      <span>{f}</span>
+                    </li>
+                  ))}
+                  {plan.excluded.map((f) => (
+                    <li key={f} className="flex items-start gap-2">
+                      <X className="h-4 w-4 text-muted-foreground shrink-0 mt-0.5" />
+                      <span className="text-muted-foreground line-through" aria-label={`Non inclus dans ce plan : ${f}`}>{f}</span>
+                    </li>
+                  ))}
+                  {(plan.comingSoon ?? []).map((f) => (
+                    <li key={f} className="flex items-start gap-2">
+                      <span className="text-muted-foreground">{f}</span>
+                      <span className="text-[10px] font-semibold px-2 py-0.5 rounded-full bg-muted text-muted-foreground border border-border">
+                        Bientôt
+                      </span>
                     </li>
                   ))}
                 </ul>
 
                 <Link to="/signup" className="mt-7 block">
-                  <Button className={cn("w-full h-11", tier.btnClass)} variant={tier.ctaVariant === "outline" ? "outline" : "default"}>
-                    {tier.cta}
+                  <Button className={cn("w-full h-11", btnClass[plan.id])} variant={plan.id === "starter" ? "outline" : "default"}>
+                    {isFree ? t("Commencer gratuitement", "Get started for free") : `${t("Choisir", "Choose")} ${plan.name}`}
                   </Button>
                 </Link>
               </div>
@@ -622,24 +583,19 @@ function Pricing() {
         </div>
 
         <p className="mt-8 text-center text-sm text-muted-foreground">
-          {t(
-            "Pas de carte bancaire requise · Annulez à tout moment · Paiement via Orange Money ou Moov Money",
-            "No credit card required · Cancel anytime · Pay with Orange Money or Moov Money"
-          )}
+          Pas de carte bancaire requise · Annulez à tout moment · Paiement par Orange Money, Wave ou carte bancaire
         </p>
 
         <div className="mt-6 text-center">
           <p className="text-sm" style={{ color: "#B8A898" }}>
-            {t("Vous avez un code promotionnel ?", "Have a promo code?")}{" "}
-            <Link to="/signup" hash="plan" className="text-[color:var(--gold)] hover:underline story-link">
-              {t("Entrez votre code après inscription", "Enter your code after signing up")}
-            </Link>
+            Vous avez un code promotionnel ? Vous pourrez l'activer depuis vos paramètres après inscription.
           </p>
         </div>
       </div>
     </section>
   );
 }
+
 
 function CtaBanner() {
   const { t } = useI18n();
@@ -653,7 +609,7 @@ function CtaBanner() {
             {t("Prêt à moderniser votre maison d'édition ?", "Ready to modernize your publishing house?")}
           </h2>
           <p className="mt-4 text-muted-foreground max-w-2xl mx-auto">
-            {t("Rejoignez les éditeurs africains qui font confiance à FIGDITIONS", "Join African publishers who trust FIGDITIONS")}
+            Créez votre compte gratuitement. Sans carte bancaire, sans engagement.
           </p>
           <Link to="/signup" className="inline-block mt-8">
             <Button size="lg" className="bg-primary text-primary-foreground hover:bg-primary/90 shadow-glow text-base px-8 h-12">
@@ -709,7 +665,7 @@ function Footer() {
             <li><a href="#pricing" onClick={scrollTo("pricing")} className="text-muted-foreground hover:text-primary">{t("Tarifs", "Pricing")}</a></li>
             <li><a href="#partners" onClick={scrollTo("partners")} className="text-muted-foreground hover:text-primary">{t("Partenaires", "Partners")}</a></li>
             <li><Link to="/a-propos" className="text-muted-foreground hover:text-primary">{t("À propos", "About")}</Link></li>
-            <li><a href="mailto:Figditions@gmail.com" className="text-muted-foreground hover:text-primary">Contact</a></li>
+            <li><a href="mailto:contact@figditions.xyz" className="text-muted-foreground hover:text-primary">Contact</a></li>
           </ul>
         </div>
 
@@ -718,6 +674,7 @@ function Footer() {
           <ul className="space-y-2 text-sm">
             <li><Link to="/politique-de-confidentialite" className="text-muted-foreground hover:text-primary">{t("Politique de confidentialité", "Privacy Policy")}</Link></li>
             <li><Link to="/conditions-utilisation" className="text-muted-foreground hover:text-primary">{t("Conditions d'utilisation", "Terms of Service")}</Link></li>
+            <li><a href="/mentions-legales" className="text-muted-foreground hover:text-primary">Mentions légales</a></li>
           </ul>
         </div>
 
@@ -736,17 +693,17 @@ function Footer() {
 
         <div className="flex md:justify-end gap-3">
           {[
-            { Icon: Linkedin, href: "https://www.linkedin.com/in/figuira-éditions-113118301/", label: "LinkedIn" },
-            { Icon: Instagram, href: "https://www.instagram.com/medmo_05?igsh=MTBxMHpueTBucHEyMQ%3D%3D&utm_source=qr", label: "Instagram" },
+            { Icon: Linkedin, href: "https://www.linkedin.com/in/figuira-éditions-113118301/", label: "FIGDITIONS sur LinkedIn" },
+            { Icon: Instagram, href: "https://www.instagram.com/[À COMPLÉTER — compte de marque]", label: "FIGDITIONS sur Instagram" },
           ].map(({ Icon, href, label }) => (
             <a key={label} href={href} target="_blank" rel="noopener noreferrer" aria-label={label} className="h-10 w-10 rounded-full border border-border flex items-center justify-center text-muted-foreground hover:text-primary hover:border-primary transition-colors">
-              <Icon className="h-4 w-4" />
+              <Icon className="h-4 w-4" aria-hidden="true" />
             </a>
           ))}
         </div>
       </div>
       <div className="max-w-7xl mx-auto mt-8 pt-6 border-t border-border text-center text-xs text-muted-foreground space-y-1">
-        <p>© 2025 FIGDITIONS. {t("Tous droits réservés.", "All rights reserved.")}</p>
+        <p>© {new Date().getFullYear()} FIGDITIONS. {t("Tous droits réservés.", "All rights reserved.")}</p>
         <p>{t("Conçu pour l'Afrique de l'Ouest 🌍", "Designed for West Africa 🌍")}</p>
       </div>
     </footer>
