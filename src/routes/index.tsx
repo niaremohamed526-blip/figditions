@@ -16,6 +16,8 @@ const figuiraLogo = "/assets/figuira-logo.png";
 const heroAsset = { url: "/assets/hero-figditions.png" };
 
 
+const OG_IMAGE = "https://figditions.xyz/assets/og-figditions.png";
+
 export const Route = createFileRoute("/")({
   component: Landing,
   head: () => ({
@@ -23,13 +25,43 @@ export const Route = createFileRoute("/")({
       { title: "FIGDITIONS — Plateforme éditoriale africaine" },
       { name: "description", content: "Gérez manuscrits, stocks, contrats et finances depuis un tableau de bord unique. Conçu pour les maisons d'édition d'Afrique de l'Ouest." },
       { property: "og:title", content: "FIGDITIONS — Plateforme éditoriale africaine" },
-      { property: "og:description", content: "La plateforme tout-en-un pour les maisons d'édition africaines." },
+      { property: "og:description", content: "Gérez manuscrits, stocks, contrats et finances depuis un tableau de bord unique. Conçu pour les maisons d'édition d'Afrique de l'Ouest." },
+      { name: "twitter:title", content: "FIGDITIONS — Plateforme éditoriale africaine" },
+      { name: "twitter:description", content: "Gérez manuscrits, stocks, contrats et finances depuis un tableau de bord unique. Conçu pour les maisons d'édition d'Afrique de l'Ouest." },
+      { property: "og:image", content: OG_IMAGE },
+      { name: "twitter:image", content: OG_IMAGE },
       { property: "og:url", content: "https://figditions.xyz/" },
       { property: "og:type", content: "website" },
     ],
     links: [{ rel: "canonical", href: "https://figditions.xyz/" }],
+    scripts: [
+      {
+        type: "application/ld+json",
+        children: JSON.stringify({
+          "@context": "https://schema.org",
+          "@type": "SoftwareApplication",
+          name: "FIGDITIONS",
+          description:
+            "Plateforme éditoriale tout-en-un pour les maisons d'édition d'Afrique de l'Ouest : manuscrits, auteurs, contrats, stocks, dépôts et finances.",
+          applicationCategory: "BusinessApplication",
+          operatingSystem: "Web",
+          inLanguage: "fr",
+          url: "https://figditions.xyz/",
+          image: OG_IMAGE,
+          offers: PLANS.map((p) => ({
+            "@type": "Offer",
+            name: p.name,
+            price: String(p.priceMonthly),
+            priceCurrency: "XOF",
+            description: p.tagline,
+            category: p.seatsLabel,
+          })),
+        }),
+      },
+    ],
   }),
 });
+
 
 function Landing() {
   return (
