@@ -604,7 +604,7 @@ function Pricing() {
                   ))}
                 </ul>
 
-                <Link to="/signup" className="mt-7 block">
+                <Link to="/signup" search={{ plan: plan.id }} className="mt-7 block">
                   <Button className={cn("w-full h-11", btnClass[plan.id])} variant={plan.id === "starter" ? "outline" : "default"}>
                     {isFree ? t("Commencer gratuitement", "Get started for free") : `${t("Choisir", "Choose")} ${plan.name}`}
                   </Button>
