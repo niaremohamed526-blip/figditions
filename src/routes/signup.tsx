@@ -213,6 +213,9 @@ function scorePassword(pwd: string) {
 function SignupPage() {
   const navigate = useNavigate();
   const isMobile = useIsMobile();
+  const { plan: planParam } = Route.useSearch();
+  const selectedPlan = PLANS.find((p) => p.id === (planParam ?? "starter")) ?? PLANS[0];
+
   const [form, setForm] = useState({
     full_name: "",
     entreprise_nom: "",
