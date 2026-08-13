@@ -241,11 +241,8 @@ function LoginPage() {
               {loading ? <Loader2 className="h-4 w-4 animate-spin" /> : "Se connecter"}
             </button>
 
-            <div className="flex items-center gap-3 my-2">
-              <div className="flex-1 h-px" style={{ background: "rgba(200,146,42,0.2)" }} />
-              <span className="text-xs" style={{ color: "#B8A898" }}>ou</span>
-              <div className="flex-1 h-px" style={{ background: "rgba(200,146,42,0.2)" }} />
-            </div>
+
+
 
             <p className="text-center text-sm" style={{ color: "#B8A898" }}>
               Pas encore de compte ?{" "}
