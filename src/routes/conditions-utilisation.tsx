@@ -192,7 +192,7 @@ function TermsPage() {
 
       <Section id="contact" title="15. Contact">
         <ul>
-          <li>Email : <a href="mailto:Figditions@gmail.com">Figditions@gmail.com</a></li>
+          <li>Email : <a href="mailto:contact@figditions.xyz">contact@figditions.xyz</a></li>
           <li>Adresse : Bamako, Mali</li>
         </ul>
       </Section>

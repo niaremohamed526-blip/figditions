@@ -420,7 +420,7 @@ function Partners() {
 
         <p className="mt-8 text-center text-sm text-muted-foreground">
           {t("Vous êtes une maison d'édition ? Rejoignez nos partenaires.", "Are you a publishing house? Join our partners.")}{" "}
-          <a href="mailto:contact@figditions.com" className="text-[color:var(--gold)] hover:underline font-semibold">
+          <a href="mailto:contact@figditions.xyz" className="text-[color:var(--gold)] hover:underline font-semibold">
             {t("Nous contacter", "Contact us")}
           </a>
         </p>
@@ -665,7 +665,7 @@ function Footer() {
             <li><a href="#pricing" onClick={scrollTo("pricing")} className="text-muted-foreground hover:text-primary">{t("Tarifs", "Pricing")}</a></li>
             <li><a href="#partners" onClick={scrollTo("partners")} className="text-muted-foreground hover:text-primary">{t("Partenaires", "Partners")}</a></li>
             <li><Link to="/a-propos" className="text-muted-foreground hover:text-primary">{t("À propos", "About")}</Link></li>
-            <li><a href="mailto:Figditions@gmail.com" className="text-muted-foreground hover:text-primary">Contact</a></li>
+            <li><a href="mailto:contact@figditions.xyz" className="text-muted-foreground hover:text-primary">Contact</a></li>
           </ul>
         </div>
 
