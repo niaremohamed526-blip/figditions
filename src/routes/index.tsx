@@ -357,13 +357,10 @@ function Partners() {
       <div className="max-w-7xl mx-auto">
         <div className="text-center mb-12">
           <h2 className="text-3xl md:text-5xl font-bold tracking-tight">
-            🤝 {t("Ils nous font confiance", "They trust us")}
+            Notre premier partenaire officiel
           </h2>
           <p className="mt-3 text-muted-foreground max-w-2xl mx-auto">
-            {t(
-              "FIGDITIONS est fier de collaborer avec les meilleures maisons d'édition africaines",
-              "FIGDITIONS is proud to collaborate with the best African publishing houses"
-            )}
+            FIGDITIONS est développé main dans la main avec une maison d'édition malienne, sur des cas d'usage réels.
           </p>
         </div>
 
