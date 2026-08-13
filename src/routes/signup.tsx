@@ -6,6 +6,9 @@ import { toast } from "sonner";
 import { Loader2, Eye, EyeOff, Check, X } from "lucide-react";
 import { Logo } from "@/components/logo";
 import { authErrorFr } from "@/lib/auth-errors";
+import { PLANS } from "@/config/plans";
+import { fcfa } from "@/lib/format";
+
 
 const Ballpit = lazy(() => import("@/components/Ballpit"));
 
