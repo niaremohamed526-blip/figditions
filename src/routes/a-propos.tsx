@@ -1,6 +1,6 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useState, type FormEvent } from "react";
-import { ArrowLeft, ArrowRight, Mail, MapPin, Shield, Globe, Rocket, Zap, Lock, CreditCard, Database } from "lucide-react";
+import { ArrowLeft, ArrowRight, Mail, MapPin, Shield, Globe, Rocket, Zap, Lock, Database } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -182,7 +182,7 @@ function TechStack() {
         <p className="mt-3 text-center text-muted-foreground max-w-2xl mx-auto">
           FIGDITIONS est construit sur des technologies de pointe pour garantir sécurité et performance.
         </p>
-        <div className="mt-12 grid sm:grid-cols-2 lg:grid-cols-4 gap-5">
+        <div className="mt-12 grid sm:grid-cols-2 lg:grid-cols-3 gap-5">
           {stack.map((s, i) => (
             <div key={i} className="rounded-2xl border border-border bg-[#1A1208] p-6 hover:border-[color:var(--gold)] transition-colors">
               <div className="h-11 w-11 rounded-xl bg-[color:var(--gold)]/15 text-[color:var(--gold)] flex items-center justify-center">
@@ -193,6 +193,9 @@ function TechStack() {
             </div>
           ))}
         </div>
+        <p className="mt-8 text-center text-sm text-muted-foreground max-w-2xl mx-auto leading-relaxed">
+          Les paiements automatiques par carte bancaire sont opérés par Flutterwave. Les paiements par Orange Money et Wave sont validés manuellement par notre équipe.
+        </p>
       </div>
     </section>
   );
