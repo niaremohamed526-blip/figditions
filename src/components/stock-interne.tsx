@@ -488,6 +488,16 @@ export function StockInterneTab({ entrepriseId, userId }: { entrepriseId: string
         onClose={() => setEditThresholdFor(null)}
         onSaved={() => { setEditThresholdFor(null); load(); }}
       />
+
+      <EditStockDialog
+        open={!!editStockFor}
+        stock={editStockFor}
+        titre={editStockFor ? (mMap[editStockFor.manuscrit_id]?.titre ?? "—") : ""}
+        entrepriseId={entrepriseId}
+        userId={userId}
+        onClose={() => setEditStockFor(null)}
+        onSaved={() => { setEditStockFor(null); load(); }}
+      />
     </div>
   );
 }
