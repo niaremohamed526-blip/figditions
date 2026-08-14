@@ -777,6 +777,13 @@ function MouvementForm({
     if (form.type === "ajustement" && !form.notes.trim()) return toast.error("Une note est obligatoire pour un ajustement");
     if (showDestination && !form.destination.trim()) return toast.error("Destination requise");
 
+    const callRpc = (args: Record<string, unknown>) =>
+      (supabase as any).rpc("record_stock_mouvement", {
+        p_manuscrit_id: form.manuscrit_id,
+        p_date: format(form.date_mouvement, "yyyy-MM-dd"),
+        ...args,
+      });
+
     // ------- RETOUR DE DÉPÔT (dedicated flow) -------
     if (isRetour) {
       if (provenance === "librairie" && !librairieStockId) {
@@ -805,53 +812,28 @@ function MouvementForm({
         : provenanceTexte.trim();
       const noteBase = `Provenance : ${provLabel}${form.notes ? " — " + form.notes : ""}`;
 
-      // 1) Good copies → increase disponible + decrement source counter
+      // 1) Good copies → increase disponible + decrement source counter (atomic, server-side)
       if (goodQty > 0) {
-        const updates: Partial<StockInterne> = {
-          quantite_disponible: currentStock.quantite_disponible + goodQty,
-        };
-        if (provenance === "librairie") {
-          updates.quantite_transferee_librairies = Math.max(0, currentStock.quantite_transferee_librairies - goodQty);
-        } else if (provenance === "evenement" || provenance === "exposition") {
-          updates.quantite_exposee_evenements = Math.max(0, currentStock.quantite_exposee_evenements - goodQty);
-        }
-        const { error: e1 } = await (supabase as any).from("stock_interne").update(updates).eq("id", currentStock.id);
-        if (e1) { setLoading(false); return toast.error(e1.message); }
-
-        // Update external stocks table if librairie
-        if (provenance === "librairie" && selectedLibrairie) {
-          await (supabase as any).from("stocks").update({
-            exemplaires_deposes: Math.max(0, (selectedLibrairie.exemplaires_deposes ?? 0) - goodQty),
-            exemplaires_restants: Math.max(0, (selectedLibrairie.exemplaires_restants ?? 0) - goodQty),
-          }).eq("id", selectedLibrairie.id);
-        }
-
-        await (supabase as any).from("mouvements_stock").insert({
-          entreprise_id: entrepriseId,
-          stock_interne_id: currentStock.id,
-          manuscrit_id: form.manuscrit_id,
-          type_mouvement: "retour_librairie",
-          quantite: goodQty,
-          destination: destLabel,
-          notes: noteBase,
-          effectue_par: userId,
-          date_mouvement: format(form.date_mouvement, "yyyy-MM-dd"),
+        const { error } = await callRpc({
+          p_type: "retour_librairie",
+          p_quantite: goodQty,
+          p_destination: destLabel,
+          p_notes: noteBase,
+          p_provenance: provenance,
+          p_stock_externe_id: provenance === "librairie" ? (selectedLibrairie?.id ?? null) : null,
         });
+        if (error) { setLoading(false); return toast.error(error.message); }
       }
 
-      // 2) Damaged copies → perte movement, disponible unchanged
+      // 2) Damaged copies → perte movement
       if (damagedQty > 0) {
-        await (supabase as any).from("mouvements_stock").insert({
-          entreprise_id: entrepriseId,
-          stock_interne_id: currentStock.id,
-          manuscrit_id: form.manuscrit_id,
-          type_mouvement: "perte",
-          quantite: damagedQty,
-          destination: destLabel,
-          notes: `Retour endommagé depuis ${provLabel}${form.notes ? " — " + form.notes : ""}`,
-          effectue_par: userId,
-          date_mouvement: format(form.date_mouvement, "yyyy-MM-dd"),
+        const { error } = await callRpc({
+          p_type: "perte",
+          p_quantite: damagedQty,
+          p_destination: destLabel,
+          p_notes: `Retour endommagé depuis ${provLabel}${form.notes ? " — " + form.notes : ""}`,
         });
+        if (error) { setLoading(false); return toast.error(error.message); }
         toast.warning(`⚠️ ${damagedQty} exemplaire(s) endommagé(s) enregistré(s) comme perte`);
       }
 
@@ -861,62 +843,22 @@ function MouvementForm({
       return;
     }
 
-    // ------- OTHER MOVEMENTS (existing flow) -------
+    // ------- OTHER MOVEMENTS -------
     setLoading(true);
-    const updates: Partial<StockInterne> = {};
-
-    switch (form.type) {
-      case "transfert_librairie":
-        if (form.quantite > currentStock.quantite_disponible) {
-          setLoading(false); return toast.error("Quantité supérieure au stock disponible");
-        }
-        updates.quantite_disponible = currentStock.quantite_disponible - form.quantite;
-        updates.quantite_transferee_librairies = currentStock.quantite_transferee_librairies + form.quantite;
-        break;
-      case "vente_directe":
-        if (form.quantite > currentStock.quantite_disponible) {
-          setLoading(false); return toast.error("Quantité supérieure au stock disponible");
-        }
-        updates.quantite_disponible = currentStock.quantite_disponible - form.quantite;
-        updates.quantite_vendue_directement = currentStock.quantite_vendue_directement + form.quantite;
-        break;
-      case "evenement":
-        if (form.quantite > currentStock.quantite_disponible) {
-          setLoading(false); return toast.error("Quantité supérieure au stock disponible");
-        }
-        updates.quantite_disponible = currentStock.quantite_disponible - form.quantite;
-        updates.quantite_exposee_evenements = currentStock.quantite_exposee_evenements + form.quantite;
-        break;
-      case "perte":
-        if (form.quantite > currentStock.quantite_disponible) {
-          setLoading(false); return toast.error("Quantité supérieure au stock disponible");
-        }
-        updates.quantite_disponible = currentStock.quantite_disponible - form.quantite;
-        break;
-      case "ajustement":
-        updates.quantite_disponible = Math.max(0, form.quantite);
-        break;
-    }
-
-    const { error: upErr } = await (supabase as any)
-      .from("stock_interne").update(updates).eq("id", currentStock.id);
-    if (upErr) { setLoading(false); return toast.error(upErr.message); }
-
-    await (supabase as any).from("mouvements_stock").insert({
-      entreprise_id: entrepriseId,
-      stock_interne_id: currentStock.id,
-      manuscrit_id: form.manuscrit_id,
-      type_mouvement: form.type,
-      quantite: form.quantite,
-      destination: form.destination || null,
-      notes: form.notes || null,
-      effectue_par: userId,
-      date_mouvement: format(form.date_mouvement, "yyyy-MM-dd"),
+    const { data, error } = await callRpc({
+      p_type: form.type,
+      p_quantite: form.quantite,
+      p_destination: form.destination || null,
+      p_notes: form.notes || null,
+      p_valeur_absolue: form.type === "ajustement" ? Math.max(0, form.quantite) : null,
     });
+    if (error) { setLoading(false); return toast.error(error.message); }
 
-    // Low-stock toast
-    const newAvail = updates.quantite_disponible ?? currentStock.quantite_disponible;
-    if (newAvail <= currentStock.seuil_alerte) {
+    // Low-stock toast (valeurs renvoyées par le serveur)
+    const res = (data ?? {}) as { quantite_disponible?: number; seuil_alerte?: number };
+    const newAvail = res.quantite_disponible ?? currentStock.quantite_disponible;
+    const seuil = res.seuil_alerte ?? currentStock.seuil_alerte;
+    if (newAvail <= seuil) {
       toast.error(`⚠️ Attention: Le stock de ${book?.titre ?? "ce livre"} est bas (${newAvail} exemplaires restants)`);
     } else if (form.type === "vente_directe") {
       toast.success("Vente libre enregistrée");
@@ -927,6 +869,7 @@ function MouvementForm({
     setLoading(false);
     onSaved();
   };
+
 
   const submit = (e: React.FormEvent) => {
     e.preventDefault();
