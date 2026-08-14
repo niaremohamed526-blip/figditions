@@ -408,6 +408,10 @@ export function StockInterneTab({ entrepriseId, userId }: { entrepriseId: string
                             onClick={() => { setMvtPrefillId(r.manuscrit_id); setAddOpen(true); }}>
                             <Plus className="h-4 w-4" />
                           </Button>
+                          <Button size="icon" variant="ghost" className="h-8 w-8" title="Corriger / modifier le stock"
+                            onClick={() => r.id && setEditStockFor(r)} disabled={!r.id}>
+                            <Pencil className="h-4 w-4" />
+                          </Button>
                           <Button size="icon" variant="ghost" className="h-8 w-8" title="Mouvement"
                             onClick={() => openMouvement(r.manuscrit_id)}>
                             <ArrowUpDown className="h-4 w-4" />
@@ -418,6 +422,7 @@ export function StockInterneTab({ entrepriseId, userId }: { entrepriseId: string
                           </Button>
                         </div>
                       </td>
+
                     </tr>
                   );
                 })}
