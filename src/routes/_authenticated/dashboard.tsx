@@ -17,6 +17,7 @@ import { BestSellingBooks, type BookRanking } from "@/components/best-selling-bo
 import { fcfa } from "@/lib/format";
 import { useRealtimeTable } from "@/hooks/use-realtime";
 import { ActivityFeed } from "@/components/activity-feed";
+import { computeStockTotals, nf, type StockInterneRow } from "@/lib/stock-totals";
 
 export const Route = createFileRoute("/_authenticated/dashboard")({
   component: DashboardPage,
