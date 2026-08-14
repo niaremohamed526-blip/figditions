@@ -591,48 +591,44 @@ function AddStockForm({
     setLoading(true);
 
     const existing = existingStocks.find((s) => s.manuscrit_id === form.manuscrit_id);
-    let stockId = existing?.id ?? null;
 
-    if (existing) {
+    if (!existing) {
+      const { error } = await (supabase as any).from("stock_interne").insert({
+        entreprise_id: entrepriseId,
+        manuscrit_id: form.manuscrit_id,
+        quantite_imprimee: 0,
+        quantite_disponible: 0,
+        cout_unitaire_impression_fcfa: form.cout_unitaire,
+        prix_vente_direct_fcfa: form.prix_vente,
+        emplacement: form.emplacement,
+        date_impression: format(form.date_impression, "yyyy-MM-dd"),
+      });
+      if (error) { setLoading(false); return toast.error(error.message); }
+    } else {
       const { error } = await (supabase as any).from("stock_interne").update({
-        quantite_imprimee: existing.quantite_imprimee + form.quantite,
-        quantite_disponible: existing.quantite_disponible + form.quantite,
         cout_unitaire_impression_fcfa: form.cout_unitaire || existing.cout_unitaire_impression_fcfa,
         prix_vente_direct_fcfa: form.prix_vente || existing.prix_vente_direct_fcfa,
         emplacement: form.emplacement,
         date_impression: format(form.date_impression, "yyyy-MM-dd"),
       }).eq("id", existing.id);
       if (error) { setLoading(false); return toast.error(error.message); }
-    } else {
-      const { data, error } = await (supabase as any).from("stock_interne").insert({
-        entreprise_id: entrepriseId,
-        manuscrit_id: form.manuscrit_id,
-        quantite_imprimee: form.quantite,
-        quantite_disponible: form.quantite,
-        cout_unitaire_impression_fcfa: form.cout_unitaire,
-        prix_vente_direct_fcfa: form.prix_vente,
-        emplacement: form.emplacement,
-        date_impression: format(form.date_impression, "yyyy-MM-dd"),
-      }).select("id").single();
-      if (error) { setLoading(false); return toast.error(error.message); }
-      stockId = data.id;
     }
 
-    await (supabase as any).from("mouvements_stock").insert({
-      entreprise_id: entrepriseId,
-      stock_interne_id: stockId,
-      manuscrit_id: form.manuscrit_id,
-      type_mouvement: "impression",
-      quantite: form.quantite,
-      notes: form.notes || null,
-      effectue_par: userId,
-      date_mouvement: format(form.date_impression, "yyyy-MM-dd"),
+    // Quantités mises à jour côté serveur (atomique) + mouvement enregistré
+    const { error: rpcErr } = await (supabase as any).rpc("record_stock_mouvement", {
+      p_manuscrit_id: form.manuscrit_id,
+      p_type: "impression",
+      p_quantite: form.quantite,
+      p_notes: form.notes || null,
+      p_date: format(form.date_impression, "yyyy-MM-dd"),
     });
+    if (rpcErr) { setLoading(false); return toast.error(rpcErr.message); }
 
     setLoading(false);
     toast.success("Stock mis à jour !");
     onSaved();
   };
+
 
   return (
     <form onSubmit={submit} className="space-y-4 mt-6">
