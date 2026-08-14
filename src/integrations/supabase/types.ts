@@ -1459,6 +1459,21 @@ export type Database = {
         Args: { p_auteur: string; p_manuscrit: string }
         Returns: number
       }
+      record_stock_mouvement: {
+        Args: {
+          p_date?: string
+          p_destination?: string
+          p_manuscrit_id: string
+          p_notes?: string
+          p_prix_unitaire?: number
+          p_provenance?: string
+          p_quantite: number
+          p_stock_externe_id?: string
+          p_type: string
+          p_valeur_absolue?: number
+        }
+        Returns: Json
+      }
       redeem_promo_code: {
         Args: { p_code: string; p_entreprise_id: string }
         Returns: Json
