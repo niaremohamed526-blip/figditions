@@ -91,6 +91,7 @@ export function StockInterneTab({ entrepriseId, userId }: { entrepriseId: string
   const [mvtPrefillId, setMvtPrefillId] = useState<string | null>(null);
   const [historyFor, setHistoryFor] = useState<StockInterne | null>(null);
   const [editThresholdFor, setEditThresholdFor] = useState<StockInterne | null>(null);
+  const [editStockFor, setEditStockFor] = useState<StockInterne | null>(null);
   const [alertsOpen, setAlertsOpen] = useState(true);
   const [alertsAll, setAlertsAll] = useState(false);
   const [query, setQuery] = useState("");
@@ -408,6 +409,10 @@ export function StockInterneTab({ entrepriseId, userId }: { entrepriseId: string
                             onClick={() => { setMvtPrefillId(r.manuscrit_id); setAddOpen(true); }}>
                             <Plus className="h-4 w-4" />
                           </Button>
+                          <Button size="icon" variant="ghost" className="h-8 w-8" title="Corriger / modifier le stock"
+                            onClick={() => r.id && setEditStockFor(r)} disabled={!r.id}>
+                            <Pencil className="h-4 w-4" />
+                          </Button>
                           <Button size="icon" variant="ghost" className="h-8 w-8" title="Mouvement"
                             onClick={() => openMouvement(r.manuscrit_id)}>
                             <ArrowUpDown className="h-4 w-4" />
@@ -418,6 +423,7 @@ export function StockInterneTab({ entrepriseId, userId }: { entrepriseId: string
                           </Button>
                         </div>
                       </td>
+
                     </tr>
                   );
                 })}
@@ -481,6 +487,16 @@ export function StockInterneTab({ entrepriseId, userId }: { entrepriseId: string
         stock={editThresholdFor}
         onClose={() => setEditThresholdFor(null)}
         onSaved={() => { setEditThresholdFor(null); load(); }}
+      />
+
+      <EditStockDialog
+        open={!!editStockFor}
+        stock={editStockFor}
+        titre={editStockFor ? (mMap[editStockFor.manuscrit_id]?.titre ?? "—") : ""}
+        entrepriseId={entrepriseId}
+        userId={userId}
+        onClose={() => setEditStockFor(null)}
+        onSaved={() => { setEditStockFor(null); load(); }}
       />
     </div>
   );
@@ -1147,6 +1163,174 @@ function ThresholdDialog({
           <Button onClick={save} disabled={loading} className="w-full bg-primary text-primary-foreground hover:bg-primary/90">
             {loading ? <Loader2 className="h-4 w-4 animate-spin" /> : "Enregistrer"}
           </Button>
+        </div>
+      </DialogContent>
+    </Dialog>
+  );
+}
+
+/* ------------------------------------------------------------------ */
+/* Edit / correct stock dialog                                         */
+/* ------------------------------------------------------------------ */
+
+function EditStockDialog({
+  open, stock, titre, entrepriseId, userId, onClose, onSaved,
+}: {
+  open: boolean;
+  stock: StockInterne | null;
+  titre: string;
+  entrepriseId: string | null;
+  userId: string | null;
+  onClose: () => void;
+  onSaved: () => void;
+}) {
+  const [form, setForm] = useState({
+    quantite_imprimee: 0,
+    quantite_disponible: 0,
+    quantite_reservee: 0,
+    seuil_alerte: 0,
+    cout_unitaire: 0,
+    prix_vente: 0,
+    emplacement: "",
+    notes: "",
+  });
+  const [loading, setLoading] = useState(false);
+
+  useEffect(() => {
+    if (!stock) return;
+    setForm({
+      quantite_imprimee: stock.quantite_imprimee,
+      quantite_disponible: stock.quantite_disponible,
+      quantite_reservee: stock.quantite_reservee,
+      seuil_alerte: stock.seuil_alerte,
+      cout_unitaire: Number(stock.cout_unitaire_impression_fcfa || 0),
+      prix_vente: Number(stock.prix_vente_direct_fcfa || 0),
+      emplacement: stock.emplacement ?? "",
+      notes: "",
+    });
+  }, [stock]);
+
+  if (!stock) return null;
+
+  const sortis =
+    stock.quantite_transferee_librairies + stock.quantite_vendue_directement + stock.quantite_exposee_evenements;
+  const delta = form.quantite_disponible - stock.quantite_disponible;
+
+  const save = async () => {
+    if (!stock.id) return;
+    if (form.quantite_imprimee < 0 || form.quantite_disponible < 0) return toast.error("Les quantités ne peuvent pas être négatives");
+    if (form.quantite_disponible > form.quantite_imprimee) {
+      return toast.error("Les exemplaires disponibles ne peuvent pas dépasser les exemplaires imprimés");
+    }
+    if (form.quantite_disponible + sortis > form.quantite_imprimee) {
+      return toast.error(`Incohérent : ${sortis} ex. déjà sortis (librairies, ventes, événements). Imprimés doit être ≥ ${form.quantite_disponible + sortis}.`);
+    }
+    setLoading(true);
+    const { error } = await (supabase as any).from("stock_interne").update({
+      quantite_imprimee: form.quantite_imprimee,
+      quantite_disponible: form.quantite_disponible,
+      quantite_reservee: Math.max(0, form.quantite_reservee),
+      seuil_alerte: Math.max(0, form.seuil_alerte),
+      cout_unitaire_impression_fcfa: form.cout_unitaire,
+      prix_vente_direct_fcfa: form.prix_vente,
+      emplacement: form.emplacement.trim() || null,
+    }).eq("id", stock.id);
+
+    if (error) { setLoading(false); return toast.error(error.message); }
+
+    if (delta !== 0) {
+      await (supabase as any).from("mouvements_stock").insert({
+        entreprise_id: entrepriseId,
+        stock_interne_id: stock.id,
+        manuscrit_id: stock.manuscrit_id,
+        type_mouvement: "ajustement",
+        quantite: Math.abs(delta),
+        notes: form.notes.trim()
+          || `Correction manuelle : disponibles ${stock.quantite_disponible} → ${form.quantite_disponible}`,
+        effectue_par: userId,
+        date_mouvement: format(new Date(), "yyyy-MM-dd"),
+      });
+    }
+
+    setLoading(false);
+    toast.success("Stock corrigé");
+    onSaved();
+  };
+
+  return (
+    <Dialog open={open} onOpenChange={(o) => !o && onClose()}>
+      <DialogContent className="bg-card border-border max-w-lg max-h-[90vh] overflow-y-auto">
+        <DialogHeader>
+          <DialogTitle>✏️ Corriger le stock — {titre}</DialogTitle>
+        </DialogHeader>
+        <div className="space-y-4">
+          <p className="text-xs text-muted-foreground">
+            Corrigez une saisie erronée. Toute modification du nombre d'exemplaires disponibles est enregistrée
+            comme « Ajustement manuel » dans l'historique.
+          </p>
+
+          <div className="grid grid-cols-2 gap-3">
+            <div className="space-y-1.5">
+              <Label className="text-xs">Exemplaires imprimés</Label>
+              <Input type="number" min={0} value={form.quantite_imprimee}
+                onChange={(e) => setForm({ ...form, quantite_imprimee: Number(e.target.value) })} />
+            </div>
+            <div className="space-y-1.5">
+              <Label className="text-xs">Exemplaires disponibles</Label>
+              <Input type="number" min={0} value={form.quantite_disponible}
+                onChange={(e) => setForm({ ...form, quantite_disponible: Number(e.target.value) })} />
+            </div>
+            <div className="space-y-1.5">
+              <Label className="text-xs">Réservés</Label>
+              <Input type="number" min={0} value={form.quantite_reservee}
+                onChange={(e) => setForm({ ...form, quantite_reservee: Number(e.target.value) })} />
+            </div>
+            <div className="space-y-1.5">
+              <Label className="text-xs">Seuil d'alerte</Label>
+              <Input type="number" min={0} value={form.seuil_alerte}
+                onChange={(e) => setForm({ ...form, seuil_alerte: Number(e.target.value) })} />
+            </div>
+            <div className="space-y-1.5">
+              <Label className="text-xs">Coût unitaire (FCFA)</Label>
+              <Input type="number" min={0} value={form.cout_unitaire}
+                onChange={(e) => setForm({ ...form, cout_unitaire: Number(e.target.value) })} />
+            </div>
+            <div className="space-y-1.5">
+              <Label className="text-xs">Prix de vente direct (FCFA)</Label>
+              <Input type="number" min={0} value={form.prix_vente}
+                onChange={(e) => setForm({ ...form, prix_vente: Number(e.target.value) })} />
+            </div>
+          </div>
+
+          <div className="space-y-1.5">
+            <Label className="text-xs">Emplacement</Label>
+            <Input value={form.emplacement} placeholder="Ex. Entrepôt principal"
+              onChange={(e) => setForm({ ...form, emplacement: e.target.value })} />
+          </div>
+
+          <div className="space-y-1.5">
+            <Label className="text-xs">Motif de la correction (optionnel)</Label>
+            <Input value={form.notes} placeholder="Ex. erreur de saisie lors de la réception"
+              onChange={(e) => setForm({ ...form, notes: e.target.value })} />
+          </div>
+
+          <div className="rounded-lg border border-border bg-muted/30 p-3 text-xs space-y-1">
+            <p className="text-muted-foreground">
+              Déjà sortis (librairies / ventes libres / événements) : <span className="font-semibold text-foreground tabular-nums">{sortis} ex.</span>
+            </p>
+            {delta !== 0 && (
+              <p className={cn("font-semibold", delta > 0 ? "text-[color:var(--gold)]" : "text-red-400")}>
+                Ajustement : {delta > 0 ? "+" : ""}{delta} ex. disponibles
+              </p>
+            )}
+          </div>
+
+          <div className="flex gap-2">
+            <Button variant="outline" onClick={onClose} disabled={loading} className="flex-1">Annuler</Button>
+            <Button onClick={save} disabled={loading} className="flex-1 bg-primary text-primary-foreground hover:bg-primary/90">
+              {loading ? <Loader2 className="h-4 w-4 animate-spin" /> : "Enregistrer la correction"}
+            </Button>
+          </div>
         </div>
       </DialogContent>
     </Dialog>
