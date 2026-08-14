@@ -186,25 +186,18 @@ export function RecordSaleDrawer({
         } as any).eq("id", currentStock.id);
         if (error) throw error;
       } else if (saleType === "libre" && currentInterne) {
-        // update stock_interne
-        const { error: e1 } = await supabase.from("stock_interne").update({
-          prix_vente_direct_fcfa: prixN,
-          quantite_disponible: Math.max(0, currentInterne.quantite_disponible - qtyN),
-          quantite_vendue_directement: (currentInterne.quantite_vendue_directement ?? 0) + qtyN,
-        } as any).eq("id", currentInterne.id);
-        if (e1) throw e1;
-        // insert mouvement — trigger auto-creates vente
-        const { error: e2 } = await supabase.from("mouvements_stock").insert({
-          entreprise_id: entrepriseId!,
-          stock_interne_id: currentInterne.id,
-          manuscrit_id: manuscritId,
-          type_mouvement: "vente_directe" as any,
-          quantite: qtyN,
-          date_mouvement: dateVente,
-          notes: notes.trim() || null,
-        } as any);
-        if (e2) throw e2;
+        // Mise à jour atomique côté serveur : stock_interne + mouvement + vente
+        const { error } = await (supabase as any).rpc("record_stock_mouvement", {
+          p_manuscrit_id: manuscritId,
+          p_type: "vente_directe",
+          p_quantite: qtyN,
+          p_notes: notes.trim() || null,
+          p_date: dateVente,
+          p_prix_unitaire: prixN,
+        });
+        if (error) throw error;
       }
+
 
       // low-stock warnings
       if (saleType === "librairie" && currentStock) {
