@@ -91,6 +91,7 @@ export function StockInterneTab({ entrepriseId, userId }: { entrepriseId: string
   const [mvtPrefillId, setMvtPrefillId] = useState<string | null>(null);
   const [historyFor, setHistoryFor] = useState<StockInterne | null>(null);
   const [editThresholdFor, setEditThresholdFor] = useState<StockInterne | null>(null);
+  const [editStockFor, setEditStockFor] = useState<StockInterne | null>(null);
   const [alertsOpen, setAlertsOpen] = useState(true);
   const [alertsAll, setAlertsAll] = useState(false);
   const [query, setQuery] = useState("");
