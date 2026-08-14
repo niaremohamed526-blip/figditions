@@ -27,7 +27,7 @@ export const Route = createFileRoute("/_authenticated/dashboard")({
 interface Manuscrit { id: string; titre: string; auteur: string; auteur_id?: string | null; genre?: string | null; statut: string; created_at: string; }
 interface Vente { id: string; manuscrit_id: string; auteur_id: string | null; quantite_vendue: number; montant_total_fcfa: number; droits_auteur_fcfa: number; statut_paiement: string; date_vente: string; created_at: string; }
 interface Auteur { id: string; nom_complet: string; }
-interface Stock { id: string; manuscrit_id: string; librairie_nom: string | null; exemplaires_vendus: number; exemplaires_restants: number; prix_unitaire_fcfa: number | null; created_at: string; }
+interface Stock { id: string; manuscrit_id: string; librairie_nom: string | null; exemplaires_deposes: number; exemplaires_vendus: number; exemplaires_restants: number; prix_unitaire_fcfa: number | null; created_at: string; }
 interface Contrat { id: string; created_at: string; statut: string; manuscrit_id: string; }
 
 const STATUTS = STATUT_PROGRESSION;
@@ -40,23 +40,26 @@ function DashboardPage() {
   const [auteurs, setAuteurs] = useState<Auteur[]>([]);
   const [stocks, setStocks] = useState<Stock[]>([]);
   const [contrats, setContrats] = useState<Contrat[]>([]);
+  const [stockInterne, setStockInterne] = useState<StockInterneRow[]>([]);
   const [range, setRange] = useState<DateRange>(defaultRange());
 
   const reload = useMemo(() => {
     return async () => {
       if (!profile?.entreprise_id) return;
-      const [m, v, a, s, c] = await Promise.all([
+      const [m, v, a, s, c, si] = await Promise.all([
         supabase.from("manuscrits").select("id, titre, auteur, auteur_id, genre, statut, created_at").order("created_at", { ascending: false }),
         supabase.from("ventes").select("*").order("date_vente", { ascending: false }),
         supabase.from("auteurs").select("id, nom_complet"),
-        supabase.from("stocks").select("id, manuscrit_id, librairie_nom, exemplaires_vendus, exemplaires_restants, prix_unitaire_fcfa, created_at"),
+        supabase.from("stocks").select("id, manuscrit_id, librairie_nom, exemplaires_deposes, exemplaires_vendus, exemplaires_restants, prix_unitaire_fcfa, created_at"),
         supabase.from("contrats").select("id, created_at, statut, manuscrit_id"),
+        supabase.from("stock_interne").select("quantite_disponible, quantite_imprimee, quantite_transferee_librairies, quantite_vendue_directement, quantite_exposee_evenements, seuil_alerte"),
       ]);
       setManuscrits((m.data ?? []) as Manuscrit[]);
       setVentes((v.data ?? []) as Vente[]);
       setAuteurs((a.data ?? []) as Auteur[]);
       setStocks((s.data ?? []) as Stock[]);
       setContrats((c.data ?? []) as Contrat[]);
+      setStockInterne((si.data ?? []) as StockInterneRow[]);
     };
   }, [profile?.entreprise_id]);
 
@@ -73,15 +76,20 @@ function DashboardPage() {
   const mMap = useMemo(() => Object.fromEntries((manuscrits ?? []).map((m) => [m.id, m])), [manuscrits]);
   const aMap = useMemo(() => Object.fromEntries(auteurs.map((a) => [a.id, a.nom_complet])), [auteurs]);
 
+  // Source unique de vérité : stock total = entrepôt + librairies
+  const totals = useMemo(() => computeStockTotals(stockInterne, stocks), [stockInterne, stocks]);
+
   const stats = useMemo(() => {
     const ms = manuscrits ?? [];
     return {
       total: ms.length,
       encours: ms.filter((m) => m.statut !== "publie").length,
-      stock: stocks.reduce((s, r) => s + (r.exemplaires_restants ?? 0), 0),
+      stock: totals.stockTotal,
+      circulation: totals.externeDepose,
+      vendus: ventes.reduce((s, v) => s + Number(v.quantite_vendue || 0), 0),
       paiements: ventes.filter((v) => v.statut_paiement === "en_attente").length,
     };
-  }, [manuscrits, stocks, ventes]);
+  }, [manuscrits, totals, ventes]);
 
   const filteredVentes = useMemo(() => ventes.filter((v) => inRange(v.date_vente, range)), [ventes, range]);
 
@@ -160,10 +168,17 @@ function DashboardPage() {
   }, [manuscrits, ventes, contrats, stocks, mMap]);
 
   const cards = [
-    { label: "Manuscrits", value: stats.total, icon: BookOpen },
-    { label: "En cours", value: stats.encours, icon: Clock },
-    { label: "Stock total", value: stats.stock, icon: Boxes },
-    { label: "Paiements en attente", value: stats.paiements, icon: Wallet },
+    { label: "Manuscrits", value: stats.total, icon: BookOpen, hint: "" },
+    { label: "En cours", value: stats.encours, icon: Clock, hint: "" },
+    {
+      label: "Stock total",
+      value: stats.stock,
+      icon: Boxes,
+      hint: `Entrepôt: ${nf(totals.interneDisponible)} | Librairies: ${nf(totals.externeRestant)}`,
+    },
+    { label: "En circulation", value: stats.circulation, icon: Store, hint: "déposés en librairies" },
+    { label: "Vendus", value: stats.vendus, icon: Trophy, hint: "exemplaires vendus" },
+    { label: "Paiements en attente", value: stats.paiements, icon: Wallet, hint: "" },
   ];
 
   if (manuscrits === null) {
@@ -179,13 +194,14 @@ function DashboardPage() {
         <p className="text-muted-foreground mt-1">{entreprise?.nom} · {entreprise?.ville}</p>
       </header>
 
-      <section className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-        {cards.map(({ label, value, icon: Icon }, i) => (
+      <section className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 gap-4">
+        {cards.map(({ label, value, icon: Icon, hint }, i) => (
           <div key={label} className="stat-card glow-card rounded-xl border border-border bg-card p-5 animate-[fade-up_0.5s_ease-out_both]" style={{ animationDelay: `${i * 80}ms` }}>
             <div className="flex items-start justify-between">
               <div>
                 <p className="text-sm text-muted-foreground">{label}</p>
                 <p className="mt-2 text-3xl font-bold tabular-nums"><AnimatedCounter value={value} /></p>
+                {hint && <p className="mt-1 text-[11px] text-muted-foreground">{hint}</p>}
               </div>
               <div className="h-10 w-10 rounded-lg bg-primary/10 text-primary flex items-center justify-center">
                 <Icon className="h-5 w-5" />
