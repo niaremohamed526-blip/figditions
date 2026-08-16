@@ -34,6 +34,7 @@ import { format as fmtDate, startOfMonth, subMonths } from "date-fns";
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid, Legend, LineChart, Line } from "recharts";
 import { AlertTriangle } from "lucide-react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { StockRepartition } from "@/components/stock-repartition";
 import { StockInterneTab } from "@/components/stock-interne";
 import { BordereauxTab } from "@/components/bordereaux-tab";
 import { StockImportDialog } from "@/components/stock-import-dialog";
