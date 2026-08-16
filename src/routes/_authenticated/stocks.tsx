@@ -271,7 +271,10 @@ function StocksPage() {
         </div>
       </header>
 
+      <StockRepartition entrepriseId={profile?.entreprise_id ?? null} />
+
       <Tabs defaultValue="externe" className="space-y-6">
+
         {/* Mobile: existing underline tabs; Desktop: page-level underline tabs with count badges */}
         <TabsList
           className={cn(
