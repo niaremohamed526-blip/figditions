@@ -1478,6 +1478,21 @@ export type Database = {
         Args: { p_code: string; p_entreprise_id: string }
         Returns: Json
       }
+      upsert_depot_librairie: {
+        Args: {
+          p_applique_droits?: boolean
+          p_deposes: number
+          p_derniere_visite?: string
+          p_librairie_adresse: string
+          p_librairie_nom: string
+          p_manuscrit_id: string
+          p_prix: number
+          p_stock_id: string
+          p_taux_commission?: number
+          p_vendus: number
+        }
+        Returns: Json
+      }
     }
     Enums: {
       contrat_statut:
