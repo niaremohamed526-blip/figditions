@@ -927,9 +927,25 @@ function StockForm({
     if (error) { setLoading(false); return toast.error(error.message); }
     // Vente auto-créée par trigger SQL `stocks_vente_delta` quand exemplaires_vendus augmente.
 
+    // Répercussion sur l'entrepôt (stock interne) : seule la différence de déposés est appliquée
+    const deltaDeposes = Number(form.exemplaires_deposes) - Number(existing?.exemplaires_deposes ?? 0);
+    if (deltaDeposes !== 0) {
+      const { data: res, error: rpcErr } = await (supabase as any).rpc("apply_depot_transfert", {
+        p_manuscrit_id: form.manuscrit_id,
+        p_delta: deltaDeposes,
+        p_librairie_nom: form.librairie_nom || null,
+        p_date: form.derniere_visite ? format(form.derniere_visite, "yyyy-MM-dd") : null,
+      });
+      if (rpcErr) toast.error(`Entrepôt non mis à jour : ${rpcErr.message}`);
+      else if (res?.warning) toast.warning(res.warning);
+      else if (deltaDeposes > 0) toast.success(`${deltaDeposes} ex. retiré(s) de l'entrepôt`);
+      else toast.success(`${-deltaDeposes} ex. rendu(s) à l'entrepôt`);
+    }
+
     setLoading(false);
     toast.success(existing ? "Stock mis à jour" : "Dépôt ajouté");
     onSaved();
+
   };
 
   return (
