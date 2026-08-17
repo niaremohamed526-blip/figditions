@@ -189,11 +189,26 @@ export function StockImportDialog({
     }));
 
     const { error } = await supabase.from("stocks").insert(payload as any);
+    if (error) { setImporting(false); return toast.error(error.message); }
+
+    // Déduction de l'entrepôt (stock interne) pour chaque titre déposé
+    const warnings: string[] = [];
+    for (const r of valid) {
+      const { data: res, error: rpcErr } = await (supabase as any).rpc("apply_depot_transfert", {
+        p_manuscrit_id: r.manuscritId!,
+        p_delta: r.quantite,
+        p_librairie_nom: librairieNom.trim() || null,
+        p_date: r.dateDepot || null,
+      });
+      if (rpcErr) warnings.push(`${r.titre ?? "Ligne"} : ${rpcErr.message}`);
+      else if (res?.warning) warnings.push(`${r.titre ?? "Ligne"} : ${res.warning}`);
+    }
     setImporting(false);
-    if (error) return toast.error(error.message);
+    warnings.forEach((w) => toast.warning(w));
     toast.success(`${valid.length} dépôt(s) importé(s) chez « ${librairieNom} »`);
     onImported();
     close();
+
   };
 
   const isDirty = !!librairieNom || !!librairieAdresse || (rows?.length ?? 0) > 0;

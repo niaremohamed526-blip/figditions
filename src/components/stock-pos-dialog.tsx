@@ -188,13 +188,28 @@ export function StockPosDialog({
       derniere_visite: dateDepot || null,
     }));
     const { error } = await supabase.from("stocks").insert(payload as any);
+    if (error) { setSaving(false); return toast.error(error.message); }
+
+    // Déduction de l'entrepôt (stock interne) pour chaque titre déposé
+    const warnings: string[] = [];
+    for (const l of lines) {
+      const { data: res, error: rpcErr } = await (supabase as any).rpc("apply_depot_transfert", {
+        p_manuscrit_id: l.manuscritId,
+        p_delta: l.quantite,
+        p_librairie_nom: librairieNom.trim() || null,
+        p_date: dateDepot || null,
+      });
+      if (rpcErr) warnings.push(`${l.titre} : ${rpcErr.message}`);
+      else if (res?.warning) warnings.push(`${l.titre} : ${res.warning}`);
+    }
     setSaving(false);
-    if (error) return toast.error(error.message);
+    warnings.forEach((w) => toast.warning(w));
     try { localStorage.removeItem(DRAFT_KEY); } catch {}
     toast.success(`${lines.length} dépôt(s) enregistré(s) chez « ${librairieNom} »`);
     onImported();
     reset();
     onOpenChange(false);
+
   };
 
   // Ctrl+S save shortcut
