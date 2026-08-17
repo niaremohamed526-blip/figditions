@@ -1414,6 +1414,15 @@ export type Database = {
         Args: { p_id: string; p_raison: string }
         Returns: Json
       }
+      apply_depot_transfert: {
+        Args: {
+          p_date?: string
+          p_delta: number
+          p_librairie_nom?: string
+          p_manuscrit_id: string
+        }
+        Returns: Json
+      }
       create_bordereau: {
         Args: {
           p_librairie_adresse: string
