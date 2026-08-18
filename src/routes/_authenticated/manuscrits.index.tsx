@@ -107,9 +107,14 @@ function ManuscritsPage() {
           <h1 className="text-3xl font-bold tracking-tight">Manuscrits</h1>
           <p className="text-muted-foreground mt-1">Suivez l'avancement de chaque ouvrage.</p>
         </div>
-        <Button onClick={openNew} className="bg-primary text-primary-foreground hover:bg-primary/90">
-          <Plus className="h-4 w-4 mr-2" /> Nouveau manuscrit
-        </Button>
+        <div className="flex flex-wrap items-center gap-2">
+          <Button variant="outline" onClick={() => setImportOpen(true)}>
+            <FileSpreadsheet className="h-4 w-4 mr-2" /> Importer Excel
+          </Button>
+          <Button onClick={openNew} className="bg-primary text-primary-foreground hover:bg-primary/90">
+            <Plus className="h-4 w-4 mr-2" /> Nouveau manuscrit
+          </Button>
+        </div>
       </header>
 
       <EditorialAnalytics items={items} />
