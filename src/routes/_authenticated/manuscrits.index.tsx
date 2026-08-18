@@ -1,6 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useEffect, useMemo, useState } from "react";
-import { Plus, Search, BookOpen, Loader2, Pencil, Trash2 } from "lucide-react";
+import { Plus, Search, BookOpen, Loader2, Pencil, Trash2, FileSpreadsheet } from "lucide-react";
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid } from "recharts";
 import { differenceInDays, format, startOfMonth, subMonths, startOfYear } from "date-fns";
 import { fr } from "date-fns/locale";
