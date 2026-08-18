@@ -24,6 +24,7 @@ import { toast } from "sonner";
 import { planFor } from "@/lib/plans";
 import { UpgradeModal } from "@/components/upgrade-modal";
 import { AnalyticsSection, defaultRange, inRange, EmptyChart, type DateRange } from "@/components/analytics-section";
+import { ManuscritImportDialog } from "@/components/manuscrit-import-dialog";
 
 export const Route = createFileRoute("/_authenticated/manuscrits/")({
   component: ManuscritsPage,
