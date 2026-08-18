@@ -269,6 +269,16 @@ function ManuscritsPage() {
         title="Limite atteinte"
         description={`Vous avez atteint la limite de ${plan.maxManuscrits} manuscrits du plan ${plan.label}. Passez au plan Pro pour ajouter des manuscrits illimités.`}
       />
+
+      <ManuscritImportDialog
+        open={importOpen}
+        onOpenChange={setImportOpen}
+        entrepriseId={profile?.entreprise_id ?? null}
+        existingTitles={(items ?? []).map((m) => m.titre)}
+        maxManuscrits={plan.maxManuscrits}
+        currentCount={items?.length ?? 0}
+        onImported={load}
+      />
     </div>
   );
 }
