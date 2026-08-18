@@ -1,6 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useEffect, useMemo, useState } from "react";
-import { Plus, Search, BookOpen, Loader2, Pencil, Trash2 } from "lucide-react";
+import { Plus, Search, BookOpen, Loader2, Pencil, Trash2, FileSpreadsheet } from "lucide-react";
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid } from "recharts";
 import { differenceInDays, format, startOfMonth, subMonths, startOfYear } from "date-fns";
 import { fr } from "date-fns/locale";
@@ -24,6 +24,7 @@ import { toast } from "sonner";
 import { planFor } from "@/lib/plans";
 import { UpgradeModal } from "@/components/upgrade-modal";
 import { AnalyticsSection, defaultRange, inRange, EmptyChart, type DateRange } from "@/components/analytics-section";
+import { ManuscritImportDialog } from "@/components/manuscrit-import-dialog";
 
 export const Route = createFileRoute("/_authenticated/manuscrits/")({
   component: ManuscritsPage,
@@ -47,6 +48,7 @@ function ManuscritsPage() {
   const [toDelete, setToDelete] = useState<Manuscrit | null>(null);
   const [deleting, setDeleting] = useState(false);
   const [upgradeOpen, setUpgradeOpen] = useState(false);
+  const [importOpen, setImportOpen] = useState(false);
 
   const load = async () => {
     setItems(null);
@@ -105,9 +107,14 @@ function ManuscritsPage() {
           <h1 className="text-3xl font-bold tracking-tight">Manuscrits</h1>
           <p className="text-muted-foreground mt-1">Suivez l'avancement de chaque ouvrage.</p>
         </div>
-        <Button onClick={openNew} className="bg-primary text-primary-foreground hover:bg-primary/90">
-          <Plus className="h-4 w-4 mr-2" /> Nouveau manuscrit
-        </Button>
+        <div className="flex flex-wrap items-center gap-2">
+          <Button variant="outline" onClick={() => setImportOpen(true)}>
+            <FileSpreadsheet className="h-4 w-4 mr-2" /> Importer Excel
+          </Button>
+          <Button onClick={openNew} className="bg-primary text-primary-foreground hover:bg-primary/90">
+            <Plus className="h-4 w-4 mr-2" /> Nouveau manuscrit
+          </Button>
+        </div>
       </header>
 
       <EditorialAnalytics items={items} />
@@ -261,6 +268,16 @@ function ManuscritsPage() {
         onOpenChange={setUpgradeOpen}
         title="Limite atteinte"
         description={`Vous avez atteint la limite de ${plan.maxManuscrits} manuscrits du plan ${plan.label}. Passez au plan Pro pour ajouter des manuscrits illimités.`}
+      />
+
+      <ManuscritImportDialog
+        open={importOpen}
+        onOpenChange={setImportOpen}
+        entrepriseId={profile?.entreprise_id ?? null}
+        existingTitles={(items ?? []).map((m) => m.titre)}
+        maxManuscrits={plan.maxManuscrits}
+        currentCount={items?.length ?? 0}
+        onImported={load}
       />
     </div>
   );
