@@ -48,6 +48,7 @@ function ManuscritsPage() {
   const [toDelete, setToDelete] = useState<Manuscrit | null>(null);
   const [deleting, setDeleting] = useState(false);
   const [upgradeOpen, setUpgradeOpen] = useState(false);
+  const [importOpen, setImportOpen] = useState(false);
 
   const load = async () => {
     setItems(null);
