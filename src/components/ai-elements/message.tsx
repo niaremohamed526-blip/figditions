@@ -321,7 +321,11 @@ export const MessageBranchPage = ({
 
 export type MessageResponseProps = ComponentProps<typeof Streamdown>;
 
-const streamdownPlugins = { cjk, code, math, mermaid };
+// shiki is duplicated (streamdown vs @streamdown/code ship different majors),
+// so the plugin types don't line up — runtime is unaffected.
+const streamdownPlugins = { cjk, code, math, mermaid } as unknown as ComponentProps<
+  typeof Streamdown
+>["plugins"];
 
 export const MessageResponse = memo(
   ({ className, ...props }: MessageResponseProps) => (
