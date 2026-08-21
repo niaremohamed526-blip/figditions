@@ -355,7 +355,7 @@ function FinancesInner({ entrepriseId, entrepriseNom }: { entrepriseId: string |
         )}
       </div>
 
-      {/* Royalties section */}
+      {/* Royalties section — one card per author */}
       <div className="rounded-xl border border-border bg-card p-6">
         <h2 className="text-xl font-semibold mb-4">Royalties à payer par auteur</h2>
         {ventes === null ? <Skeleton className="h-24 w-full" /> :
@@ -364,12 +364,23 @@ function FinancesInner({ entrepriseId, entrepriseNom }: { entrepriseId: string |
           ) : (
             <div className="space-y-2">
               {royaltiesByAuthor.map((r) => (
-                <div key={r.name} className="flex items-center justify-between p-3 rounded-lg border border-border bg-background/50">
-                  <div>
-                    <p className="font-medium">{r.name}</p>
-                    <p className="text-sm text-[color:var(--gold)] font-semibold">{fcfa(r.pending)}</p>
+                <div
+                  key={r.key}
+                  className="flex flex-wrap items-center justify-between gap-3 rounded-xl border border-[color-mix(in_oklab,var(--gold)_15%,transparent)] bg-[rgba(26,18,8,0.8)] px-5 py-4"
+                >
+                  <div className="min-w-0">
+                    <p className="font-bold text-[15px] text-foreground truncate">{r.name}</p>
+                    <p className="font-mono text-base font-bold text-[color:var(--gold)]">{fcfa(r.pending)} <span className="text-xs font-normal text-muted-foreground">en attente</span></p>
+                    <p className="text-xs text-muted-foreground">{r.count} vente{r.count > 1 ? "s" : ""} concernée{r.count > 1 ? "s" : ""}</p>
+                    {r.momo && (
+                      <p className="text-[11px] text-muted-foreground">{r.operateur ? `${r.operateur} : ` : ""}{r.momo}</p>
+                    )}
                   </div>
-                  <Button size="sm" onClick={() => markPaid(r.ids)} className="bg-primary text-primary-foreground hover:bg-primary/90">
+                  <Button
+                    size="sm"
+                    onClick={() => setPayTarget({ name: r.name, pending: r.pending, ids: r.ids })}
+                    className="bg-[color:var(--gold)] text-[#1A1208] hover:bg-[color:var(--gold)]/90 font-semibold"
+                  >
                     <Check className="h-4 w-4" /> Marquer payé
                   </Button>
                 </div>
@@ -377,6 +388,18 @@ function FinancesInner({ entrepriseId, entrepriseNom }: { entrepriseId: string |
             </div>
           )}
       </div>
+
+      <ConfirmationModal
+        isOpen={!!payTarget}
+        title="Marquer les royalties comme payées ?"
+        message={payTarget ? `Marquer toutes les royalties de ${payTarget.name} comme payées ?\nMontant total : ${fcfa(payTarget.pending)}` : ""}
+        confirmLabel={paying ? "En cours…" : "Confirmer"}
+        cancelLabel="Annuler"
+        confirmVariant="gold"
+        iconVariant="gold"
+        onConfirm={confirmMarkPaid}
+        onCancel={() => setPayTarget(null)}
+      />
 
       <RecordSaleDrawer
         open={sheetOpen}
