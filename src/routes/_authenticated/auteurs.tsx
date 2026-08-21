@@ -5,6 +5,7 @@ import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGri
 import { format, startOfMonth, subMonths } from "date-fns";
 import { fr } from "date-fns/locale";
 import { supabase } from "@/integrations/supabase/client";
+import { fetchAllRows } from "@/lib/fetch-all";
 import { useAuth, useProfile } from "@/hooks/use-auth";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
@@ -306,11 +307,11 @@ function AuthorAnalytics({ auteurs, entrepriseId }: { auteurs: Auteur[]; entrepr
     if (!entrepriseId) return;
     (async () => {
       const [v, m] = await Promise.all([
-        supabase.from("ventes").select("auteur_id, manuscrit_id, quantite_vendue, montant_total_fcfa, droits_auteur_fcfa, statut_paiement, date_vente"),
-        supabase.from("manuscrits").select("id, auteur, auteur_id"),
+        fetchAllRows<any>(() => supabase.from("ventes").select("auteur_id, manuscrit_id, quantite_vendue, montant_total_fcfa, droits_auteur_fcfa, statut_paiement, date_vente")),
+        fetchAllRows<any>(() => supabase.from("manuscrits").select("id, auteur, auteur_id")),
       ]);
-      setVentes(v.data ?? []);
-      setManuscrits(m.data ?? []);
+      setVentes(v);
+      setManuscrits(m);
     })();
   }, [entrepriseId]);
 
