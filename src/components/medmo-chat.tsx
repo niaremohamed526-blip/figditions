@@ -80,11 +80,17 @@ const springIn = {
   transition: { type: "spring" as const, stiffness: 380, damping: 30 },
 };
 
+const VALUE_LABELS: Record<string, string> = {
+  interne: "Depuis l'entrepôt",
+  hors_stock: "Hors stock interne",
+};
+
 function formatInputValue(key: string, value: unknown): string {
   if (value == null || value === "") return "—";
   if (key.includes("fcfa") && typeof value === "number") {
     return `${Math.round(value).toString().replace(/\B(?=(\d{3})+(?!\d))/g, ".")} FCFA`;
   }
+  if (key === "provenance" && typeof value === "string") return VALUE_LABELS[value] ?? value;
   return String(value);
 }
 
