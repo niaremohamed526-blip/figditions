@@ -392,7 +392,7 @@ function FinancesInner({ entrepriseId, entrepriseNom }: { entrepriseId: string |
       <ConfirmationModal
         isOpen={!!payTarget}
         title="Marquer les royalties comme payées ?"
-        message={payTarget ? `Marquer toutes les royalties de ${payTarget.name} comme payées ?\nMontant total : ${fcfa(payTarget.pending)}` : ""}
+        message={payTarget ? `Marquer toutes les royalties de ${payTarget.name} comme payées ? Montant total : ${fcfa(payTarget.pending)}` : ""}
         confirmLabel={paying ? "En cours…" : "Confirmer"}
         cancelLabel="Annuler"
         confirmVariant="gold"
