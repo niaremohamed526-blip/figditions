@@ -698,6 +698,7 @@ function StockForm({
     derniere_visite: existing?.derniere_visite ? new Date(existing.derniere_visite) : undefined as Date | undefined,
     taux_commission_pct: Number(existing?.taux_commission_pct ?? 20),
     applique_droits_auteur: existing?.applique_droits_auteur ?? true,
+    provenance: (existing?.provenance ?? "interne") as "interne" | "hors_stock",
   });
   const [loading, setLoading] = useState(false);
   const [tauxTouched, setTauxTouched] = useState(false);
