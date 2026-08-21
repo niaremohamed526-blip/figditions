@@ -316,6 +316,18 @@ function StocksPage() {
             <span className="hidden sm:inline">Stock Interne</span>
           </TabsTrigger>
           <TabsTrigger
+            value="librairies"
+            className={cn(
+              "min-h-11 text-sm rounded-none bg-transparent border-b-2 border-transparent text-muted-foreground",
+              "data-[state=active]:border-primary data-[state=active]:text-primary data-[state=active]:bg-transparent data-[state=active]:shadow-none",
+              "sm:min-h-12 sm:px-5 sm:text-[15px] sm:font-medium sm:text-muted-foreground",
+              "sm:data-[state=active]:text-foreground sm:data-[state=active]:border-[color:var(--gold)] sm:data-[state=active]:bg-transparent"
+            )}
+          >
+            <span className="sm:hidden">Librairies</span>
+            <span className="hidden sm:inline">Mes Librairies</span>
+          </TabsTrigger>
+          <TabsTrigger
             value="bordereaux"
             className={cn(
               "min-h-11 text-sm rounded-none bg-transparent border-b-2 border-transparent text-muted-foreground",
