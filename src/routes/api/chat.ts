@@ -395,6 +395,218 @@ function buildTools(supabase: AnySupabase, userId: string, entrepriseId: string 
         };
       },
     }),
+
+    creer_depot_librairie: tool({
+      description: "Crée un dépôt de livres dans une librairie (stock externe). Par défaut les exemplaires sont déduits de l'entrepôt (stock interne) ; avec provenance « hors_stock » les livres déjà dehors sont enregistrés sans toucher à l'entrepôt. Nécessite la confirmation de l'utilisateur.",
+      needsApproval: true,
+      inputSchema: z.object({
+        livre: z.string().describe("Titre du livre déposé"),
+        librairie: z.string().describe("Nom de la librairie"),
+        adresse: z.string().nullable().describe("Adresse de la librairie (optionnel)"),
+        quantite: z.number().describe("Nombre d'exemplaires déposés"),
+        prix_unitaire_fcfa: z.number().nullable().describe("Prix unitaire en librairie en FCFA (défaut : prix de vente direct du livre)"),
+        provenance: z.enum(["interne", "hors_stock"]).nullable().describe("« interne » = déduit de l'entrepôt (défaut) ; « hors_stock » = livres déjà chez la librairie, sans déduction de l'entrepôt"),
+        date: z.string().nullable().describe("Date du dépôt AAAA-MM-JJ (défaut aujourd'hui)"),
+      }),
+      execute: async ({ livre, librairie, adresse, quantite, prix_unitaire_fcfa, provenance, date }) => {
+        const eid = requireEntreprise();
+        if (quantite <= 0) return { erreur: "La quantité doit être supérieure à zéro." };
+        const found = await findManuscrit(supabase, eid, livre);
+        if ("error" in found) return { erreur: found.error };
+        const m = found.manuscrit;
+        const dateDepot = date ?? new Date().toISOString().slice(0, 10);
+        const prov = provenance ?? "interne";
+
+        // Prix : celui fourni, sinon le prix de vente direct enregistré sur la fiche entrepôt.
+        const { data: stockInt } = await supabase
+          .from("stock_interne")
+          .select("id, quantite_disponible, prix_vente_direct_fcfa")
+          .eq("entreprise_id", eid)
+          .eq("manuscrit_id", m.id)
+          .maybeSingle();
+        const prix = prix_unitaire_fcfa && prix_unitaire_fcfa > 0 ? prix_unitaire_fcfa : num(stockInt?.prix_vente_direct_fcfa);
+
+        if (prov === "interne") {
+          if (!stockInt) return { erreur: `« ${m.titre} » n'a pas de stock interne. Utilisez la provenance « hors_stock » si les livres sont déjà chez la librairie, ou enregistrez d'abord une impression.` };
+          if (num(stockInt.quantite_disponible) < quantite) {
+            return { erreur: `Stock interne insuffisant pour « ${m.titre} » : ${num(stockInt.quantite_disponible)} exemplaire(s) disponible(s), ${quantite} demandé(s). Utilisez la provenance « hors_stock » si ces livres ne viennent pas de l'entrepôt.` };
+          }
+        }
+
+        // Un seul dépôt par livre et par librairie : on cumule sur la ligne existante.
+        const { data: existingRows } = await supabase
+          .from("stocks")
+          .select("id, librairie_nom, exemplaires_deposes, exemplaires_restants, exemplaires_total, prix_unitaire_fcfa")
+          .eq("entreprise_id", eid)
+          .eq("manuscrit_id", m.id)
+          .ilike("librairie_nom", `%${librairie}%`)
+          .limit(3);
+        const existing = (existingRows ?? []).length === 1 ? existingRows![0] : (existingRows ?? []).find((r) => r.librairie_nom.toLowerCase() === librairie.toLowerCase()) ?? null;
+        if ((existingRows ?? []).length > 1 && !existing) {
+          return { erreur: `Plusieurs dépôts de « ${m.titre} » correspondent à « ${librairie} » : ${(existingRows ?? []).map((r) => r.librairie_nom).join(", ")}. Précisez le nom exact.` };
+        }
+
+        if (existing) {
+          const { error } = await supabase
+            .from("stocks")
+            .update({
+              exemplaires_deposes: num(existing.exemplaires_deposes) + quantite,
+              exemplaires_restants: num(existing.exemplaires_restants) + quantite,
+              exemplaires_total: num(existing.exemplaires_total) + quantite,
+              prix_unitaire_fcfa: prix > 0 ? prix : num(existing.prix_unitaire_fcfa),
+              derniere_visite: dateDepot,
+            })
+            .eq("id", existing.id);
+          if (error) return { erreur: error.message };
+        } else {
+          const { error } = await supabase.from("stocks").insert({
+            entreprise_id: eid,
+            manuscrit_id: m.id,
+            librairie_nom: librairie.trim(),
+            librairie_adresse: adresse?.trim() || null,
+            exemplaires_deposes: quantite,
+            exemplaires_vendus: 0,
+            exemplaires_restants: quantite,
+            exemplaires_total: quantite,
+            prix_unitaire_fcfa: prix,
+            derniere_visite: dateDepot,
+            provenance: prov,
+          } as any);
+          if (error) return { erreur: error.message };
+        }
+
+        let warning: string | null = null;
+        if (prov === "interne") {
+          const { data: res, error: rpcErr } = await supabase.rpc("apply_depot_transfert", {
+            p_manuscrit_id: m.id,
+            p_delta: quantite,
+            p_librairie_nom: librairie.trim(),
+            p_date: dateDepot,
+          });
+          if (rpcErr) return { erreur: `Dépôt créé mais la déduction de l'entrepôt a échoué : ${rpcErr.message}` };
+          warning = (res as any)?.warning ?? null;
+        }
+
+        return {
+          succes: true,
+          resume:
+            `Dépôt enregistré : ${quantite} × « ${m.titre} » chez ${existing ? existing.librairie_nom : librairie.trim()}` +
+            (prix > 0 ? ` à ${fcfa(prix)}` : "") +
+            (prov === "hors_stock"
+              ? " — hors stock interne : l'entrepôt n'a pas été touché."
+              : ` — ${quantite} exemplaire(s) déduit(s) de l'entrepôt.`) +
+            (warning ? ` ⚠️ ${warning}` : ""),
+        };
+      },
+    }),
+
+    enregistrer_impression: tool({
+      description: "Enregistre une impression (réimpression) : ajoute des exemplaires au stock interne de l'entrepôt. Nécessite la confirmation de l'utilisateur.",
+      needsApproval: true,
+      inputSchema: z.object({
+        livre: z.string().describe("Titre du livre imprimé"),
+        quantite: z.number().describe("Nombre d'exemplaires imprimés"),
+        date: z.string().nullable().describe("Date d'impression AAAA-MM-JJ (défaut aujourd'hui)"),
+        notes: z.string().nullable().describe("Notes, ex. nom de l'imprimerie (optionnel)"),
+      }),
+      execute: async ({ livre, quantite, date, notes }) => {
+        const eid = requireEntreprise();
+        if (quantite <= 0) return { erreur: "La quantité doit être supérieure à zéro." };
+        const found = await findManuscrit(supabase, eid, livre);
+        if ("error" in found) return { erreur: found.error };
+        const m = found.manuscrit;
+        const { data: stock } = await supabase
+          .from("stock_interne")
+          .select("id, quantite_disponible")
+          .eq("entreprise_id", eid)
+          .eq("manuscrit_id", m.id)
+          .maybeSingle();
+        if (!stock) return { erreur: `« ${m.titre} » n'a pas de fiche de stock interne. Passez d'abord le manuscrit au statut « Publié » (je peux le faire avec l'outil changer_statut_manuscrit).` };
+        const { error } = await supabase.rpc("record_stock_mouvement", {
+          p_manuscrit_id: m.id,
+          p_type: "impression",
+          p_quantite: quantite,
+          p_notes: notes ?? "Impression enregistrée via PR MEDMO",
+          p_date: date ?? new Date().toISOString().slice(0, 10),
+        });
+        if (error) return { erreur: error.message };
+        return {
+          succes: true,
+          resume: `Impression enregistrée : +${quantite} exemplaire(s) de « ${m.titre} ». Stock interne disponible : ${num(stock.quantite_disponible) + quantite}.`,
+        };
+      },
+    }),
+
+    retour_depot_librairie: tool({
+      description: "Enregistre le retour d'exemplaires invendus d'une librairie vers l'entrepôt (stock interne). Nécessite la confirmation de l'utilisateur.",
+      needsApproval: true,
+      inputSchema: z.object({
+        livre: z.string().describe("Titre du livre retourné"),
+        librairie: z.string().describe("Nom de la librairie d'où reviennent les livres"),
+        quantite: z.number().describe("Nombre d'exemplaires retournés"),
+        date: z.string().nullable().describe("Date du retour AAAA-MM-JJ (défaut aujourd'hui)"),
+        notes: z.string().nullable().describe("Notes (optionnel)"),
+      }),
+      execute: async ({ livre, librairie, quantite, date, notes }) => {
+        const eid = requireEntreprise();
+        if (quantite <= 0) return { erreur: "La quantité doit être supérieure à zéro." };
+        const found = await findManuscrit(supabase, eid, livre);
+        if ("error" in found) return { erreur: found.error };
+        const m = found.manuscrit;
+        const { data: stocksRows } = await supabase
+          .from("stocks")
+          .select("id, librairie_nom, exemplaires_restants")
+          .eq("entreprise_id", eid)
+          .eq("manuscrit_id", m.id)
+          .ilike("librairie_nom", `%${librairie}%`)
+          .limit(3);
+        const rows = stocksRows ?? [];
+        if (rows.length === 0) return { erreur: `Aucun dépôt de « ${m.titre} » trouvé dans une librairie correspondant à « ${librairie} ».` };
+        if (rows.length > 1) return { erreur: `Plusieurs dépôts correspondent : ${rows.map((r) => r.librairie_nom).join(", ")}. Précisez la librairie.` };
+        const s = rows[0];
+        if (num(s.exemplaires_restants) < quantite) {
+          return { erreur: `Maximum retournable depuis ${s.librairie_nom} : ${num(s.exemplaires_restants)} exemplaire(s).` };
+        }
+        const { error } = await supabase.rpc("record_stock_mouvement", {
+          p_manuscrit_id: m.id,
+          p_type: "retour_librairie",
+          p_quantite: quantite,
+          p_provenance: "librairie",
+          p_stock_externe_id: s.id,
+          p_notes: notes ?? "Retour de dépôt enregistré via PR MEDMO",
+          p_date: date ?? new Date().toISOString().slice(0, 10),
+        });
+        if (error) return { erreur: error.message };
+        return {
+          succes: true,
+          resume: `Retour enregistré : ${quantite} × « ${m.titre} » de ${s.librairie_nom} vers l'entrepôt. Il reste ${num(s.exemplaires_restants) - quantite} exemplaire(s) sur place.`,
+        };
+      },
+    }),
+
+    changer_statut_manuscrit: tool({
+      description: "Fait avancer un manuscrit dans le workflow éditorial (recu → relecture → epreuve_1 à 4 → maquette → echantillon → impression → publie). Le passage à « publie » crée automatiquement la fiche de stock interne. Nécessite la confirmation de l'utilisateur.",
+      needsApproval: true,
+      inputSchema: z.object({
+        livre: z.string().describe("Titre du manuscrit"),
+        nouveau_statut: z.enum(["recu", "relecture", "epreuve_1", "epreuve_2", "epreuve_3", "epreuve_4", "maquette", "echantillon", "impression", "publie"]).describe("Nouveau statut du workflow"),
+      }),
+      execute: async ({ livre, nouveau_statut }) => {
+        const eid = requireEntreprise();
+        const found = await findManuscrit(supabase, eid, livre);
+        if ("error" in found) return { erreur: found.error };
+        const m = found.manuscrit;
+        if (m.statut === nouveau_statut) return { erreur: `« ${m.titre} » est déjà au statut « ${nouveau_statut} ».` };
+        const { error } = await supabase.from("manuscrits").update({ statut: nouveau_statut }).eq("id", m.id);
+        if (error) return { erreur: error.message };
+        return {
+          succes: true,
+          resume:
+            `« ${m.titre} » est passé de « ${m.statut} » à « ${nouveau_statut} ».` +
+            (nouveau_statut === "publie" ? " 📘 Une fiche de stock interne a été créée automatiquement — vous pouvez maintenant enregistrer une impression." : ""),
+        };
+      },
+    }),
   };
 }
 

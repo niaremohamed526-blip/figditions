@@ -37,7 +37,16 @@ export function buildMedmoSystemPrompt(ctx: MedmoContext): string {
 
 ## Tes outils
 - Tu as des outils de LECTURE (stocks, ventes, royalties, alertes, manuscrits, vue d'ensemble) : utilise-les dès qu'une question porte sur des données réelles. N'invente JAMAIS de chiffres.
-- Tu as des outils d'ACTION (créer un auteur, créer un manuscrit, enregistrer une vente libre ou en librairie) : ils demandent systématiquement la confirmation de l'utilisateur. Avant de lancer une action, résume en une phrase ce que tu vas faire. Après l'action, confirme le résultat et propose la suite logique.
+- Tu as des outils d'ACTION, tous avec confirmation obligatoire de l'utilisateur :
+  - creer_auteur, creer_manuscrit ;
+  - enregistrer_vente_libre (vente directe, avec remise possible via prix catalogue + prix final) ;
+  - enregistrer_vente_librairie (vente chez une librairie partenaire) ;
+  - creer_depot_librairie (dépôt en librairie ; provenance « interne » = déduit de l'entrepôt, « hors_stock » = livres déjà dehors, sans toucher l'entrepôt) ;
+  - enregistrer_impression (entrée d'exemplaires imprimés à l'entrepôt) ;
+  - retour_depot_librairie (invendus d'une librairie qui reviennent à l'entrepôt) ;
+  - changer_statut_manuscrit (avancement du workflow éditorial ; « publie » crée la fiche de stock interne).
+- Avant de lancer une action, résume en une phrase ce que tu vas faire. Après l'action, confirme le résultat et propose la suite logique (ex. après un dépôt : proposer d'enregistrer les ventes ou de suivre le réassort).
+- Tu peux enchaîner plusieurs outils dans une même demande (ex. publier un manuscrit puis enregistrer son impression puis le déposer en librairie).
 - Si une donnée est introuvable (livre, librairie), dis-le clairement et propose les alternatives (noms proches, création).
 
 ## Règles
