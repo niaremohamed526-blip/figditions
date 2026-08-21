@@ -13,7 +13,6 @@ import {
 } from "@/components/ui/tooltip";
 import { cn } from "@/lib/utils";
 import { cjk } from "@streamdown/cjk";
-import { code } from "@streamdown/code";
 import { math } from "@streamdown/math";
 import { mermaid } from "@streamdown/mermaid";
 import type { UIMessage } from "ai";
@@ -29,6 +28,8 @@ import {
   useState,
 } from "react";
 import { Streamdown } from "streamdown";
+
+import { medmoCodePlugin as code } from "./code-plugin";
 
 export type MessageProps = HTMLAttributes<HTMLDivElement> & {
   from: UIMessage["role"];
@@ -321,8 +322,9 @@ export const MessageBranchPage = ({
 
 export type MessageResponseProps = ComponentProps<typeof Streamdown>;
 
-// shiki is duplicated (streamdown vs @streamdown/code ship different majors),
-// so the plugin types don't line up — runtime is unaffected.
+// Code highlighting uses our local WASM-free shiki plugin (./code-plugin)
+// because @streamdown/code pulls the Oniguruma WASM engine, which breaks
+// the Vercel build ([unwasm] magic header not detected).
 const streamdownPlugins = { cjk, code, math, mermaid } as unknown as ComponentProps<
   typeof Streamdown
 >["plugins"];

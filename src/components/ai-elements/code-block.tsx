@@ -21,13 +21,16 @@ import {
   useRef,
   useState,
 } from "react";
-import type {
-  BundledLanguage,
-  BundledTheme,
-  HighlighterGeneric,
-  ThemedToken,
-} from "shiki";
-import { createHighlighter } from "shiki";
+import type { BundledLanguage, ThemedToken } from "shiki";
+import { createHighlighterCore } from "shiki/core";
+import { createJavaScriptRegexEngine } from "shiki/engine/javascript";
+import { bundledLanguages } from "shiki/langs";
+import { bundledThemes } from "shiki/themes";
+
+// JavaScript RegExp engine: no Oniguruma WASM, which breaks the Vercel build.
+const shikiEngine = createJavaScriptRegexEngine({ forgiving: true });
+
+type Highlighter = Awaited<ReturnType<typeof createHighlighterCore>>;
 
 // Shiki uses bitflags for font styles: 1=italic, 2=bold, 4=underline
 // oxlint-disable-next-line eslint(no-bitwise)
@@ -130,10 +133,7 @@ const CodeBlockContext = createContext<CodeBlockContextType>({
 });
 
 // Highlighter cache (singleton per language)
-const highlighterCache = new Map<
-  string,
-  Promise<HighlighterGeneric<BundledLanguage, BundledTheme>>
->();
+const highlighterCache = new Map<string, Promise<Highlighter>>();
 
 // Token cache
 const tokensCache = new Map<string, TokenizedCode>();
@@ -147,18 +147,21 @@ const getTokensCacheKey = (code: string, language: BundledLanguage) => {
   return `${language}:${code.length}:${start}:${end}`;
 };
 
-const getHighlighter = (
-  language: BundledLanguage
-): Promise<HighlighterGeneric<BundledLanguage, BundledTheme>> => {
+const getHighlighter = (language: BundledLanguage): Promise<Highlighter> => {
   const cached = highlighterCache.get(language);
   if (cached) {
     return cached;
   }
 
-  const highlighterPromise = createHighlighter({
-    langs: [language],
-    themes: ["github-light", "github-dark"],
-  });
+  const langLoader = (
+    bundledLanguages as Record<string, (() => unknown) | undefined>
+  )[language];
+
+  const highlighterPromise = createHighlighterCore({
+    langs: langLoader ? [langLoader()] : [],
+    themes: [bundledThemes["github-light"](), bundledThemes["github-dark"]()],
+    engine: shikiEngine,
+  } as Parameters<typeof createHighlighterCore>[0]);
 
   highlighterCache.set(language, highlighterPromise);
   return highlighterPromise;
