@@ -929,7 +929,7 @@ function MouvementForm({
                     <SelectContent>
                       {librairiesForBook.map((s) => (
                         <SelectItem key={s.id} value={s.id}>
-                          {s.librairie_nom} — {s.exemplaires_restants} ex. restants
+                          {s.librairie_nom} — {s.exemplaires_restants} ex. restants{s.provenance === "hors_stock" ? " · 📤 hors stock interne" : ""}
                         </SelectItem>
                       ))}
                     </SelectContent>
@@ -938,6 +938,11 @@ function MouvementForm({
                 {selectedLibrairie && (
                   <p className="text-xs text-muted-foreground">
                     {selectedLibrairie.exemplaires_deposes} ex. envoyés — <span className="text-[#C8922A] font-semibold">Maximum retournable : {maxRetour}</span>
+                    {selectedLibrairie.provenance === "hors_stock" && (
+                      <span className="mt-0.5 block text-[11px] text-[#C8922A]">
+                        📤 Dépôt direct : le retour fera entrer ces exemplaires dans l'entrepôt (jamais prélevés du stock interne).
+                      </span>
+                    )}
                   </p>
                 )}
               </div>

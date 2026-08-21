@@ -756,6 +756,7 @@ function StockForm({
       derniere_visite: form.derniere_visite ? format(form.derniere_visite, "yyyy-MM-dd") : null,
       taux_commission_pct: tauxComm,
       applique_droits_auteur: form.applique_droits_auteur,
+      provenance: form.provenance,
     };
     const { error } = existing
       ? await supabase.from("stocks").update(payload).eq("id", existing.id)
@@ -764,9 +765,11 @@ function StockForm({
     if (error) { setLoading(false); return toast.error(error.message); }
     // Vente auto-créée par trigger SQL `stocks_vente_delta` quand exemplaires_vendus augmente.
 
-    // Répercussion sur l'entrepôt (stock interne) : seule la différence de déposés est appliquée
+    // Répercussion sur l'entrepôt (stock interne) : seule la différence de déposés est appliquée,
+    // et uniquement pour les dépôts « depuis le stock interne ». Un dépôt « hors stock interne »
+    // (livres déjà dehors) ne touche jamais l'entrepôt.
     const deltaDeposes = Number(form.exemplaires_deposes) - Number(existing?.exemplaires_deposes ?? 0);
-    if (deltaDeposes !== 0) {
+    if (deltaDeposes !== 0 && form.provenance !== "hors_stock") {
       const { data: res, error: rpcErr } = await (supabase as any).rpc("apply_depot_transfert", {
         p_manuscrit_id: form.manuscrit_id,
         p_delta: deltaDeposes,
@@ -804,6 +807,41 @@ function StockForm({
       <div className="space-y-2">
         <Label>Adresse</Label>
         <Input value={form.librairie_adresse} onChange={(e) => setForm({ ...form, librairie_adresse: e.target.value })} placeholder="Hamdallaye ACI 2000…" />
+      </div>
+
+      {/* Provenance des livres */}
+      <div className="space-y-2">
+        <Label>Provenance des livres</Label>
+        {existing ? (
+          <p className="rounded-lg border border-border bg-background/40 px-3 py-2 text-xs text-muted-foreground">
+            {form.provenance === "hors_stock"
+              ? "📤 Dépôt direct — hors stock interne (aucune déduction de l'entrepôt)"
+              : "🏭 Livres prélevés depuis le stock interne"}
+            <span className="mt-0.5 block opacity-70">La provenance ne peut pas être modifiée après création.</span>
+          </p>
+        ) : (
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+            {[
+              { v: "interne", icon: "🏭", t: "Depuis le stock interne", d: "Déduit les exemplaires de l'entrepôt" },
+              { v: "hors_stock", icon: "📤", t: "Hors stock interne", d: "Livres déjà dehors — aucune déduction de l'entrepôt" },
+            ].map((o) => (
+              <button
+                key={o.v}
+                type="button"
+                onClick={() => setForm({ ...form, provenance: o.v as "interne" | "hors_stock" })}
+                className={cn(
+                  "rounded-xl border p-3 text-left transition-colors",
+                  form.provenance === o.v
+                    ? "border-[color:var(--gold)]/60 bg-[color:var(--gold)]/10"
+                    : "border-border bg-background/40 hover:border-[color:var(--gold)]/30",
+                )}
+              >
+                <p className="text-sm font-semibold text-foreground">{o.icon} {o.t}</p>
+                <p className="mt-0.5 text-[11px] text-muted-foreground">{o.d}</p>
+              </button>
+            ))}
+          </div>
+        )}
       </div>
       <div className="grid grid-cols-2 gap-3">
         <div className="space-y-2">
