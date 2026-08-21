@@ -145,23 +145,42 @@ function FinancesInner({ entrepriseId, entrepriseNom }: { entrepriseId: string |
     });
   }, [ventes, statusFilter, from, to]);
 
+  // Group strictly per author: auteur_id first, otherwise the normalized
+  // author name — never a single shared bucket (that merged all authors into one card).
   const royaltiesByAuthor = useMemo(() => {
     const v = ventes ?? [];
-    const by: Record<string, { name: string; pending: number; ids: string[] }> = {};
+    interface Group { key: string; auteurId: string | null; name: string; pending: number; count: number; ids: string[]; momo: string | null; operateur: string | null; }
+    const by: Record<string, Group> = {};
     v.filter((x) => x.statut_paiement === "en_attente").forEach((s) => {
-      const aid = s.auteur_id ?? mMap[s.manuscrit_id]?.auteur_id ?? "_";
-      const name = aMap[aid] ?? mMap[s.manuscrit_id]?.auteur ?? "Auteur inconnu";
-      if (!by[aid]) by[aid] = { name, pending: 0, ids: [] };
-      by[aid].pending += Number(s.droits_auteur_fcfa || 0);
-      by[aid].ids.push(s.id);
+      const aid = s.auteur_id ?? mMap[s.manuscrit_id]?.auteur_id ?? null;
+      const name = (aid && aMap[aid]) || mMap[s.manuscrit_id]?.auteur?.trim() || "Auteur inconnu";
+      const key = aid ?? `nom:${normalizeName(name)}`;
+      if (!by[key]) {
+        const det = aid ? aDetails[aid] : undefined;
+        by[key] = { key, auteurId: aid, name, pending: 0, count: 0, ids: [], momo: det?.numero_mobile_money ?? null, operateur: det?.operateur ?? null };
+      }
+      by[key].pending += Number(s.droits_auteur_fcfa || 0);
+      by[key].count += 1;
+      by[key].ids.push(s.id);
     });
-    return Object.values(by).filter((x) => x.pending > 0);
-  }, [ventes, mMap, aMap]);
+    return Object.values(by).filter((x) => x.pending > 0).sort((a, b) => b.pending - a.pending);
+  }, [ventes, mMap, aMap, aDetails]);
 
-  const markPaid = async (ids: string[]) => {
-    const { error } = await supabase.from("ventes").update({ statut_paiement: "paye" as any }).in("id", ids);
+  const [payTarget, setPayTarget] = useState<{ name: string; pending: number; ids: string[] } | null>(null);
+  const [paying, setPaying] = useState(false);
+
+  const confirmMarkPaid = async () => {
+    if (!payTarget) return;
+    setPaying(true);
+    const { error } = await supabase
+      .from("ventes")
+      .update({ statut_paiement: "paye" as any })
+      .in("id", payTarget.ids)
+      .eq("statut_paiement", "en_attente");
+    setPaying(false);
     if (error) return toast.error(error.message);
-    toast.success("Royalties marquées comme payées");
+    toast.success(`✅ Royalties de ${payTarget.name} marquées comme payées — ${fcfa(payTarget.pending)}`);
+    setPayTarget(null);
     load();
   };
 
