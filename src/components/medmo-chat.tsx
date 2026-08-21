@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef } from "react";
+import { useEffect, useMemo, useRef, useState, type ChangeEvent } from "react";
 import { Link } from "@tanstack/react-router";
 import { useChat } from "@ai-sdk/react";
 import {
@@ -7,7 +7,7 @@ import {
   type UIMessage,
 } from "ai";
 import { motion } from "motion/react";
-import { ArrowLeft, Check, X, ShieldCheck } from "lucide-react";
+import { ArrowLeft, Check, X, ShieldCheck, Paperclip, FileText } from "lucide-react";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { cn } from "@/lib/utils";
@@ -20,9 +20,13 @@ import {
 import { Message, MessageContent, MessageResponse } from "@/components/ai-elements/message";
 import {
   PromptInput,
+  PromptInputButton,
   PromptInputFooter,
+  PromptInputHeader,
   PromptInputSubmit,
   PromptInputTextarea,
+  PromptInputTools,
+  usePromptInputAttachments,
   type PromptInputMessage,
 } from "@/components/ai-elements/prompt-input";
 import { Shimmer } from "@/components/ai-elements/shimmer";
@@ -92,6 +96,111 @@ function formatInputValue(key: string, value: unknown): string {
   }
   if (key === "provenance" && typeof value === "string") return VALUE_LABELS[value] ?? value;
   return String(value);
+}
+
+// --- Pièces jointes (images & PDF analysés par PR MEDMO) ---
+const MAX_ATTACH_FILES = 3;
+const MAX_ATTACH_SIZE = 2 * 1024 * 1024; // 2 Mo — limite de requête de l'hébergeur
+
+/** Compresse une image côté navigateur (max 1600px, JPEG) pour rester sous la limite d'envoi. */
+async function compressImage(file: File): Promise<File> {
+  if (!file.type.startsWith("image/")) return file;
+  try {
+    const bitmap = await createImageBitmap(file);
+    const scale = Math.min(1, 1600 / Math.max(bitmap.width, bitmap.height));
+    const canvas = document.createElement("canvas");
+    canvas.width = Math.max(1, Math.round(bitmap.width * scale));
+    canvas.height = Math.max(1, Math.round(bitmap.height * scale));
+    canvas.getContext("2d")?.drawImage(bitmap, 0, 0, canvas.width, canvas.height);
+    bitmap.close();
+    const blob = await new Promise<Blob | null>((resolve) => canvas.toBlob(resolve, "image/jpeg", 0.82));
+    if (!blob || blob.size >= file.size) return file;
+    return new File([blob], `${file.name.replace(/\.[^.]+$/, "")}.jpg`, { type: "image/jpeg" });
+  } catch {
+    return file;
+  }
+}
+
+/** Bouton trombone du compositeur : sélection de fichiers + compression des images. */
+function MedmoAttachButton({ disabled }: { disabled: boolean }) {
+  const attachments = usePromptInputAttachments();
+  const inputRef = useRef<HTMLInputElement>(null);
+  const [preparing, setPreparing] = useState(false);
+
+  const onPick = async (e: ChangeEvent<HTMLInputElement>) => {
+    const picked = [...(e.currentTarget.files ?? [])];
+    e.currentTarget.value = "";
+    if (picked.length === 0) return;
+    setPreparing(true);
+    try {
+      attachments.add(await Promise.all(picked.map(compressImage)));
+    } finally {
+      setPreparing(false);
+    }
+  };
+
+  return (
+    <>
+      <input
+        ref={inputRef}
+        type="file"
+        hidden
+        multiple
+        accept="image/*,application/pdf"
+        aria-label="Joindre une image ou un PDF"
+        onChange={(e) => void onPick(e)}
+      />
+      <PromptInputButton
+        tooltip="Joindre une image ou un PDF à analyser"
+        onClick={() => inputRef.current?.click()}
+        disabled={disabled || preparing}
+        aria-label="Joindre un fichier"
+        className="text-muted-foreground hover:text-[color:var(--gold)] hover:bg-[color:var(--gold)]/10"
+      >
+        <Paperclip className={cn("size-4", preparing && "animate-pulse")} />
+      </PromptInputButton>
+    </>
+  );
+}
+
+/** Vignettes des pièces jointes au-dessus du champ de saisie. */
+function MedmoAttachmentChips() {
+  const attachments = usePromptInputAttachments();
+  if (attachments.files.length === 0) return null;
+  return (
+    <PromptInputHeader className="flex flex-wrap gap-2 px-2 pt-2">
+      {attachments.files.map((f) => (
+        <motion.div
+          key={f.id}
+          initial={{ opacity: 0, scale: 0.85 }}
+          animate={{ opacity: 1, scale: 1 }}
+          transition={{ type: "spring", stiffness: 400, damping: 25 }}
+          className="relative"
+        >
+          {f.mediaType?.startsWith("image/") ? (
+            <img
+              src={f.url}
+              alt={f.filename ?? "image jointe"}
+              className="h-14 w-14 rounded-lg border border-[color:var(--gold)]/40 object-cover shadow-sm"
+            />
+          ) : (
+            <div className="flex h-14 max-w-[180px] items-center gap-2 rounded-lg border border-[color:var(--gold)]/40 bg-[color:var(--gold)]/10 px-3">
+              <FileText className="h-4 w-4 shrink-0 text-[color:var(--gold)]" />
+              <span className="truncate text-xs font-medium">{f.filename ?? "document.pdf"}</span>
+            </div>
+          )}
+          <button
+            type="button"
+            onClick={() => attachments.remove(f.id)}
+            aria-label="Retirer ce fichier"
+            className="absolute -right-1.5 -top-1.5 rounded-full border border-border bg-card p-0.5 shadow-sm hover:bg-muted"
+          >
+            <X className="h-3 w-3" />
+          </button>
+        </motion.div>
+      ))}
+    </PromptInputHeader>
+  );
 }
 
 /** PR MEDMO brand avatar — gold book mark on a deep disc, with an optional sonar pulse. */
@@ -280,7 +389,13 @@ export function MedmoChat({
   };
 
   const handleSubmit = (msg: PromptInputMessage) => {
-    send(msg.text);
+    const t = msg.text.trim();
+    const files = msg.files ?? [];
+    if (busy || (!t && files.length === 0)) return;
+    void sendMessage({
+      text: t || "Analyse le(s) document(s) joint(s) et dis-moi ce qu'ils contiennent.",
+      ...(files.length > 0 ? { files } : {}),
+    });
   };
 
   const isEmpty = messages.length === 0;
@@ -345,7 +460,7 @@ export function MedmoChat({
                 <p className="text-sm text-muted-foreground mt-2 max-w-md mx-auto">
                   Votre copilote pour FIGDITIONS : je peux consulter vos données en direct, vous guider
                   pas à pas, enregistrer des actions pour vous et vous conseiller pour développer votre
-                  maison d'édition.
+                  maison d'édition. Joignez une image ou un PDF 📎 et je l'analyserai pour vous.
                 </p>
               </motion.div>
               <div className="grid sm:grid-cols-2 gap-2 w-full">
@@ -372,11 +487,40 @@ export function MedmoChat({
               {messages.map((m) => {
                 if (m.role === "user") {
                   const text = m.parts.map((p) => (p.type === "text" ? p.text : "")).join("");
+                  const files = m.parts.filter((p) => p.type === "file") as {
+                    mediaType?: string;
+                    url?: string;
+                    filename?: string;
+                  }[];
                   return (
                     <motion.div key={m.id} {...springIn} className="flex justify-end">
                       <Message from="user" className="max-w-[85%]">
                         <MessageContent className="group-[.is-user]:rounded-2xl group-[.is-user]:rounded-br-md group-[.is-user]:bg-[linear-gradient(135deg,#C8922A,#A67420)] group-[.is-user]:text-white group-[.is-user]:shadow-[0_4px_16px_rgba(200,146,42,0.25)]">
-                          <span className="whitespace-pre-wrap">{text}</span>
+                          {files.length > 0 && (
+                            <div className="mb-2 flex flex-wrap gap-2">
+                              {files.map((p, i) =>
+                                p.mediaType?.startsWith("image/") && p.url ? (
+                                  <img
+                                    key={i}
+                                    src={p.url}
+                                    alt={p.filename ?? "image jointe"}
+                                    className="max-h-40 rounded-lg border border-white/25"
+                                  />
+                                ) : (
+                                  <div
+                                    key={i}
+                                    className="flex items-center gap-1.5 rounded-lg bg-white/15 px-2.5 py-1.5 text-xs"
+                                  >
+                                    <FileText className="h-3.5 w-3.5 shrink-0" />
+                                    <span className="max-w-[160px] truncate">
+                                      {p.filename ?? "document"}
+                                    </span>
+                                  </div>
+                                ),
+                              )}
+                            </div>
+                          )}
+                          {text && <span className="whitespace-pre-wrap">{text}</span>}
                         </MessageContent>
                       </Message>
                     </motion.div>
@@ -451,13 +595,30 @@ export function MedmoChat({
         >
           <PromptInput
             onSubmit={handleSubmit}
+            accept="image/*,application/pdf"
+            multiple
+            maxFiles={MAX_ATTACH_FILES}
+            maxFileSize={MAX_ATTACH_SIZE}
+            onError={(err) =>
+              toast.error(
+                err.code === "max_file_size"
+                  ? "Fichier trop lourd : 2 Mo maximum par fichier (les images sont compressées automatiquement)."
+                  : err.code === "max_files"
+                    ? `Maximum ${MAX_ATTACH_FILES} fichiers à la fois.`
+                    : "Format non pris en charge : images ou PDF uniquement.",
+              )
+            }
             className="rounded-2xl border-border bg-card shadow-lg transition-[box-shadow,border-color] duration-300 focus-within:border-[color:var(--gold)]/60 focus-within:shadow-[0_0_0_1px_rgba(200,146,42,0.4),0_10px_36px_rgba(200,146,42,0.14)]"
           >
+            <MedmoAttachmentChips />
             <PromptInputTextarea
-              placeholder="Demandez quelque chose à PR MEDMO…"
+              placeholder="Demandez quelque chose à PR MEDMO… ou joignez une image/PDF 📎"
               className="min-h-[46px] text-sm"
             />
-            <PromptInputFooter className="justify-end">
+            <PromptInputFooter>
+              <PromptInputTools>
+                <MedmoAttachButton disabled={busy} />
+              </PromptInputTools>
               <PromptInputSubmit
                 status={status}
                 onStop={stop}
