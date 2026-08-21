@@ -80,7 +80,7 @@ function FinancesInner({ entrepriseId, entrepriseNom }: { entrepriseId: string |
     const [{ data: v, error }, { data: ms }, { data: as }, { data: st }] = await Promise.all([
       supabase.from("ventes").select("*").order("date_vente", { ascending: false }),
       (supabase as any).from("manuscrits").select("id, titre, auteur, auteur_id"),
-      supabase.from("auteurs").select("id, nom_complet"),
+      (supabase as any).from("auteurs").select("id, nom_complet, numero_mobile_money, operateur"),
       supabase.from("stocks").select("id, manuscrit_id, librairie_nom, exemplaires_restants, prix_unitaire_fcfa, exemplaires_vendus"),
     ]);
     if (error) toast.error(error.message);
@@ -93,6 +93,7 @@ function FinancesInner({ entrepriseId, entrepriseNom }: { entrepriseId: string |
 
   const mMap = useMemo(() => Object.fromEntries(manuscrits.map((m) => [m.id, m])), [manuscrits]);
   const aMap = useMemo(() => Object.fromEntries(auteurs.map((a) => [a.id, a.nom_complet])), [auteurs]);
+  const aDetails = useMemo(() => Object.fromEntries(auteurs.map((a) => [a.id, a])), [auteurs]);
   const sMap = useMemo(() => Object.fromEntries(stocks.map((s) => [s.id, s])), [stocks]);
   const stockOfVente = (_v: Vente) => null; // ventes table doesn't carry stock id; show via manuscrit
 
