@@ -77,6 +77,7 @@ function StocksPage() {
   const [upgradeOpen, setUpgradeOpen] = useState(false);
   const [importOpen, setImportOpen] = useState(false);
   const [posOpen, setPosOpen] = useState(false);
+  const [tab, setTab] = useState<string>("externe");
   const [saleOpen, setSaleOpen] = useState(false);
   const [auteurs, setAuteurs] = useState<Array<{ id: string; nom: string | null; prenom: string | null }>>([]);
 
