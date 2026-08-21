@@ -333,6 +333,7 @@ function GenerateDialog({
       let lignes: BordereauLigne[] = [];
       let totalEx = 0;
       let totalFcfa = 0;
+      let commission: number | undefined;
 
       if (type === "depot") {
         lignes = selected.rows.map((r) => ({
@@ -473,37 +474,13 @@ function GenerateDialog({
           </div>
 
           {type === "vente" && (
-            <div className="grid grid-cols-2 gap-3">
-              <div className="space-y-2">
-                <Label>Du</Label>
-                <Popover>
-                  <PopoverTrigger asChild>
-                    <Button variant="outline" className={cn("w-full justify-start text-left font-normal")}>
-                      <CalendarIcon className="mr-2 h-4 w-4" />
-                      {format(debut, "PPP", { locale: fr })}
-                    </Button>
-                  </PopoverTrigger>
-                  <PopoverContent className="w-auto p-0 bg-card border-border" align="start">
-                    <Calendar mode="single" selected={debut} onSelect={(d) => d && setDebut(d)} locale={fr} initialFocus className={cn("p-3 pointer-events-auto")} />
-                  </PopoverContent>
-                </Popover>
-              </div>
-              <div className="space-y-2">
-                <Label>Au</Label>
-                <Popover>
-                  <PopoverTrigger asChild>
-                    <Button variant="outline" className={cn("w-full justify-start text-left font-normal")}>
-                      <CalendarIcon className="mr-2 h-4 w-4" />
-                      {format(fin, "PPP", { locale: fr })}
-                    </Button>
-                  </PopoverTrigger>
-                  <PopoverContent className="w-auto p-0 bg-card border-border" align="start">
-                    <Calendar mode="single" selected={fin} onSelect={(d) => d && setFin(d)} locale={fr} initialFocus className={cn("p-3 pointer-events-auto")} />
-                  </PopoverContent>
-                </Popover>
-              </div>
-            </div>
+            <p className="text-xs text-muted-foreground rounded-lg border border-border bg-background/40 px-3 py-2">
+              La facture reprend uniquement les exemplaires vendus enregistrés chez cette librairie
+              (source : vos fiches de dépôt — les ventes libres et les autres librairies ne sont jamais comptées).
+            </p>
           )}
+
+
 
           <div className="space-y-2">
             <Label>Logo maison (filigrane, optionnel)</Label>
