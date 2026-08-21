@@ -462,7 +462,6 @@ export const Route = createFileRoute("/api/chat")({
           if (e) entreprise = { nom: e.nom, ville: e.ville ?? "", plan: e.plan ?? "starter" };
         }
 
-        const gateway = createLovableAiGatewayProvider(apiKey);
         const modelMessages = await convertToModelMessages(uiMessages);
 
         const stream = createUIMessageStream({
