@@ -29,6 +29,8 @@ import {
 } from "react";
 import { Streamdown } from "streamdown";
 
+import { medmoCodePlugin as code } from "./code-plugin";
+
 export type MessageProps = HTMLAttributes<HTMLDivElement> & {
   from: UIMessage["role"];
 };
