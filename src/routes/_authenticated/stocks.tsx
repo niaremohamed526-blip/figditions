@@ -115,8 +115,8 @@ function StocksPage() {
   useEffect(() => { if (profile?.entreprise_id) load(); }, [profile?.entreprise_id]);
 
   const titreMap = useMemo(() => Object.fromEntries(manuscrits.map((m) => [m.id, m.titre])), [manuscrits]);
-  const authorFullName = (a: { nom: string | null; prenom: string | null } | undefined) =>
-    a ? [a.prenom, a.nom].filter(Boolean).join(" ").trim() : "";
+  const authorFullName = (a: { nom_complet: string } | undefined) =>
+    a?.nom_complet?.trim() ?? "";
   const authorMap = useMemo(() => {
     const byId = Object.fromEntries(auteurs.map((a) => [a.id, a]));
     const map: Record<string, string> = {};
