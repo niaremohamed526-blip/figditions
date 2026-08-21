@@ -12,6 +12,7 @@ import {
 } from "@tanstack/react-router";
 import { useEffect } from "react";
 import { Toaster } from "@/components/ui/sonner";
+import { TooltipProvider } from "@/components/ui/tooltip";
 import { supabase } from "@/integrations/supabase/client";
 import { RouteProgress } from "@/components/route-progress";
 import { OfflineBanner } from "@/components/offline-banner";
@@ -201,11 +202,12 @@ function RootComponent() {
 
   return (
     <QueryClientProvider client={queryClient}>
-      
-      <RouteProgress />
-      <OfflineBanner />
-      <Outlet />
-      <Toaster richColors theme="dark" position="top-right" />
+      <TooltipProvider delayDuration={300}>
+        <RouteProgress />
+        <OfflineBanner />
+        <Outlet />
+        <Toaster richColors theme="dark" position="top-right" />
+      </TooltipProvider>
     </QueryClientProvider>
   );
 }
