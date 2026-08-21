@@ -298,8 +298,6 @@ function GenerateDialog({
 }) {
   const [type, setType] = useState<"depot" | "vente">("vente");
   const [librairieNom, setLibrairieNom] = useState<string>("");
-  const [debut, setDebut] = useState<Date>(startOfMonth(new Date()));
-  const [fin, setFin] = useState<Date>(endOfMonth(new Date()));
   const [notes, setNotes] = useState("");
   const [loading, setLoading] = useState(false);
   const [watermark, setWatermark] = useState<string | null>(null);
@@ -308,8 +306,6 @@ function GenerateDialog({
     if (open) {
       setType("vente");
       setLibrairieNom(librairies[0]?.nom ?? "");
-      setDebut(startOfMonth(new Date()));
-      setFin(endOfMonth(new Date()));
       setNotes("");
       setWatermark(null);
     }
@@ -351,24 +347,19 @@ function GenerateDialog({
         totalEx = lignes.reduce((s, l) => s + (l.deposes ?? 0), 0);
         totalFcfa = lignes.reduce((s, l) => s + (l.total ?? 0), 0);
       } else {
-        // Vente sur période : agréger les ventes de la période pour les manuscrits en dépôt chez cette librairie.
-        const manuscritIds = [...new Set(selected.rows.map((r) => r.manuscrit_id))];
-        const debutStr = format(debut, "yyyy-MM-dd");
-        const finStr = format(fin, "yyyy-MM-dd");
-        const { data: ventes, error } = await supabase
-          .from("ventes")
-          .select("manuscrit_id, quantite_vendue, prix_unitaire_fcfa, montant_total_fcfa, date_vente")
-          .in("manuscrit_id", manuscritIds)
-          .gte("date_vente", debutStr)
-          .lte("date_vente", finStr);
-        if (error) throw new Error(error.message);
+        // FACTURE : uniquement les ventes réellement enregistrées chez CETTE librairie
+        // (source de vérité : les fiches de dépôt de la librairie, pas le journal global
+        // des ventes qui mélange vente libre et autres librairies).
         const map = new Map<string, { qte: number; montant: number; prix: number }>();
-        (ventes ?? []).forEach((v: any) => {
-          const cur = map.get(v.manuscrit_id) ?? { qte: 0, montant: 0, prix: 0 };
-          cur.qte += Number(v.quantite_vendue ?? 0);
-          cur.montant += Number(v.montant_total_fcfa ?? (v.quantite_vendue ?? 0) * (v.prix_unitaire_fcfa ?? 0));
-          cur.prix = Number(v.prix_unitaire_fcfa ?? cur.prix);
-          map.set(v.manuscrit_id, cur);
+        selected.rows.forEach((r) => {
+          const vendus = Number(r.exemplaires_vendus ?? 0);
+          if (vendus <= 0) return;
+          const prix = Number(r.prix_unitaire_fcfa ?? 0);
+          const cur = map.get(r.manuscrit_id) ?? { qte: 0, montant: 0, prix: 0 };
+          cur.qte += vendus;
+          cur.montant += vendus * prix;
+          if (prix > 0) cur.prix = prix;
+          map.set(r.manuscrit_id, cur);
         });
         lignes = [...map.entries()].map(([mid, val]) => ({
           titre: titreMap[mid] ?? "—",
@@ -378,18 +369,29 @@ function GenerateDialog({
         }));
         if (lignes.length === 0) {
           setLoading(false);
-          return toast.error("Aucune vente enregistrée sur cette période pour les livres déposés chez cette librairie.");
+          return toast.error("Aucune vente enregistrée chez cette librairie pour le moment.");
         }
         totalEx = lignes.reduce((s, l) => s + l.quantite, 0);
         totalFcfa = lignes.reduce((s, l) => s + l.total, 0);
+        // Commission réelle calculée avec le taux de chaque dépôt (défaut 20%).
+        commission = Math.round(
+          selected.rows.reduce(
+            (s, r) =>
+              s +
+              Number(r.exemplaires_vendus ?? 0) *
+                Number(r.prix_unitaire_fcfa ?? 0) *
+                (Number(r.taux_commission_pct ?? 20) / 100),
+            0,
+          ),
+        );
       }
 
       const { data, error } = await supabase.rpc("create_bordereau" as any, {
         p_type: type,
         p_librairie_nom: selected.nom,
         p_librairie_adresse: selected.adresse,
-        p_periode_debut: type === "vente" ? format(debut, "yyyy-MM-dd") : null,
-        p_periode_fin: type === "vente" ? format(fin, "yyyy-MM-dd") : null,
+        p_periode_debut: null,
+        p_periode_fin: null,
         p_lignes: lignes as any,
         p_total_exemplaires: totalEx,
         p_total_fcfa: totalFcfa,
@@ -409,17 +411,16 @@ function GenerateDialog({
         maisonTelephone: entreprise.telephone,
         librairieNom: selected.nom,
         librairieAdresse: selected.adresse,
-        periodeDebut: type === "vente" ? format(debut, "dd MMM yyyy", { locale: fr }) : null,
-        periodeFin: type === "vente" ? format(fin, "dd MMM yyyy", { locale: fr }) : null,
         dateEmission: format(new Date(), "dd MMM yyyy", { locale: fr }),
         lignes,
         totalExemplaires: totalEx,
         totalFcfa: totalFcfa,
+        commissionLibrairieFcfa: type === "vente" ? commission : undefined,
         notes: notes || null,
         watermarkLogoUrl: watermark,
       });
 
-      toast.success(`Bordereau ${numero} généré`);
+      toast.success(type === "vente" ? `Facture ${numero} générée` : `Bordereau ${numero} généré`);
       onOpenChange(false);
       onGenerated();
     } catch (e: any) {
