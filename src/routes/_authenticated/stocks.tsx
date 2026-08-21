@@ -282,7 +282,7 @@ function StocksPage() {
         {/* Mobile: existing underline tabs; Desktop: page-level underline tabs with count badges */}
         <TabsList
           className={cn(
-            "w-full grid grid-cols-3 gap-0 h-11 rounded-none bg-transparent border-0 border-b border-border p-0",
+            "w-full grid grid-cols-4 gap-0 h-11 rounded-none bg-transparent border-0 border-b border-border p-0",
             "sm:h-auto sm:inline-flex sm:w-full sm:justify-start sm:gap-1 sm:border-b sm:border-[color:var(--gold)]/10 sm:rounded-none sm:bg-transparent sm:p-0"
           )}
         >
