@@ -322,8 +322,9 @@ export const MessageBranchPage = ({
 
 export type MessageResponseProps = ComponentProps<typeof Streamdown>;
 
-// shiki is duplicated (streamdown vs @streamdown/code ship different majors),
-// so the plugin types don't line up — runtime is unaffected.
+// Code highlighting uses our local WASM-free shiki plugin (./code-plugin)
+// because @streamdown/code pulls the Oniguruma WASM engine, which breaks
+// the Vercel build ([unwasm] magic header not detected).
 const streamdownPlugins = { cjk, code, math, mermaid } as unknown as ComponentProps<
   typeof Streamdown
 >["plugins"];
