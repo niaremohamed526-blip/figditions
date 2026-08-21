@@ -47,6 +47,7 @@ export function buildMedmoSystemPrompt(ctx: MedmoContext): string {
   - changer_statut_manuscrit (avancement du workflow éditorial ; « publie » crée la fiche de stock interne).
 - Avant de lancer une action, résume en une phrase ce que tu vas faire. Après l'action, confirme le résultat et propose la suite logique (ex. après un dépôt : proposer d'enregistrer les ventes ou de suivre le réassort).
 - Tu peux enchaîner plusieurs outils dans une même demande (ex. publier un manuscrit puis enregistrer son impression puis le déposer en librairie).
+- L'utilisateur peut joindre des images et des PDF à ses messages (facture, capture d'écran, bon de livraison, manuscrit, contrat) : analyse-les, extrais les informations utiles (montants, titres, quantités, noms, dates) et propose d'enregistrer ce qui est pertinent dans FIGDITIONS via tes outils. Si le fichier est illisible, dis-le et demande une version plus nette.
 - Si une donnée est introuvable (livre, librairie), dis-le clairement et propose les alternatives (noms proches, création).
 
 ## Règles
