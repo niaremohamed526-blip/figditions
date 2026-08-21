@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { format } from "date-fns";
-import { Loader2, Zap, Trash2, Plus, CheckCircle2, X, Store, Keyboard, AlertTriangle, Save } from "lucide-react";
+import { Loader2, Zap, Trash2, Plus, CheckCircle2, X, Store, Keyboard, AlertTriangle, Save, Warehouse } from "lucide-react";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
@@ -25,6 +25,7 @@ interface Draft {
   librairieNom: string;
   librairieAdresse: string;
   dateDepot: string;
+  provenance: "interne" | "hors_stock";
   lines: Line[];
   savedAt: number;
 }
@@ -52,6 +53,7 @@ export function StockPosDialog({
   const [librairieNom, setLibrairieNom] = useState("");
   const [librairieAdresse, setLibrairieAdresse] = useState("");
   const [dateDepot, setDateDepot] = useState<string>(format(new Date(), "yyyy-MM-dd"));
+  const [provenance, setProvenance] = useState<"interne" | "hors_stock">("interne");
 
   const [lines, setLines] = useState<Line[]>([]);
   const [titrePickerOpen, setTitrePickerOpen] = useState(false);
@@ -75,6 +77,7 @@ export function StockPosDialog({
     setLibrairieNom("");
     setLibrairieAdresse("");
     setDateDepot(format(new Date(), "yyyy-MM-dd"));
+    setProvenance("interne");
     setLines([]);
     setCurrentManuscrit(null);
     setCurrentQte("1");
@@ -84,8 +87,9 @@ export function StockPosDialog({
   // Dirty tracking + draft
   const isDirty = useMemo(
     () => lines.length > 0 || !!librairieNom.trim() || !!librairieAdresse.trim() ||
-          !!currentManuscrit || currentQte !== "1" || !!currentPrix.trim(),
-    [lines, librairieNom, librairieAdresse, currentManuscrit, currentQte, currentPrix],
+          !!currentManuscrit || currentQte !== "1" || !!currentPrix.trim() ||
+          provenance !== "interne",
+    [lines, librairieNom, librairieAdresse, currentManuscrit, currentQte, currentPrix, provenance],
   );
   const { markDirty, markClean } = useUnsavedChanges({ empty: true });
   useEffect(() => { if (isDirty) markDirty({ dirty: true } as any); else markClean(); }, [isDirty, markDirty, markClean]);
@@ -112,19 +116,20 @@ export function StockPosDialog({
     if (!open || !isDirty) return;
     const save = () => {
       const draft: Draft = {
-        librairieNom, librairieAdresse, dateDepot, lines, savedAt: Date.now(),
+        librairieNom, librairieAdresse, dateDepot, provenance, lines, savedAt: Date.now(),
       };
       try { localStorage.setItem(DRAFT_KEY, JSON.stringify(draft)); setLastSavedAt(draft.savedAt); } catch {}
     };
     const t = setInterval(save, 30_000);
     return () => clearInterval(t);
-  }, [open, isDirty, librairieNom, librairieAdresse, dateDepot, lines]);
+  }, [open, isDirty, librairieNom, librairieAdresse, dateDepot, provenance, lines]);
 
   const restoreDraft = () => {
     if (!draftFound) return;
     setLibrairieNom(draftFound.librairieNom);
     setLibrairieAdresse(draftFound.librairieAdresse);
     setDateDepot(draftFound.dateDepot);
+    setProvenance(draftFound.provenance ?? "interne");
     setLines(draftFound.lines);
     if (draftFound.lines.length > 0) setStep(2);
     setDraftFound(null);
@@ -186,26 +191,33 @@ export function StockPosDialog({
       exemplaires_total: l.quantite,
       prix_unitaire_fcfa: l.prix,
       derniere_visite: dateDepot || null,
+      provenance,
     }));
     const { error } = await supabase.from("stocks").insert(payload as any);
     if (error) { setSaving(false); return toast.error(error.message); }
 
-    // Déduction de l'entrepôt (stock interne) pour chaque titre déposé
+    // Déduction de l'entrepôt : uniquement pour les dépôts « depuis le stock interne ».
+    // Un dépôt « hors stock interne » (livres déjà dehors) ne touche jamais l'entrepôt.
     const warnings: string[] = [];
-    for (const l of lines) {
-      const { data: res, error: rpcErr } = await (supabase as any).rpc("apply_depot_transfert", {
-        p_manuscrit_id: l.manuscritId,
-        p_delta: l.quantite,
-        p_librairie_nom: librairieNom.trim() || null,
-        p_date: dateDepot || null,
-      });
-      if (rpcErr) warnings.push(`${l.titre} : ${rpcErr.message}`);
-      else if (res?.warning) warnings.push(`${l.titre} : ${res.warning}`);
+    if (provenance !== "hors_stock") {
+      for (const l of lines) {
+        const { data: res, error: rpcErr } = await (supabase as any).rpc("apply_depot_transfert", {
+          p_manuscrit_id: l.manuscritId,
+          p_delta: l.quantite,
+          p_librairie_nom: librairieNom.trim() || null,
+          p_date: dateDepot || null,
+        });
+        if (rpcErr) warnings.push(`${l.titre} : ${rpcErr.message}`);
+        else if (res?.warning) warnings.push(`${l.titre} : ${res.warning}`);
+      }
     }
     setSaving(false);
     warnings.forEach((w) => toast.warning(w));
     try { localStorage.removeItem(DRAFT_KEY); } catch {}
-    toast.success(`${lines.length} dépôt(s) enregistré(s) chez « ${librairieNom} »`);
+    toast.success(
+      `${lines.length} dépôt(s) enregistré(s) chez « ${librairieNom} »` +
+      (provenance === "hors_stock" ? " — sans déduction de l'entrepôt" : ""),
+    );
     onImported();
     reset();
     onOpenChange(false);
@@ -315,6 +327,36 @@ export function StockPosDialog({
                 </div>
               </div>
             </div>
+
+            {/* Provenance des livres */}
+            <div className="rounded-xl border border-border p-4 space-y-3">
+              <div className="flex items-center gap-2">
+                <Warehouse className="h-4 w-4 text-primary" />
+                <h4 className="font-semibold text-sm">Provenance des livres</h4>
+              </div>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                {[
+                  { v: "interne", icon: "🏭", t: "Depuis le stock interne", d: "Déduit les exemplaires de l'entrepôt" },
+                  { v: "hors_stock", icon: "📤", t: "Hors stock interne", d: "Livres déjà dehors — aucune déduction de l'entrepôt" },
+                ].map((o) => (
+                  <button
+                    key={o.v}
+                    type="button"
+                    onClick={() => setProvenance(o.v as "interne" | "hors_stock")}
+                    className={cn(
+                      "rounded-xl border p-3 text-left transition-colors",
+                      provenance === o.v
+                        ? "border-[color:var(--gold)]/60 bg-[color:var(--gold)]/10"
+                        : "border-border bg-background/40 hover:border-[color:var(--gold)]/30",
+                    )}
+                  >
+                    <p className="text-sm font-semibold text-foreground">{o.icon} {o.t}</p>
+                    <p className="mt-0.5 text-[11px] text-muted-foreground">{o.d}</p>
+                  </button>
+                ))}
+              </div>
+            </div>
+
             <DialogFooter>
               <Button variant="outline" onClick={guard.requestClose}>Annuler</Button>
               <Button onClick={startSession} className="bg-primary text-primary-foreground hover:bg-primary/90">
@@ -330,6 +372,11 @@ export function StockPosDialog({
                 <Store className="h-4 w-4 text-primary flex-shrink-0" />
                 <span className="font-semibold truncate">{librairieNom}</span>
                 {librairieAdresse && <span className="text-muted-foreground truncate">— {librairieAdresse}</span>}
+                {provenance === "hors_stock" && (
+                  <span className="flex-shrink-0 rounded-full border border-[color:var(--gold)]/40 bg-[color:var(--gold)]/10 px-2 py-0.5 text-[10px] font-semibold text-[color:var(--gold)]">
+                    📤 Hors stock interne
+                  </span>
+                )}
               </div>
               <Button variant="ghost" size="sm" onClick={() => setStep(1)} className="h-7">Changer</Button>
             </div>
