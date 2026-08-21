@@ -644,9 +644,39 @@ export const Route = createFileRoute("/api/chat")({
         if (!thread) return new Response("Conversation introuvable", { status: 404 });
         const threadRow = thread as ThreadRow;
 
+        // Les pièces jointes des tours précédents n'ont plus leurs octets
+        // (retirés à la persistance) : on les remplace par une note texte
+        // pour que le modèle garde le contexte.
+        const rawMessages = (body.messages as any[]).map((m) => ({
+          ...m,
+          parts: Array.isArray(m?.parts)
+            ? m.parts.map((p: any) =>
+                p?.type === "file" && typeof p?.url === "string" && p.url === ""
+                  ? {
+                      type: "text",
+                      text: `[Pièce jointe précédente : ${p.filename ?? "fichier"} (${p.mediaType ?? "fichier"}) — contenu non conservé dans l'historique]`,
+                    }
+                  : p,
+              )
+            : m?.parts,
+        }));
+
+        // Garde : l'hébergeur plafonne la taille des requêtes (~4,5 Mo sur Vercel).
+        const lastUserMsg = [...rawMessages].reverse().find((m: any) => m?.role === "user");
+        const payloadChars = (lastUserMsg?.parts ?? []).reduce(
+          (a: number, p: any) => a + (p?.type === "file" && typeof p.url === "string" ? p.url.length : 0),
+          0,
+        );
+        if (payloadChars > 5_500_000) {
+          return new Response(
+            "Les fichiers joints sont trop lourds (environ 4 Mo au total maximum). Compressez-les ou envoyez-les un par un.",
+            { status: 413 },
+          );
+        }
+
         let uiMessages: UIMessage[];
         try {
-          uiMessages = await validateUIMessages({ messages: body.messages });
+          uiMessages = await validateUIMessages({ messages: rawMessages });
         } catch (error) {
           if (error instanceof TypeValidationError) {
             return new Response("Messages invalides", { status: 400 });
@@ -699,27 +729,41 @@ export const Route = createFileRoute("/api/chat")({
             if (isAborted) return;
             try {
               // Persist the full thread: replace all rows with the final state.
+              // On retire les données base64 des pièces jointes pour ne pas
+              // alourdir la base ; seul le nom du fichier reste dans l'historique.
+              const stripFileData = (parts: unknown) =>
+                Array.isArray(parts)
+                  ? parts.map((p: any) =>
+                      p?.type === "file" && typeof p.url === "string" && p.url.startsWith("data:")
+                        ? { ...p, url: "" }
+                        : p,
+                    )
+                  : parts;
               await supabase.from("chat_messages").delete().eq("thread_id", threadRow.id);
               const rows = finalMessages.map((m, i) => ({
                 thread_id: threadRow.id,
                 user_id: userId,
                 message_id: m.id,
                 role: m.role,
-                parts: m.parts,
+                parts: stripFileData(m.parts),
                 position: i,
               }));
               if (rows.length > 0) {
                 const { error } = await supabase.from("chat_messages").insert(rows);
                 if (error) console.error("[chat] message persistence failed:", error.message);
               }
-              // Auto-title from the first user message.
+              // Auto-title from the first user message (ou sa première pièce jointe).
               if (threadRow.title === "Nouvelle conversation") {
                 const firstUser = finalMessages.find((m) => m.role === "user");
                 const text = firstUser?.parts?.map((p) => (p.type === "text" ? p.text : "")).join(" ").trim();
-                if (text) {
+                const firstFile = firstUser?.parts?.find((p) => p.type === "file") as
+                  | { filename?: string }
+                  | undefined;
+                const title = text || (firstFile ? `📎 ${firstFile.filename ?? "Document joint"}` : "");
+                if (title) {
                   await supabase
                     .from("chat_threads")
-                    .update({ title: text.length > 60 ? `${text.slice(0, 57)}…` : text })
+                    .update({ title: title.length > 60 ? `${title.slice(0, 57)}…` : title })
                     .eq("id", threadRow.id);
                 }
               } else {
