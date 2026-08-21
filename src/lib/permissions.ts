@@ -3,6 +3,7 @@
 
 export type PermissionKey =
   | "dashboard"
+  | "medmo"
   | "manuscrits"
   | "auteurs"
   | "stocks_interne"
@@ -27,6 +28,7 @@ export interface PageDef {
 
 export const PAGES: PageDef[] = [
   { key: "dashboard", emoji: "🏠", label: "Tableau de bord", description: "Accès aux statistiques générales", defaultOn: true },
+  { key: "medmo", emoji: "🤖", label: "DC MEDMO", description: "Assistant IA : conseils, données en direct et actions", defaultOn: true },
   { key: "manuscrits", emoji: "📚", label: "Manuscrits", description: "Gérer les manuscrits et leur workflow", defaultOn: false },
   { key: "auteurs", emoji: "✍️", label: "Auteurs", description: "Gérer les fiches auteurs", defaultOn: false },
   { key: "stocks_interne", emoji: "🏭", label: "Stock Interne", description: "Gérer l'entrepôt et les mouvements", defaultOn: false },
@@ -66,6 +68,7 @@ export function applyPreset(current: Permissions, presetKeys: PermissionKey[]): 
 /** Resolve which permission key gates the given pathname. */
 export function permissionForPath(pathname: string): PermissionKey | null {
   if (pathname.startsWith("/dashboard")) return "dashboard";
+  if (pathname.startsWith("/medmo")) return "medmo";
   if (pathname.startsWith("/manuscrits")) return "manuscrits";
   if (pathname.startsWith("/auteurs")) return "auteurs";
   if (pathname.startsWith("/finances")) return "finances";
@@ -88,6 +91,8 @@ export function canAccessPath(
   if (isAdmin) return true;
   const key = permissionForPath(pathname);
   if (!key) return true;
+  // DC MEDMO predates per-member permissions: allowed unless explicitly revoked.
+  if (key === "medmo") return permissions?.medmo !== false;
   if (key === "stocks_interne") {
     return !!(permissions?.stocks_interne || permissions?.stocks_externe);
   }

@@ -22,8 +22,10 @@ import { Route as AuthenticatedRouteImport } from './routes/_authenticated'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as RejoindreTokenRouteImport } from './routes/rejoindre.$token'
 import { Route as LectureTokenRouteImport } from './routes/lecture.$token'
+import { Route as ApiChatRouteImport } from './routes/api/chat'
 import { Route as AuthenticatedStocksRouteImport } from './routes/_authenticated/stocks'
 import { Route as AuthenticatedParametresRouteImport } from './routes/_authenticated/parametres'
+import { Route as AuthenticatedMedmoRouteImport } from './routes/_authenticated/medmo'
 import { Route as AuthenticatedImprimeriesRouteImport } from './routes/_authenticated/imprimeries'
 import { Route as AuthenticatedFinancesRouteImport } from './routes/_authenticated/finances'
 import { Route as AuthenticatedEstimateurRouteImport } from './routes/_authenticated/estimateur'
@@ -31,8 +33,10 @@ import { Route as AuthenticatedDashboardRouteImport } from './routes/_authentica
 import { Route as AuthenticatedConversionsRouteImport } from './routes/_authenticated/conversions'
 import { Route as AuthenticatedContratsRouteImport } from './routes/_authenticated/contrats'
 import { Route as AuthenticatedAuteursRouteImport } from './routes/_authenticated/auteurs'
+import { Route as AuthenticatedMedmoIndexRouteImport } from './routes/_authenticated/medmo.index'
 import { Route as AuthenticatedManuscritsIndexRouteImport } from './routes/_authenticated/manuscrits.index'
 import { Route as ApiPublicFlutterwaveWebhookRouteImport } from './routes/api/public/flutterwave-webhook'
+import { Route as AuthenticatedMedmoThreadIdRouteImport } from './routes/_authenticated/medmo.$threadId'
 import { Route as AuthenticatedManuscritsManuscritIdRouteImport } from './routes/_authenticated/manuscrits.$manuscritId'
 import { Route as AuthenticatedContratsContratIdRouteImport } from './routes/_authenticated/contrats.$contratId'
 import { Route as AuthenticatedAuteursAuteurIdRouteImport } from './routes/_authenticated/auteurs.$auteurId'
@@ -105,6 +109,11 @@ const LectureTokenRoute = LectureTokenRouteImport.update({
   path: '/lecture/$token',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ApiChatRoute = ApiChatRouteImport.update({
+  id: '/api/chat',
+  path: '/api/chat',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const AuthenticatedStocksRoute = AuthenticatedStocksRouteImport.update({
   id: '/stocks',
   path: '/stocks',
@@ -113,6 +122,11 @@ const AuthenticatedStocksRoute = AuthenticatedStocksRouteImport.update({
 const AuthenticatedParametresRoute = AuthenticatedParametresRouteImport.update({
   id: '/parametres',
   path: '/parametres',
+  getParentRoute: () => AuthenticatedRoute,
+} as any)
+const AuthenticatedMedmoRoute = AuthenticatedMedmoRouteImport.update({
+  id: '/medmo',
+  path: '/medmo',
   getParentRoute: () => AuthenticatedRoute,
 } as any)
 const AuthenticatedImprimeriesRoute =
@@ -152,6 +166,11 @@ const AuthenticatedAuteursRoute = AuthenticatedAuteursRouteImport.update({
   path: '/auteurs',
   getParentRoute: () => AuthenticatedRoute,
 } as any)
+const AuthenticatedMedmoIndexRoute = AuthenticatedMedmoIndexRouteImport.update({
+  id: '/',
+  path: '/',
+  getParentRoute: () => AuthenticatedMedmoRoute,
+} as any)
 const AuthenticatedManuscritsIndexRoute =
   AuthenticatedManuscritsIndexRouteImport.update({
     id: '/manuscrits/',
@@ -163,6 +182,12 @@ const ApiPublicFlutterwaveWebhookRoute =
     id: '/api/public/flutterwave-webhook',
     path: '/api/public/flutterwave-webhook',
     getParentRoute: () => rootRouteImport,
+  } as any)
+const AuthenticatedMedmoThreadIdRoute =
+  AuthenticatedMedmoThreadIdRouteImport.update({
+    id: '/$threadId',
+    path: '/$threadId',
+    getParentRoute: () => AuthenticatedMedmoRoute,
   } as any)
 const AuthenticatedManuscritsManuscritIdRoute =
   AuthenticatedManuscritsManuscritIdRouteImport.update({
@@ -218,16 +243,20 @@ export interface FileRoutesByFullPath {
   '/estimateur': typeof AuthenticatedEstimateurRoute
   '/finances': typeof AuthenticatedFinancesRoute
   '/imprimeries': typeof AuthenticatedImprimeriesRoute
+  '/medmo': typeof AuthenticatedMedmoRouteWithChildren
   '/parametres': typeof AuthenticatedParametresRoute
   '/stocks': typeof AuthenticatedStocksRoute
+  '/api/chat': typeof ApiChatRoute
   '/lecture/$token': typeof LectureTokenRoute
   '/rejoindre/$token': typeof RejoindreTokenRoute
   '/admin/paiements': typeof AuthenticatedAdminPaiementsRoute
   '/auteurs/$auteurId': typeof AuthenticatedAuteursAuteurIdRoute
   '/contrats/$contratId': typeof AuthenticatedContratsContratIdRoute
   '/manuscrits/$manuscritId': typeof AuthenticatedManuscritsManuscritIdRoute
+  '/medmo/$threadId': typeof AuthenticatedMedmoThreadIdRoute
   '/api/public/flutterwave-webhook': typeof ApiPublicFlutterwaveWebhookRoute
   '/manuscrits/': typeof AuthenticatedManuscritsIndexRoute
+  '/medmo/': typeof AuthenticatedMedmoIndexRoute
   '/api/public/hooks/check-reminders': typeof ApiPublicHooksCheckRemindersRoute
   '/api/public/hooks/send-push': typeof ApiPublicHooksSendPushRoute
 }
@@ -251,14 +280,17 @@ export interface FileRoutesByTo {
   '/imprimeries': typeof AuthenticatedImprimeriesRoute
   '/parametres': typeof AuthenticatedParametresRoute
   '/stocks': typeof AuthenticatedStocksRoute
+  '/api/chat': typeof ApiChatRoute
   '/lecture/$token': typeof LectureTokenRoute
   '/rejoindre/$token': typeof RejoindreTokenRoute
   '/admin/paiements': typeof AuthenticatedAdminPaiementsRoute
   '/auteurs/$auteurId': typeof AuthenticatedAuteursAuteurIdRoute
   '/contrats/$contratId': typeof AuthenticatedContratsContratIdRoute
   '/manuscrits/$manuscritId': typeof AuthenticatedManuscritsManuscritIdRoute
+  '/medmo/$threadId': typeof AuthenticatedMedmoThreadIdRoute
   '/api/public/flutterwave-webhook': typeof ApiPublicFlutterwaveWebhookRoute
   '/manuscrits': typeof AuthenticatedManuscritsIndexRoute
+  '/medmo': typeof AuthenticatedMedmoIndexRoute
   '/api/public/hooks/check-reminders': typeof ApiPublicHooksCheckRemindersRoute
   '/api/public/hooks/send-push': typeof ApiPublicHooksSendPushRoute
 }
@@ -282,16 +314,20 @@ export interface FileRoutesById {
   '/_authenticated/estimateur': typeof AuthenticatedEstimateurRoute
   '/_authenticated/finances': typeof AuthenticatedFinancesRoute
   '/_authenticated/imprimeries': typeof AuthenticatedImprimeriesRoute
+  '/_authenticated/medmo': typeof AuthenticatedMedmoRouteWithChildren
   '/_authenticated/parametres': typeof AuthenticatedParametresRoute
   '/_authenticated/stocks': typeof AuthenticatedStocksRoute
+  '/api/chat': typeof ApiChatRoute
   '/lecture/$token': typeof LectureTokenRoute
   '/rejoindre/$token': typeof RejoindreTokenRoute
   '/_authenticated/admin/paiements': typeof AuthenticatedAdminPaiementsRoute
   '/_authenticated/auteurs/$auteurId': typeof AuthenticatedAuteursAuteurIdRoute
   '/_authenticated/contrats/$contratId': typeof AuthenticatedContratsContratIdRoute
   '/_authenticated/manuscrits/$manuscritId': typeof AuthenticatedManuscritsManuscritIdRoute
+  '/_authenticated/medmo/$threadId': typeof AuthenticatedMedmoThreadIdRoute
   '/api/public/flutterwave-webhook': typeof ApiPublicFlutterwaveWebhookRoute
   '/_authenticated/manuscrits/': typeof AuthenticatedManuscritsIndexRoute
+  '/_authenticated/medmo/': typeof AuthenticatedMedmoIndexRoute
   '/api/public/hooks/check-reminders': typeof ApiPublicHooksCheckRemindersRoute
   '/api/public/hooks/send-push': typeof ApiPublicHooksSendPushRoute
 }
@@ -315,16 +351,20 @@ export interface FileRouteTypes {
     | '/estimateur'
     | '/finances'
     | '/imprimeries'
+    | '/medmo'
     | '/parametres'
     | '/stocks'
+    | '/api/chat'
     | '/lecture/$token'
     | '/rejoindre/$token'
     | '/admin/paiements'
     | '/auteurs/$auteurId'
     | '/contrats/$contratId'
     | '/manuscrits/$manuscritId'
+    | '/medmo/$threadId'
     | '/api/public/flutterwave-webhook'
     | '/manuscrits/'
+    | '/medmo/'
     | '/api/public/hooks/check-reminders'
     | '/api/public/hooks/send-push'
   fileRoutesByTo: FileRoutesByTo
@@ -348,14 +388,17 @@ export interface FileRouteTypes {
     | '/imprimeries'
     | '/parametres'
     | '/stocks'
+    | '/api/chat'
     | '/lecture/$token'
     | '/rejoindre/$token'
     | '/admin/paiements'
     | '/auteurs/$auteurId'
     | '/contrats/$contratId'
     | '/manuscrits/$manuscritId'
+    | '/medmo/$threadId'
     | '/api/public/flutterwave-webhook'
     | '/manuscrits'
+    | '/medmo'
     | '/api/public/hooks/check-reminders'
     | '/api/public/hooks/send-push'
   id:
@@ -378,16 +421,20 @@ export interface FileRouteTypes {
     | '/_authenticated/estimateur'
     | '/_authenticated/finances'
     | '/_authenticated/imprimeries'
+    | '/_authenticated/medmo'
     | '/_authenticated/parametres'
     | '/_authenticated/stocks'
+    | '/api/chat'
     | '/lecture/$token'
     | '/rejoindre/$token'
     | '/_authenticated/admin/paiements'
     | '/_authenticated/auteurs/$auteurId'
     | '/_authenticated/contrats/$contratId'
     | '/_authenticated/manuscrits/$manuscritId'
+    | '/_authenticated/medmo/$threadId'
     | '/api/public/flutterwave-webhook'
     | '/_authenticated/manuscrits/'
+    | '/_authenticated/medmo/'
     | '/api/public/hooks/check-reminders'
     | '/api/public/hooks/send-push'
   fileRoutesById: FileRoutesById
@@ -404,6 +451,7 @@ export interface RootRouteChildren {
   ReinitialiserMotDePasseRoute: typeof ReinitialiserMotDePasseRoute
   SignupRoute: typeof SignupRoute
   SitemapDotxmlRoute: typeof SitemapDotxmlRoute
+  ApiChatRoute: typeof ApiChatRoute
   LectureTokenRoute: typeof LectureTokenRoute
   RejoindreTokenRoute: typeof RejoindreTokenRoute
   ApiPublicFlutterwaveWebhookRoute: typeof ApiPublicFlutterwaveWebhookRoute
@@ -504,6 +552,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof LectureTokenRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/chat': {
+      id: '/api/chat'
+      path: '/api/chat'
+      fullPath: '/api/chat'
+      preLoaderRoute: typeof ApiChatRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/_authenticated/stocks': {
       id: '/_authenticated/stocks'
       path: '/stocks'
@@ -516,6 +571,13 @@ declare module '@tanstack/react-router' {
       path: '/parametres'
       fullPath: '/parametres'
       preLoaderRoute: typeof AuthenticatedParametresRouteImport
+      parentRoute: typeof AuthenticatedRoute
+    }
+    '/_authenticated/medmo': {
+      id: '/_authenticated/medmo'
+      path: '/medmo'
+      fullPath: '/medmo'
+      preLoaderRoute: typeof AuthenticatedMedmoRouteImport
       parentRoute: typeof AuthenticatedRoute
     }
     '/_authenticated/imprimeries': {
@@ -567,6 +629,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedAuteursRouteImport
       parentRoute: typeof AuthenticatedRoute
     }
+    '/_authenticated/medmo/': {
+      id: '/_authenticated/medmo/'
+      path: '/'
+      fullPath: '/medmo/'
+      preLoaderRoute: typeof AuthenticatedMedmoIndexRouteImport
+      parentRoute: typeof AuthenticatedMedmoRoute
+    }
     '/_authenticated/manuscrits/': {
       id: '/_authenticated/manuscrits/'
       path: '/manuscrits'
@@ -580,6 +649,13 @@ declare module '@tanstack/react-router' {
       fullPath: '/api/public/flutterwave-webhook'
       preLoaderRoute: typeof ApiPublicFlutterwaveWebhookRouteImport
       parentRoute: typeof rootRouteImport
+    }
+    '/_authenticated/medmo/$threadId': {
+      id: '/_authenticated/medmo/$threadId'
+      path: '/$threadId'
+      fullPath: '/medmo/$threadId'
+      preLoaderRoute: typeof AuthenticatedMedmoThreadIdRouteImport
+      parentRoute: typeof AuthenticatedMedmoRoute
     }
     '/_authenticated/manuscrits/$manuscritId': {
       id: '/_authenticated/manuscrits/$manuscritId'
@@ -650,6 +726,19 @@ const AuthenticatedContratsRouteWithChildren =
     AuthenticatedContratsRouteChildren,
   )
 
+interface AuthenticatedMedmoRouteChildren {
+  AuthenticatedMedmoThreadIdRoute: typeof AuthenticatedMedmoThreadIdRoute
+  AuthenticatedMedmoIndexRoute: typeof AuthenticatedMedmoIndexRoute
+}
+
+const AuthenticatedMedmoRouteChildren: AuthenticatedMedmoRouteChildren = {
+  AuthenticatedMedmoThreadIdRoute: AuthenticatedMedmoThreadIdRoute,
+  AuthenticatedMedmoIndexRoute: AuthenticatedMedmoIndexRoute,
+}
+
+const AuthenticatedMedmoRouteWithChildren =
+  AuthenticatedMedmoRoute._addFileChildren(AuthenticatedMedmoRouteChildren)
+
 interface AuthenticatedRouteChildren {
   AuthenticatedAuteursRoute: typeof AuthenticatedAuteursRouteWithChildren
   AuthenticatedContratsRoute: typeof AuthenticatedContratsRouteWithChildren
@@ -658,6 +747,7 @@ interface AuthenticatedRouteChildren {
   AuthenticatedEstimateurRoute: typeof AuthenticatedEstimateurRoute
   AuthenticatedFinancesRoute: typeof AuthenticatedFinancesRoute
   AuthenticatedImprimeriesRoute: typeof AuthenticatedImprimeriesRoute
+  AuthenticatedMedmoRoute: typeof AuthenticatedMedmoRouteWithChildren
   AuthenticatedParametresRoute: typeof AuthenticatedParametresRoute
   AuthenticatedStocksRoute: typeof AuthenticatedStocksRoute
   AuthenticatedAdminPaiementsRoute: typeof AuthenticatedAdminPaiementsRoute
@@ -673,6 +763,7 @@ const AuthenticatedRouteChildren: AuthenticatedRouteChildren = {
   AuthenticatedEstimateurRoute: AuthenticatedEstimateurRoute,
   AuthenticatedFinancesRoute: AuthenticatedFinancesRoute,
   AuthenticatedImprimeriesRoute: AuthenticatedImprimeriesRoute,
+  AuthenticatedMedmoRoute: AuthenticatedMedmoRouteWithChildren,
   AuthenticatedParametresRoute: AuthenticatedParametresRoute,
   AuthenticatedStocksRoute: AuthenticatedStocksRoute,
   AuthenticatedAdminPaiementsRoute: AuthenticatedAdminPaiementsRoute,
@@ -697,6 +788,7 @@ const rootRouteChildren: RootRouteChildren = {
   ReinitialiserMotDePasseRoute: ReinitialiserMotDePasseRoute,
   SignupRoute: SignupRoute,
   SitemapDotxmlRoute: SitemapDotxmlRoute,
+  ApiChatRoute: ApiChatRoute,
   LectureTokenRoute: LectureTokenRoute,
   RejoindreTokenRoute: RejoindreTokenRoute,
   ApiPublicFlutterwaveWebhookRoute: ApiPublicFlutterwaveWebhookRoute,
