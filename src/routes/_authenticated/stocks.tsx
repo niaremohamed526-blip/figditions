@@ -750,9 +750,19 @@ function StocksPage() {
           <StockInterneTab entrepriseId={profile?.entreprise_id ?? null} userId={user?.id ?? null} />
         </TabsContent>
 
+        <TabsContent value="librairies" className="space-y-6 mt-0 animate-fade-in">
+          <LibrairiesTab
+            stocks={(filtered ?? null) as any}
+            titreMap={titreMap}
+            entreprise={entreprise as any}
+            onVoirLivres={(nom) => { setLibrairieFilter(nom); setTab("externe"); }}
+          />
+        </TabsContent>
+
         <TabsContent value="bordereaux" className="space-y-6 mt-0">
           <BordereauxTab entreprise={entreprise as any} stocks={(items ?? []) as any} titreMap={titreMap} />
         </TabsContent>
+
       </Tabs>
 
       <RecordSaleDrawer
