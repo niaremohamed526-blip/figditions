@@ -9,7 +9,7 @@ import medmoMark from "@/assets/medmo-mark.png";
 
 const Ballpit = lazy(() => import("@/components/Ballpit"));
 
-const MEDMO_BALL_COLORS = [0xffffff, 0xa0681e, 0x745757];
+const MEDMO_BALL_COLORS = [0xc8922a, 0xa0681e, 0x745757];
 
 export const Route = createFileRoute("/_authenticated/medmo")({
   component: MedmoLayout,
