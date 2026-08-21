@@ -144,7 +144,7 @@ function RootShell({ children }: { children: React.ReactNode }) {
         <style dangerouslySetInnerHTML={{ __html: SPLASH_CSS }} />
       </head>
       <body>
-        <div id="figditions-splash" aria-hidden="true">
+        <div id="figditions-splash" aria-hidden="true" suppressHydrationWarning>
           <img className="splash-logo" src={FIGDITIONS_SITE_LOGO_URL} alt="" />
           <div className="splash-name">FIGDITIONS</div>
           <div className="splash-tagline">Plateforme éditoriale · Afrique de l'Ouest</div>
