@@ -1284,6 +1284,7 @@ export type Database = {
           librairie_nom: string | null
           manuscrit_id: string
           prix_unitaire_fcfa: number
+          provenance: string
           taux_commission_pct: number
         }
         Insert: {
@@ -1300,6 +1301,7 @@ export type Database = {
           librairie_nom?: string | null
           manuscrit_id: string
           prix_unitaire_fcfa?: number
+          provenance?: string
           taux_commission_pct?: number
         }
         Update: {
@@ -1316,6 +1318,7 @@ export type Database = {
           librairie_nom?: string | null
           manuscrit_id?: string
           prix_unitaire_fcfa?: number
+          provenance?: string
           taux_commission_pct?: number
         }
         Relationships: [
