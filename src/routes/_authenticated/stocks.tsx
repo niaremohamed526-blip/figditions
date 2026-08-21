@@ -60,6 +60,7 @@ interface Stock {
   prix_unitaire_fcfa: number | null;
   taux_commission_pct?: number | null;
   applique_droits_auteur?: boolean | null;
+  provenance?: string | null;
   created_at?: string | null;
 }
 interface Manuscrit { id: string; titre: string; statut: string; auteur_id?: string | null; }

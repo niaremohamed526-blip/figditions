@@ -20,6 +20,7 @@ export interface ExterneStockRow {
   exemplaires_vendus: number;
   exemplaires_restants: number;
   prix_unitaire_fcfa: number | null;
+  provenance?: string | null;
   created_at?: string | null;
 }
 
