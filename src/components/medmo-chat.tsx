@@ -159,7 +159,7 @@ export function MedmoChat({ threadId, initialMessages }: { threadId: string; ini
       window.dispatchEvent(new CustomEvent("medmo:threads-changed"));
     },
     onError: (e) => {
-      toast.error(e.message || "DC MEDMO a rencontré une erreur. Réessayez.");
+      toast.error(e.message || "PR MEDMO a rencontré une erreur. Réessayez.");
     },
   });
 
@@ -199,7 +199,7 @@ export function MedmoChat({ threadId, initialMessages }: { threadId: string; ini
         <div className="h-7 w-7 rounded-full bg-[linear-gradient(135deg,#C8922A,#A67420)] flex items-center justify-center">
           <Sparkles className="h-3.5 w-3.5 text-white" />
         </div>
-        <div className="text-sm font-semibold">DC MEDMO</div>
+        <div className="text-sm font-semibold">PR MEDMO</div>
       </div>
 
       {/* Messages */}
@@ -210,7 +210,7 @@ export function MedmoChat({ threadId, initialMessages }: { threadId: string; ini
               <Sparkles className="h-8 w-8 text-white" />
             </div>
             <div>
-              <h2 className="text-xl font-bold">Bonjour, je suis DC MEDMO 👋</h2>
+              <h2 className="text-xl font-bold">Bonjour, je suis PR MEDMO 👋</h2>
               <p className="text-sm text-muted-foreground mt-2 max-w-md mx-auto">
                 Votre copilote pour FIGDITIONS : je peux consulter vos données en direct, vous guider pas à pas,
                 enregistrer des actions pour vous et vous conseiller pour développer votre maison d'édition.
@@ -304,7 +304,7 @@ export function MedmoChat({ threadId, initialMessages }: { threadId: string; ini
                 send(input);
               }
             }}
-            placeholder="Demandez quelque chose à DC MEDMO…"
+            placeholder="Demandez quelque chose à PR MEDMO…"
             rows={1}
             className="flex-1 resize-none rounded-xl border border-border bg-card px-4 py-3 text-sm outline-none focus:border-[color:var(--gold)]/60 placeholder:text-muted-foreground min-h-[46px]"
           />
@@ -328,7 +328,7 @@ export function MedmoChat({ threadId, initialMessages }: { threadId: string; ini
           )}
         </div>
         <p className="max-w-3xl mx-auto text-[10px] text-muted-foreground mt-1.5 text-center">
-          DC MEDMO peut se tromper — vérifiez les actions importantes avant de confirmer.
+          PR MEDMO peut se tromper — vérifiez les actions importantes avant de confirmer.
         </p>
       </div>
     </div>

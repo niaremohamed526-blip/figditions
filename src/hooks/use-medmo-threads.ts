@@ -3,7 +3,7 @@ import { useNavigate } from "@tanstack/react-router";
 import { toast } from "sonner";
 import { listThreads, createThread, deleteThread, type ChatThread } from "@/lib/medmo";
 
-/** Shared thread-list state for the DC MEDMO layout + index page. */
+/** Shared thread-list state for the PR MEDMO layout + index page. */
 export function useMedmoThreads(userId: string | undefined, entrepriseId: string | null | undefined) {
   const [threads, setThreads] = useState<ChatThread[] | null>(null);
   const [creating, setCreating] = useState(false);

@@ -7,7 +7,7 @@ import { MedmoThreadList } from "./medmo";
 export const Route = createFileRoute("/_authenticated/medmo/")({
   component: MedmoIndex,
   head: () => ({
-    meta: [{ title: "DC MEDMO — Assistant IA | FIGDITIONS" }],
+    meta: [{ title: "PR MEDMO — Assistant IA | FIGDITIONS" }],
   }),
 });
 
@@ -23,7 +23,7 @@ function MedmoIndex() {
           <Sparkles className="h-10 w-10 text-white" />
         </div>
         <div>
-          <h1 className="text-2xl font-bold">DC MEDMO</h1>
+          <h1 className="text-2xl font-bold">PR MEDMO</h1>
           <p className="text-sm text-muted-foreground mt-2 max-w-md">
             Votre copilote IA pour FIGDITIONS. Posez une question, demandez une analyse de vos stocks ou ventes,
             ou laissez-le agir pour vous — toujours avec votre confirmation.

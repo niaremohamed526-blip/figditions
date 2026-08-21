@@ -331,7 +331,7 @@ function buildTools(supabase: AnySupabase, userId: string, entrepriseId: string 
           p_manuscrit_id: m.id,
           p_type: "vente_directe",
           p_quantite: quantite,
-          p_notes: notes ?? "Vente enregistrée via DC MEDMO",
+          p_notes: notes ?? "Vente enregistrée via PR MEDMO",
           p_date: date ?? new Date().toISOString().slice(0, 10),
           p_prix_unitaire: prix_unitaire_fcfa,
           p_prix_catalogue: prix_catalogue_fcfa ?? null,
@@ -513,12 +513,12 @@ export const Route = createFileRoute("/api/chat")({
             console.error("[chat] stream error:", error);
             const message = error instanceof Error ? error.message : String(error);
             if (message.includes("402") || message.toLowerCase().includes("credits")) {
-              return "DC MEDMO est momentanément indisponible : les crédits IA de l'espace de travail sont épuisés. Rechargez-les dans les paramètres de facturation Lovable.";
+              return "PR MEDMO est momentanément indisponible : les crédits IA de l'espace de travail sont épuisés. Rechargez-les dans les paramètres de facturation Lovable.";
             }
             if (message.includes("429")) {
-              return "DC MEDMO reçoit trop de demandes en ce moment. Réessayez dans quelques secondes.";
+              return "PR MEDMO reçoit trop de demandes en ce moment. Réessayez dans quelques secondes.";
             }
-            return "Une erreur est survenue pendant la réponse de DC MEDMO. Réessayez.";
+            return "Une erreur est survenue pendant la réponse de PR MEDMO. Réessayez.";
           },
         });
 

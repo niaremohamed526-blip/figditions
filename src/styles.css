@@ -583,7 +583,7 @@ input[type="number"] {
   z-index: 500 !important;
 }
 
-/* DC MEDMO — markdown rendering inside assistant messages */
+/* PR MEDMO — markdown rendering inside assistant messages */
 .medmo-md > *:first-child { margin-top: 0; }
 .medmo-md > *:last-child { margin-bottom: 0; }
 .medmo-md p { margin: 0.5rem 0; }
