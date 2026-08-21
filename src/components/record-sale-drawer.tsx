@@ -47,6 +47,8 @@ interface RecordSaleResult {
   total: number;
   royalties: number;
   date: string;
+  prixCatalogue?: number;
+  remise?: number;
 }
 
 export function RecordSaleTrigger({ onClick, className }: { onClick: () => void; className?: string }) {
@@ -87,6 +89,8 @@ export function RecordSaleDrawer({
   const [prix, setPrix] = useState<string>("");
   const [dateVente, setDateVente] = useState<string>(new Date().toISOString().slice(0, 10));
   const [notes, setNotes] = useState("");
+  const [remiseMode, setRemiseMode] = useState<"none" | "pct" | "fcfa">("none");
+  const [remiseVal, setRemiseVal] = useState<string>("");
   const [pickerOpen, setPickerOpen] = useState(false);
 
   const [saving, setSaving] = useState(false);
@@ -95,7 +99,7 @@ export function RecordSaleDrawer({
   const resetForm = () => {
     setManuscritId(""); setSaleType("libre"); setStockId("");
     setQty("1"); setPrix(""); setDateVente(new Date().toISOString().slice(0, 10));
-    setNotes(""); setSuccess(null);
+    setNotes(""); setRemiseMode("none"); setRemiseVal(""); setSuccess(null);
   };
 
   useEffect(() => {
@@ -165,13 +169,22 @@ export function RecordSaleDrawer({
 
   const qtyN = Math.max(0, Number(qty) || 0);
   const prixN = Math.max(0, Number(prix) || 0);
-  const total = qtyN * prixN;
+  const remiseValN = Math.max(0, Number(remiseVal) || 0);
+  const remiseActive = saleType === "libre" && remiseMode !== "none" && prixN > 0 && remiseValN > 0;
+  const remiseInvalid = remiseActive && (remiseMode === "pct" ? remiseValN >= 100 : remiseValN >= prixN);
+  const finalUnit = remiseActive
+    ? remiseMode === "pct"
+      ? Math.round(prixN * (1 - Math.min(100, remiseValN) / 100))
+      : Math.max(0, prixN - remiseValN)
+    : prixN;
+  const remiseTotale = Math.max(0, prixN - finalUnit) * qtyN;
+  const total = qtyN * finalUnit;
   const royalties = Math.round(total * royaltyPct / 100);
   const stockAfter = availableStock - qtyN;
   const overSell = qtyN > availableStock;
 
-  const canSubmit = !!entrepriseId && !!manuscritId && qtyN > 0 && prixN > 0
-    && !overSell && (saleType === "libre" ? !!currentInterne : !!stockId);
+  const canSubmit = !!entrepriseId && !!manuscritId && qtyN > 0 && prixN > 0 && finalUnit > 0
+    && !overSell && !remiseInvalid && (saleType === "libre" ? !!currentInterne : !!stockId);
 
   const submit = async () => {
     if (!canSubmit) return;
@@ -191,9 +204,10 @@ export function RecordSaleDrawer({
           p_manuscrit_id: manuscritId,
           p_type: "vente_directe",
           p_quantite: qtyN,
-          p_notes: notes.trim() || null,
+          p_notes: [notes.trim(), remiseTotale > 0 ? `Remise −${fcfa(remiseTotale)} (catalogue ${fcfa(prixN)})` : ""].filter(Boolean).join(" · ") || null,
           p_date: dateVente,
-          p_prix_unitaire: prixN,
+          p_prix_unitaire: finalUnit,
+          p_prix_catalogue: remiseTotale > 0 ? prixN : null,
         });
         if (error) throw error;
       }
@@ -218,10 +232,12 @@ export function RecordSaleDrawer({
         type: saleType,
         librairie: saleType === "librairie" ? currentStock?.librairie_nom ?? null : null,
         quantite: qtyN,
-        prixUnit: prixN,
+        prixUnit: finalUnit,
         total,
         royalties,
         date: dateVente,
+        prixCatalogue: remiseTotale > 0 ? prixN : undefined,
+        remise: remiseTotale > 0 ? remiseTotale : undefined,
       });
       toast.success("Vente enregistrée avec succès");
       onSaved?.();
@@ -237,7 +253,7 @@ export function RecordSaleDrawer({
   // Dirty tracking — treat any user-edited field as dirty (skip success view).
   const isDirty =
     !success &&
-    (!!manuscritId || saleType !== "libre" || qty !== "1" || !!prix || !!notes.trim() || !!stockId);
+    (!!manuscritId || saleType !== "libre" || qty !== "1" || !!prix || !!notes.trim() || !!stockId || remiseMode !== "none");
   const guard = useCloseGuard(isDirty, close);
 
   return (
@@ -404,6 +420,54 @@ export function RecordSaleDrawer({
                   </div>
                 </div>
 
+                {/* Remise — vente libre uniquement */}
+                {saleType === "libre" && (
+                  <div className="space-y-2">
+                    <Label className="text-xs">🏷️ Remise (optionnel)</Label>
+                    <div className="grid grid-cols-3 gap-2">
+                      {([
+                        { id: "none", label: "Aucune" },
+                        { id: "pct", label: "En %" },
+                        { id: "fcfa", label: "En FCFA" },
+                      ] as const).map((o) => (
+                        <button
+                          key={o.id}
+                          type="button"
+                          onClick={() => setRemiseMode(o.id)}
+                          className={cn(
+                            "px-2 py-1.5 rounded-md text-xs font-medium border transition-colors",
+                            remiseMode === o.id
+                              ? "bg-[color:var(--gold)]/20 text-[color:var(--gold)] border-[color:var(--gold)]"
+                              : "bg-transparent text-muted-foreground border-border hover:bg-muted/40",
+                          )}
+                        >
+                          {o.label}
+                        </button>
+                      ))}
+                    </div>
+                    {remiseMode !== "none" && (
+                      <div className="space-y-1">
+                        <Input
+                          type="number" min={0} value={remiseVal}
+                          onChange={(e) => setRemiseVal(e.target.value)}
+                          placeholder={remiseMode === "pct" ? "Ex : 10 pour −10%" : "Ex : 500 pour −500 FCFA / exemplaire"}
+                          className={cn("font-mono", remiseInvalid && "border-red-500")}
+                        />
+                        {remiseInvalid ? (
+                          <p className="text-xs text-red-400 flex items-center gap-1">
+                            <AlertTriangle className="h-3 w-3" />
+                            {remiseMode === "pct" ? "La remise doit être inférieure à 100%" : "La remise doit être inférieure au prix"}
+                          </p>
+                        ) : remiseTotale > 0 ? (
+                          <p className="text-xs text-orange-400">
+                            −{fcfa(remiseTotale)} au total · prix final : {fcfa(finalUnit)} / exemplaire
+                          </p>
+                        ) : null}
+                      </div>
+                    )}
+                  </div>
+                )}
+
                 <div className="space-y-1.5">
                   <Label className="text-xs">📅 Date de la vente</Label>
                   <Input type="date" value={dateVente} onChange={(e) => setDateVente(e.target.value)} />
@@ -421,7 +485,16 @@ export function RecordSaleDrawer({
                 <div className="rounded-xl border border-[color:var(--gold)]/30 bg-[color:var(--gold)]/5 p-4 space-y-2">
                   <div className="flex items-center gap-2 text-sm font-semibold">📊 Récapitulatif</div>
                   <Row label="Quantité" value={`${qtyN} exemplaire(s)`} />
-                  <Row label="Prix unitaire" value={fcfa(prixN)} mono />
+                  <Row label={remiseTotale > 0 ? "Prix catalogue" : "Prix unitaire"} value={fcfa(prixN)} mono />
+                  {remiseTotale > 0 && (
+                    <>
+                      <div className="flex items-center justify-between text-sm">
+                        <span className="text-muted-foreground">🏷️ Remise</span>
+                        <span className="font-mono tabular-nums text-orange-400">− {fcfa(remiseTotale)}</span>
+                      </div>
+                      <Row label="Prix final unitaire" value={fcfa(finalUnit)} mono />
+                    </>
+                  )}
                   <div className="border-t border-border my-1" />
                   <div className="flex items-center justify-between">
                     <span className="text-sm">💰 Montant total</span>
@@ -515,7 +588,16 @@ function SuccessView({
         <Row label="Type" value={result.type === "librairie" ? "Vente en librairie" : "Vente libre"} />
         {result.librairie && <Row label="Librairie" value={result.librairie} />}
         <Row label="Quantité" value={`${result.quantite} exemplaire(s)`} />
-        <Row label="Prix unitaire" value={fcfa(result.prixUnit)} mono />
+        <Row label={result.remise ? "Prix final unitaire" : "Prix unitaire"} value={fcfa(result.prixUnit)} mono />
+        {result.remise ? (
+          <>
+            <Row label="Prix catalogue" value={fcfa(result.prixCatalogue ?? result.prixUnit)} mono />
+            <div className="flex items-center justify-between text-sm">
+              <span className="text-muted-foreground">🏷️ Remise accordée</span>
+              <span className="font-mono tabular-nums text-orange-400">− {fcfa(result.remise)}</span>
+            </div>
+          </>
+        ) : null}
         <div className="flex items-center justify-between pt-1">
           <span>💰 Total</span>
           <span className="font-mono text-lg font-bold text-[color:var(--gold)] tabular-nums">{fcfa(result.total)}</span>
