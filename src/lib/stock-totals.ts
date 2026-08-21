@@ -2,6 +2,7 @@
  * Source unique de vérité pour tous les totaux de stock.
  * Stock total = stock interne (entrepôt) + stock externe (librairies).
  */
+import { fetchAllRows } from "@/lib/fetch-all";
 
 export interface StockInterneRow {
   quantite_disponible?: number | null;
