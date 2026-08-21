@@ -40,6 +40,8 @@ import { BordereauxTab } from "@/components/bordereaux-tab";
 import { StockImportDialog } from "@/components/stock-import-dialog";
 import { StockPosDialog } from "@/components/stock-pos-dialog";
 import { RecordSaleDrawer, RecordSaleTrigger } from "@/components/record-sale-drawer";
+import { LibrairiesTab } from "@/components/librairies-tab";
+import { StockExterneGroups } from "@/components/stock-externe-groups";
 
 export const Route = createFileRoute("/_authenticated/stocks")({
   component: StocksPage,
