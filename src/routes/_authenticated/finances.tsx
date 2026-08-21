@@ -17,6 +17,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { toast } from "sonner";
+import { ConfirmationModal } from "@/components/ui/confirmation-modal";
 import { cn } from "@/lib/utils";
 import { fcfa } from "@/lib/format";
 import { planFor } from "@/lib/plans";
@@ -46,10 +47,13 @@ interface Vente {
   created_at: string;
 }
 interface Manuscrit { id: string; titre: string; auteur: string; auteur_id?: string | null; }
-interface Auteur { id: string; nom_complet: string; }
+interface Auteur { id: string; nom_complet: string; numero_mobile_money: string | null; operateur: string | null; }
 interface Stock { id: string; manuscrit_id: string; librairie_nom: string | null; exemplaires_restants: number; prix_unitaire_fcfa: number | null; exemplaires_vendus: number; }
 
 const COLORS = ["#C8922A", "#E8B84B", "#4F8FF7", "#E85D8C", "#7E5FFF", "#FF9F45"];
+
+/** Normalized author name — stable grouping key when auteur_id is missing. */
+const normalizeName = (s: string | null | undefined) => (s ?? "").trim().replace(/\s+/g, " ").toLowerCase();
 
 function FinancesPage() {
   const { user } = useAuth();
@@ -76,7 +80,7 @@ function FinancesInner({ entrepriseId, entrepriseNom }: { entrepriseId: string |
     const [{ data: v, error }, { data: ms }, { data: as }, { data: st }] = await Promise.all([
       supabase.from("ventes").select("*").order("date_vente", { ascending: false }),
       (supabase as any).from("manuscrits").select("id, titre, auteur, auteur_id"),
-      supabase.from("auteurs").select("id, nom_complet"),
+      (supabase as any).from("auteurs").select("id, nom_complet, numero_mobile_money, operateur"),
       supabase.from("stocks").select("id, manuscrit_id, librairie_nom, exemplaires_restants, prix_unitaire_fcfa, exemplaires_vendus"),
     ]);
     if (error) toast.error(error.message);
@@ -89,6 +93,7 @@ function FinancesInner({ entrepriseId, entrepriseNom }: { entrepriseId: string |
 
   const mMap = useMemo(() => Object.fromEntries(manuscrits.map((m) => [m.id, m])), [manuscrits]);
   const aMap = useMemo(() => Object.fromEntries(auteurs.map((a) => [a.id, a.nom_complet])), [auteurs]);
+  const aDetails = useMemo(() => Object.fromEntries(auteurs.map((a) => [a.id, a])), [auteurs]);
   const sMap = useMemo(() => Object.fromEntries(stocks.map((s) => [s.id, s])), [stocks]);
   const stockOfVente = (_v: Vente) => null; // ventes table doesn't carry stock id; show via manuscrit
 
@@ -140,23 +145,42 @@ function FinancesInner({ entrepriseId, entrepriseNom }: { entrepriseId: string |
     });
   }, [ventes, statusFilter, from, to]);
 
+  // Group strictly per author: auteur_id first, otherwise the normalized
+  // author name — never a single shared bucket (that merged all authors into one card).
   const royaltiesByAuthor = useMemo(() => {
     const v = ventes ?? [];
-    const by: Record<string, { name: string; pending: number; ids: string[] }> = {};
+    interface Group { key: string; auteurId: string | null; name: string; pending: number; count: number; ids: string[]; momo: string | null; operateur: string | null; }
+    const by: Record<string, Group> = {};
     v.filter((x) => x.statut_paiement === "en_attente").forEach((s) => {
-      const aid = s.auteur_id ?? mMap[s.manuscrit_id]?.auteur_id ?? "_";
-      const name = aMap[aid] ?? mMap[s.manuscrit_id]?.auteur ?? "Auteur inconnu";
-      if (!by[aid]) by[aid] = { name, pending: 0, ids: [] };
-      by[aid].pending += Number(s.droits_auteur_fcfa || 0);
-      by[aid].ids.push(s.id);
+      const aid = s.auteur_id ?? mMap[s.manuscrit_id]?.auteur_id ?? null;
+      const name = (aid && aMap[aid]) || mMap[s.manuscrit_id]?.auteur?.trim() || "Auteur inconnu";
+      const key = aid ?? `nom:${normalizeName(name)}`;
+      if (!by[key]) {
+        const det = aid ? aDetails[aid] : undefined;
+        by[key] = { key, auteurId: aid, name, pending: 0, count: 0, ids: [], momo: det?.numero_mobile_money ?? null, operateur: det?.operateur ?? null };
+      }
+      by[key].pending += Number(s.droits_auteur_fcfa || 0);
+      by[key].count += 1;
+      by[key].ids.push(s.id);
     });
-    return Object.values(by).filter((x) => x.pending > 0);
-  }, [ventes, mMap, aMap]);
+    return Object.values(by).filter((x) => x.pending > 0).sort((a, b) => b.pending - a.pending);
+  }, [ventes, mMap, aMap, aDetails]);
 
-  const markPaid = async (ids: string[]) => {
-    const { error } = await supabase.from("ventes").update({ statut_paiement: "paye" as any }).in("id", ids);
+  const [payTarget, setPayTarget] = useState<{ name: string; pending: number; ids: string[] } | null>(null);
+  const [paying, setPaying] = useState(false);
+
+  const confirmMarkPaid = async () => {
+    if (!payTarget) return;
+    setPaying(true);
+    const { error } = await supabase
+      .from("ventes")
+      .update({ statut_paiement: "paye" as any })
+      .in("id", payTarget.ids)
+      .eq("statut_paiement", "en_attente");
+    setPaying(false);
     if (error) return toast.error(error.message);
-    toast.success("Royalties marquées comme payées");
+    toast.success(`✅ Royalties de ${payTarget.name} marquées comme payées — ${fcfa(payTarget.pending)}`);
+    setPayTarget(null);
     load();
   };
 
@@ -331,7 +355,7 @@ function FinancesInner({ entrepriseId, entrepriseNom }: { entrepriseId: string |
         )}
       </div>
 
-      {/* Royalties section */}
+      {/* Royalties section — one card per author */}
       <div className="rounded-xl border border-border bg-card p-6">
         <h2 className="text-xl font-semibold mb-4">Royalties à payer par auteur</h2>
         {ventes === null ? <Skeleton className="h-24 w-full" /> :
@@ -340,12 +364,23 @@ function FinancesInner({ entrepriseId, entrepriseNom }: { entrepriseId: string |
           ) : (
             <div className="space-y-2">
               {royaltiesByAuthor.map((r) => (
-                <div key={r.name} className="flex items-center justify-between p-3 rounded-lg border border-border bg-background/50">
-                  <div>
-                    <p className="font-medium">{r.name}</p>
-                    <p className="text-sm text-[color:var(--gold)] font-semibold">{fcfa(r.pending)}</p>
+                <div
+                  key={r.key}
+                  className="flex flex-wrap items-center justify-between gap-3 rounded-xl border border-[color-mix(in_oklab,var(--gold)_15%,transparent)] bg-[rgba(26,18,8,0.8)] px-5 py-4"
+                >
+                  <div className="min-w-0">
+                    <p className="font-bold text-[15px] text-foreground truncate">{r.name}</p>
+                    <p className="font-mono text-base font-bold text-[color:var(--gold)]">{fcfa(r.pending)} <span className="text-xs font-normal text-muted-foreground">en attente</span></p>
+                    <p className="text-xs text-muted-foreground">{r.count} vente{r.count > 1 ? "s" : ""} concernée{r.count > 1 ? "s" : ""}</p>
+                    {r.momo && (
+                      <p className="text-[11px] text-muted-foreground">{r.operateur ? `${r.operateur} : ` : ""}{r.momo}</p>
+                    )}
                   </div>
-                  <Button size="sm" onClick={() => markPaid(r.ids)} className="bg-primary text-primary-foreground hover:bg-primary/90">
+                  <Button
+                    size="sm"
+                    onClick={() => setPayTarget({ name: r.name, pending: r.pending, ids: r.ids })}
+                    className="bg-[color:var(--gold)] text-[#1A1208] hover:bg-[color:var(--gold)]/90 font-semibold"
+                  >
                     <Check className="h-4 w-4" /> Marquer payé
                   </Button>
                 </div>
@@ -353,6 +388,18 @@ function FinancesInner({ entrepriseId, entrepriseNom }: { entrepriseId: string |
             </div>
           )}
       </div>
+
+      <ConfirmationModal
+        isOpen={!!payTarget}
+        title="Marquer les royalties comme payées ?"
+        message={payTarget ? `Marquer toutes les royalties de ${payTarget.name} comme payées ? Montant total : ${fcfa(payTarget.pending)}` : ""}
+        confirmLabel={paying ? "En cours…" : "Confirmer"}
+        cancelLabel="Annuler"
+        confirmVariant="gold"
+        iconVariant="gold"
+        onConfirm={confirmMarkPaid}
+        onCancel={() => setPayTarget(null)}
+      />
 
       <RecordSaleDrawer
         open={sheetOpen}
@@ -559,12 +606,13 @@ function FinancesAnalytics({ ventes, manuscrits, aMap, mMap }: { ventes: Vente[]
 
   const royaltiesByAuthor = new Map<string, { name: string; paid: number; pending: number }>();
   filtered.forEach((v) => {
-    const aid = v.auteur_id ?? mMap[v.manuscrit_id]?.auteur_id ?? "_";
-    const name = aMap[aid] ?? mMap[v.manuscrit_id]?.auteur ?? "Inconnu";
-    const e = royaltiesByAuthor.get(aid) ?? { name, paid: 0, pending: 0 };
+    const aid = v.auteur_id ?? mMap[v.manuscrit_id]?.auteur_id ?? null;
+    const name = (aid && aMap[aid]) || mMap[v.manuscrit_id]?.auteur?.trim() || "Inconnu";
+    const key = aid ?? `nom:${normalizeName(name)}`;
+    const e = royaltiesByAuthor.get(key) ?? { name, paid: 0, pending: 0 };
     const dr = Number(v.droits_auteur_fcfa || 0);
     if (v.statut_paiement === "paye") e.paid += dr; else e.pending += dr;
-    royaltiesByAuthor.set(aid, e);
+    royaltiesByAuthor.set(key, e);
   });
 
   return (
