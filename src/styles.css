@@ -582,3 +582,37 @@ input[type="number"] {
 [data-radix-popper-content-wrapper] {
   z-index: 500 !important;
 }
+
+/* DC MEDMO — markdown rendering inside assistant messages */
+.medmo-md > *:first-child { margin-top: 0; }
+.medmo-md > *:last-child { margin-bottom: 0; }
+.medmo-md p { margin: 0.5rem 0; }
+.medmo-md strong { color: var(--gold); font-weight: 600; }
+.medmo-md h1, .medmo-md h2, .medmo-md h3, .medmo-md h4 {
+  font-weight: 700; margin: 0.85rem 0 0.4rem; color: var(--foreground);
+}
+.medmo-md h3 { font-size: 0.95rem; }
+.medmo-md ul, .medmo-md ol { margin: 0.5rem 0; padding-left: 1.25rem; }
+.medmo-md ul { list-style: disc; }
+.medmo-md ol { list-style: decimal; }
+.medmo-md li { margin: 0.2rem 0; }
+.medmo-md li::marker { color: var(--gold); }
+.medmo-md code {
+  background: color-mix(in oklab, var(--gold) 12%, transparent);
+  border: 1px solid color-mix(in oklab, var(--gold) 25%, transparent);
+  border-radius: 0.35rem; padding: 0.05rem 0.35rem; font-size: 0.8em;
+}
+.medmo-md pre {
+  background: var(--muted); border: 1px solid var(--border);
+  border-radius: 0.6rem; padding: 0.75rem; overflow-x: auto; margin: 0.6rem 0;
+}
+.medmo-md pre code { background: none; border: none; padding: 0; }
+.medmo-md table { width: 100%; border-collapse: collapse; margin: 0.6rem 0; font-size: 0.85em; }
+.medmo-md th, .medmo-md td { border: 1px solid var(--border); padding: 0.35rem 0.6rem; text-align: left; }
+.medmo-md th { background: color-mix(in oklab, var(--gold) 10%, transparent); font-weight: 600; }
+.medmo-md blockquote {
+  border-left: 3px solid var(--gold); padding-left: 0.75rem;
+  color: var(--muted-foreground); margin: 0.5rem 0;
+}
+.medmo-md hr { border-color: var(--border); margin: 0.75rem 0; }
+.medmo-md a { color: var(--gold); text-decoration: underline; }

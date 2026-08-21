@@ -10,7 +10,7 @@ import {
   CommandSeparator,
 } from "@/components/ui/command";
 import {
-  LayoutDashboard, BookOpen, PenLine, Package, Wallet, FileText, Settings, Calculator, Factory, LogOut,
+  LayoutDashboard, BookOpen, PenLine, Package, Wallet, FileText, Settings, Calculator, Factory, LogOut, Sparkles,
 } from "lucide-react";
 import { useI18n } from "@/hooks/use-i18n";
 import { supabase } from "@/integrations/supabase/client";
@@ -35,6 +35,7 @@ export function CommandPalette() {
 
   const nav: Item[] = [
     { to: "/dashboard", labelFr: "Tableau de bord", labelEn: "Dashboard", icon: LayoutDashboard },
+    { to: "/medmo", labelFr: "DC MEDMO (assistant IA)", labelEn: "DC MEDMO (AI assistant)", icon: Sparkles },
     { to: "/manuscrits", labelFr: "Manuscrits", labelEn: "Manuscripts", icon: BookOpen },
     { to: "/auteurs", labelFr: "Auteurs", labelEn: "Authors", icon: PenLine },
     { to: "/stocks", labelFr: "Stocks", labelEn: "Stock", icon: Package },
