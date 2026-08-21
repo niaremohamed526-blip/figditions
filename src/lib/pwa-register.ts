@@ -70,6 +70,15 @@ export async function registerPwa() {
       updateViaCache: "none",
     });
     await registration.update();
+
+    // Installed PWAs often stay open for days. Re-check periodically and
+    // whenever the user returns online or brings the app back to the front.
+    const checkForUpdate = () => void registration.update().catch(() => undefined);
+    window.setInterval(checkForUpdate, 60 * 60 * 1000);
+    window.addEventListener("online", checkForUpdate);
+    document.addEventListener("visibilitychange", () => {
+      if (document.visibilityState === "visible") checkForUpdate();
+    });
   } catch (err) {
     console.warn("[PWA] Service worker registration failed:", err);
   }
