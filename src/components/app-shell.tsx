@@ -25,7 +25,7 @@ type NavItem = {
 
 const NAV: NavItem[] = [
   { to: "/dashboard", labelFr: "Tableau de bord", labelEn: "Dashboard", icon: LayoutDashboard, permission: "dashboard" },
-  { to: "/medmo", labelFr: "DC MEDMO", labelEn: "DC MEDMO", icon: Sparkles, permission: "medmo" },
+  { to: "/medmo", labelFr: "PR MEDMO", labelEn: "PR MEDMO", icon: Sparkles, permission: "medmo" },
   { to: "/manuscrits", labelFr: "Manuscrits", labelEn: "Manuscripts", icon: BookOpen, permission: "manuscrits" },
   { to: "/auteurs", labelFr: "Auteurs", labelEn: "Authors", icon: PenLine, permission: "auteurs" },
   { to: "/stocks", labelFr: "Stocks", labelEn: "Stock Tracking", icon: Package, permission: "stocks_any" },
@@ -81,7 +81,7 @@ export function AppShell({ children }: { children: ReactNode }) {
   const hasPermission = (n: NavItem) => {
     if (isAdmin) return true;
     if (n.permission === "stocks_any") return !!(perms.stocks_interne || perms.stocks_externe);
-    // DC MEDMO predates per-member permissions: visible unless explicitly revoked.
+    // PR MEDMO predates per-member permissions: visible unless explicitly revoked.
     if (n.permission === "medmo") return perms.medmo !== false;
     return !!perms[n.permission];
   };

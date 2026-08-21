@@ -84,7 +84,7 @@ function MedmoLayout() {
             <Sparkles className="h-4.5 w-4.5 text-white" />
           </div>
           <div className="flex-1 min-w-0">
-            <div className="text-sm font-bold">DC MEDMO</div>
+            <div className="text-sm font-bold">PR MEDMO</div>
             <div className="text-[10px] text-muted-foreground">Votre copilote éditorial</div>
           </div>
         </div>

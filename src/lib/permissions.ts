@@ -28,7 +28,7 @@ export interface PageDef {
 
 export const PAGES: PageDef[] = [
   { key: "dashboard", emoji: "🏠", label: "Tableau de bord", description: "Accès aux statistiques générales", defaultOn: true },
-  { key: "medmo", emoji: "🤖", label: "DC MEDMO", description: "Assistant IA : conseils, données en direct et actions", defaultOn: true },
+  { key: "medmo", emoji: "🤖", label: "PR MEDMO", description: "Assistant IA : conseils, données en direct et actions", defaultOn: true },
   { key: "manuscrits", emoji: "📚", label: "Manuscrits", description: "Gérer les manuscrits et leur workflow", defaultOn: false },
   { key: "auteurs", emoji: "✍️", label: "Auteurs", description: "Gérer les fiches auteurs", defaultOn: false },
   { key: "stocks_interne", emoji: "🏭", label: "Stock Interne", description: "Gérer l'entrepôt et les mouvements", defaultOn: false },
@@ -91,7 +91,7 @@ export function canAccessPath(
   if (isAdmin) return true;
   const key = permissionForPath(pathname);
   if (!key) return true;
-  // DC MEDMO predates per-member permissions: allowed unless explicitly revoked.
+  // PR MEDMO predates per-member permissions: allowed unless explicitly revoked.
   if (key === "medmo") return permissions?.medmo !== false;
   if (key === "stocks_interne") {
     return !!(permissions?.stocks_interne || permissions?.stocks_externe);

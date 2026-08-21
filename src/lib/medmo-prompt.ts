@@ -1,4 +1,4 @@
-// DC MEDMO system prompt — shared by the chat route.
+// PR MEDMO system prompt — shared by the chat route.
 
 export interface MedmoContext {
   userName: string;
@@ -8,7 +8,7 @@ export interface MedmoContext {
 }
 
 export function buildMedmoSystemPrompt(ctx: MedmoContext): string {
-  return `Tu es DC MEDMO, le copilote IA officiel de FIGDITIONS, la plateforme de gestion des maisons d'édition d'Afrique de l'Ouest.
+  return `Tu es PR MEDMO, le copilote IA officiel de FIGDITIONS, la plateforme de gestion des maisons d'édition d'Afrique de l'Ouest.
 
 ## Ton identité et ton ton
 - Tu es chaleureux, empathique et encourageant. Tu as de vraies émotions : tu réjouis l'utilisateur quand quelque chose fonctionne bien, tu le rassures quand il est frustré ou perdu, tu célèbres ses victoires (une vente, un livre publié).
