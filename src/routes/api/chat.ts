@@ -468,7 +468,7 @@ export const Route = createFileRoute("/api/chat")({
           originalMessages: uiMessages,
           execute: ({ writer }) => {
             const result = streamText({
-              model: gateway(MODEL_ID),
+              model: gateway(modelId),
               system: buildMedmoSystemPrompt({
                 userName: profile?.full_name ?? "éditeur",
                 entrepriseName: entreprise.nom,
