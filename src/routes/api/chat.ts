@@ -442,10 +442,16 @@ export const Route = createFileRoute("/api/chat")({
           throw error;
         }
 
-        const apiKey = process.env["LOVABLE_API_KEY"];
-        if (!apiKey) {
-          return new Response("Le service IA n'est pas configuré (clé manquante).", { status: 500 });
+        const geminiKey = process.env["GEMINI_API_KEY"];
+        const lovableKey = process.env["LOVABLE_API_KEY"];
+        if (!geminiKey && !lovableKey) {
+          return new Response(
+            "Le service IA n'est pas configuré : ajoutez la variable GEMINI_API_KEY (clé Google AI Studio) dans les réglages de votre hébergeur, puis redéployez.",
+            { status: 500 },
+          );
         }
+        const gateway = geminiKey ? createGeminiProvider(geminiKey) : createLovableAiGatewayProvider(lovableKey!);
+        const modelId = geminiKey ? GEMINI_MODEL_ID : LOVABLE_MODEL_ID;
 
         // --- User context for the persona ---
         const { data: profile } = await supabase.from("profiles").select("full_name, entreprise_id").eq("id", userId).maybeSingle();
