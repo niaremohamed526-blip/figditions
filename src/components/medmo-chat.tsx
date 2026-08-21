@@ -419,6 +419,12 @@ export function MedmoChat({
     const t = msg.text.trim();
     const files = msg.files ?? [];
     if (busy || (!t && files.length === 0)) return;
+    // Budget total : au-delà, l'hébergeur rejette la requête avant le serveur.
+    const totalChars = files.reduce((a, f) => a + (typeof f.url === "string" ? f.url.length : 0), 0);
+    if (totalChars > MAX_ATTACH_TOTAL_CHARS) {
+      toast.error("Les fichiers joints dépassent ~2,5 Mo au total. Envoyez-les un par un ou compressez-les.");
+      return;
+    }
     void sendMessage({
       text: t || "Analyse le(s) document(s) joint(s) et dis-moi ce qu'ils contiennent.",
       ...(files.length > 0 ? { files } : {}),
@@ -600,9 +606,16 @@ export function MedmoChat({
                 <motion.div
                   initial={{ opacity: 0, y: 8 }}
                   animate={{ opacity: 1, y: 0 }}
-                  className="rounded-xl border border-red-500/30 bg-red-500/10 text-red-300 text-xs px-4 py-3"
+                  className="rounded-xl border border-red-500/30 bg-red-500/10 text-red-300 text-xs px-4 py-3 flex items-center justify-between gap-3"
                 >
-                  Une erreur est survenue. Vérifiez votre connexion puis réessayez d'envoyer votre message.
+                  <span>{friendlyChatError(error.message)}</span>
+                  <button
+                    type="button"
+                    onClick={() => void regenerate()}
+                    className="shrink-0 rounded-lg border border-red-500/40 px-2.5 py-1 font-medium hover:bg-red-500/15 transition-colors"
+                  >
+                    Réessayer
+                  </button>
                 </motion.div>
               )}
             </div>
