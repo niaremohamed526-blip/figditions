@@ -21,13 +21,16 @@ import {
   useRef,
   useState,
 } from "react";
-import type {
-  BundledLanguage,
-  BundledTheme,
-  HighlighterGeneric,
-  ThemedToken,
-} from "shiki";
-import { createHighlighter } from "shiki";
+import type { BundledLanguage, ThemedToken } from "shiki";
+import { createHighlighterCore } from "shiki/core";
+import { createJavaScriptRegexEngine } from "shiki/engine/javascript";
+import { bundledLanguages } from "shiki/langs";
+import { bundledThemes } from "shiki/themes";
+
+// JavaScript RegExp engine: no Oniguruma WASM, which breaks the Vercel build.
+const shikiEngine = createJavaScriptRegexEngine({ forgiving: true });
+
+type Highlighter = Awaited<ReturnType<typeof createHighlighterCore>>;
 
 // Shiki uses bitflags for font styles: 1=italic, 2=bold, 4=underline
 // oxlint-disable-next-line eslint(no-bitwise)
