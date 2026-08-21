@@ -147,18 +147,21 @@ const getTokensCacheKey = (code: string, language: BundledLanguage) => {
   return `${language}:${code.length}:${start}:${end}`;
 };
 
-const getHighlighter = (
-  language: BundledLanguage
-): Promise<HighlighterGeneric<BundledLanguage, BundledTheme>> => {
+const getHighlighter = (language: BundledLanguage): Promise<Highlighter> => {
   const cached = highlighterCache.get(language);
   if (cached) {
     return cached;
   }
 
-  const highlighterPromise = createHighlighter({
-    langs: [language],
-    themes: ["github-light", "github-dark"],
-  });
+  const langLoader = (
+    bundledLanguages as Record<string, (() => unknown) | undefined>
+  )[language];
+
+  const highlighterPromise = createHighlighterCore({
+    langs: langLoader ? [langLoader()] : [],
+    themes: [bundledThemes["github-light"](), bundledThemes["github-dark"]()],
+    engine: shikiEngine,
+  } as Parameters<typeof createHighlighterCore>[0]);
 
   highlighterCache.set(language, highlighterPromise);
   return highlighterPromise;
