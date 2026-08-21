@@ -154,32 +154,38 @@ export const Route = createFileRoute("/api/public/hooks/send-push")({
         try { body = await request.json(); } catch { /* empty */ }
         if (!body.notification_id) return new Response("Missing notification_id", { status: 400 });
 
-        const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+        // Publishable-key client + secret-gated RPCs: no service role key needed,
+        // so this works on any host (Vercel included).
+        const supaUrl = process.env.SUPABASE_URL ?? process.env.VITE_SUPABASE_URL;
+        const supaKey = process.env.SUPABASE_PUBLISHABLE_KEY ?? process.env.VITE_SUPABASE_PUBLISHABLE_KEY;
+        if (!supaUrl || !supaKey) {
+          return new Response("Supabase env not configured", { status: 500 });
+        }
+        const { createClient } = await import("@supabase/supabase-js");
+        const sb = createClient(supaUrl, supaKey, { auth: { persistSession: false } });
 
-        const { data: notif } = await supabaseAdmin
-          .from("notifications")
-          .select("id, entreprise_id, titre, message, lien")
-          .eq("id", body.notification_id)
-          .maybeSingle();
-        if (!notif) return new Response(JSON.stringify({ ok: true, sent: 0 }), { status: 200 });
+        const { data: notif } = await sb.rpc("push_dispatch_data", {
+          p_notification_id: body.notification_id,
+          p_secret: secret,
+        }) as { data: {
+          id: string; titre: string; message: string; lien: string | null;
+          subscriptions: { endpoint: string; p256dh: string; auth: string }[];
+        } | null };
+        if (!notif) {
+          return new Response(JSON.stringify({ ok: true, sent: 0 }), { status: 200 });
+        }
 
-        const { data: subs } = await supabaseAdmin
-          .from("push_subscriptions")
-          .select("endpoint, p256dh, auth")
-          .eq("entreprise_id", (notif as { entreprise_id: string }).entreprise_id);
-
+        const subs = notif.subscriptions ?? [];
         const payloadObj = {
-          titre: (notif as { titre: string }).titre,
-          message: (notif as { message: string }).message,
-          lien: (notif as { lien: string | null }).lien,
-          tag: `notif-${(notif as { id: string }).id}`,
+          titre: notif.titre,
+          message: notif.message,
+          lien: notif.lien,
+          tag: `notif-${notif.id}`,
         };
 
         const vapid = { pub: vapidPub, priv: vapidPriv, sub: vapidSub };
         const results = await Promise.allSettled(
-          (subs ?? []).map((s) =>
-            sendOne((s as { endpoint: string }).endpoint, (s as { p256dh: string }).p256dh, (s as { auth: string }).auth, payloadObj, vapid),
-          ),
+          subs.map((s) => sendOne(s.endpoint, s.p256dh, s.auth, payloadObj, vapid)),
         );
 
         // Cleanup dead subscriptions (404/410)
@@ -190,7 +196,7 @@ export const Route = createFileRoute("/api/public/hooks/send-push")({
           }
         }
         if (stale.length) {
-          await supabaseAdmin.from("push_subscriptions").delete().in("endpoint", stale);
+          await sb.rpc("push_dispatch_cleanup", { p_secret: secret, p_endpoints: stale });
         }
 
         const sent = results.filter((r) => r.status === "fulfilled" && r.value.status >= 200 && r.value.status < 300).length;

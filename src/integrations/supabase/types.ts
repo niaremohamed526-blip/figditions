@@ -1477,6 +1477,14 @@ export type Database = {
         Args: { p_auteur: string; p_manuscrit: string }
         Returns: number
       }
+      push_dispatch_cleanup: {
+        Args: { p_endpoints: string[]; p_secret: string }
+        Returns: undefined
+      }
+      push_dispatch_data: {
+        Args: { p_notification_id: string; p_secret: string }
+        Returns: Json
+      }
       record_stock_mouvement:
         | {
             Args: {
