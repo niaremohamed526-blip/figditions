@@ -39,6 +39,10 @@ const TOOL_LABELS: Record<string, string> = {
   creer_manuscrit: "Créer un manuscrit",
   enregistrer_vente_libre: "Enregistrer une vente libre",
   enregistrer_vente_librairie: "Enregistrer une vente en librairie",
+  creer_depot_librairie: "Créer un dépôt en librairie",
+  enregistrer_impression: "Enregistrer une impression",
+  retour_depot_librairie: "Retour de dépôt vers l'entrepôt",
+  changer_statut_manuscrit: "Changer le statut d'un manuscrit",
 };
 
 const INPUT_LABELS: Record<string, string> = {
@@ -58,6 +62,9 @@ const INPUT_LABELS: Record<string, string> = {
   auteur: "Auteur",
   genre: "Genre",
   langue: "Langue",
+  adresse: "Adresse",
+  provenance: "Provenance",
+  nouveau_statut: "Nouveau statut",
 };
 
 const SUGGESTIONS = [
