@@ -5,6 +5,7 @@ import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGri
 import { format, startOfMonth, subMonths } from "date-fns";
 import { fr } from "date-fns/locale";
 import { supabase } from "@/integrations/supabase/client";
+import { fetchAllRows } from "@/lib/fetch-all";
 import { useAuth, useProfile } from "@/hooks/use-auth";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
@@ -48,14 +49,14 @@ function AuteursPage() {
 
   const load = async () => {
     setItems(null);
-    const { data, error } = await (supabase as any)
-      .from("auteurs").select("*").order("created_at", { ascending: false });
-    if (error) toast.error(error.message);
-    const list = (data ?? []) as Auteur[];
+    // fetchAllRows : contourne la limite silencieuse de 1000 lignes de l'API.
+    const list = await fetchAllRows<Auteur>(() =>
+      (supabase as any).from("auteurs").select("*").order("created_at", { ascending: false }),
+    ).catch((e: any) => { toast.error(e?.message ?? "Erreur de chargement"); return [] as Auteur[]; });
     setItems(list);
 
     // Counts of manuscripts per author (match by auteur_id OR by name)
-    const { data: msList } = await supabase.from("manuscrits").select("auteur, id, auteur_id" as any);
+    const msList = await fetchAllRows<any>(() => supabase.from("manuscrits").select("auteur, id, auteur_id" as any));
     const c: Record<string, number> = {};
     for (const a of list) {
       c[a.id] = ((msList ?? []) as any[]).filter(
@@ -306,11 +307,11 @@ function AuthorAnalytics({ auteurs, entrepriseId }: { auteurs: Auteur[]; entrepr
     if (!entrepriseId) return;
     (async () => {
       const [v, m] = await Promise.all([
-        supabase.from("ventes").select("auteur_id, manuscrit_id, quantite_vendue, montant_total_fcfa, droits_auteur_fcfa, statut_paiement, date_vente"),
-        supabase.from("manuscrits").select("id, auteur, auteur_id"),
+        fetchAllRows<any>(() => supabase.from("ventes").select("auteur_id, manuscrit_id, quantite_vendue, montant_total_fcfa, droits_auteur_fcfa, statut_paiement, date_vente")),
+        fetchAllRows<any>(() => supabase.from("manuscrits").select("id, auteur, auteur_id")),
       ]);
-      setVentes(v.data ?? []);
-      setManuscrits(m.data ?? []);
+      setVentes(v);
+      setManuscrits(m);
     })();
   }, [entrepriseId]);
 

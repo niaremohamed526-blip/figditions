@@ -7,6 +7,7 @@ import { Label } from "@/components/ui/label";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Download, Loader2 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
+import { fetchAllRows } from "@/lib/fetch-all";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
 import {
@@ -72,20 +73,20 @@ export function ExportFinancesDialog({
     if (from > to) { toast.error("La date de début doit précéder la date de fin"); return; }
     setBusy(true);
     try {
-      // Fetch data (RLS scopes to entreprise)
-      const [{ data: v }, { data: m }, { data: a }, { data: st }, { data: si }] = await Promise.all([
-        supabase.from("ventes").select("*").gte("date_vente", from).lte("date_vente", to).order("date_vente", { ascending: true }),
-        (supabase as any).from("manuscrits").select("id, titre, auteur, auteur_id, genre"),
-        supabase.from("auteurs").select("id, nom_complet, email, telephone, operateur, numero_mobile_money"),
-        supabase.from("stocks").select("id, manuscrit_id, librairie_nom, librairie_adresse, exemplaires_deposes, exemplaires_vendus, exemplaires_restants, derniere_visite, prix_unitaire_fcfa"),
-        supabase.from("stock_interne").select("id, manuscrit_id, quantite_imprimee, quantite_disponible, quantite_reservee, quantite_vendue_directement, prix_vente_direct_fcfa, seuil_alerte"),
+      // Fetch data (RLS scopes to entreprise) — fetchAllRows évite la limite de 1000 lignes.
+      const [v, m, a, st, si] = await Promise.all([
+        fetchAllRows<Vente>(() => supabase.from("ventes").select("*").gte("date_vente", from).lte("date_vente", to).order("date_vente", { ascending: true })),
+        fetchAllRows<Manuscrit>(() => (supabase as any).from("manuscrits").select("id, titre, auteur, auteur_id, genre")),
+        fetchAllRows<any>(() => supabase.from("auteurs").select("id, nom_complet, email, telephone, operateur, numero_mobile_money")),
+        fetchAllRows<any>(() => supabase.from("stocks").select("id, manuscrit_id, librairie_nom, librairie_adresse, exemplaires_deposes, exemplaires_vendus, exemplaires_restants, derniere_visite, prix_unitaire_fcfa")),
+        fetchAllRows<any>(() => supabase.from("stock_interne").select("id, manuscrit_id, quantite_imprimee, quantite_disponible, quantite_reservee, quantite_vendue_directement, prix_vente_direct_fcfa, seuil_alerte")),
       ]);
 
       // Comparison window (same length just before "from")
       const days = Math.max(1, Math.round((new Date(to).getTime() - new Date(from).getTime()) / (86400 * 1000)));
       const prevTo = isoDay(new Date(new Date(from).getTime() - 86400 * 1000));
       const prevFrom = isoDay(new Date(new Date(prevTo).getTime() - days * 86400 * 1000));
-      const { data: prevV } = await supabase.from("ventes").select("*").gte("date_vente", prevFrom).lte("date_vente", prevTo);
+      const prevV = await fetchAllRows<Vente>(() => supabase.from("ventes").select("*").gte("date_vente", prevFrom).lte("date_vente", prevTo));
 
       const pdf = generateFinanceReport({
         lang,

@@ -11,6 +11,7 @@ import {
 } from "recharts";
 import { Link } from "@tanstack/react-router";
 import { supabase } from "@/integrations/supabase/client";
+import { fetchAllRows } from "@/lib/fetch-all";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -102,16 +103,17 @@ export function StockInterneTab({ entrepriseId, userId }: { entrepriseId: string
 
   const load = async () => {
     setStocks(null);
-    const [{ data: m }, { data: s }, { data: mv }, { data: ext }] = await Promise.all([
-      supabase.from("manuscrits").select("id, titre, auteur, auteur_id, statut"),
-      (supabase as any).from("stock_interne").select("*").order("created_at", { ascending: false }),
-      (supabase as any).from("mouvements_stock").select("*").order("created_at", { ascending: false }),
-      (supabase as any).from("stocks").select("id, manuscrit_id, librairie_nom, exemplaires_deposes, exemplaires_restants"),
+    // fetchAllRows : contourne la limite silencieuse de 1000 lignes de l'API.
+    const [m, s, mv, ext] = await Promise.all([
+      fetchAllRows<PubManuscrit>(() => supabase.from("manuscrits").select("id, titre, auteur, auteur_id, statut")),
+      fetchAllRows<StockInterne>(() => (supabase as any).from("stock_interne").select("*").order("created_at", { ascending: false })),
+      fetchAllRows<Mouvement>(() => (supabase as any).from("mouvements_stock").select("*").order("created_at", { ascending: false })),
+      fetchAllRows<any>(() => (supabase as any).from("stocks").select("id, manuscrit_id, librairie_nom, exemplaires_deposes, exemplaires_restants")),
     ]);
-    setManuscrits((m ?? []) as PubManuscrit[]);
-    setStocks((s ?? []) as StockInterne[]);
-    setMouvements((mv ?? []) as Mouvement[]);
-    setExternalStocks((ext ?? []) as any[]);
+    setManuscrits(m);
+    setStocks(s);
+    setMouvements(mv);
+    setExternalStocks(ext);
   };
 
   useEffect(() => { if (entrepriseId) load(); }, [entrepriseId]);

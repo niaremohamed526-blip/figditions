@@ -10,6 +10,7 @@ import {
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { CheckCircle2, Loader2, Store, ShoppingBag, ChevronsUpDown, AlertTriangle, Save } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
+import { fetchAllRows } from "@/lib/fetch-all";
 import { toast } from "sonner";
 import { fcfa } from "@/lib/format";
 import { cn } from "@/lib/utils";
@@ -106,17 +107,24 @@ export function RecordSaleDrawer({
     if (!open) return;
     setLoading(true);
     (async () => {
-      const [{ data: ms }, { data: as }, { data: st }, { data: si }] = await Promise.all([
-        (supabase as any).from("manuscrits").select("id, titre, auteur, auteur_id, statut").eq("statut", "publie"),
-        supabase.from("auteurs").select("id, nom_complet"),
-        supabase.from("stocks").select("id, manuscrit_id, librairie_nom, exemplaires_restants, exemplaires_vendus, prix_unitaire_fcfa, taux_commission_pct, applique_droits_auteur"),
-        supabase.from("stock_interne").select("id, manuscrit_id, quantite_disponible, quantite_vendue_directement, prix_vente_direct_fcfa, seuil_alerte"),
-      ]);
-      setManuscrits((ms ?? []) as Manuscrit[]);
-      setAuteurNames(Object.fromEntries(((as ?? []) as any[]).map((a) => [a.id, a.nom_complet])));
-      setStocks((st ?? []) as StockRow[]);
-      setInterne((si ?? []) as StockInterneRow[]);
-      setLoading(false);
+      try {
+        // fetchAllRows : contourne la limite silencieuse de 1000 lignes de l'API —
+        // sans elle, des dépôts entiers (ex. une librairie) n'apparaissaient jamais ici.
+        const [ms, as, st, si] = await Promise.all([
+          fetchAllRows<Manuscrit>(() => (supabase as any).from("manuscrits").select("id, titre, auteur, auteur_id, statut").eq("statut", "publie")),
+          fetchAllRows<{ id: string; nom_complet: string }>(() => supabase.from("auteurs").select("id, nom_complet")),
+          fetchAllRows<StockRow>(() => supabase.from("stocks").select("id, manuscrit_id, librairie_nom, exemplaires_restants, exemplaires_vendus, prix_unitaire_fcfa, taux_commission_pct, applique_droits_auteur")),
+          fetchAllRows<StockInterneRow>(() => supabase.from("stock_interne").select("id, manuscrit_id, quantite_disponible, quantite_vendue_directement, prix_vente_direct_fcfa, seuil_alerte")),
+        ]);
+        setManuscrits(ms);
+        setAuteurNames(Object.fromEntries(as.map((a) => [a.id, a.nom_complet])));
+        setStocks(st);
+        setInterne(si);
+      } catch (e: any) {
+        toast.error(e?.message ?? "Erreur de chargement");
+      } finally {
+        setLoading(false);
+      }
     })();
   }, [open]);
 

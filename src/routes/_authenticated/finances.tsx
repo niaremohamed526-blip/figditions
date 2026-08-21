@@ -9,6 +9,7 @@ import { TrendingDown, ArrowUp, ArrowDown } from "lucide-react";
 import { Progress } from "@/components/ui/progress";
 import { fr } from "date-fns/locale";
 import { supabase } from "@/integrations/supabase/client";
+import { fetchAllRows } from "@/lib/fetch-all";
 import { useAuth, useProfile } from "@/hooks/use-auth";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -77,17 +78,22 @@ function FinancesInner({ entrepriseId, entrepriseNom }: { entrepriseId: string |
 
   const load = async () => {
     setVentes(null);
-    const [{ data: v, error }, { data: ms }, { data: as }, { data: st }] = await Promise.all([
-      supabase.from("ventes").select("*").order("date_vente", { ascending: false }),
-      (supabase as any).from("manuscrits").select("id, titre, auteur, auteur_id"),
-      (supabase as any).from("auteurs").select("id, nom_complet, numero_mobile_money, operateur"),
-      supabase.from("stocks").select("id, manuscrit_id, librairie_nom, exemplaires_restants, prix_unitaire_fcfa, exemplaires_vendus"),
-    ]);
-    if (error) toast.error(error.message);
-    setVentes((v ?? []) as Vente[]);
-    setManuscrits((ms ?? []) as Manuscrit[]);
-    setAuteurs((as ?? []) as Auteur[]);
-    setStocks((st ?? []) as Stock[]);
+    try {
+      // fetchAllRows : contourne la limite silencieuse de 1000 lignes de l'API.
+      const [v, ms, as, st] = await Promise.all([
+        fetchAllRows<Vente>(() => supabase.from("ventes").select("*").order("date_vente", { ascending: false })),
+        fetchAllRows<Manuscrit>(() => (supabase as any).from("manuscrits").select("id, titre, auteur, auteur_id")),
+        fetchAllRows<Auteur>(() => (supabase as any).from("auteurs").select("id, nom_complet, numero_mobile_money, operateur")),
+        fetchAllRows<Stock>(() => supabase.from("stocks").select("id, manuscrit_id, librairie_nom, exemplaires_restants, prix_unitaire_fcfa, exemplaires_vendus")),
+      ]);
+      setVentes(v);
+      setManuscrits(ms);
+      setAuteurs(as);
+      setStocks(st);
+    } catch (e: any) {
+      toast.error(e?.message ?? "Erreur de chargement");
+      setVentes([]);
+    }
   };
   useEffect(() => { if (entrepriseId) load(); }, [entrepriseId]);
 
