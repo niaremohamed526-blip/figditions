@@ -2,7 +2,7 @@
 // target (including Vercel) serves /sw.js directly.
 importScripts("/push-sw.js");
 
-const CACHE_VERSION = "figditions-app-20260821-medmo";
+const CACHE_VERSION = "figditions-app-20260821-medmo-v2";
 const PAGE_CACHE = `${CACHE_VERSION}-pages`;
 const ASSET_CACHE = `${CACHE_VERSION}-assets`;
 const OFFLINE_URL = "/";
@@ -49,7 +49,25 @@ self.addEventListener("fetch", (event) => {
     return;
   }
 
-  if (["script", "style", "font", "image"].includes(request.destination)) {
+  // Application code must be network-first so a deployment can never remain
+  // hidden behind an older cached interface. The cache remains an offline
+  // fallback when the device has no connection.
+  if (["script", "style"].includes(request.destination)) {
+    event.respondWith(
+      fetch(request)
+        .then((response) => {
+          if (response.ok) {
+            const copy = response.clone();
+            caches.open(ASSET_CACHE).then((cache) => cache.put(request, copy));
+          }
+          return response;
+        })
+        .catch(() => caches.match(request)),
+    );
+    return;
+  }
+
+  if (["font", "image"].includes(request.destination)) {
     event.respondWith(
       caches.match(request).then((cached) => {
         const network = fetch(request).then((response) => {

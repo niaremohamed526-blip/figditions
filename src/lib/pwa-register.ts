@@ -2,7 +2,7 @@
 // - Never registers in dev, Lovable preview, iframes, or with ?sw=off
 // - Unregisters any stale /sw.js in those contexts to avoid caching bugs
 
-const APP_SW_PATH = "/sw.js?v=20260821-medmo";
+const APP_SW_PATH = "/sw.js?v=20260821-medmo-v2";
 
 function isPreviewOrDevHost(): boolean {
   if (typeof window === "undefined") return true;
