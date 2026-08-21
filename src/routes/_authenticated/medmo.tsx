@@ -1,12 +1,29 @@
 import { createFileRoute, Outlet, Link, useRouterState } from "@tanstack/react-router";
-import { Sparkles, Plus, Trash2, MessageSquareText } from "lucide-react";
+import { Plus, Trash2, MessageSquareText } from "lucide-react";
+import { motion } from "motion/react";
 import { useAuth, useProfile } from "@/hooks/use-auth";
 import { useMedmoThreads } from "@/hooks/use-medmo-threads";
 import { cn } from "@/lib/utils";
+import medmoMark from "@/assets/medmo-mark.png";
 
 export const Route = createFileRoute("/_authenticated/medmo")({
   component: MedmoLayout,
 });
+
+export function MedmoBrandMark({ className }: { className?: string }) {
+  return (
+    <div
+      className={cn(
+        "flex items-center justify-center rounded-xl border border-[color:var(--gold)]/40",
+        "bg-[radial-gradient(circle_at_35%_30%,#2b2110,#14100a_75%)]",
+        "shadow-[0_0_20px_rgba(200,146,42,0.3)]",
+        className,
+      )}
+    >
+      <img src={medmoMark} alt="PR MEDMO" className="h-[60%] w-[60%] object-contain" />
+    </div>
+  );
+}
 
 export function MedmoThreadList({
   threads,
@@ -33,23 +50,40 @@ export function MedmoThreadList({
     );
   }
   return (
-    <div className="space-y-1">
+    <motion.div
+      initial="hidden"
+      animate="show"
+      variants={{ hidden: {}, show: { transition: { staggerChildren: 0.04 } } }}
+      className="space-y-1"
+    >
       {threads.map((t) => {
         const active = t.id === activeId;
         return (
-          <div
+          <motion.div
             key={t.id}
+            variants={{
+              hidden: { opacity: 0, x: -10 },
+              show: { opacity: 1, x: 0, transition: { type: "spring", stiffness: 350, damping: 28 } },
+            }}
             className={cn(
-              "group relative flex items-center rounded-lg transition-colors",
-              active ? "bg-primary/10" : "hover:bg-sidebar-accent",
+              "group relative flex items-center rounded-lg transition-colors overflow-hidden",
+              active ? "bg-[color:var(--gold)]/10" : "hover:bg-sidebar-accent",
             )}
           >
+            {active && (
+              <motion.span
+                layoutId="medmo-active-thread"
+                className="absolute left-0 top-1.5 bottom-1.5 w-[3px] rounded-full bg-[linear-gradient(180deg,#E7B958,#A67420)]"
+              />
+            )}
             <Link
               to="/medmo/$threadId"
               params={{ threadId: t.id }}
               className={cn(
                 "flex-1 min-w-0 px-3 py-2.5 text-sm truncate",
-                active ? "text-foreground font-medium" : "text-muted-foreground hover:text-foreground",
+                active
+                  ? "text-foreground font-medium"
+                  : "text-muted-foreground hover:text-foreground",
               )}
             >
               {t.title}
@@ -61,17 +95,20 @@ export function MedmoThreadList({
             >
               <Trash2 className="h-3.5 w-3.5" />
             </button>
-          </div>
+          </motion.div>
         );
       })}
-    </div>
+    </motion.div>
   );
 }
 
 function MedmoLayout() {
   const { user } = useAuth();
   const { profile } = useProfile(user?.id);
-  const { threads, creating, newThread, removeThread } = useMedmoThreads(user?.id, profile?.entreprise_id);
+  const { threads, creating, newThread, removeThread } = useMedmoThreads(
+    user?.id,
+    profile?.entreprise_id,
+  );
   const pathname = useRouterState({ select: (s) => s.location.pathname });
   const activeId = pathname.startsWith("/medmo/") ? pathname.split("/")[2] : null;
 
@@ -80,22 +117,22 @@ function MedmoLayout() {
       {/* Threads sidebar (desktop) */}
       <aside className="hidden md:flex w-72 shrink-0 flex-col border-r border-border bg-sidebar/40 min-h-0">
         <div className="px-4 py-4 border-b border-border flex items-center gap-2.5">
-          <div className="h-9 w-9 rounded-xl bg-[linear-gradient(135deg,#C8922A,#A67420)] flex items-center justify-center shadow-[0_0_20px_rgba(200,146,42,0.3)]">
-            <Sparkles className="h-4.5 w-4.5 text-white" />
-          </div>
+          <MedmoBrandMark className="h-9 w-9" />
           <div className="flex-1 min-w-0">
             <div className="text-sm font-bold">PR MEDMO</div>
             <div className="text-[10px] text-muted-foreground">Votre copilote éditorial</div>
           </div>
         </div>
         <div className="p-3">
-          <button
+          <motion.button
+            whileHover={{ scale: 1.015 }}
+            whileTap={{ scale: 0.97 }}
             onClick={newThread}
             disabled={creating}
             className="w-full inline-flex items-center justify-center gap-2 rounded-xl bg-[linear-gradient(135deg,#C8922A,#A67420)] text-white text-sm font-semibold px-3 py-2.5 hover:brightness-110 disabled:opacity-50 shadow-lg"
           >
             <Plus className="h-4 w-4" /> Nouvelle conversation
-          </button>
+          </motion.button>
         </div>
         <div className="flex-1 overflow-y-auto px-3 pb-3 min-h-0">
           <MedmoThreadList threads={threads} activeId={activeId} onDelete={removeThread} />
