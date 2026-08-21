@@ -135,14 +135,16 @@ class PointerHandler {
       enter: () => { this.isHover = true; this.onEnter?.(); },
       leave: () => { this.isHover = false; this.onLeave?.(); },
     };
-    this.el.addEventListener("pointermove", this.#handlers.move);
+    // Listen on window so cursor-follow works even when the canvas sits
+    // behind overlaying content (background-usage pattern).
+    window.addEventListener("pointermove", this.#handlers.move);
     this.el.addEventListener("pointerenter", this.#handlers.enter);
-    this.el.addEventListener("pointerleave", this.#handlers.leave);
+    document.documentElement.addEventListener("mouseleave", this.#handlers.leave);
   }
   dispose() {
-    this.el.removeEventListener("pointermove", this.#handlers.move);
+    window.removeEventListener("pointermove", this.#handlers.move);
     this.el.removeEventListener("pointerenter", this.#handlers.enter);
-    this.el.removeEventListener("pointerleave", this.#handlers.leave);
+    document.documentElement.removeEventListener("mouseleave", this.#handlers.leave);
   }
 }
 
