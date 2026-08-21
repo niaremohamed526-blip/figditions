@@ -8,6 +8,7 @@ import {
 import { format, formatDistanceToNow, startOfMonth, subMonths } from "date-fns";
 import { fr } from "date-fns/locale";
 import { supabase } from "@/integrations/supabase/client";
+import { fetchAllRows } from "@/lib/fetch-all";
 import { useAuth, useProfile } from "@/hooks/use-auth";
 import { AnimatedCounter } from "@/components/animated-counter";
 import { STATUT_PROGRESSION, STATUT_LABEL, STATUT_COLOR } from "@/components/status-badge";
@@ -46,20 +47,21 @@ function DashboardPage() {
   const reload = useMemo(() => {
     return async () => {
       if (!profile?.entreprise_id) return;
+      // fetchAllRows : contourne la limite silencieuse de 1000 lignes de l'API.
       const [m, v, a, s, c, si] = await Promise.all([
-        supabase.from("manuscrits").select("id, titre, auteur, auteur_id, genre, statut, created_at").order("created_at", { ascending: false }),
-        supabase.from("ventes").select("*").order("date_vente", { ascending: false }),
-        supabase.from("auteurs").select("id, nom_complet"),
-        supabase.from("stocks").select("id, manuscrit_id, librairie_nom, exemplaires_deposes, exemplaires_vendus, exemplaires_restants, prix_unitaire_fcfa, created_at"),
-        supabase.from("contrats").select("id, created_at, statut, manuscrit_id"),
-        supabase.from("stock_interne").select("quantite_disponible, quantite_imprimee, quantite_transferee_librairies, quantite_vendue_directement, quantite_exposee_evenements, seuil_alerte"),
+        fetchAllRows<Manuscrit>(() => supabase.from("manuscrits").select("id, titre, auteur, auteur_id, genre, statut, created_at").order("created_at", { ascending: false })),
+        fetchAllRows<Vente>(() => supabase.from("ventes").select("*").order("date_vente", { ascending: false })),
+        fetchAllRows<Auteur>(() => supabase.from("auteurs").select("id, nom_complet")),
+        fetchAllRows<Stock>(() => supabase.from("stocks").select("id, manuscrit_id, librairie_nom, exemplaires_deposes, exemplaires_vendus, exemplaires_restants, prix_unitaire_fcfa, created_at")),
+        fetchAllRows<Contrat>(() => supabase.from("contrats").select("id, created_at, statut, manuscrit_id")),
+        fetchAllRows<StockInterneRow>(() => supabase.from("stock_interne").select("quantite_disponible, quantite_imprimee, quantite_transferee_librairies, quantite_vendue_directement, quantite_exposee_evenements, seuil_alerte")),
       ]);
-      setManuscrits((m.data ?? []) as Manuscrit[]);
-      setVentes((v.data ?? []) as Vente[]);
-      setAuteurs((a.data ?? []) as Auteur[]);
-      setStocks((s.data ?? []) as Stock[]);
-      setContrats((c.data ?? []) as Contrat[]);
-      setStockInterne((si.data ?? []) as StockInterneRow[]);
+      setManuscrits(m);
+      setVentes(v);
+      setAuteurs(a);
+      setStocks(s);
+      setContrats(c);
+      setStockInterne(si);
     };
   }, [profile?.entreprise_id]);
 

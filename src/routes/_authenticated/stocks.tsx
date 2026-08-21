@@ -7,6 +7,7 @@ import { generateManuelStocksPdf } from "@/lib/pdf-manuel-stocks";
 import { format } from "date-fns";
 import { fr } from "date-fns/locale";
 import { supabase } from "@/integrations/supabase/client";
+import { fetchAllRows } from "@/lib/fetch-all";
 import { useAuth, useProfile } from "@/hooks/use-auth";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
@@ -95,15 +96,20 @@ function StocksPage() {
 
   const load = async () => {
     setItems(null);
-    const [{ data: stocks, error }, { data: ms }, { data: au }] = await Promise.all([
-      supabase.from("stocks").select("*").order("created_at", { ascending: false }),
-      (supabase as any).from("manuscrits").select("id, titre, statut, auteur_id"),
-      (supabase as any).from("auteurs").select("id, nom, prenom"),
-    ]);
-    if (error) toast.error(error.message);
-    setItems((stocks ?? []) as Stock[]);
-    setManuscrits((ms ?? []) as Manuscrit[]);
-    setAuteurs((au ?? []) as any);
+    try {
+      // fetchAllRows : la limite silencieuse de 1000 lignes masquait des dépôts entiers.
+      const [stocks, ms, au] = await Promise.all([
+        fetchAllRows<Stock>(() => supabase.from("stocks").select("*").order("created_at", { ascending: false })),
+        fetchAllRows<Manuscrit>(() => (supabase as any).from("manuscrits").select("id, titre, statut, auteur_id")),
+        fetchAllRows<any>(() => (supabase as any).from("auteurs").select("id, nom, prenom")),
+      ]);
+      setItems(stocks);
+      setManuscrits(ms);
+      setAuteurs(au);
+    } catch (e: any) {
+      toast.error(e?.message ?? "Erreur de chargement");
+      setItems([]);
+    }
   };
 
   useEffect(() => { if (profile?.entreprise_id) load(); }, [profile?.entreprise_id]);
@@ -978,8 +984,8 @@ function InventoryAnalytics({ stocks, titreMap }: { stocks: Stock[]; titreMap: R
 
   useEffect(() => {
     (async () => {
-      const { data } = await supabase.from("ventes").select("manuscrit_id, quantite_vendue, date_vente");
-      setVentes(data ?? []);
+      const data = await fetchAllRows<any>(() => supabase.from("ventes").select("manuscrit_id, quantite_vendue, date_vente"));
+      setVentes(data);
     })();
   }, []);
 
