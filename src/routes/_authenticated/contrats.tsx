@@ -105,17 +105,22 @@ function ContratsInner({ entrepriseId, entreprise }: { entrepriseId: string | nu
 
   const load = async () => {
     setItems(null);
-    const [{ data: c, error }, { data: ms }, { data: as }] = await Promise.all([
-      (supabase as any).from("contrats").select("*").order("created_at", { ascending: false }),
-      (supabase as any).from("manuscrits").select("id, titre, auteur, auteur_id"),
-      entrepriseId
-        ? supabase.from("auteurs").select("id, nom_complet, email, telephone, numero_mobile_money").eq("entreprise_id", entrepriseId).order("nom_complet")
-        : Promise.resolve({ data: [] as Auteur[] } as any),
-    ]);
-    if (error) toast.error(error.message);
-    setItems((c ?? []) as Contrat[]);
-    setManuscrits((ms ?? []) as Manuscrit[]);
-    setAuteurs((as ?? []) as Auteur[]);
+    try {
+      // fetchAllRows : contourne la limite silencieuse de 1000 lignes de l'API.
+      const [c, ms, as] = await Promise.all([
+        fetchAllRows<Contrat>(() => (supabase as any).from("contrats").select("*").order("created_at", { ascending: false })),
+        fetchAllRows<Manuscrit>(() => (supabase as any).from("manuscrits").select("id, titre, auteur, auteur_id")),
+        entrepriseId
+          ? fetchAllRows<Auteur>(() => supabase.from("auteurs").select("id, nom_complet, email, telephone, numero_mobile_money").eq("entreprise_id", entrepriseId).order("nom_complet"))
+          : Promise.resolve([] as Auteur[]),
+      ]);
+      setItems(c);
+      setManuscrits(ms);
+      setAuteurs(as);
+    } catch (e: any) {
+      toast.error(e?.message ?? "Erreur de chargement");
+      setItems([]);
+    }
   };
   useEffect(() => { if (entrepriseId) load(); }, [entrepriseId]);
 

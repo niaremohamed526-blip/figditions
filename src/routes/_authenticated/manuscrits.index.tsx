@@ -52,12 +52,11 @@ function ManuscritsPage() {
 
   const load = async () => {
     setItems(null);
-    const { data, error } = await supabase
-      .from("manuscrits")
-      .select("*")
-      .order("created_at", { ascending: false });
-    if (error) toast.error(error.message);
-    setItems((data ?? []) as Manuscrit[]);
+    // fetchAllRows : contourne la limite silencieuse de 1000 lignes de l'API.
+    const data = await fetchAllRows<Manuscrit>(() =>
+      supabase.from("manuscrits").select("*").order("created_at", { ascending: false }),
+    ).catch((e: any) => { toast.error(e?.message ?? "Erreur de chargement"); return [] as Manuscrit[]; });
+    setItems(data);
   };
 
   useEffect(() => { if (profile?.entreprise_id) load(); }, [profile?.entreprise_id]);
