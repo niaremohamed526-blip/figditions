@@ -82,7 +82,7 @@ function StocksPage() {
   const [posOpen, setPosOpen] = useState(false);
   const [tab, setTab] = useState<string>("externe");
   const [saleOpen, setSaleOpen] = useState(false);
-  const [auteurs, setAuteurs] = useState<Array<{ id: string; nom: string | null; prenom: string | null }>>([]);
+  const [auteurs, setAuteurs] = useState<Array<{ id: string; nom_complet: string }>>([]);
 
   // Global desktop filters
   const [periodeFilter, setPeriodeFilter] = useState<string>("all");
@@ -101,7 +101,7 @@ function StocksPage() {
       const [stocks, ms, au] = await Promise.all([
         fetchAllRows<Stock>(() => supabase.from("stocks").select("*").order("created_at", { ascending: false })),
         fetchAllRows<Manuscrit>(() => (supabase as any).from("manuscrits").select("id, titre, statut, auteur_id")),
-        fetchAllRows<any>(() => (supabase as any).from("auteurs").select("id, nom, prenom")),
+        fetchAllRows<any>(() => (supabase as any).from("auteurs").select("id, nom_complet")),
       ]);
       setItems(stocks);
       setManuscrits(ms);
@@ -115,8 +115,8 @@ function StocksPage() {
   useEffect(() => { if (profile?.entreprise_id) load(); }, [profile?.entreprise_id]);
 
   const titreMap = useMemo(() => Object.fromEntries(manuscrits.map((m) => [m.id, m.titre])), [manuscrits]);
-  const authorFullName = (a: { nom: string | null; prenom: string | null } | undefined) =>
-    a ? [a.prenom, a.nom].filter(Boolean).join(" ").trim() : "";
+  const authorFullName = (a: { nom_complet: string } | undefined) =>
+    a?.nom_complet?.trim() ?? "";
   const authorMap = useMemo(() => {
     const byId = Object.fromEntries(auteurs.map((a) => [a.id, a]));
     const map: Record<string, string> = {};
