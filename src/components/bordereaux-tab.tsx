@@ -155,7 +155,7 @@ export function BordereauxTab({
           <FileText className="h-6 w-6" />
         </div>
         <div className="flex-1 min-w-[240px]">
-          <h2 className="font-semibold text-lg">Bordereaux dépôt & vente</h2>
+          <h2 className="font-semibold text-lg">Bordereaux de dépôt & factures</h2>
           <p className="text-sm text-muted-foreground mt-0.5">
             Générez des documents officiels signables par vous et le libraire, avec numérotation automatique et historique.
           </p>
@@ -213,7 +213,7 @@ export function BordereauxTab({
                           ? "bg-primary/15 text-primary border-primary/30"
                           : "bg-blue-500/15 text-blue-400 border-blue-500/30",
                       )}>
-                        {b.type === "vente" ? "Vente" : "Dépôt"}
+                        {b.type === "vente" ? "Facture" : "Dépôt"}
                       </span>
                     </td>
                     <td className="px-4 py-3">{b.librairie_nom}</td>
@@ -449,7 +449,7 @@ function GenerateDialog({
               className={type === "vente" ? "bg-primary text-primary-foreground hover:bg-primary/90" : ""}
               onClick={() => setType("vente")}
             >
-              Bordereau de vente
+              Facture (ventes librairie)
             </Button>
             <Button
               type="button"
