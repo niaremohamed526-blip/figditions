@@ -606,12 +606,13 @@ function FinancesAnalytics({ ventes, manuscrits, aMap, mMap }: { ventes: Vente[]
 
   const royaltiesByAuthor = new Map<string, { name: string; paid: number; pending: number }>();
   filtered.forEach((v) => {
-    const aid = v.auteur_id ?? mMap[v.manuscrit_id]?.auteur_id ?? "_";
-    const name = aMap[aid] ?? mMap[v.manuscrit_id]?.auteur ?? "Inconnu";
-    const e = royaltiesByAuthor.get(aid) ?? { name, paid: 0, pending: 0 };
+    const aid = v.auteur_id ?? mMap[v.manuscrit_id]?.auteur_id ?? null;
+    const name = (aid && aMap[aid]) || mMap[v.manuscrit_id]?.auteur?.trim() || "Inconnu";
+    const key = aid ?? `nom:${normalizeName(name)}`;
+    const e = royaltiesByAuthor.get(key) ?? { name, paid: 0, pending: 0 };
     const dr = Number(v.droits_auteur_fcfa || 0);
     if (v.statut_paiement === "paye") e.paid += dr; else e.pending += dr;
-    royaltiesByAuthor.set(aid, e);
+    royaltiesByAuthor.set(key, e);
   });
 
   return (
