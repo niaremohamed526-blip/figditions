@@ -1,14 +1,48 @@
 import { createFileRoute, Outlet, Link, useRouterState } from "@tanstack/react-router";
 import { Plus, Trash2, MessageSquareText } from "lucide-react";
 import { motion } from "motion/react";
+import { lazy, Suspense } from "react";
 import { useAuth, useProfile } from "@/hooks/use-auth";
 import { useMedmoThreads } from "@/hooks/use-medmo-threads";
 import { cn } from "@/lib/utils";
 import medmoMark from "@/assets/medmo-mark.png";
 
+const Ballpit = lazy(() => import("@/components/Ballpit"));
+
+const MEDMO_BALL_COLORS = [0xffffff, 0xa0681e, 0x745757];
+
 export const Route = createFileRoute("/_authenticated/medmo")({
   component: MedmoLayout,
 });
+
+function MedmoBallpitBackground() {
+  return (
+    <>
+      <div className="absolute inset-0 z-0" aria-hidden>
+        <Suspense fallback={null}>
+          <Ballpit
+            count={100}
+            gravity={0.5}
+            friction={0.9975}
+            wallBounce={0.95}
+            followCursor
+            colors={MEDMO_BALL_COLORS}
+            ambientColor={0xc8922a}
+            ambientIntensity={0.5}
+            lightIntensity={150}
+            minSize={0.3}
+            maxSize={0.9}
+          />
+        </Suspense>
+      </div>
+      {/* Readability overlay */}
+      <div
+        className="absolute inset-0 z-[1] pointer-events-none bg-[radial-gradient(ellipse_at_center,rgba(13,10,6,0.25)_0%,rgba(13,10,6,0.6)_100%)]"
+        aria-hidden
+      />
+    </>
+  );
+}
 
 export function MedmoBrandMark({ className }: { className?: string }) {
   return (
