@@ -1,0 +1,1 @@
+REVOKE EXECUTE ON FUNCTION public.upsert_depot_librairie(uuid, uuid, text, text, integer, integer, numeric, date, numeric, boolean) FROM anon, PUBLIC;
