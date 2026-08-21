@@ -72,24 +72,26 @@ export async function getStockTotals(
   supabase: { from: (t: string) => any },
   entrepriseId: string,
 ): Promise<StockTotals> {
-  const [interneRes, externeRes] = await Promise.all([
-    supabase
-      .from("stock_interne")
-      .select(
-        "quantite_disponible, quantite_imprimee, quantite_transferee_librairies, quantite_vendue_directement, quantite_exposee_evenements, seuil_alerte",
-      )
-      .eq("entreprise_id", entrepriseId),
-    supabase
-      .from("stocks")
-      .select(
-        "exemplaires_deposes, exemplaires_vendus, exemplaires_restants, prix_unitaire_fcfa, librairie_nom",
-      )
-      .eq("entreprise_id", entrepriseId),
+  // fetchAllRows : contourne la limite silencieuse de 1000 lignes de l'API.
+  const [interne, externe] = await Promise.all([
+    fetchAllRows<StockInterneRow>(() =>
+      supabase
+        .from("stock_interne")
+        .select(
+          "quantite_disponible, quantite_imprimee, quantite_transferee_librairies, quantite_vendue_directement, quantite_exposee_evenements, seuil_alerte",
+        )
+        .eq("entreprise_id", entrepriseId),
+    ),
+    fetchAllRows<StockExterneRow>(() =>
+      supabase
+        .from("stocks")
+        .select(
+          "exemplaires_deposes, exemplaires_vendus, exemplaires_restants, prix_unitaire_fcfa, librairie_nom",
+        )
+        .eq("entreprise_id", entrepriseId),
+    ),
   ]);
-  return computeStockTotals(
-    (interneRes.data ?? []) as StockInterneRow[],
-    (externeRes.data ?? []) as StockExterneRow[],
-  );
+  return computeStockTotals(interne, externe);
 }
 
 export const nf = (n: number) => new Intl.NumberFormat("fr-FR").format(Math.round(n));
