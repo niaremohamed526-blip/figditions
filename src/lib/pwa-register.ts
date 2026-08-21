@@ -2,7 +2,7 @@
 // - Never registers in dev, Lovable preview, iframes, or with ?sw=off
 // - Unregisters any stale /sw.js in those contexts to avoid caching bugs
 
-const APP_SW_PATH = "/sw.js";
+const APP_SW_PATH = "/sw.js?v=20260821-medmo";
 
 function isPreviewOrDevHost(): boolean {
   if (typeof window === "undefined") return true;
@@ -35,7 +35,7 @@ async function unregisterAppSw() {
     const regs = await navigator.serviceWorker.getRegistrations();
     for (const r of regs) {
       const url = r.active?.scriptURL || r.installing?.scriptURL || r.waiting?.scriptURL || "";
-      if (url.endsWith(APP_SW_PATH)) await r.unregister();
+      if (new URL(url).pathname === "/sw.js") await r.unregister();
     }
   } catch {
     /* ignore */
@@ -58,7 +58,6 @@ export async function registerPwa() {
   }
 
   try {
-    // vite-plugin-pwa emits /sw.js at build time
     let reloadingForUpdate = false;
     navigator.serviceWorker.addEventListener("controllerchange", () => {
       if (reloadingForUpdate) return;
@@ -66,7 +65,10 @@ export async function registerPwa() {
       window.location.reload();
     });
 
-    const registration = await navigator.serviceWorker.register(APP_SW_PATH, { scope: "/" });
+    const registration = await navigator.serviceWorker.register(APP_SW_PATH, {
+      scope: "/",
+      updateViaCache: "none",
+    });
     await registration.update();
   } catch (err) {
     console.warn("[PWA] Service worker registration failed:", err);
