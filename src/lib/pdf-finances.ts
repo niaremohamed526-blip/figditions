@@ -20,6 +20,8 @@ export interface Vente {
   montant_total_fcfa: number;
   droits_auteur_fcfa: number;
   commission_librairie_fcfa: number;
+  remise_fcfa?: number | null;
+  prix_catalogue_fcfa?: number | null;
   canal_vente: "externe" | "interne";
   statut_paiement: "en_attente" | "paye";
   date_vente: string;
@@ -81,6 +83,8 @@ const T = {
     payeShort: "Payé",
     attente: "En attente",
     totalGeneral: "TOTAL",
+    remise: "Remise",
+    remisesLigne: (r: string) => `Remises accordées sur la période (ventes libres) : ${r}.`,
     grandDroits: "TOTAL GÉNÉRAL DES DROITS",
     subtotal: (n: string) => `Total droits ${n}`,
     contact: "Contact",
@@ -154,6 +158,8 @@ const T = {
     payeShort: "Paid",
     attente: "Pending",
     totalGeneral: "TOTAL",
+    remise: "Discount",
+    remisesLigne: (r: string) => `Discounts granted over the period (direct sales): ${r}.`,
     grandDroits: "GRAND TOTAL ROYALTIES",
     subtotal: (n: string) => `${n} - royalties subtotal`,
     contact: "Contact",
@@ -483,6 +489,7 @@ class PdfBuilder {
     const totalRoyalties = v.reduce((a, x) => a + Number(x.droits_auteur_fcfa || 0), 0);
     const paidRoy = v.filter((x) => x.statut_paiement === "paye").reduce((a, x) => a + Number(x.droits_auteur_fcfa || 0), 0);
     const pendingRoy = totalRoyalties - paidRoy;
+    const totalRemises = v.reduce((a, x) => a + Number(x.remise_fcfa || 0), 0);
 
     // top book
     const byBook: Record<string, number> = {};
@@ -511,6 +518,10 @@ class PdfBuilder {
       { label: this.t.kpiRoyalties, value: fmtFCFA(totalRoyalties), sub: `${this.t.paid}: ${fmtFCFA(paidRoy)} | ${this.t.pending}: ${fmtFCFA(pendingRoy)}` },
       { label: this.t.kpiTop, value: topTitle, sub: `${topQty} ${this.t.copies}` },
     ]);
+
+    if (totalRemises > 0) {
+      this.paragraph(this.t.remisesLigne(fmtFCFA(totalRemises)));
+    }
 
     this.paragraph(
       this.t.resumeText(
@@ -544,24 +555,26 @@ class PdfBuilder {
         isExt ? this.t.canalExt : this.t.canalInt,
         String(s.quantite_vendue),
         fmtFCFA(s.prix_unitaire_fcfa),
+        Number(s.remise_fcfa) > 0 ? `-${fmtFCFA(Number(s.remise_fcfa))}` : "-",
         fmtFCFA(s.montant_total_fcfa),
         fmtFCFA(s.droits_auteur_fcfa),
         s.statut_paiement === "paye" ? this.t.payeShort : this.t.attente,
       ];
     });
     const cw = this.contentWidth;
-    const widths = [cw * 0.09, cw * 0.19, cw * 0.15, cw * 0.09, cw * 0.06, cw * 0.11, cw * 0.11, cw * 0.11, cw * 0.09];
-    const aligns: ("left" | "right" | "center")[] = ["left", "left", "left", "center", "center", "right", "right", "right", "center"];
+    const widths = [cw * 0.085, cw * 0.18, cw * 0.14, cw * 0.08, cw * 0.05, cw * 0.095, cw * 0.095, cw * 0.10, cw * 0.10, cw * 0.075];
+    const aligns: ("left" | "right" | "center")[] = ["left", "left", "left", "center", "center", "right", "right", "right", "right", "center"];
     const totalQty = v.reduce((a, x) => a + Number(x.quantite_vendue || 0), 0);
     const totalRev = v.reduce((a, x) => a + Number(x.montant_total_fcfa || 0), 0);
     const totalRoy = v.reduce((a, x) => a + Number(x.droits_auteur_fcfa || 0), 0);
+    const totalRem = v.reduce((a, x) => a + Number(x.remise_fcfa || 0), 0);
     this.drawTable(
-      [this.t.date, this.t.livre, this.t.auteur, this.t.type, this.t.qte, this.t.pu, this.t.total, this.t.droitsCol, this.t.statut],
+      [this.t.date, this.t.livre, this.t.auteur, this.t.type, this.t.qte, this.t.pu, this.t.remise, this.t.total, this.t.droitsCol, this.t.statut],
       rows,
       {
         widths,
         aligns,
-        totalRow: [this.t.totalGeneral, "", "", "", String(totalQty), "", fmtFCFA(totalRev), fmtFCFA(totalRoy), ""],
+        totalRow: [this.t.totalGeneral, "", "", "", String(totalQty), "", totalRem > 0 ? `-${fmtFCFA(totalRem)}` : "", fmtFCFA(totalRev), fmtFCFA(totalRoy), ""],
       },
     );
   }

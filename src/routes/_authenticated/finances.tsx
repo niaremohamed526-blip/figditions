@@ -1,6 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useEffect, useMemo, useState } from "react";
-import { Plus, Wallet, TrendingUp, ShoppingBag, Clock, Loader2, Check, Store } from "lucide-react";
+import { Plus, Wallet, TrendingUp, ShoppingBag, Clock, Loader2, Check, Store, Tag } from "lucide-react";
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, PieChart, Pie, Cell, Legend, ComposedChart, Line, CartesianGrid } from "recharts";
 import { format, subMonths, startOfMonth } from "date-fns";
 import { AnalyticsSection, defaultRange, inRange, EmptyChart, type DateRange } from "@/components/analytics-section";
@@ -38,6 +38,8 @@ interface Vente {
   montant_total_fcfa: number;
   droits_auteur_fcfa: number;
   commission_librairie_fcfa: number;
+  remise_fcfa?: number | null;
+  prix_catalogue_fcfa?: number | null;
   canal_vente: "externe" | "interne";
   statut_paiement: "en_attente" | "paye";
   date_vente: string;
@@ -95,6 +97,7 @@ function FinancesInner({ entrepriseId, entrepriseNom }: { entrepriseId: string |
     return {
       revenue: v.reduce((a, x) => a + Number(x.montant_total_fcfa || 0), 0),
       commission: v.reduce((a, x) => a + Number(x.commission_librairie_fcfa || 0), 0),
+      remises: v.reduce((a, x) => a + Number(x.remise_fcfa || 0), 0),
       paid: v.filter((x) => x.statut_paiement === "paye").reduce((a, x) => a + Number(x.droits_auteur_fcfa || 0), 0),
       pending: v.filter((x) => x.statut_paiement === "en_attente").reduce((a, x) => a + Number(x.droits_auteur_fcfa || 0), 0),
       copies: v.reduce((a, x) => a + Number(x.quantite_vendue || 0), 0),
@@ -170,12 +173,13 @@ function FinancesInner({ entrepriseId, entrepriseNom }: { entrepriseId: string |
         </div>
       </header>
 
-      <div className="grid sm:grid-cols-2 lg:grid-cols-5 gap-4">
+      <div className="grid sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 gap-4">
         <StatCard icon={TrendingUp} label="Chiffre d'affaires" value={fcfa(totals.revenue)} accent="primary" />
         <StatCard icon={Store} label="Commission librairies (20%)" value={fcfa(totals.commission)} />
         <StatCard icon={Check} label="Royalties payées" value={fcfa(totals.paid)} accent="primary" />
         <StatCard icon={Clock} label="Royalties en attente" value={fcfa(totals.pending)} accent="gold" />
         <StatCard icon={ShoppingBag} label="Exemplaires vendus" value={String(totals.copies)} />
+        <StatCard icon={Tag} label="Remises accordées" value={fcfa(totals.remises)} />
       </div>
 
       
@@ -289,8 +293,20 @@ function FinancesInner({ entrepriseId, entrepriseNom }: { entrepriseId: string |
                         </span>
                       </td>
                       <td className="px-4 py-3 hidden md:table-cell">{v.quantite_vendue}</td>
-                      <td className="px-4 py-3 hidden md:table-cell">{fcfa(v.prix_unitaire_fcfa)}</td>
-                      <td className="px-4 py-3 font-semibold">{fcfa(v.montant_total_fcfa)}</td>
+                      <td className="px-4 py-3 hidden md:table-cell">
+                        {Number(v.remise_fcfa) > 0 && v.prix_catalogue_fcfa ? (
+                          <>
+                            <span className="line-through text-muted-foreground text-xs mr-1">{fcfa(v.prix_catalogue_fcfa)}</span>
+                            {fcfa(v.prix_unitaire_fcfa)}
+                          </>
+                        ) : fcfa(v.prix_unitaire_fcfa)}
+                      </td>
+                      <td className="px-4 py-3 font-semibold">
+                        {fcfa(v.montant_total_fcfa)}
+                        {Number(v.remise_fcfa) > 0 && (
+                          <div className="text-xs font-normal text-orange-400">🏷️ −{fcfa(Number(v.remise_fcfa))}</div>
+                        )}
+                      </td>
                       <td className="px-4 py-3 hidden md:table-cell text-orange-400">
                         {Number(v.commission_librairie_fcfa) > 0 ? fcfa(v.commission_librairie_fcfa) : "—"}
                       </td>
