@@ -147,9 +147,10 @@ function MedmoLayout() {
   const activeId = pathname.startsWith("/medmo/") ? pathname.split("/")[2] : null;
 
   return (
-    <div className="flex h-[calc(100dvh-13.5rem)] md:h-[calc(100dvh-4rem)] -my-2 md:-my-4 min-h-0">
+    <div className="relative flex h-[calc(100dvh-13.5rem)] md:h-[calc(100dvh-4rem)] -my-2 md:-my-4 min-h-0 overflow-hidden">
+      <MedmoBallpitBackground />
       {/* Threads sidebar (desktop) */}
-      <aside className="hidden md:flex w-72 shrink-0 flex-col border-r border-border bg-sidebar/40 min-h-0">
+      <aside className="hidden md:flex relative z-10 w-72 shrink-0 flex-col border-r border-border bg-sidebar/40 backdrop-blur-sm min-h-0">
         <div className="px-4 py-4 border-b border-border flex items-center gap-2.5">
           <MedmoBrandMark className="h-9 w-9" />
           <div className="flex-1 min-w-0">
@@ -174,7 +175,7 @@ function MedmoLayout() {
       </aside>
 
       {/* Main chat area */}
-      <div className="flex-1 min-w-0 min-h-0 flex flex-col">
+      <div className="flex-1 min-w-0 min-h-0 flex flex-col relative z-10">
         <Outlet />
       </div>
     </div>
