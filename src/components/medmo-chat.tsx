@@ -100,7 +100,34 @@ function formatInputValue(key: string, value: unknown): string {
 
 // --- Pièces jointes (images & PDF analysés par PR MEDMO) ---
 const MAX_ATTACH_FILES = 3;
-const MAX_ATTACH_SIZE = 2 * 1024 * 1024; // 2 Mo — limite de requête de l'hébergeur
+const MAX_ATTACH_SIZE = 2 * 1024 * 1024; // 2 Mo par fichier
+// Budget TOTAL des pièces jointes en base64 (~2,8 Mo) : l'hébergeur plafonne
+// la requête complète à ~4,5 Mo, historique de conversation inclus.
+const MAX_ATTACH_TOTAL_CHARS = 3_600_000;
+
+/** Traduit une erreur brute (serveur, réseau, hébergeur) en message clair pour l'utilisateur. */
+function friendlyChatError(raw: string | undefined): string {
+  const m = (raw ?? "").trim();
+  const lower = m.toLowerCase();
+  if (!m) return "Une erreur est survenue. Vérifiez votre connexion puis réessayez.";
+  if (lower.includes("413") || lower.includes("too large") || lower.includes("trop lourds") || lower.includes("payload"))
+    return "Les fichiers joints sont trop lourds pour être envoyés. Réduisez leur taille ou envoyez-les un par un.";
+  if (lower.includes("429") || lower.includes("trop de demandes") || lower.includes("quota") || lower.includes("rate limit"))
+    return "PR MEDMO reçoit trop de demandes en ce moment (limite du fournisseur IA). Patientez une minute puis réessayez.";
+  if (lower.includes("crédits") || lower.includes("credits") || lower.includes("402"))
+    return "Les crédits IA sont épuisés. Rechargez-les dans les paramètres de facturation.";
+  if (lower.includes("gemini_api_key") || lower.includes("pas configuré") || lower.includes("api key") || lower.includes("401") || lower.includes("403"))
+    return "Le service IA n'est pas configuré correctement sur le serveur (clé GEMINI_API_KEY manquante ou invalide).";
+  if (lower.includes("timeout") || lower.includes("timed out") || lower.includes("function_invocation"))
+    return "La réponse a pris trop de temps et a été interrompue par l'hébergeur. Réessayez avec une demande plus courte.";
+  if (lower.includes("non authentifié") || lower.includes("session invalide"))
+    return "Votre session a expiré. Rechargez la page pour vous reconnecter.";
+  if (lower.includes("failed to fetch") || lower.includes("network") || lower.includes("load failed"))
+    return "Connexion interrompue. Vérifiez votre réseau puis réessayez.";
+  // Message serveur lisible (nos réponses texte) : on l'affiche tel quel s'il est court.
+  if (m.length <= 220 && !m.includes("<")) return m;
+  return "Une erreur est survenue. Vérifiez votre connexion puis réessayez.";
+}
 
 /** Compresse une image côté navigateur (max 1600px, JPEG) pour rester sous la limite d'envoi. */
 async function compressImage(file: File): Promise<File> {
@@ -359,7 +386,7 @@ export function MedmoChat({
     [threadId],
   );
 
-  const { messages, sendMessage, status, stop, addToolApprovalResponse, error } = useChat({
+  const { messages, sendMessage, regenerate, status, stop, addToolApprovalResponse, error } = useChat({
     id: threadId,
     messages: initialMessages,
     transport,
@@ -368,7 +395,7 @@ export function MedmoChat({
       window.dispatchEvent(new CustomEvent("medmo:threads-changed"));
     },
     onError: (e) => {
-      toast.error(e.message || "PR MEDMO a rencontré une erreur. Réessayez.");
+      toast.error(friendlyChatError(e.message));
     },
   });
 
@@ -392,6 +419,12 @@ export function MedmoChat({
     const t = msg.text.trim();
     const files = msg.files ?? [];
     if (busy || (!t && files.length === 0)) return;
+    // Budget total : au-delà, l'hébergeur rejette la requête avant le serveur.
+    const totalChars = files.reduce((a, f) => a + (typeof f.url === "string" ? f.url.length : 0), 0);
+    if (totalChars > MAX_ATTACH_TOTAL_CHARS) {
+      toast.error("Les fichiers joints dépassent ~2,5 Mo au total. Envoyez-les un par un ou compressez-les.");
+      return;
+    }
     void sendMessage({
       text: t || "Analyse le(s) document(s) joint(s) et dis-moi ce qu'ils contiennent.",
       ...(files.length > 0 ? { files } : {}),
@@ -573,9 +606,16 @@ export function MedmoChat({
                 <motion.div
                   initial={{ opacity: 0, y: 8 }}
                   animate={{ opacity: 1, y: 0 }}
-                  className="rounded-xl border border-red-500/30 bg-red-500/10 text-red-300 text-xs px-4 py-3"
+                  className="rounded-xl border border-red-500/30 bg-red-500/10 text-red-300 text-xs px-4 py-3 flex items-center justify-between gap-3"
                 >
-                  Une erreur est survenue. Vérifiez votre connexion puis réessayez d'envoyer votre message.
+                  <span>{friendlyChatError(error.message)}</span>
+                  <button
+                    type="button"
+                    onClick={() => void regenerate()}
+                    className="shrink-0 rounded-lg border border-red-500/40 px-2.5 py-1 font-medium hover:bg-red-500/15 transition-colors"
+                  >
+                    Réessayer
+                  </button>
                 </motion.div>
               )}
             </div>

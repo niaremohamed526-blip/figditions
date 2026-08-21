@@ -661,15 +661,18 @@ export const Route = createFileRoute("/api/chat")({
             : m?.parts,
         }));
 
-        // Garde : l'hébergeur plafonne la taille des requêtes (~4,5 Mo sur Vercel).
+        // Garde : l'hébergeur plafonne la taille TOTALE des requêtes (~4,5 Mo sur
+        // Vercel, historique inclus). On vise ~2,8 Mo de pièces jointes (base64)
+        // pour garder une marge de sécurité — au-delà, l'hébergeur renvoie sa
+        // propre page d'erreur 413 avant même que ce code ne s'exécute.
         const lastUserMsg = [...rawMessages].reverse().find((m: any) => m?.role === "user");
         const payloadChars = (lastUserMsg?.parts ?? []).reduce(
           (a: number, p: any) => a + (p?.type === "file" && typeof p.url === "string" ? p.url.length : 0),
           0,
         );
-        if (payloadChars > 5_500_000) {
+        if (payloadChars > 3_800_000) {
           return new Response(
-            "Les fichiers joints sont trop lourds (environ 4 Mo au total maximum). Compressez-les ou envoyez-les un par un.",
+            "Les fichiers joints sont trop lourds (environ 2,5 Mo au total maximum). Compressez-les ou envoyez-les un par un.",
             { status: 413 },
           );
         }
@@ -776,11 +779,18 @@ export const Route = createFileRoute("/api/chat")({
           onError: (error) => {
             console.error("[chat] stream error:", error);
             const message = error instanceof Error ? error.message : String(error);
-            if (message.includes("402") || message.toLowerCase().includes("credits")) {
+            const lower = message.toLowerCase();
+            if (message.includes("402") || lower.includes("credits")) {
               return "PR MEDMO est momentanément indisponible : les crédits IA de l'espace de travail sont épuisés. Rechargez-les dans les paramètres de facturation Lovable.";
             }
-            if (message.includes("429")) {
-              return "PR MEDMO reçoit trop de demandes en ce moment. Réessayez dans quelques secondes.";
+            if (message.includes("429") || lower.includes("quota") || lower.includes("rate limit")) {
+              return "PR MEDMO reçoit trop de demandes en ce moment (limite du fournisseur IA atteinte). Patientez une minute puis réessayez.";
+            }
+            if (message.includes("401") || message.includes("403") || lower.includes("api key") || lower.includes("api_key") || lower.includes("permission denied")) {
+              return "La clé du service IA (GEMINI_API_KEY) est invalide ou expirée. Vérifiez-la dans les réglages de votre hébergeur puis redéployez.";
+            }
+            if (lower.includes("timeout") || lower.includes("timed out") || lower.includes("deadline")) {
+              return "La réponse de PR MEDMO a pris trop de temps. Réessayez avec une demande plus courte.";
             }
             return "Une erreur est survenue pendant la réponse de PR MEDMO. Réessayez.";
           },
