@@ -16,8 +16,8 @@ const fdate = (d: string | null | undefined) => {
 
 /** Barre de statistiques rapides du stock externe. */
 export function ExterneQuickStats({
-  librairies, titres, deposes, vendus, restants, ca,
-}: { librairies: number; titres: number; deposes: number; vendus: number; restants: number; ca: number }) {
+  librairies, titres, deposes, vendus, restants, ca, horsStock = 0,
+}: { librairies: number; titres: number; deposes: number; vendus: number; restants: number; ca: number; horsStock?: number }) {
   const Stat = ({ icon, label, value }: { icon: string; label: string; value: string }) => (
     <span className="inline-flex items-center gap-1.5 text-xs text-muted-foreground">
       <span aria-hidden>{icon}</span>
@@ -32,6 +32,7 @@ export function ExterneQuickStats({
       <Stat icon="📦" label="déposés" value={String(deposes)} />
       <Stat icon="✅" label="vendus" value={String(vendus)} />
       <Stat icon="📊" label="restants" value={String(restants)} />
+      {horsStock > 0 && <Stat icon="📤" label="hors stock interne" value={String(horsStock)} />}
       <Stat icon="💰" label="" value={fcfa(ca)} />
     </div>
   );
@@ -92,6 +93,10 @@ export function StockExterneGroups({
       vendus: list.reduce((s, g) => s + g.vendus, 0),
       restants: list.reduce((s, g) => s + g.restants, 0),
       ca: list.reduce((s, g) => s + g.ca, 0),
+      horsStock: list.reduce(
+        (s, g) => s + g.rows.reduce((x, r) => x + (r.provenance === "hors_stock" ? (r.exemplaires_deposes ?? 0) : 0), 0),
+        0,
+      ),
     };
   }, [groups]);
 
@@ -243,7 +248,14 @@ export function StockExterneGroups({
                                 <BookOpen className="h-4 w-4 text-[color:var(--gold)]" />
                               </div>
                               <div className="min-w-0">
-                                <p className="truncate text-sm font-semibold text-foreground">{titreMap[r.manuscrit_id] ?? "—"}</p>
+                                <p className="truncate text-sm font-semibold text-foreground">
+                                  {titreMap[r.manuscrit_id] ?? "—"}
+                                  {r.provenance === "hors_stock" && (
+                                    <span className="ml-1.5 inline-flex items-center rounded-full border border-[color:var(--gold)]/40 bg-[color:var(--gold)]/10 px-1.5 py-px align-middle text-[10px] font-semibold text-[color:var(--gold)]">
+                                      📤 Hors stock interne
+                                    </span>
+                                  )}
+                                </p>
                                 {authorMap[r.manuscrit_id] && (
                                   <p className="truncate text-[11px] text-muted-foreground">{authorMap[r.manuscrit_id]}</p>
                                 )}

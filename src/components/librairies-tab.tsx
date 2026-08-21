@@ -20,6 +20,7 @@ export interface ExterneStockRow {
   exemplaires_vendus: number;
   exemplaires_restants: number;
   prix_unitaire_fcfa: number | null;
+  provenance?: string | null;
   created_at?: string | null;
 }
 
@@ -214,6 +215,15 @@ export function LibrairiesTab({
                   <p className="text-xs text-muted-foreground inline-flex items-center gap-1.5">
                     <BookOpen className="h-3.5 w-3.5 text-primary" /> {g.titres} titre(s) déposé(s)
                   </p>
+
+                  {(() => {
+                    const hs = g.rows.reduce((s, r) => s + (r.provenance === "hors_stock" ? (r.exemplaires_deposes ?? 0) : 0), 0);
+                    return hs > 0 ? (
+                      <p className="-mt-2 text-[11px] text-muted-foreground">
+                        📤 dont <span className="font-semibold text-[color:var(--gold)]">{hs} ex.</span> hors stock interne (dépôts directs)
+                      </p>
+                    ) : null;
+                  })()}
 
                   <div className="grid grid-cols-3 gap-2 text-center">
                     <div className="rounded-lg border border-border bg-background/40 p-2.5">
