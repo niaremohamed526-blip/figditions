@@ -17,6 +17,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { toast } from "sonner";
+import { ConfirmationModal } from "@/components/ui/confirmation-modal";
 import { cn } from "@/lib/utils";
 import { fcfa } from "@/lib/format";
 import { planFor } from "@/lib/plans";
@@ -46,10 +47,13 @@ interface Vente {
   created_at: string;
 }
 interface Manuscrit { id: string; titre: string; auteur: string; auteur_id?: string | null; }
-interface Auteur { id: string; nom_complet: string; }
+interface Auteur { id: string; nom_complet: string; numero_mobile_money: string | null; operateur: string | null; }
 interface Stock { id: string; manuscrit_id: string; librairie_nom: string | null; exemplaires_restants: number; prix_unitaire_fcfa: number | null; exemplaires_vendus: number; }
 
 const COLORS = ["#C8922A", "#E8B84B", "#4F8FF7", "#E85D8C", "#7E5FFF", "#FF9F45"];
+
+/** Normalized author name — stable grouping key when auteur_id is missing. */
+const normalizeName = (s: string | null | undefined) => (s ?? "").trim().replace(/\s+/g, " ").toLowerCase();
 
 function FinancesPage() {
   const { user } = useAuth();
