@@ -1,11 +1,10 @@
 import { useEffect, useMemo, useState } from "react";
-import { format, startOfMonth, endOfMonth } from "date-fns";
+import { format } from "date-fns";
 import { fr } from "date-fns/locale";
-import { FileText, Loader2, Calendar as CalendarIcon, Download, Trash2, Sparkles, ImagePlus, X } from "lucide-react";
+import { FileText, Loader2, Download, Trash2, Sparkles, ImagePlus, X } from "lucide-react";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -15,8 +14,6 @@ import {
 import {
   Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
 } from "@/components/ui/select";
-import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
-import { Calendar } from "@/components/ui/calendar";
 import {
   AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent,
   AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle,
@@ -35,6 +32,7 @@ interface StockRow {
   exemplaires_vendus: number;
   exemplaires_restants: number;
   prix_unitaire_fcfa: number | null;
+  taux_commission_pct?: number | null;
 }
 
 interface VenteRow {
@@ -157,7 +155,7 @@ export function BordereauxTab({
           <FileText className="h-6 w-6" />
         </div>
         <div className="flex-1 min-w-[240px]">
-          <h2 className="font-semibold text-lg">Bordereaux dépôt & vente</h2>
+          <h2 className="font-semibold text-lg">Bordereaux de dépôt & factures</h2>
           <p className="text-sm text-muted-foreground mt-0.5">
             Générez des documents officiels signables par vous et le libraire, avec numérotation automatique et historique.
           </p>
@@ -215,7 +213,7 @@ export function BordereauxTab({
                           ? "bg-primary/15 text-primary border-primary/30"
                           : "bg-blue-500/15 text-blue-400 border-blue-500/30",
                       )}>
-                        {b.type === "vente" ? "Vente" : "Dépôt"}
+                        {b.type === "vente" ? "Facture" : "Dépôt"}
                       </span>
                     </td>
                     <td className="px-4 py-3">{b.librairie_nom}</td>
@@ -300,8 +298,6 @@ function GenerateDialog({
 }) {
   const [type, setType] = useState<"depot" | "vente">("vente");
   const [librairieNom, setLibrairieNom] = useState<string>("");
-  const [debut, setDebut] = useState<Date>(startOfMonth(new Date()));
-  const [fin, setFin] = useState<Date>(endOfMonth(new Date()));
   const [notes, setNotes] = useState("");
   const [loading, setLoading] = useState(false);
   const [watermark, setWatermark] = useState<string | null>(null);
@@ -310,8 +306,6 @@ function GenerateDialog({
     if (open) {
       setType("vente");
       setLibrairieNom(librairies[0]?.nom ?? "");
-      setDebut(startOfMonth(new Date()));
-      setFin(endOfMonth(new Date()));
       setNotes("");
       setWatermark(null);
     }
@@ -339,6 +333,7 @@ function GenerateDialog({
       let lignes: BordereauLigne[] = [];
       let totalEx = 0;
       let totalFcfa = 0;
+      let commission: number | undefined;
 
       if (type === "depot") {
         lignes = selected.rows.map((r) => ({
@@ -353,24 +348,19 @@ function GenerateDialog({
         totalEx = lignes.reduce((s, l) => s + (l.deposes ?? 0), 0);
         totalFcfa = lignes.reduce((s, l) => s + (l.total ?? 0), 0);
       } else {
-        // Vente sur période : agréger les ventes de la période pour les manuscrits en dépôt chez cette librairie.
-        const manuscritIds = [...new Set(selected.rows.map((r) => r.manuscrit_id))];
-        const debutStr = format(debut, "yyyy-MM-dd");
-        const finStr = format(fin, "yyyy-MM-dd");
-        const { data: ventes, error } = await supabase
-          .from("ventes")
-          .select("manuscrit_id, quantite_vendue, prix_unitaire_fcfa, montant_total_fcfa, date_vente")
-          .in("manuscrit_id", manuscritIds)
-          .gte("date_vente", debutStr)
-          .lte("date_vente", finStr);
-        if (error) throw new Error(error.message);
+        // FACTURE : uniquement les ventes réellement enregistrées chez CETTE librairie
+        // (source de vérité : les fiches de dépôt de la librairie, pas le journal global
+        // des ventes qui mélange vente libre et autres librairies).
         const map = new Map<string, { qte: number; montant: number; prix: number }>();
-        (ventes ?? []).forEach((v: any) => {
-          const cur = map.get(v.manuscrit_id) ?? { qte: 0, montant: 0, prix: 0 };
-          cur.qte += Number(v.quantite_vendue ?? 0);
-          cur.montant += Number(v.montant_total_fcfa ?? (v.quantite_vendue ?? 0) * (v.prix_unitaire_fcfa ?? 0));
-          cur.prix = Number(v.prix_unitaire_fcfa ?? cur.prix);
-          map.set(v.manuscrit_id, cur);
+        selected.rows.forEach((r) => {
+          const vendus = Number(r.exemplaires_vendus ?? 0);
+          if (vendus <= 0) return;
+          const prix = Number(r.prix_unitaire_fcfa ?? 0);
+          const cur = map.get(r.manuscrit_id) ?? { qte: 0, montant: 0, prix: 0 };
+          cur.qte += vendus;
+          cur.montant += vendus * prix;
+          if (prix > 0) cur.prix = prix;
+          map.set(r.manuscrit_id, cur);
         });
         lignes = [...map.entries()].map(([mid, val]) => ({
           titre: titreMap[mid] ?? "—",
@@ -380,18 +370,29 @@ function GenerateDialog({
         }));
         if (lignes.length === 0) {
           setLoading(false);
-          return toast.error("Aucune vente enregistrée sur cette période pour les livres déposés chez cette librairie.");
+          return toast.error("Aucune vente enregistrée chez cette librairie pour le moment.");
         }
         totalEx = lignes.reduce((s, l) => s + l.quantite, 0);
         totalFcfa = lignes.reduce((s, l) => s + l.total, 0);
+        // Commission réelle calculée avec le taux de chaque dépôt (défaut 20%).
+        commission = Math.round(
+          selected.rows.reduce(
+            (s, r) =>
+              s +
+              Number(r.exemplaires_vendus ?? 0) *
+                Number(r.prix_unitaire_fcfa ?? 0) *
+                (Number(r.taux_commission_pct ?? 20) / 100),
+            0,
+          ),
+        );
       }
 
       const { data, error } = await supabase.rpc("create_bordereau" as any, {
         p_type: type,
         p_librairie_nom: selected.nom,
         p_librairie_adresse: selected.adresse,
-        p_periode_debut: type === "vente" ? format(debut, "yyyy-MM-dd") : null,
-        p_periode_fin: type === "vente" ? format(fin, "yyyy-MM-dd") : null,
+        p_periode_debut: null,
+        p_periode_fin: null,
         p_lignes: lignes as any,
         p_total_exemplaires: totalEx,
         p_total_fcfa: totalFcfa,
@@ -411,17 +412,16 @@ function GenerateDialog({
         maisonTelephone: entreprise.telephone,
         librairieNom: selected.nom,
         librairieAdresse: selected.adresse,
-        periodeDebut: type === "vente" ? format(debut, "dd MMM yyyy", { locale: fr }) : null,
-        periodeFin: type === "vente" ? format(fin, "dd MMM yyyy", { locale: fr }) : null,
         dateEmission: format(new Date(), "dd MMM yyyy", { locale: fr }),
         lignes,
         totalExemplaires: totalEx,
         totalFcfa: totalFcfa,
+        commissionLibrairieFcfa: type === "vente" ? commission : undefined,
         notes: notes || null,
         watermarkLogoUrl: watermark,
       });
 
-      toast.success(`Bordereau ${numero} généré`);
+      toast.success(type === "vente" ? `Facture ${numero} générée` : `Bordereau ${numero} généré`);
       onOpenChange(false);
       onGenerated();
     } catch (e: any) {
@@ -449,7 +449,7 @@ function GenerateDialog({
               className={type === "vente" ? "bg-primary text-primary-foreground hover:bg-primary/90" : ""}
               onClick={() => setType("vente")}
             >
-              Bordereau de vente
+              Facture (ventes librairie)
             </Button>
             <Button
               type="button"
@@ -474,37 +474,13 @@ function GenerateDialog({
           </div>
 
           {type === "vente" && (
-            <div className="grid grid-cols-2 gap-3">
-              <div className="space-y-2">
-                <Label>Du</Label>
-                <Popover>
-                  <PopoverTrigger asChild>
-                    <Button variant="outline" className={cn("w-full justify-start text-left font-normal")}>
-                      <CalendarIcon className="mr-2 h-4 w-4" />
-                      {format(debut, "PPP", { locale: fr })}
-                    </Button>
-                  </PopoverTrigger>
-                  <PopoverContent className="w-auto p-0 bg-card border-border" align="start">
-                    <Calendar mode="single" selected={debut} onSelect={(d) => d && setDebut(d)} locale={fr} initialFocus className={cn("p-3 pointer-events-auto")} />
-                  </PopoverContent>
-                </Popover>
-              </div>
-              <div className="space-y-2">
-                <Label>Au</Label>
-                <Popover>
-                  <PopoverTrigger asChild>
-                    <Button variant="outline" className={cn("w-full justify-start text-left font-normal")}>
-                      <CalendarIcon className="mr-2 h-4 w-4" />
-                      {format(fin, "PPP", { locale: fr })}
-                    </Button>
-                  </PopoverTrigger>
-                  <PopoverContent className="w-auto p-0 bg-card border-border" align="start">
-                    <Calendar mode="single" selected={fin} onSelect={(d) => d && setFin(d)} locale={fr} initialFocus className={cn("p-3 pointer-events-auto")} />
-                  </PopoverContent>
-                </Popover>
-              </div>
-            </div>
+            <p className="text-xs text-muted-foreground rounded-lg border border-border bg-background/40 px-3 py-2">
+              La facture reprend uniquement les exemplaires vendus enregistrés chez cette librairie
+              (source : vos fiches de dépôt — les ventes libres et les autres librairies ne sont jamais comptées).
+            </p>
           )}
+
+
 
           <div className="space-y-2">
             <Label>Logo maison (filigrane, optionnel)</Label>
