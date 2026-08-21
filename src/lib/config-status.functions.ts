@@ -93,11 +93,11 @@ export const checkConfigStatus = createServerFn({ method: "GET" })
         usedFor: ["Module Conversions"],
       },
       {
-        name: "LOVABLE_API_KEY",
-        present: has(process.env.LOVABLE_API_KEY),
+        name: "LOVABLE_API_KEY / GEMINI_API_KEY",
+        present: has(process.env.LOVABLE_API_KEY) || has(process.env.GEMINI_API_KEY),
         required: false,
-        description: "Clé Lovable AI Gateway.",
-        usedFor: ["Fonctionnalités IA"],
+        description: "Clé IA : LOVABLE_API_KEY (hébergement Lovable) ou GEMINI_API_KEY (déploiement externe, ex. Vercel).",
+        usedFor: ["Fonctionnalités IA (PR MEDMO)"],
       },
     ];
 

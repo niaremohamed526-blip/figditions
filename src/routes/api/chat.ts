@@ -12,10 +12,13 @@ import {
 } from "ai";
 import { z } from "zod";
 import { createClient, type SupabaseClient } from "@supabase/supabase-js";
-import { createLovableAiGatewayProvider } from "@/lib/ai-gateway.server";
+import { createGeminiProvider, createLovableAiGatewayProvider } from "@/lib/ai-gateway.server";
 import { buildMedmoSystemPrompt } from "@/lib/medmo-prompt";
 
-const MODEL_ID = "google/gemini-3-flash";
+// On Lovable hosting the managed LOVABLE_API_KEY is injected; on external
+// deployments (Vercel) the owner provides GEMINI_API_KEY from Google AI Studio.
+const LOVABLE_MODEL_ID = "google/gemini-3-flash";
+const GEMINI_MODEL_ID = "gemini-2.5-flash";
 
 type AnySupabase = SupabaseClient<any, "public", any>;
 
@@ -439,10 +442,16 @@ export const Route = createFileRoute("/api/chat")({
           throw error;
         }
 
-        const apiKey = process.env["LOVABLE_API_KEY"];
-        if (!apiKey) {
-          return new Response("Le service IA n'est pas configuré (clé manquante).", { status: 500 });
+        const geminiKey = process.env["GEMINI_API_KEY"];
+        const lovableKey = process.env["LOVABLE_API_KEY"];
+        if (!geminiKey && !lovableKey) {
+          return new Response(
+            "Le service IA n'est pas configuré : ajoutez la variable GEMINI_API_KEY (clé Google AI Studio) dans les réglages de votre hébergeur, puis redéployez.",
+            { status: 500 },
+          );
         }
+        const gateway = geminiKey ? createGeminiProvider(geminiKey) : createLovableAiGatewayProvider(lovableKey!);
+        const modelId = geminiKey ? GEMINI_MODEL_ID : LOVABLE_MODEL_ID;
 
         // --- User context for the persona ---
         const { data: profile } = await supabase.from("profiles").select("full_name, entreprise_id").eq("id", userId).maybeSingle();
@@ -453,14 +462,13 @@ export const Route = createFileRoute("/api/chat")({
           if (e) entreprise = { nom: e.nom, ville: e.ville ?? "", plan: e.plan ?? "starter" };
         }
 
-        const gateway = createLovableAiGatewayProvider(apiKey);
         const modelMessages = await convertToModelMessages(uiMessages);
 
         const stream = createUIMessageStream({
           originalMessages: uiMessages,
           execute: ({ writer }) => {
             const result = streamText({
-              model: gateway(MODEL_ID),
+              model: gateway(modelId),
               system: buildMedmoSystemPrompt({
                 userName: profile?.full_name ?? "éditeur",
                 entrepriseName: entreprise.nom,
