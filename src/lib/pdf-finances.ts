@@ -9,6 +9,8 @@ export interface ReportSections {
   livres: boolean;
   librairies: boolean;
   stocks: boolean;
+  depenses: boolean;
+  rentabilite: boolean;
 }
 
 export interface Vente {
@@ -25,11 +27,15 @@ export interface Vente {
   canal_vente: "externe" | "interne";
   statut_paiement: "en_attente" | "paye";
   date_vente: string;
+  librairie_nom?: string | null;
+  statut_encaissement?: string | null;
+  montant_encaisse_fcfa?: number | null;
 }
 export interface Manuscrit { id: string; titre: string; auteur: string | null; auteur_id: string | null; genre?: string | null; }
 export interface Auteur { id: string; nom_complet: string; email?: string | null; telephone?: string | null; mobile_money_operateur?: string | null; mobile_money_numero?: string | null; }
 export interface Stock { id: string; manuscrit_id: string; librairie_nom: string | null; librairie_adresse?: string | null; exemplaires_deposes: number; exemplaires_vendus: number; exemplaires_restants: number; derniere_visite?: string | null; prix_unitaire_fcfa: number; }
-export interface StockInterne { id: string; manuscrit_id: string; quantite_imprimee?: number; quantite_disponible: number; quantite_reservee?: number; quantite_vendue_directement?: number; prix_vente_direct_fcfa?: number | null; seuil_alerte?: number; }
+export interface StockInterne { id: string; manuscrit_id: string; quantite_imprimee?: number; quantite_disponible: number; quantite_reservee?: number; quantite_vendue_directement?: number; prix_vente_direct_fcfa?: number | null; seuil_alerte?: number; cout_unitaire_impression_fcfa?: number | null; }
+export interface Depense { categorie: string; libelle: string; montant_fcfa: number; date_depense: string; manuscrit_id?: string | null; }
 
 export interface ReportInput {
   lang: ReportLang;
@@ -42,6 +48,7 @@ export interface ReportInput {
   auteurs: Auteur[];
   stocks: Stock[];
   stockInterne: StockInterne[];
+  depenses?: Depense[];
   previousVentes?: Vente[]; // for comparison
 }
 
