@@ -366,9 +366,11 @@ function ToolPartView({
 export function MedmoChat({
   threadId,
   initialMessages,
+  compact = false,
 }: {
   threadId: string;
   initialMessages: UIMessage[];
+  compact?: boolean;
 }) {
   const composerRef = useRef<HTMLDivElement>(null);
 
