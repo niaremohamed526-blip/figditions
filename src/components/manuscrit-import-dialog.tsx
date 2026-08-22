@@ -229,7 +229,7 @@ export function ManuscritImportDialog({
                     <StatChip label="Erreurs" value={errorCount} tone={errorCount ? "error" : "muted"} />
                   </div>
 
-                  <div className="max-h-64 overflow-y-auto rounded-lg border border-border">
+                  <div className="max-h-64 overflow-auto rounded-lg border border-border">
                     <table className="w-full text-xs">
                       <thead className="bg-muted/40 sticky top-0">
                         <tr className="text-left">
