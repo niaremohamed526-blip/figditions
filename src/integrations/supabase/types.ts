@@ -462,6 +462,63 @@ export type Database = {
         }
         Relationships: []
       }
+      depenses: {
+        Row: {
+          categorie: string
+          created_at: string
+          created_by: string | null
+          date_depense: string
+          entreprise_id: string
+          id: string
+          libelle: string
+          manuscrit_id: string | null
+          montant_fcfa: number
+          notes: string | null
+          updated_at: string
+        }
+        Insert: {
+          categorie?: string
+          created_at?: string
+          created_by?: string | null
+          date_depense?: string
+          entreprise_id: string
+          id?: string
+          libelle: string
+          manuscrit_id?: string | null
+          montant_fcfa: number
+          notes?: string | null
+          updated_at?: string
+        }
+        Update: {
+          categorie?: string
+          created_at?: string
+          created_by?: string | null
+          date_depense?: string
+          entreprise_id?: string
+          id?: string
+          libelle?: string
+          manuscrit_id?: string | null
+          montant_fcfa?: number
+          notes?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "depenses_entreprise_id_fkey"
+            columns: ["entreprise_id"]
+            isOneToOne: false
+            referencedRelation: "entreprises"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "depenses_manuscrit_id_fkey"
+            columns: ["manuscrit_id"]
+            isOneToOne: false
+            referencedRelation: "manuscrits"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       entreprises: {
         Row: {
           abonnement_expire_le: string | null
@@ -656,6 +713,50 @@ export type Database = {
           type_reliure?: string | null
         }
         Relationships: []
+      }
+      finance_audit_log: {
+        Row: {
+          action: string
+          created_at: string
+          details: Json | null
+          entite: string
+          entite_id: string | null
+          entreprise_id: string
+          id: string
+          user_id: string | null
+          user_nom: string | null
+        }
+        Insert: {
+          action: string
+          created_at?: string
+          details?: Json | null
+          entite: string
+          entite_id?: string | null
+          entreprise_id: string
+          id?: string
+          user_id?: string | null
+          user_nom?: string | null
+        }
+        Update: {
+          action?: string
+          created_at?: string
+          details?: Json | null
+          entite?: string
+          entite_id?: string | null
+          entreprise_id?: string
+          id?: string
+          user_id?: string | null
+          user_nom?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "finance_audit_log_entreprise_id_fkey"
+            columns: ["entreprise_id"]
+            isOneToOne: false
+            referencedRelation: "entreprises"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       imprimeries: {
         Row: {
@@ -973,6 +1074,68 @@ export type Database = {
             columns: ["abonnement_id"]
             isOneToOne: false
             referencedRelation: "abonnements"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      paiements_royalties: {
+        Row: {
+          annee: number
+          auteur_id: string | null
+          auteur_nom: string
+          created_at: string
+          entreprise_id: string
+          id: string
+          methode: string
+          montant_fcfa: number
+          notes: string | null
+          numero: string
+          paye_le: string
+          paye_par: string | null
+          paye_par_nom: string | null
+          reference: string | null
+          vente_ids: string[]
+        }
+        Insert: {
+          annee: number
+          auteur_id?: string | null
+          auteur_nom: string
+          created_at?: string
+          entreprise_id: string
+          id?: string
+          methode?: string
+          montant_fcfa: number
+          notes?: string | null
+          numero: string
+          paye_le?: string
+          paye_par?: string | null
+          paye_par_nom?: string | null
+          reference?: string | null
+          vente_ids: string[]
+        }
+        Update: {
+          annee?: number
+          auteur_id?: string | null
+          auteur_nom?: string
+          created_at?: string
+          entreprise_id?: string
+          id?: string
+          methode?: string
+          montant_fcfa?: number
+          notes?: string | null
+          numero?: string
+          paye_le?: string
+          paye_par?: string | null
+          paye_par_nom?: string | null
+          reference?: string | null
+          vente_ids?: string[]
+        }
+        Relationships: [
+          {
+            foreignKeyName: "paiements_royalties_entreprise_id_fkey"
+            columns: ["entreprise_id"]
+            isOneToOne: false
+            referencedRelation: "entreprises"
             referencedColumns: ["id"]
           },
         ]
@@ -1412,54 +1575,69 @@ export type Database = {
           canal_vente: string
           commission_librairie_fcfa: number
           created_at: string
+          date_encaissement: string | null
           date_vente: string
           droits_auteur_fcfa: number
           entreprise_id: string
           id: string
+          librairie_nom: string | null
           manuscrit_id: string
           montant: number
+          montant_encaisse_fcfa: number
           montant_total_fcfa: number
           prix_catalogue_fcfa: number | null
           prix_unitaire_fcfa: number
           quantite_vendue: number
           remise_fcfa: number
+          statut_encaissement: string
           statut_paiement: Database["public"]["Enums"]["paiement_statut"]
+          stock_id: string | null
         }
         Insert: {
           auteur_id?: string | null
           canal_vente?: string
           commission_librairie_fcfa?: number
           created_at?: string
+          date_encaissement?: string | null
           date_vente?: string
           droits_auteur_fcfa?: number
           entreprise_id: string
           id?: string
+          librairie_nom?: string | null
           manuscrit_id: string
           montant?: number
+          montant_encaisse_fcfa?: number
           montant_total_fcfa?: number
           prix_catalogue_fcfa?: number | null
           prix_unitaire_fcfa?: number
           quantite_vendue?: number
           remise_fcfa?: number
+          statut_encaissement?: string
           statut_paiement?: Database["public"]["Enums"]["paiement_statut"]
+          stock_id?: string | null
         }
         Update: {
           auteur_id?: string | null
           canal_vente?: string
           commission_librairie_fcfa?: number
           created_at?: string
+          date_encaissement?: string | null
           date_vente?: string
           droits_auteur_fcfa?: number
           entreprise_id?: string
           id?: string
+          librairie_nom?: string | null
           manuscrit_id?: string
           montant?: number
+          montant_encaisse_fcfa?: number
           montant_total_fcfa?: number
           prix_catalogue_fcfa?: number | null
           prix_unitaire_fcfa?: number
           quantite_vendue?: number
           remise_fcfa?: number
+          statut_encaissement?: string
           statut_paiement?: Database["public"]["Enums"]["paiement_statut"]
+          stock_id?: string | null
         }
         Relationships: [
           {
@@ -1474,6 +1652,13 @@ export type Database = {
             columns: ["manuscrit_id"]
             isOneToOne: false
             referencedRelation: "manuscrits"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "ventes_stock_id_fkey"
+            columns: ["stock_id"]
+            isOneToOne: false
+            referencedRelation: "stocks"
             referencedColumns: ["id"]
           },
         ]
@@ -1525,6 +1710,10 @@ export type Database = {
         }
         Returns: Json
       }
+      enregistrer_encaissement: {
+        Args: { p_date?: string; p_montant: number; p_vente_id: string }
+        Returns: Json
+      }
       expire_subscriptions: { Args: never; Returns: number }
       fn_notify: {
         Args: {
@@ -1541,6 +1730,15 @@ export type Database = {
       increment_pdf_view: { Args: { p_token: string }; Returns: Json }
       is_superadmin: { Args: { _user_id: string }; Returns: boolean }
       my_pending_qr_payment: { Args: never; Returns: Json }
+      payer_royalties_auteur: {
+        Args: {
+          p_methode: string
+          p_notes?: string
+          p_reference?: string
+          p_vente_ids: string[]
+        }
+        Returns: Json
+      }
       pourcentage_droits_pour: {
         Args: { p_auteur: string; p_manuscrit: string }
         Returns: number
