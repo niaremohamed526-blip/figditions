@@ -2,7 +2,6 @@ import { lazy, Suspense, useCallback, useState } from "react";
 import { Link, useRouterState } from "@tanstack/react-router";
 import { motion, AnimatePresence } from "motion/react";
 import { X, ArrowUpRight, Plus } from "lucide-react";
-import { useAuth, useProfile } from "@/hooks/use-auth";
 import { createThread } from "@/lib/medmo";
 import { MedmoWordmark } from "@/components/medmo-wordmark";
 import { cn } from "@/lib/utils";
@@ -11,20 +10,22 @@ import medmoMark from "@/assets/medmo-mark.png";
 const MedmoChat = lazy(() => import("@/components/medmo-chat"));
 
 /** Floating Pr. MEDMO button + compact chat panel available on every authenticated page. */
-export function MedmoFab() {
-  const { user } = useAuth();
-  const { profile } = useProfile(user?.id);
+export function MedmoFab({
+  userId,
+  entrepriseId,
+  allowed,
+}: {
+  userId: string;
+  entrepriseId: string | null;
+  allowed: boolean;
+}) {
   const pathname = useRouterState({ select: (s) => s.location.pathname });
   const [open, setOpen] = useState(false);
   const [threadId, setThreadId] = useState<string | null>(null);
   const [creating, setCreating] = useState(false);
 
-  const userId = user?.id;
-  const entrepriseId = profile?.entreprise_id ?? null;
-
   const ensureThread = useCallback(async () => {
     if (threadId) return threadId;
-    if (!userId) return null;
     setCreating(true);
     try {
       const t = await createThread(userId, entrepriseId);
@@ -41,7 +42,6 @@ export function MedmoFab() {
   }, [ensureThread]);
 
   const newConversation = useCallback(async () => {
-    if (!userId) return;
     setCreating(true);
     try {
       const t = await createThread(userId, entrepriseId);
@@ -51,11 +51,8 @@ export function MedmoFab() {
     }
   }, [userId, entrepriseId]);
 
-  // Only show where user has medmo access and not already inside /medmo.
-  if (!user) return null;
-  const isAdmin = profile?.role === "admin";
-  const medmoAllowed = isAdmin || profile?.permissions?.medmo !== false;
-  if (!medmoAllowed || pathname.startsWith("/medmo")) return null;
+  // Keep this component's hook tree stable; visibility is decided only after all hooks run.
+  if (!allowed || pathname.startsWith("/medmo")) return null;
 
   return (
     <>

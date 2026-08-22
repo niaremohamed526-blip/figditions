@@ -26,6 +26,7 @@ function AuthLayout() {
 
   const isAdmin = profile?.role === "admin";
   const allowed = canAccessPath(pathname, profile?.permissions, isAdmin);
+  const medmoAllowed = isAdmin || profile?.permissions?.medmo !== false;
 
   // Find admin email for "Contacter l'administrateur"
   const adminEmail = entreprise?.email ?? null;
@@ -36,7 +37,11 @@ function AuthLayout() {
       <div key={pathname} className="animate-page-in">
         {allowed ? <Outlet /> : <AccessDenied pathname={pathname} adminEmail={adminEmail} />}
       </div>
-      <MedmoFab />
+      <MedmoFab
+        userId={user.id}
+        entrepriseId={profile?.entreprise_id ?? null}
+        allowed={medmoAllowed}
+      />
     </AppShell>
   );
 }
