@@ -98,14 +98,15 @@ export function RentabiliteTab({
     const depensesGlobales = depenses
       .filter((d) => !d.manuscrit_id)
       .reduce((a, d) => a + Number(d.montant_fcfa || 0), 0);
-    return rows.reduce(
+    const base = rows.reduce(
       (acc, r) => ({
         ca: acc.ca + r.ca,
         investi: acc.investi + r.coutProd + r.depenses,
         net: acc.net + r.net,
       }),
-      { ca: 0, investi: 0, net: 0, depensesGlobales },
+      { ca: 0, investi: 0, net: 0 },
     );
+    return { ...base, depensesGlobales };
   }, [rows, depenses]);
 
   const netGlobal = totaux.net - totaux.depensesGlobales;
