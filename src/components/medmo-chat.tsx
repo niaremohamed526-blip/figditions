@@ -445,7 +445,7 @@ export function MedmoChat({
           <ArrowLeft className="h-4 w-4" />
         </Link>
         <MedmoAvatar />
-        <div className="text-sm font-semibold">PR MEDMO</div>
+        <MedmoWordmark className="text-base" />
       </div>
 
       {/* Messages */}
@@ -484,11 +484,7 @@ export function MedmoChat({
                 }}
               >
                 <h2 className="text-xl font-bold">
-                  Bonjour, je suis{" "}
-                  <span className="bg-[linear-gradient(120deg,#E7B958,#C8922A,#A67420)] bg-clip-text text-transparent">
-                    PR MEDMO
-                  </span>{" "}
-                  👋
+                  Bonjour, je suis <MedmoWordmark className="text-2xl align-baseline" /> 👋
                 </h2>
                 <p className="text-sm text-muted-foreground mt-2 max-w-md mx-auto">
                   Votre copilote pour FIGDITIONS : je peux consulter vos données en direct, vous guider

@@ -175,7 +175,7 @@ function MedmoLayout() {
         <div className="px-4 py-4 border-b border-border flex items-center gap-2.5">
           <MedmoBrandMark className="h-9 w-9" />
           <div className="flex-1 min-w-0">
-            <div className="text-sm font-bold">PR MEDMO</div>
+            <MedmoWordmark className="text-lg" />
             <div className="text-[10px] text-muted-foreground">Votre copilote éditorial</div>
           </div>
         </div>
