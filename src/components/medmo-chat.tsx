@@ -11,6 +11,7 @@ import { ArrowLeft, Check, X, ShieldCheck, Paperclip, FileText } from "lucide-re
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { cn } from "@/lib/utils";
+import { MedmoWordmark } from "@/components/medmo-wordmark";
 import medmoMark from "@/assets/medmo-mark.png";
 import {
   Conversation,

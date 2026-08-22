@@ -4,6 +4,7 @@ import { motion } from "motion/react";
 import { useAuth, useProfile } from "@/hooks/use-auth";
 import { useMedmoThreads } from "@/hooks/use-medmo-threads";
 import { MedmoThreadList, MedmoBrandMark } from "./medmo";
+import { MedmoWordmark } from "@/components/medmo-wordmark";
 
 export const Route = createFileRoute("/_authenticated/medmo/")({
   component: MedmoIndex,
