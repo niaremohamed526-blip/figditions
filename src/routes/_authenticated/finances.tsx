@@ -31,7 +31,7 @@ import { DepensesTab } from "@/components/finances/depenses-tab";
 import { RoyaltiesTab } from "@/components/finances/royalties-tab";
 import { RentabiliteTab } from "@/components/finances/rentabilite-tab";
 import { JournalTab } from "@/components/finances/journal-tab";
-import { fmtFCFA, type DepenseRow, type PaiementRoyaltiesRow, type VenteRow } from "@/lib/finance-types";
+import type { DepenseRow, PaiementRoyaltiesRow, VenteRow } from "@/lib/finance-types";
 
 export const Route = createFileRoute("/_authenticated/finances")({
   component: FinancesPage,
@@ -494,15 +494,3 @@ function FinancesAnalytics({ ventes, manuscrits, aMap, mMap }: { ventes: VenteRo
   );
 }
 
-function FCard({ label, value, accent, icon }: { label: string; value: string; accent?: "primary" | "gold" | "danger"; icon?: React.ReactNode }) {
-  const color = accent === "gold" ? "text-[color:var(--gold)]" : accent === "primary" ? "text-primary" : accent === "danger" ? "text-red-400" : "text-foreground";
-  return (
-    <div className="rounded-xl border border-border bg-background/40 p-4">
-      <p className="text-xs uppercase tracking-wide text-muted-foreground">{label}</p>
-      <p className={cn("mt-1 text-lg font-bold truncate flex items-center gap-1", color)}>{icon}{value}</p>
-    </div>
-  );
-}
-
-// Référencé pour garder le formatage FCFA cohérent dans les onglets
-void fmtFCFA;
