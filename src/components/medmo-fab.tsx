@@ -19,23 +19,21 @@ export function MedmoFab() {
   const [threadId, setThreadId] = useState<string | null>(null);
   const [creating, setCreating] = useState(false);
 
-  // Only show where user has medmo access and not already inside /medmo.
-  if (!user) return null;
-  const isAdmin = profile?.role === "admin";
-  const medmoAllowed = isAdmin || profile?.permissions?.medmo !== false;
-  if (!medmoAllowed || pathname.startsWith("/medmo")) return null;
+  const userId = user?.id;
+  const entrepriseId = profile?.entreprise_id ?? null;
 
   const ensureThread = useCallback(async () => {
     if (threadId) return threadId;
+    if (!userId) return null;
     setCreating(true);
     try {
-      const t = await createThread(user.id, profile?.entreprise_id ?? null);
+      const t = await createThread(userId, entrepriseId);
       setThreadId(t.id);
       return t.id;
     } finally {
       setCreating(false);
     }
-  }, [threadId, user.id, profile?.entreprise_id]);
+  }, [threadId, userId, entrepriseId]);
 
   const handleOpen = useCallback(async () => {
     setOpen(true);
@@ -43,14 +41,21 @@ export function MedmoFab() {
   }, [ensureThread]);
 
   const newConversation = useCallback(async () => {
+    if (!userId) return;
     setCreating(true);
     try {
-      const t = await createThread(user.id, profile?.entreprise_id ?? null);
+      const t = await createThread(userId, entrepriseId);
       setThreadId(t.id);
     } finally {
       setCreating(false);
     }
-  }, [user.id, profile?.entreprise_id]);
+  }, [userId, entrepriseId]);
+
+  // Only show where user has medmo access and not already inside /medmo.
+  if (!user) return null;
+  const isAdmin = profile?.role === "admin";
+  const medmoAllowed = isAdmin || profile?.permissions?.medmo !== false;
+  if (!medmoAllowed || pathname.startsWith("/medmo")) return null;
 
   return (
     <>
