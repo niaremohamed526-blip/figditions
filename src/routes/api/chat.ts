@@ -25,6 +25,42 @@ type AnySupabase = SupabaseClient<any, "public", any>;
 const num = (v: unknown) => Number(v ?? 0);
 const fcfa = (n: number) => `${Math.round(n).toString().replace(/\B(?=(\d{3})+(?!\d))/g, ".")} FCFA`;
 
+// --- Rapprochement flou pour l'analyse de cahiers de ventes manuscrits ---
+const normalizeTxt = (s: string) =>
+  s
+    .toLowerCase()
+    .normalize("NFD")
+    .replace(/[̀-ͯ]/g, "")
+    .replace(/[^a-z0-9 ]/g, " ")
+    .replace(/\s+/g, " ")
+    .trim();
+
+function levenshtein(a: string, b: string): number {
+  const m = a.length;
+  const n = b.length;
+  if (m === 0) return n;
+  if (n === 0) return m;
+  let prev = Array.from({ length: n + 1 }, (_, j) => j);
+  for (let i = 1; i <= m; i++) {
+    const cur = [i];
+    for (let j = 1; j <= n; j++) {
+      cur[j] = Math.min(prev[j]! + 1, cur[j - 1]! + 1, prev[j - 1]! + (a[i - 1] === b[j - 1] ? 0 : 1));
+    }
+    prev = cur;
+  }
+  return prev[n]!;
+}
+
+function similarity(a: string, b: string): number {
+  if (!a || !b) return 0;
+  if (a === b) return 1;
+  if (a.includes(b) || b.includes(a)) return 0.9;
+  return Math.max(0, 1 - levenshtein(a, b) / Math.max(a.length, b.length));
+}
+
+const confianceDe = (score: number): "haute" | "moyenne" | "faible" =>
+  score >= 0.8 ? "haute" : score >= 0.55 ? "moyenne" : "faible";
+
 /** Server-side Supabase client authenticated as the requesting user (RLS applies). */
 function userClient(token: string): AnySupabase {
   return createClient(process.env["SUPABASE_URL"]!, process.env["SUPABASE_PUBLISHABLE_KEY"]!, {
@@ -604,6 +640,166 @@ function buildTools(supabase: AnySupabase, userId: string, entrepriseId: string 
           resume:
             `« ${m.titre} » est passé de « ${m.statut} » à « ${nouveau_statut} ».` +
             (nouveau_statut === "publie" ? " 📘 Une fiche de stock interne a été créée automatiquement — vous pouvez maintenant enregistrer une impression." : ""),
+        };
+      },
+    }),
+
+    proposer_ventes_cahier: tool({
+      description:
+        "Après analyse d'une ou plusieurs photos de cahier de ventes : rapproche les entrées extraites des livres et librairies réels de la maison d'édition, puis affiche une carte de validation éditable. N'enregistre RIEN en base : l'utilisateur valide lui-même dans la carte.",
+      inputSchema: z.object({
+        nombre_photos: z.number().nullable().describe("Nombre de photos analysées"),
+        entrees: z
+          .array(
+            z.object({
+              titre_livre: z.string().nullable().describe("Titre tel qu'extrait (brut, non corrigé)"),
+              quantite: z.number().nullable(),
+              prix_unitaire_fcfa: z.number().nullable(),
+              librairie: z.string().nullable().describe("Nom de librairie extrait, null si vente directe"),
+              date: z.string().nullable().describe("AAAA-MM-JJ si identifiable, sinon null"),
+              statut_paiement: z.enum(["paye", "en_attente"]).nullable(),
+              auteur: z.string().nullable(),
+              incertain: z.array(z.string()).nullable().describe("Noms des champs à lecture incertaine"),
+            }),
+          )
+          .describe("Toutes les entrées extraites, toutes photos confondues"),
+      }),
+      execute: async ({ entrees, nombre_photos }) => {
+        const eid = requireEntreprise();
+        const photos = nombre_photos && nombre_photos > 0 ? Math.round(nombre_photos) : 1;
+
+        // Journal de session (debug / amélioration du rapprochement) — best-effort.
+        const logSession = async (payload: unknown) => {
+          try {
+            await supabase.from("medmo_ocr_logs").insert({
+              entreprise_id: eid,
+              user_id: userId,
+              nombre_photos: photos,
+              entrees: payload,
+            } as any);
+          } catch {
+            /* journal best-effort */
+          }
+        };
+
+        if (!entrees || entrees.length === 0) {
+          await logSession([]);
+          return {
+            nombre_photos: photos,
+            entreprise_id: eid,
+            entrees: [] as unknown[],
+            message: "Aucune donnée de vente exploitable n'a pu être extraite de l'image.",
+          };
+        }
+
+        const [{ data: ms }, { data: stk }, { data: si }, { data: corr }] = await Promise.all([
+          supabase.from("manuscrits").select("id, titre, auteur").eq("entreprise_id", eid).eq("statut", "publie").limit(500),
+          supabase.from("stocks").select("librairie_nom").eq("entreprise_id", eid).limit(1000),
+          supabase.from("stock_interne").select("manuscrit_id, prix_vente_direct_fcfa").eq("entreprise_id", eid).limit(500),
+          supabase.from("medmo_ocr_corrections").select("texte_extrait, valeur_correcte, type_correction").eq("entreprise_id", eid).limit(500),
+        ]);
+        const livres = (ms ?? []) as { id: string; titre: string; auteur: string | null }[];
+        const prixParLivre: Record<string, number> = {};
+        for (const r of si ?? []) prixParLivre[(r as any).manuscrit_id as string] = num((r as any).prix_vente_direct_fcfa);
+        const librairies = [...new Set((stk ?? []).map((s) => String((s as any).librairie_nom)))];
+        // Corrections apprises des validations précédentes (prioritaires sur le flou).
+        const correctionsTitre = new Map<string, string>();
+        const correctionsLib = new Map<string, string>();
+        for (const c of corr ?? []) {
+          const row = c as any;
+          const map = row.type_correction === "librairie" ? correctionsLib : row.type_correction === "titre_livre" ? correctionsTitre : null;
+          if (map) map.set(normalizeTxt(String(row.texte_extrait)), String(row.valeur_correcte));
+        }
+
+        type LivreScore = { id: string; titre: string; score: number };
+        const matchLivre = (raw: string | null) => {
+          if (!raw) return { choisi: null as LivreScore | null, suggestions: [] as LivreScore[], viaCorrection: false };
+          const n = normalizeTxt(raw);
+          const corrige = correctionsTitre.get(n);
+          if (corrige) {
+            const hit = livres.find((l) => normalizeTxt(l.titre) === normalizeTxt(corrige));
+            if (hit) {
+              const s = { id: hit.id, titre: hit.titre, score: 1 };
+              return { choisi: s, suggestions: [s], viaCorrection: true };
+            }
+          }
+          const scored = livres
+            .map((l) => ({ id: l.id, titre: l.titre, score: similarity(n, normalizeTxt(l.titre)) }))
+            .sort((a, b) => b.score - a.score);
+          return {
+            choisi: scored[0] ?? null,
+            suggestions: scored.slice(0, 3).filter((s) => s.score >= 0.35),
+            viaCorrection: false,
+          };
+        };
+
+        const matchLibrairie = (raw: string | null): { nom: string | null; score: number; nouvelle: boolean } => {
+          if (!raw) return { nom: null, score: 0, nouvelle: false };
+          const n = normalizeTxt(raw);
+          const corrige = correctionsLib.get(n);
+          if (corrige) {
+            const hit = librairies.find((l) => normalizeTxt(l) === normalizeTxt(corrige));
+            if (hit) return { nom: hit, score: 1, nouvelle: false };
+          }
+          let best: { nom: string | null; score: number } = { nom: null, score: 0 };
+          for (const l of librairies) {
+            const s = similarity(n, normalizeTxt(l));
+            if (s > best.score) best = { nom: l, score: s };
+          }
+          if (best.score >= 0.55) return { nom: best.nom, score: best.score, nouvelle: false };
+          return { nom: raw.trim(), score: best.score, nouvelle: true };
+        };
+
+        // Fusion des doublons (même vente photographiée deux fois).
+        const seen = new Map<string, Record<string, unknown>>();
+        let doublons = 0;
+        for (const e of entrees) {
+          const rawTitre = e.titre_livre?.trim() || null;
+          const rawLib = e.librairie?.trim() || null;
+          const livre = matchLivre(rawTitre);
+          const lib = matchLibrairie(rawLib);
+          const quantite = e.quantite && e.quantite > 0 ? Math.round(e.quantite) : null;
+          const livreRetenu = livre.choisi && livre.choisi.score >= 0.55 ? livre.choisi : null;
+          const key = [
+            livreRetenu ? livreRetenu.id : normalizeTxt(rawTitre ?? "?"),
+            normalizeTxt(lib.nom ?? ""),
+            quantite ?? "?",
+            e.date ?? "",
+          ].join("|");
+          if (seen.has(key)) {
+            doublons++;
+            continue;
+          }
+          const prixSuggere = livreRetenu ? (prixParLivre[livreRetenu.id] ?? null) : null;
+          const prix = e.prix_unitaire_fcfa && e.prix_unitaire_fcfa > 0 ? Math.round(e.prix_unitaire_fcfa) : null;
+          seen.set(key, {
+            extrait_titre: rawTitre,
+            extrait_librairie: rawLib,
+            manuscrit_id: livreRetenu?.id ?? null,
+            titre: livreRetenu?.titre ?? null,
+            confiance_livre: rawTitre ? confianceDe(livre.choisi?.score ?? 0) : "faible",
+            via_correction: livre.viaCorrection,
+            suggestions_livres: livre.suggestions.map((s) => ({ id: s.id, titre: s.titre })),
+            librairie: lib.nom,
+            nouvelle_librairie: lib.nouvelle,
+            confiance_librairie: rawLib ? confianceDe(lib.score) : null,
+            quantite,
+            prix_unitaire_fcfa: prix,
+            prix_suggere: prixSuggere && prixSuggere > 0 ? prixSuggere : null,
+            prix_inhabituel: !!(prix && prixSuggere && prixSuggere > 0 && Math.abs(prix - prixSuggere) / prixSuggere > 0.3),
+            date: e.date ?? null,
+            statut_paiement: e.statut_paiement ?? null,
+            incertain: e.incertain ?? [],
+          });
+        }
+        const out = [...seen.values()];
+        await logSession(out);
+        return {
+          nombre_photos: photos,
+          entreprise_id: eid,
+          doublons_fusionnes: doublons,
+          entrees: out,
+          message: `${out.length} entrée(s) prête(s) à valider${doublons > 0 ? ` (${doublons} doublon(s) fusionné(s))` : ""}.`,
         };
       },
     }),
