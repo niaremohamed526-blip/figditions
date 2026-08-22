@@ -36,6 +36,7 @@ function AuthLayout() {
       <div key={pathname} className="animate-page-in">
         {allowed ? <Outlet /> : <AccessDenied pathname={pathname} adminEmail={adminEmail} />}
       </div>
+      <MedmoFab />
     </AppShell>
   );
 }
