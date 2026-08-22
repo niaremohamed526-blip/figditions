@@ -4,6 +4,7 @@ import { motion } from "motion/react";
 import { useAuth, useProfile } from "@/hooks/use-auth";
 import { useMedmoThreads } from "@/hooks/use-medmo-threads";
 import { MedmoThreadList, MedmoBrandMark } from "./medmo";
+import { MedmoWordmark } from "@/components/medmo-wordmark";
 
 export const Route = createFileRoute("/_authenticated/medmo/")({
   component: MedmoIndex,
@@ -53,10 +54,8 @@ function MedmoIndex() {
             show: { opacity: 1, y: 0, transition: { type: "spring", stiffness: 300, damping: 26 } },
           }}
         >
-          <h1 className="text-2xl font-bold">
-            <span className="bg-[linear-gradient(120deg,#E7B958,#C8922A,#A67420)] bg-clip-text text-transparent">
-              PR MEDMO
-            </span>
+          <h1 className="text-3xl font-bold">
+            <MedmoWordmark className="text-4xl" />
           </h1>
           <p className="text-sm text-muted-foreground mt-2 max-w-md">
             Votre copilote IA pour FIGDITIONS. Posez une question, demandez une analyse de vos stocks

@@ -616,3 +616,8 @@ input[type="number"] {
 }
 .medmo-md hr { border-color: var(--border); margin: 0.75rem 0; }
 .medmo-md a { color: var(--gold); text-decoration: underline; }
+
+/* Pr. MEDMO wordmark — elegant serif "Pr." paired with bold gold "MEDMO" */
+.font-wordmark-serif {
+  font-family: "Instrument Serif", Georgia, "Times New Roman", serif;
+}

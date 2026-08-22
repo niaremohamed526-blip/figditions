@@ -5,6 +5,7 @@ import { lazy, Suspense } from "react";
 import { useAuth, useProfile } from "@/hooks/use-auth";
 import { useMedmoThreads } from "@/hooks/use-medmo-threads";
 import { cn } from "@/lib/utils";
+import { MedmoWordmark } from "@/components/medmo-wordmark";
 import medmoMark from "@/assets/medmo-mark.png";
 
 const Ballpit = lazy(() => import("@/components/Ballpit"));
@@ -54,10 +55,12 @@ export function MedmoBrandMark({ className }: { className?: string }) {
         className,
       )}
     >
-      <img src={medmoMark} alt="PR MEDMO" className="h-[60%] w-[60%] object-contain" />
+      <img src={medmoMark} alt="Pr. MEDMO" className="h-[60%] w-[60%] object-contain" />
     </div>
   );
 }
+
+/** Wordmark importé depuis @/components/medmo-wordmark (réutilisé par le chat et l'accueil). */
 
 export function MedmoThreadList({
   threads,
@@ -154,7 +157,7 @@ function MedmoLayout() {
         <div className="px-4 py-4 border-b border-border flex items-center gap-2.5">
           <MedmoBrandMark className="h-9 w-9" />
           <div className="flex-1 min-w-0">
-            <div className="text-sm font-bold">PR MEDMO</div>
+            <MedmoWordmark className="text-lg" />
             <div className="text-[10px] text-muted-foreground">Votre copilote éditorial</div>
           </div>
         </div>
