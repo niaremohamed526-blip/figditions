@@ -892,6 +892,79 @@ export type Database = {
           },
         ]
       }
+      medmo_ocr_corrections: {
+        Row: {
+          created_at: string
+          entreprise_id: string
+          id: string
+          texte_extrait: string
+          type_correction: string
+          user_id: string | null
+          valeur_correcte: string
+        }
+        Insert: {
+          created_at?: string
+          entreprise_id: string
+          id?: string
+          texte_extrait: string
+          type_correction: string
+          user_id?: string | null
+          valeur_correcte: string
+        }
+        Update: {
+          created_at?: string
+          entreprise_id?: string
+          id?: string
+          texte_extrait?: string
+          type_correction?: string
+          user_id?: string | null
+          valeur_correcte?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "medmo_ocr_corrections_entreprise_id_fkey"
+            columns: ["entreprise_id"]
+            isOneToOne: false
+            referencedRelation: "entreprises"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      medmo_ocr_logs: {
+        Row: {
+          created_at: string
+          entrees: Json
+          entreprise_id: string | null
+          id: string
+          nombre_photos: number
+          user_id: string | null
+        }
+        Insert: {
+          created_at?: string
+          entrees?: Json
+          entreprise_id?: string | null
+          id?: string
+          nombre_photos?: number
+          user_id?: string | null
+        }
+        Update: {
+          created_at?: string
+          entrees?: Json
+          entreprise_id?: string | null
+          id?: string
+          nombre_photos?: number
+          user_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "medmo_ocr_logs_entreprise_id_fkey"
+            columns: ["entreprise_id"]
+            isOneToOne: false
+            referencedRelation: "entreprises"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       mouvements_stock: {
         Row: {
           created_at: string
