@@ -230,7 +230,7 @@ export function BordereauxTab({
                       {format(new Date(b.created_at), "dd MMM yyyy", { locale: fr })}
                     </td>
                     <td className="px-4 py-3 text-right">
-                      <div className="flex items-center justify-end gap-1 opacity-0 group-hover:opacity-100 focus-within:opacity-100 transition-opacity">
+                      <div className="flex items-center justify-end gap-1 opacity-100 md:opacity-0 md:group-hover:opacity-100 focus-within:opacity-100 transition-opacity">
                         <Button size="icon" variant="ghost" className="h-8 w-8 hover:bg-primary/15 hover:text-primary" title="Télécharger" onClick={() => reprint(b)}>
                           <Download className="h-4 w-4" />
                         </Button>

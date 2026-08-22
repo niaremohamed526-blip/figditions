@@ -910,8 +910,8 @@ function TeamSection({ entrepriseId, currentUserId, plan }: { entrepriseId: stri
       {invitations.length > 0 && (
         <div>
           <h3 className="text-lg font-semibold mb-3">Invitations en attente</h3>
-          <div className="rounded-xl border border-border bg-card overflow-hidden">
-            <table className="w-full text-sm">
+          <div className="rounded-xl border border-border bg-card overflow-x-auto">
+            <table className="w-full text-sm min-w-[560px]">
               <thead className="bg-muted/30 text-muted-foreground">
                 <tr className="text-left">
                   <th className="px-4 py-3 font-medium">Email</th>

@@ -96,9 +96,9 @@ export function JournalTab() {
               Historique immuable de chaque opération : qui, quoi, quand — avec les valeurs avant/après.
             </CardDescription>
           </div>
-          <div className="flex gap-2">
+          <div className="flex flex-col sm:flex-row gap-2 w-full sm:w-auto">
             <Select value={entiteFilter} onValueChange={setEntiteFilter}>
-              <SelectTrigger className="w-[150px]"><SelectValue placeholder="Type" /></SelectTrigger>
+              <SelectTrigger className="w-full sm:w-[150px]"><SelectValue placeholder="Type" /></SelectTrigger>
               <SelectContent>
                 <SelectItem value="all">Tous les types</SelectItem>
                 <SelectItem value="ventes">Ventes</SelectItem>
@@ -107,7 +107,7 @@ export function JournalTab() {
               </SelectContent>
             </Select>
             <Select value={actionFilter} onValueChange={setActionFilter}>
-              <SelectTrigger className="w-[140px]"><SelectValue placeholder="Action" /></SelectTrigger>
+              <SelectTrigger className="w-full sm:w-[140px]"><SelectValue placeholder="Action" /></SelectTrigger>
               <SelectContent>
                 <SelectItem value="all">Toutes actions</SelectItem>
                 <SelectItem value="insert">Créations</SelectItem>

@@ -128,7 +128,7 @@ export function MedmoThreadList({
             <button
               onClick={() => onDelete(t.id, active)}
               aria-label="Supprimer la conversation"
-              className="shrink-0 mr-2 p-1.5 rounded-md text-muted-foreground opacity-0 group-hover:opacity-100 hover:text-red-400 hover:bg-red-500/10 transition-opacity"
+              className="shrink-0 mr-2 p-1.5 rounded-md text-muted-foreground opacity-100 md:opacity-0 md:group-hover:opacity-100 hover:text-red-400 hover:bg-red-500/10 transition-opacity"
             >
               <Trash2 className="h-3.5 w-3.5" />
             </button>

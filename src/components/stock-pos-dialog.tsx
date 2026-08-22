@@ -461,7 +461,7 @@ export function StockPosDialog({
             </div>
 
             {/* Lines list */}
-            <div className="max-h-72 overflow-y-auto rounded-lg border border-border">
+            <div className="max-h-72 overflow-auto rounded-lg border border-border">
               {lines.length === 0 ? (
                 <div className="p-6 text-center text-sm text-muted-foreground">
                   Aucun livre saisi pour le moment. Commencez par choisir un titre ci-dessus.

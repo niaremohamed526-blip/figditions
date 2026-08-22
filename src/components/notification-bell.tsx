@@ -78,7 +78,7 @@ export function NotificationBell({ entrepriseId }: { entrepriseId: string | null
           )}
         </button>
       </PopoverTrigger>
-      <PopoverContent align="end" className="w-80 p-0 bg-card border-border max-h-[70vh] overflow-hidden flex flex-col">
+      <PopoverContent align="end" className="w-[calc(100vw-2rem)] max-w-80 p-0 bg-card border-border max-h-[70vh] overflow-hidden flex flex-col">
         <div className="px-4 py-3 border-b border-border flex items-center justify-between">
           <h3 className="text-sm font-semibold">Notifications</h3>
           {unread > 0 && (

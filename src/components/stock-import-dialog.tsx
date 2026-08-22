@@ -302,7 +302,7 @@ export function StockImportDialog({
                   Valeur cumulée du dépôt : <span className="font-semibold text-[color:var(--gold)]">{fcfa(totalValeur)}</span>
                 </div>
 
-                <div className="max-h-64 overflow-y-auto rounded-lg border border-border">
+                <div className="max-h-64 overflow-auto rounded-lg border border-border">
                   <table className="w-full text-xs">
                     <thead className="bg-muted/40 sticky top-0">
                       <tr className="text-left">
