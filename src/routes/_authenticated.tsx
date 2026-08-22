@@ -3,6 +3,7 @@ import { useAuth, useProfile } from "@/hooks/use-auth";
 import { AppShell } from "@/components/app-shell";
 import { CommandPalette } from "@/components/command-palette";
 import { AccessDenied } from "@/components/access-denied";
+import { MedmoFab } from "@/components/medmo-fab";
 import { canAccessPath } from "@/lib/permissions";
 
 export const Route = createFileRoute("/_authenticated")({
@@ -35,6 +36,7 @@ function AuthLayout() {
       <div key={pathname} className="animate-page-in">
         {allowed ? <Outlet /> : <AccessDenied pathname={pathname} adminEmail={adminEmail} />}
       </div>
+      <MedmoFab />
     </AppShell>
   );
 }

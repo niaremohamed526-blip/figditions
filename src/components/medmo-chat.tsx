@@ -366,9 +366,11 @@ function ToolPartView({
 export function MedmoChat({
   threadId,
   initialMessages,
+  compact = false,
 }: {
   threadId: string;
   initialMessages: UIMessage[];
+  compact?: boolean;
 }) {
   const composerRef = useRef<HTMLDivElement>(null);
 
@@ -436,8 +438,8 @@ export function MedmoChat({
 
   return (
     <div className="flex flex-col h-full min-h-0">
-      {/* Mobile header */}
-      <div className="md:hidden flex items-center gap-2 px-3 py-2.5 border-b border-border bg-sidebar/60">
+      {/* Mobile header (hidden in compact floating panel — the panel has its own header) */}
+      <div className={cn("md:hidden flex items-center gap-2 px-3 py-2.5 border-b border-border bg-sidebar/60", compact && "hidden")}>
         <Link
           to="/medmo"
           className="p-1.5 -ml-1 rounded-md hover:bg-sidebar-accent"
@@ -672,3 +674,5 @@ export function MedmoChat({
     </div>
   );
 }
+
+export default MedmoChat;
