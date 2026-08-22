@@ -555,8 +555,17 @@ class PdfBuilder {
     const authorsSet = new Set<string>();
     v.forEach((s) => { const aid = s.auteur_id ?? mMap[s.manuscrit_id]?.auteur_id; if (aid) authorsSet.add(aid); });
 
+    const encaisse = v.reduce((a, x) => a + Number(x.montant_encaisse_fcfa || 0), 0);
+    const aEncaisser = Math.max(0, totalRev - encaisse);
+    const totalDep = (this.input.depenses ?? []).reduce((a, x) => a + Number(x.montant_fcfa || 0), 0);
+    const totalComm = v.reduce((a, x) => a + Number(x.commission_librairie_fcfa || 0), 0);
+    const resultat = totalRev - totalComm - totalRoyalties - totalDep;
+
     this.drawKpiGrid([
       { label: this.t.kpiRevenue, value: fmtFCFA(totalRev), delta },
+      { label: this.t.kpiEncaisse, value: fmtFCFA(encaisse), sub: `${this.t.kpiAEncaisser}: ${fmtFCFA(aEncaisser)}` },
+      { label: this.t.kpiDepenses, value: fmtFCFA(totalDep), sub: `${this.input.depenses?.length ?? 0} ${this.t.transactions}` },
+      { label: this.t.kpiResultat, value: fmtFCFA(resultat) },
       { label: this.t.kpiCount, value: String(v.length), sub: this.t.transactions },
       { label: this.t.kpiRoyalties, value: fmtFCFA(totalRoyalties), sub: `${this.t.paid}: ${fmtFCFA(paidRoy)} | ${this.t.pending}: ${fmtFCFA(pendingRoy)}` },
       { label: this.t.kpiTop, value: topTitle, sub: `${topQty} ${this.t.copies}` },
