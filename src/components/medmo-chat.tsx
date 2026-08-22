@@ -674,3 +674,5 @@ export function MedmoChat({
     </div>
   );
 }
+
+export default MedmoChat;
