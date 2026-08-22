@@ -20,6 +20,7 @@ import {
   type Auteur,
   type Stock,
   type StockInterne,
+  type Depense,
 } from "@/lib/pdf-finances";
 
 type Preset = "mois" | "3mois" | "6mois" | "annee" | "tout" | "custom";
@@ -54,6 +55,7 @@ export function ExportFinancesDialog({
   const [lang, setLang] = useState<ReportLang>("fr");
   const [sections, setSections] = useState<ReportSections>({
     resume: true, ventes: true, droits: true, livres: true, librairies: true, stocks: true,
+    depenses: true, rentabilite: true,
   });
   const [busy, setBusy] = useState(false);
 
@@ -74,12 +76,13 @@ export function ExportFinancesDialog({
     setBusy(true);
     try {
       // Fetch data (RLS scopes to entreprise) — fetchAllRows évite la limite de 1000 lignes.
-      const [v, m, a, st, si] = await Promise.all([
+      const [v, m, a, st, si, dp] = await Promise.all([
         fetchAllRows<Vente>(() => supabase.from("ventes").select("*").gte("date_vente", from).lte("date_vente", to).order("date_vente", { ascending: true })),
         fetchAllRows<Manuscrit>(() => (supabase as any).from("manuscrits").select("id, titre, auteur, auteur_id, genre")),
         fetchAllRows<any>(() => supabase.from("auteurs").select("id, nom_complet, email, telephone, operateur, numero_mobile_money")),
         fetchAllRows<any>(() => supabase.from("stocks").select("id, manuscrit_id, librairie_nom, librairie_adresse, exemplaires_deposes, exemplaires_vendus, exemplaires_restants, derniere_visite, prix_unitaire_fcfa")),
-        fetchAllRows<any>(() => supabase.from("stock_interne").select("id, manuscrit_id, quantite_imprimee, quantite_disponible, quantite_reservee, quantite_vendue_directement, prix_vente_direct_fcfa, seuil_alerte")),
+        fetchAllRows<any>(() => supabase.from("stock_interne").select("id, manuscrit_id, quantite_imprimee, quantite_disponible, quantite_reservee, quantite_vendue_directement, prix_vente_direct_fcfa, seuil_alerte, cout_unitaire_impression_fcfa")),
+        fetchAllRows<Depense>(() => (supabase as any).from("depenses").select("categorie, libelle, montant_fcfa, date_depense, manuscrit_id").gte("date_depense", from).lte("date_depense", to).order("date_depense", { ascending: true })),
       ]);
 
       // Comparison window (same length just before "from")
@@ -107,6 +110,7 @@ export function ExportFinancesDialog({
         stocks: (st ?? []) as Stock[],
         stockInterne: (si ?? []) as StockInterne[],
         previousVentes: (prevV ?? []) as Vente[],
+        depenses: (dp ?? []) as Depense[],
       });
       pdf.save(reportFilename(entrepriseNom, from, to));
       toast.success(lang === "fr" ? "✅ Rapport PDF téléchargé avec succès" : "✅ PDF report downloaded successfully");
@@ -184,6 +188,8 @@ export function ExportFinancesDialog({
               {sectionRow("livres", "Analyse par livre", "Performance détaillée de chaque titre")}
               {sectionRow("librairies", "Analyse par librairie", "Ventes et revenus par point de vente")}
               {sectionRow("stocks", "Stocks et inventaire", "État des stocks au moment de l'export")}
+              {sectionRow("depenses", "Dépenses", "Charges déclarées sur la période, par catégorie")}
+              {sectionRow("rentabilite", "Rentabilité par livre", "Investi vs encaissé, marge et seuil de rentabilité")}
             </div>
           </section>
 

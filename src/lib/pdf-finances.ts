@@ -9,6 +9,8 @@ export interface ReportSections {
   livres: boolean;
   librairies: boolean;
   stocks: boolean;
+  depenses: boolean;
+  rentabilite: boolean;
 }
 
 export interface Vente {
@@ -25,11 +27,15 @@ export interface Vente {
   canal_vente: "externe" | "interne";
   statut_paiement: "en_attente" | "paye";
   date_vente: string;
+  librairie_nom?: string | null;
+  statut_encaissement?: string | null;
+  montant_encaisse_fcfa?: number | null;
 }
 export interface Manuscrit { id: string; titre: string; auteur: string | null; auteur_id: string | null; genre?: string | null; }
 export interface Auteur { id: string; nom_complet: string; email?: string | null; telephone?: string | null; mobile_money_operateur?: string | null; mobile_money_numero?: string | null; }
 export interface Stock { id: string; manuscrit_id: string; librairie_nom: string | null; librairie_adresse?: string | null; exemplaires_deposes: number; exemplaires_vendus: number; exemplaires_restants: number; derniere_visite?: string | null; prix_unitaire_fcfa: number; }
-export interface StockInterne { id: string; manuscrit_id: string; quantite_imprimee?: number; quantite_disponible: number; quantite_reservee?: number; quantite_vendue_directement?: number; prix_vente_direct_fcfa?: number | null; seuil_alerte?: number; }
+export interface StockInterne { id: string; manuscrit_id: string; quantite_imprimee?: number; quantite_disponible: number; quantite_reservee?: number; quantite_vendue_directement?: number; prix_vente_direct_fcfa?: number | null; seuil_alerte?: number; cout_unitaire_impression_fcfa?: number | null; }
+export interface Depense { categorie: string; libelle: string; montant_fcfa: number; date_depense: string; manuscrit_id?: string | null; }
 
 export interface ReportInput {
   lang: ReportLang;
@@ -42,6 +48,7 @@ export interface ReportInput {
   auteurs: Auteur[];
   stocks: Stock[];
   stockInterne: StockInterne[];
+  depenses?: Depense[];
   previousVentes?: Vente[]; // for comparison
 }
 
@@ -62,6 +69,24 @@ const T = {
     kpiCount: "Nombre de ventes",
     kpiRoyalties: "Droits d'auteur",
     kpiTop: "Livre le plus vendu",
+    kpiEncaisse: "Encaissé",
+    kpiAEncaisser: "À encaisser",
+    kpiDepenses: "Dépenses",
+    kpiResultat: "Résultat net estimé",
+    depenses: "DÉPENSES",
+    rentabilite: "RENTABILITÉ PAR LIVRE",
+    categorie: "Catégorie",
+    libelle: "Libellé",
+    montantCol: "Montant",
+    investi: "Investi",
+    coutProd: "Coût production",
+    marge: "Marge",
+    resultatCol: "Résultat",
+    seuilRent: "Seuil (ex.)",
+    encaisseCol: "Encaissé",
+    nonLiees: "Charges globales",
+    depensesText: (n: number, total: string) => `${n} dépense(s) déclarée(s) sur la période pour un total de ${total}.`,
+    rentabiliteText: "Investi = coût de production (impressions) + dépenses liées au livre. Résultat = encaissé - commissions - droits d'auteur - investi.",
     fcfa: "FCFA",
     transactions: "transactions",
     copies: "exemplaires vendus",
@@ -137,6 +162,24 @@ const T = {
     kpiCount: "Number of sales",
     kpiRoyalties: "Author royalties",
     kpiTop: "Top selling book",
+    kpiEncaisse: "Collected",
+    kpiAEncaisser: "Outstanding",
+    kpiDepenses: "Expenses",
+    kpiResultat: "Estimated net result",
+    depenses: "EXPENSES",
+    rentabilite: "PER BOOK PROFITABILITY",
+    categorie: "Category",
+    libelle: "Label",
+    montantCol: "Amount",
+    investi: "Invested",
+    coutProd: "Production cost",
+    marge: "Margin",
+    resultatCol: "Result",
+    seuilRent: "Break-even (copies)",
+    encaisseCol: "Collected",
+    nonLiees: "Global charges",
+    depensesText: (n: number, total: string) => `${n} expense(s) recorded over the period for a total of ${total}.`,
+    rentabiliteText: "Invested = production cost (printing) + book-linked expenses. Result = collected - commissions - royalties - invested.",
     fcfa: "FCFA",
     transactions: "transactions",
     copies: "copies sold",
@@ -512,8 +555,17 @@ class PdfBuilder {
     const authorsSet = new Set<string>();
     v.forEach((s) => { const aid = s.auteur_id ?? mMap[s.manuscrit_id]?.auteur_id; if (aid) authorsSet.add(aid); });
 
+    const encaisse = v.reduce((a, x) => a + Number(x.montant_encaisse_fcfa || 0), 0);
+    const aEncaisser = Math.max(0, totalRev - encaisse);
+    const totalDep = (this.input.depenses ?? []).reduce((a, x) => a + Number(x.montant_fcfa || 0), 0);
+    const totalComm = v.reduce((a, x) => a + Number(x.commission_librairie_fcfa || 0), 0);
+    const resultat = totalRev - totalComm - totalRoyalties - totalDep;
+
     this.drawKpiGrid([
       { label: this.t.kpiRevenue, value: fmtFCFA(totalRev), delta },
+      { label: this.t.kpiEncaisse, value: fmtFCFA(encaisse), sub: `${this.t.kpiAEncaisser}: ${fmtFCFA(aEncaisser)}` },
+      { label: this.t.kpiDepenses, value: fmtFCFA(totalDep), sub: `${this.input.depenses?.length ?? 0} ${this.t.transactions}` },
+      { label: this.t.kpiResultat, value: fmtFCFA(resultat) },
       { label: this.t.kpiCount, value: String(v.length), sub: this.t.transactions },
       { label: this.t.kpiRoyalties, value: fmtFCFA(totalRoyalties), sub: `${this.t.paid}: ${fmtFCFA(paidRoy)} | ${this.t.pending}: ${fmtFCFA(pendingRoy)}` },
       { label: this.t.kpiTop, value: topTitle, sub: `${topQty} ${this.t.copies}` },
@@ -861,6 +913,106 @@ class PdfBuilder {
     }
   }
 
+  buildDepenses() {
+    this.sectionTitle(this.t.depenses);
+    const list = this.input.depenses ?? [];
+    if (list.length === 0) { this.paragraph(this.t.noData); return; }
+    const mMap = Object.fromEntries(this.input.manuscrits.map((m) => [m.id, m]));
+    const total = list.reduce((a, x) => a + Number(x.montant_fcfa || 0), 0);
+    this.paragraph(this.t.depensesText(list.length, fmtFCFA(total)));
+
+    const rows = list.map((d) => [
+      fmtDate(d.date_depense),
+      truncate(clean(d.categorie), 18),
+      truncate(clean(d.libelle), 34),
+      clean(d.manuscrit_id ? (mMap[d.manuscrit_id]?.titre ?? "-") : this.t.nonLiees),
+      fmtFCFA(Number(d.montant_fcfa || 0)),
+    ]);
+    const cw = this.contentWidth;
+    const widths = [cw * 0.12, cw * 0.17, cw * 0.32, cw * 0.21, cw * 0.18];
+    const aligns: ("left" | "right" | "center")[] = ["left", "left", "left", "left", "right"];
+    this.drawTable(
+      [this.t.date, this.t.categorie, this.t.libelle, this.t.livre, this.t.montantCol],
+      rows,
+      { widths, aligns, totalRow: [this.t.totalGeneral, "", "", "", fmtFCFA(total)] },
+    );
+  }
+
+  buildRentabilite() {
+    this.sectionTitle(this.t.rentabilite);
+    const v = this.input.ventes;
+    const dep = this.input.depenses ?? [];
+    if (v.length === 0 && dep.length === 0) { this.paragraph(this.t.noData); return; }
+    const mMap = Object.fromEntries(this.input.manuscrits.map((m) => [m.id, m]));
+    this.paragraph(this.t.rentabiliteText);
+
+    // aggregate per book
+    const agg: Record<string, {
+      ca: number; encaisse: number; comm: number; droits: number; dep: number; coutProd: number;
+    }> = {};
+    v.forEach((s) => {
+      const a = (agg[s.manuscrit_id] ||= { ca: 0, encaisse: 0, comm: 0, droits: 0, dep: 0, coutProd: 0 });
+      a.ca += Number(s.montant_total_fcfa || 0);
+      a.encaisse += Number(s.montant_encaisse_fcfa || 0);
+      a.comm += Number(s.commission_librairie_fcfa || 0);
+      a.droits += Number(s.droits_auteur_fcfa || 0);
+    });
+    dep.forEach((d) => {
+      if (!d.manuscrit_id) return;
+      const a = (agg[d.manuscrit_id] ||= { ca: 0, encaisse: 0, comm: 0, droits: 0, dep: 0, coutProd: 0 });
+      a.dep += Number(d.montant_fcfa || 0);
+    });
+    this.input.stockInterne.forEach((s) => {
+      const cost = Number(s.cout_unitaire_impression_fcfa || 0) * Number(s.quantite_imprimee || 0);
+      if (cost <= 0) return;
+      const a = (agg[s.manuscrit_id] ||= { ca: 0, encaisse: 0, comm: 0, droits: 0, dep: 0, coutProd: 0 });
+      a.coutProd += cost;
+    });
+
+    const entries = Object.entries(agg)
+      .map(([mid, a]) => {
+        const investi = a.coutProd + a.dep;
+        const resultat = a.encaisse - a.comm - a.droits - investi;
+        const prixMoyen = (() => {
+          const qty = v.filter((s) => s.manuscrit_id === mid).reduce((x, s) => x + Number(s.quantite_vendue || 0), 0);
+          return qty > 0 ? a.ca / qty : 0;
+        })();
+        const margeUnit = prixMoyen > 0 ? prixMoyen * (1 - (a.ca > 0 ? (a.comm + a.droits) / a.ca : 0)) : 0;
+        const seuil = margeUnit > 0 && investi > 0 ? Math.ceil(investi / margeUnit) : 0;
+        return { mid, ...a, investi, resultat, seuil };
+      })
+      .filter((e) => e.investi > 0 || e.ca > 0)
+      .sort((a, b) => b.resultat - a.resultat);
+
+    if (entries.length === 0) { this.paragraph(this.t.noData); return; }
+
+    const rows = entries.map((e) => [
+      truncate(clean(mMap[e.mid]?.titre ?? "-"), 26),
+      fmtFCFA(e.investi),
+      fmtFCFA(e.encaisse),
+      fmtFCFA(e.resultat),
+      e.seuil > 0 ? String(e.seuil) : "-",
+    ]);
+    const cw = this.contentWidth;
+    const widths = [cw * 0.30, cw * 0.19, cw * 0.19, cw * 0.19, cw * 0.13];
+    const aligns: ("left" | "right" | "center")[] = ["left", "right", "right", "right", "center"];
+    this.drawTable(
+      [this.t.livre, this.t.investi, this.t.encaisseCol, this.t.resultatCol, this.t.seuilRent],
+      rows,
+      {
+        widths,
+        aligns,
+        totalRow: [
+          this.t.totalGeneral,
+          fmtFCFA(entries.reduce((a, e) => a + e.investi, 0)),
+          fmtFCFA(entries.reduce((a, e) => a + e.encaisse, 0)),
+          fmtFCFA(entries.reduce((a, e) => a + e.resultat, 0)),
+          "",
+        ],
+      },
+    );
+  }
+
   buildFooter() {
     this.addPageIfNeeded(120);
     const d = this.doc;
@@ -892,7 +1044,9 @@ class PdfBuilder {
     if (this.input.sections.resume) this.buildResume();
     if (this.input.sections.ventes) this.buildVentes();
     if (this.input.sections.droits) this.buildDroits();
+    if (this.input.sections.depenses) this.buildDepenses();
     if (this.input.sections.livres) this.buildLivres();
+    if (this.input.sections.rentabilite) this.buildRentabilite();
     if (this.input.sections.librairies) this.buildLibrairies();
     if (this.input.sections.stocks) this.buildStocks();
     this.buildFooter();

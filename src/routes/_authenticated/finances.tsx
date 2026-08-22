@@ -1,55 +1,51 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useEffect, useMemo, useState } from "react";
-import { Plus, Wallet, TrendingUp, ShoppingBag, Clock, Loader2, Check, Store, Tag } from "lucide-react";
-import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, PieChart, Pie, Cell, Legend, ComposedChart, Line, CartesianGrid } from "recharts";
+import {
+  TrendingUp, ShoppingBag, Clock, Check, Tag, Wallet, Banknote, PiggyBank,
+  LayoutDashboard, ShoppingCart, Users, History, ArrowUp, ArrowDown,
+} from "lucide-react";
+import {
+  BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, PieChart, Pie,
+  Cell, Legend, ComposedChart, Line, CartesianGrid,
+} from "recharts";
 import { format, subMonths, startOfMonth } from "date-fns";
+import { fr } from "date-fns/locale";
 import { AnalyticsSection, defaultRange, inRange, EmptyChart, type DateRange } from "@/components/analytics-section";
 import { BestSellingBooks, type BookRanking } from "@/components/best-selling-books";
-import { TrendingDown, ArrowUp, ArrowDown } from "lucide-react";
 import { Progress } from "@/components/ui/progress";
-import { fr } from "date-fns/locale";
 import { supabase } from "@/integrations/supabase/client";
 import { fetchAllRows } from "@/lib/fetch-all";
 import { useAuth, useProfile } from "@/hooks/use-auth";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
 import { Skeleton } from "@/components/ui/skeleton";
-import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Badge } from "@/components/ui/badge";
 import { toast } from "sonner";
-import { ConfirmationModal } from "@/components/ui/confirmation-modal";
 import { cn } from "@/lib/utils";
 import { fcfa } from "@/lib/format";
 import { planFor } from "@/lib/plans";
 import { LockedPage } from "@/components/locked-page";
 import { RecordSaleDrawer, RecordSaleTrigger } from "@/components/record-sale-drawer";
 import { ExportFinancesDialog, ExportFinancesTrigger } from "@/components/export-finances-dialog";
+import { VentesTab } from "@/components/finances/ventes-tab";
+import { DepensesTab } from "@/components/finances/depenses-tab";
+import { RoyaltiesTab } from "@/components/finances/royalties-tab";
+import { RentabiliteTab } from "@/components/finances/rentabilite-tab";
+import { JournalTab } from "@/components/finances/journal-tab";
+import type { DepenseRow, PaiementRoyaltiesRow, VenteRow } from "@/lib/finance-types";
 
 export const Route = createFileRoute("/_authenticated/finances")({
   component: FinancesPage,
-  head: () => ({ meta: [{ title: "Finances — FIGDITIONS" }] }),
+  head: () => ({
+    meta: [
+      { title: "Finances & Royalties — FIGDITIONS" },
+      { name: "description", content: "Pilotage financier complet : ventes, encaissements, dépenses, royalties, rentabilité par livre et journal d'audit vérifiable." },
+    ],
+  }),
 });
 
-interface Vente {
-  id: string;
-  manuscrit_id: string;
-  auteur_id: string | null;
-  quantite_vendue: number;
-  prix_unitaire_fcfa: number;
-  montant_total_fcfa: number;
-  droits_auteur_fcfa: number;
-  commission_librairie_fcfa: number;
-  remise_fcfa?: number | null;
-  prix_catalogue_fcfa?: number | null;
-  canal_vente: "externe" | "interne";
-  statut_paiement: "en_attente" | "paye";
-  date_vente: string;
-  created_at: string;
-}
 interface Manuscrit { id: string; titre: string; auteur: string; auteur_id?: string | null; }
 interface Auteur { id: string; nom_complet: string; numero_mobile_money: string | null; operateur: string | null; }
-interface Stock { id: string; manuscrit_id: string; librairie_nom: string | null; exemplaires_restants: number; prix_unitaire_fcfa: number | null; exemplaires_vendus: number; }
+interface StockInterneLite { id: string; manuscrit_id: string; quantite_imprimee: number; cout_unitaire_impression_fcfa: number; }
 
 const COLORS = ["#C8922A", "#E8B84B", "#4F8FF7", "#E85D8C", "#7E5FFF", "#FF9F45"];
 
@@ -62,17 +58,30 @@ function FinancesPage() {
   if (pLoading) return <div className="space-y-4"><Skeleton className="h-32 w-full" /><Skeleton className="h-96 w-full" /></div>;
   const plan = planFor(entreprise?.plan);
   if (!plan.finances) return <LockedPage feature="le module finances & royalties" requiredPlan="pro" />;
-  return <FinancesInner entrepriseId={profile?.entreprise_id ?? null} entrepriseNom={entreprise?.nom ?? "Maison d'édition"} />;
+  return (
+    <FinancesInner
+      entrepriseId={profile?.entreprise_id ?? null}
+      entrepriseNom={entreprise?.nom ?? "Maison d'édition"}
+      entrepriseVille={entreprise?.ville ?? null}
+      userId={user?.id ?? ""}
+    />
+  );
 }
 
-function FinancesInner({ entrepriseId, entrepriseNom }: { entrepriseId: string | null; entrepriseNom: string }) {
-  const [ventes, setVentes] = useState<Vente[] | null>(null);
+function FinancesInner({
+  entrepriseId, entrepriseNom, entrepriseVille, userId,
+}: {
+  entrepriseId: string | null;
+  entrepriseNom: string;
+  entrepriseVille: string | null;
+  userId: string;
+}) {
+  const [ventes, setVentes] = useState<VenteRow[] | null>(null);
+  const [depenses, setDepenses] = useState<DepenseRow[]>([]);
+  const [paiements, setPaiements] = useState<PaiementRoyaltiesRow[]>([]);
   const [manuscrits, setManuscrits] = useState<Manuscrit[]>([]);
   const [auteurs, setAuteurs] = useState<Auteur[]>([]);
-  const [stocks, setStocks] = useState<Stock[]>([]);
-  const [statusFilter, setStatusFilter] = useState<string>("all");
-  const [from, setFrom] = useState("");
-  const [to, setTo] = useState("");
+  const [stockInterne, setStockInterne] = useState<StockInterneLite[]>([]);
   const [sheetOpen, setSheetOpen] = useState(false);
   const [exportOpen, setExportOpen] = useState(false);
 
@@ -80,16 +89,20 @@ function FinancesInner({ entrepriseId, entrepriseNom }: { entrepriseId: string |
     setVentes(null);
     try {
       // fetchAllRows : contourne la limite silencieuse de 1000 lignes de l'API.
-      const [v, ms, as, st] = await Promise.all([
-        fetchAllRows<Vente>(() => supabase.from("ventes").select("*").order("date_vente", { ascending: false })),
+      const [v, dp, pr, ms, as, si] = await Promise.all([
+        fetchAllRows<VenteRow>(() => supabase.from("ventes").select("*").order("date_vente", { ascending: false })),
+        fetchAllRows<DepenseRow>(() => (supabase as any).from("depenses").select("*").order("date_depense", { ascending: false })),
+        fetchAllRows<PaiementRoyaltiesRow>(() => (supabase as any).from("paiements_royalties").select("*").order("paye_le", { ascending: false })),
         fetchAllRows<Manuscrit>(() => (supabase as any).from("manuscrits").select("id, titre, auteur, auteur_id")),
         fetchAllRows<Auteur>(() => (supabase as any).from("auteurs").select("id, nom_complet, numero_mobile_money, operateur")),
-        fetchAllRows<Stock>(() => supabase.from("stocks").select("id, manuscrit_id, librairie_nom, exemplaires_restants, prix_unitaire_fcfa, exemplaires_vendus")),
+        fetchAllRows<StockInterneLite>(() => (supabase as any).from("stock_interne").select("id, manuscrit_id, quantite_imprimee, cout_unitaire_impression_fcfa")),
       ]);
       setVentes(v);
+      setDepenses(dp);
+      setPaiements(pr);
       setManuscrits(ms);
       setAuteurs(as);
-      setStocks(st);
+      setStockInterne(si);
     } catch (e: any) {
       toast.error(e?.message ?? "Erreur de chargement");
       setVentes([]);
@@ -99,37 +112,52 @@ function FinancesInner({ entrepriseId, entrepriseNom }: { entrepriseId: string |
 
   const mMap = useMemo(() => Object.fromEntries(manuscrits.map((m) => [m.id, m])), [manuscrits]);
   const aMap = useMemo(() => Object.fromEntries(auteurs.map((a) => [a.id, a.nom_complet])), [auteurs]);
-  const aDetails = useMemo(() => Object.fromEntries(auteurs.map((a) => [a.id, a])), [auteurs]);
-  const sMap = useMemo(() => Object.fromEntries(stocks.map((s) => [s.id, s])), [stocks]);
-  const stockOfVente = (_v: Vente) => null; // ventes table doesn't carry stock id; show via manuscrit
 
   const totals = useMemo(() => {
     const v = ventes ?? [];
+    const revenue = v.reduce((a, x) => a + Number(x.montant_total_fcfa || 0), 0);
+    const commission = v.reduce((a, x) => a + Number(x.commission_librairie_fcfa || 0), 0);
+    const royalties = v.reduce((a, x) => a + Number(x.droits_auteur_fcfa || 0), 0);
+    const paid = v.filter((x) => x.statut_paiement === "paye").reduce((a, x) => a + Number(x.droits_auteur_fcfa || 0), 0);
+    const encaisse = v.reduce((a, x) => a + Number(x.montant_encaisse_fcfa || 0), 0);
+    const totalDepenses = depenses.reduce((a, d) => a + Number(d.montant_fcfa || 0), 0);
+    const coutProduction = stockInterne.reduce(
+      (a, s) => a + Number(s.cout_unitaire_impression_fcfa || 0) * Number(s.quantite_imprimee || 0), 0,
+    );
     return {
-      revenue: v.reduce((a, x) => a + Number(x.montant_total_fcfa || 0), 0),
-      commission: v.reduce((a, x) => a + Number(x.commission_librairie_fcfa || 0), 0),
+      revenue,
+      commission,
       remises: v.reduce((a, x) => a + Number(x.remise_fcfa || 0), 0),
-      paid: v.filter((x) => x.statut_paiement === "paye").reduce((a, x) => a + Number(x.droits_auteur_fcfa || 0), 0),
-      pending: v.filter((x) => x.statut_paiement === "en_attente").reduce((a, x) => a + Number(x.droits_auteur_fcfa || 0), 0),
+      royalties,
+      paid,
+      pending: royalties - paid,
       copies: v.reduce((a, x) => a + Number(x.quantite_vendue || 0), 0),
+      encaisse,
+      aEncaisser: Math.max(0, revenue - encaisse),
+      totalDepenses,
+      resultatNet: revenue - commission - royalties - totalDepenses - coutProduction,
     };
-  }, [ventes]);
+  }, [ventes, depenses, stockInterne]);
 
   const monthlyData = useMemo(() => {
     const v = ventes ?? [];
-    const buckets: { key: string; label: string; revenue: number }[] = [];
+    const buckets: { key: string; label: string; revenue: number; depenses: number; net: number }[] = [];
     for (let i = 5; i >= 0; i--) {
       const d = startOfMonth(subMonths(new Date(), i));
-      buckets.push({ key: format(d, "yyyy-MM"), label: format(d, "MMM", { locale: fr }), revenue: 0 });
+      buckets.push({ key: format(d, "yyyy-MM"), label: format(d, "MMM", { locale: fr }), revenue: 0, depenses: 0, net: 0 });
     }
     const map = new Map(buckets.map((b) => [b.key, b]));
     v.forEach((s) => {
-      const k = s.date_vente?.slice(0, 7);
-      const b = map.get(k);
+      const b = map.get(s.date_vente?.slice(0, 7));
       if (b) b.revenue += Number(s.montant_total_fcfa || 0);
     });
+    depenses.forEach((d) => {
+      const b = map.get(d.date_depense?.slice(0, 7));
+      if (b) b.depenses += Number(d.montant_fcfa || 0);
+    });
+    buckets.forEach((b) => { b.net = b.revenue - b.depenses; });
     return buckets;
-  }, [ventes]);
+  }, [ventes, depenses]);
 
   const pieData = useMemo(() => {
     const v = ventes ?? [];
@@ -141,61 +169,16 @@ function FinancesInner({ entrepriseId, entrepriseNom }: { entrepriseId: string |
     return Object.entries(by).map(([name, value]) => ({ name, value })).sort((a, b) => b.value - a.value).slice(0, 6);
   }, [ventes, mMap]);
 
-  const filtered = useMemo(() => {
-    if (!ventes) return null;
-    return ventes.filter((v) => {
-      if (statusFilter !== "all" && v.statut_paiement !== statusFilter) return false;
-      if (from && v.date_vente < from) return false;
-      if (to && v.date_vente > to) return false;
-      return true;
-    });
-  }, [ventes, statusFilter, from, to]);
-
-  // Group strictly per author: auteur_id first, otherwise the normalized
-  // author name — never a single shared bucket (that merged all authors into one card).
-  const royaltiesByAuthor = useMemo(() => {
-    const v = ventes ?? [];
-    interface Group { key: string; auteurId: string | null; name: string; pending: number; count: number; ids: string[]; momo: string | null; operateur: string | null; }
-    const by: Record<string, Group> = {};
-    v.filter((x) => x.statut_paiement === "en_attente").forEach((s) => {
-      const aid = s.auteur_id ?? mMap[s.manuscrit_id]?.auteur_id ?? null;
-      const name = (aid && aMap[aid]) || mMap[s.manuscrit_id]?.auteur?.trim() || "Auteur inconnu";
-      const key = aid ?? `nom:${normalizeName(name)}`;
-      if (!by[key]) {
-        const det = aid ? aDetails[aid] : undefined;
-        by[key] = { key, auteurId: aid, name, pending: 0, count: 0, ids: [], momo: det?.numero_mobile_money ?? null, operateur: det?.operateur ?? null };
-      }
-      by[key].pending += Number(s.droits_auteur_fcfa || 0);
-      by[key].count += 1;
-      by[key].ids.push(s.id);
-    });
-    return Object.values(by).filter((x) => x.pending > 0).sort((a, b) => b.pending - a.pending);
-  }, [ventes, mMap, aMap, aDetails]);
-
-  const [payTarget, setPayTarget] = useState<{ name: string; pending: number; ids: string[] } | null>(null);
-  const [paying, setPaying] = useState(false);
-
-  const confirmMarkPaid = async () => {
-    if (!payTarget) return;
-    setPaying(true);
-    const { error } = await supabase
-      .from("ventes")
-      .update({ statut_paiement: "paye" as any })
-      .in("id", payTarget.ids)
-      .eq("statut_paiement", "en_attente");
-    setPaying(false);
-    if (error) return toast.error(error.message);
-    toast.success(`✅ Royalties de ${payTarget.name} marquées comme payées — ${fcfa(payTarget.pending)}`);
-    setPayTarget(null);
-    load();
-  };
+  const loading = ventes === null;
 
   return (
     <div className="space-y-6">
       <header className="flex flex-wrap items-end justify-between gap-3">
         <div>
           <h1 className="text-3xl font-bold tracking-tight">Finances</h1>
-          <p className="text-muted-foreground mt-1">Ventes, royalties et paiements en un coup d'œil.</p>
+          <p className="text-muted-foreground mt-1">
+            Ventes, encaissements, dépenses et royalties — chaque opération est traçable et vérifiable.
+          </p>
         </div>
         <div className="flex flex-wrap items-center gap-2">
           <ExportFinancesTrigger onClick={() => setExportOpen(true)} />
@@ -203,209 +186,165 @@ function FinancesInner({ entrepriseId, entrepriseNom }: { entrepriseId: string |
         </div>
       </header>
 
-      <div className="grid sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 gap-4">
-        <StatCard icon={TrendingUp} label="Chiffre d'affaires" value={fcfa(totals.revenue)} accent="primary" />
-        <StatCard icon={Store} label="Commission librairies (20%)" value={fcfa(totals.commission)} />
-        <StatCard icon={Check} label="Royalties payées" value={fcfa(totals.paid)} accent="primary" />
-        <StatCard icon={Clock} label="Royalties en attente" value={fcfa(totals.pending)} accent="gold" />
-        <StatCard icon={ShoppingBag} label="Exemplaires vendus" value={String(totals.copies)} />
-        <StatCard icon={Tag} label="Remises accordées" value={fcfa(totals.remises)} />
-      </div>
-
-      
-
-      <div className="grid lg:grid-cols-2 gap-4">
-        <div className="rounded-xl border border-border bg-card p-6">
-          <h3 className="font-semibold mb-4">Chiffre d'affaires — 6 derniers mois</h3>
-          <div className="h-64">
-            {ventes === null ? <Skeleton className="h-full w-full" /> : (
-              <ResponsiveContainer width="100%" height="100%">
-                <BarChart data={monthlyData}>
-                  <XAxis dataKey="label" stroke="#94A3B8" fontSize={12} />
-                  <YAxis stroke="#94A3B8" fontSize={12} tickFormatter={(v) => `${(v/1000).toFixed(0)}k`} />
-                  <Tooltip
-                    contentStyle={{ background: "#1A1208", border: "1px solid #1E3A5F", borderRadius: 8 }}
-                    formatter={(v: number) => fcfa(v)}
-                  />
-                  <Bar dataKey="revenue" fill="#C8922A" radius={[6, 6, 0, 0]} />
-                </BarChart>
-              </ResponsiveContainer>
+      <Tabs defaultValue="apercu" className="space-y-6">
+        <TabsList className="w-full justify-start overflow-x-auto flex-nowrap h-auto p-1 gap-1">
+          <TabsTrigger value="apercu" className="gap-1.5 whitespace-nowrap">
+            <LayoutDashboard className="h-4 w-4" /> Vue d'ensemble
+          </TabsTrigger>
+          <TabsTrigger value="ventes" className="gap-1.5 whitespace-nowrap">
+            <ShoppingCart className="h-4 w-4" /> Ventes
+            {!loading && ventes.length > 0 && (
+              <Badge variant="secondary" className="ml-1 text-[10px] px-1.5 py-0">{ventes.length}</Badge>
             )}
-          </div>
-        </div>
-        <div className="rounded-xl border border-border bg-card p-6">
-          <h3 className="font-semibold mb-4">Répartition par titre</h3>
-          <div className="h-64">
-            {ventes === null ? <Skeleton className="h-full w-full" /> : pieData.length === 0 ? (
-              <div className="h-full flex items-center justify-center text-sm text-muted-foreground">Aucune vente</div>
-            ) : (
-              <ResponsiveContainer width="100%" height="100%">
-                <PieChart>
-                  <Pie data={pieData} dataKey="value" nameKey="name" outerRadius={80} label={(e) => `${e.name}`}>
-                    {pieData.map((_, i) => <Cell key={i} fill={COLORS[i % COLORS.length]} />)}
-                  </Pie>
-                  <Tooltip contentStyle={{ background: "#1A1208", border: "1px solid #1E3A5F", borderRadius: 8 }} formatter={(v: number) => fcfa(v)} />
-                </PieChart>
-              </ResponsiveContainer>
+          </TabsTrigger>
+          <TabsTrigger value="depenses" className="gap-1.5 whitespace-nowrap">
+            <Wallet className="h-4 w-4" /> Dépenses
+          </TabsTrigger>
+          <TabsTrigger value="royalties" className="gap-1.5 whitespace-nowrap">
+            <Users className="h-4 w-4" /> Royalties
+            {totals.pending > 0 && (
+              <Badge className="ml-1 text-[10px] px-1.5 py-0 bg-amber-500/20 text-amber-400 border-amber-500/30">
+                {fcfa(totals.pending)}
+              </Badge>
             )}
+          </TabsTrigger>
+          <TabsTrigger value="rentabilite" className="gap-1.5 whitespace-nowrap">
+            <PiggyBank className="h-4 w-4" /> Rentabilité
+          </TabsTrigger>
+          <TabsTrigger value="journal" className="gap-1.5 whitespace-nowrap">
+            <History className="h-4 w-4" /> Journal
+          </TabsTrigger>
+        </TabsList>
+
+        {/* ==================== VUE D'ENSEMBLE ==================== */}
+        <TabsContent value="apercu" className="space-y-6">
+          <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-4">
+            <StatCard icon={TrendingUp} label="Chiffre d'affaires" value={fcfa(totals.revenue)} accent="gold" />
+            <StatCard icon={Banknote} label="Encaissé" value={fcfa(totals.encaisse)} accent="primary" />
+            <StatCard icon={Clock} label="À encaisser" value={fcfa(totals.aEncaisser)} accent="warn" />
+            <StatCard icon={Wallet} label="Dépenses" value={fcfa(totals.totalDepenses)} accent="danger" />
+            <StatCard
+              icon={PiggyBank}
+              label="Résultat net estimé"
+              value={fcfa(totals.resultatNet)}
+              accent={totals.resultatNet >= 0 ? "primary" : "danger"}
+            />
+            <StatCard icon={Check} label="Royalties payées" value={fcfa(totals.paid)} accent="primary" />
+            <StatCard icon={Clock} label="Royalties en attente" value={fcfa(totals.pending)} accent="gold" />
+            <StatCard icon={ShoppingBag} label="Exemplaires vendus" value={String(totals.copies)} />
           </div>
-        </div>
-      </div>
 
-      {/* Sales filters + table */}
-      <div className="flex flex-wrap items-end gap-3">
-        <div className="space-y-1">
-          <Label className="text-xs">Statut</Label>
-          <Select value={statusFilter} onValueChange={setStatusFilter}>
-            <SelectTrigger className="w-40"><SelectValue /></SelectTrigger>
-            <SelectContent>
-              <SelectItem value="all">Tous</SelectItem>
-              <SelectItem value="en_attente">En attente</SelectItem>
-              <SelectItem value="paye">Payé</SelectItem>
-            </SelectContent>
-          </Select>
-        </div>
-        <div className="space-y-1">
-          <Label className="text-xs">Du</Label>
-          <Input type="date" value={from} onChange={(e) => setFrom(e.target.value)} className="w-40" />
-        </div>
-        <div className="space-y-1">
-          <Label className="text-xs">Au</Label>
-          <Input type="date" value={to} onChange={(e) => setTo(e.target.value)} className="w-40" />
-        </div>
-      </div>
-
-      <div className="rounded-xl border border-border bg-card overflow-hidden">
-        {ventes === null ? (
-          <div className="p-6 space-y-3">{Array.from({ length: 4 }).map((_, i) => <Skeleton key={i} className="h-12 w-full" />)}</div>
-        ) : filtered && filtered.length === 0 ? (
-          <div className="p-12 text-center">
-            <div className="mx-auto h-16 w-16 rounded-2xl bg-primary/10 text-primary flex items-center justify-center">
-              <Wallet className="h-8 w-8" />
+          <div className="grid lg:grid-cols-2 gap-4">
+            <div className="rounded-xl border border-border bg-card p-6">
+              <h3 className="font-semibold mb-4">CA vs dépenses — 6 derniers mois</h3>
+              <div className="h-64">
+                {loading ? <Skeleton className="h-full w-full" /> : (
+                  <ResponsiveContainer width="100%" height="100%">
+                    <ComposedChart data={monthlyData}>
+                      <CartesianGrid strokeDasharray="3 3" stroke="#1E3A5F" />
+                      <XAxis dataKey="label" stroke="#94A3B8" fontSize={12} />
+                      <YAxis stroke="#94A3B8" fontSize={12} tickFormatter={(v) => `${(v / 1000).toFixed(0)}k`} />
+                      <Tooltip
+                        contentStyle={{ background: "#1A1208", border: "1px solid #1E3A5F", borderRadius: 8 }}
+                        formatter={(v: number) => fcfa(v)}
+                      />
+                      <Legend />
+                      <Bar dataKey="revenue" name="CA" fill="#C8922A" radius={[6, 6, 0, 0]} />
+                      <Bar dataKey="depenses" name="Dépenses" fill="#b0413e" radius={[6, 6, 0, 0]} />
+                      <Line type="monotone" dataKey="net" name="Net" stroke="#3fb96f" strokeWidth={2} />
+                    </ComposedChart>
+                  </ResponsiveContainer>
+                )}
+              </div>
             </div>
-            <h3 className="mt-4 font-semibold">Aucune vente</h3>
-            <p className="mt-1 text-sm text-muted-foreground">Enregistrez votre première vente pour commencer.</p>
-          </div>
-        ) : (
-          <div className="overflow-x-auto">
-            <table className="w-full text-sm">
-              <thead className="bg-muted/30 text-muted-foreground">
-                <tr className="text-left">
-                  <th className="px-4 py-3 font-medium">Livre</th>
-                  <th className="px-4 py-3 font-medium">Auteur</th>
-                  <th className="px-4 py-3 font-medium hidden lg:table-cell">Canal</th>
-                  <th className="px-4 py-3 font-medium hidden md:table-cell">Qté</th>
-                  <th className="px-4 py-3 font-medium hidden md:table-cell">PU</th>
-                  <th className="px-4 py-3 font-medium">Total</th>
-                  <th className="px-4 py-3 font-medium hidden md:table-cell">Commission</th>
-                  <th className="px-4 py-3 font-medium">Royalties</th>
-                  <th className="px-4 py-3 font-medium">Statut</th>
-                  <th className="px-4 py-3 font-medium hidden lg:table-cell">Date</th>
-                </tr>
-              </thead>
-              <tbody>
-                {filtered?.map((v) => {
-                  const m = mMap[v.manuscrit_id];
-                  const auteurName = (v.auteur_id && aMap[v.auteur_id]) ?? (m?.auteur_id && aMap[m.auteur_id!]) ?? m?.auteur ?? "—";
-                  const isExterne = v.canal_vente !== "interne";
-                  return (
-                    <tr key={v.id} className="border-t border-border">
-                      <td className="px-4 py-3 font-medium">{m?.titre ?? "—"}</td>
-                      <td className="px-4 py-3 text-muted-foreground">{auteurName}</td>
-                      <td className="px-4 py-3 hidden lg:table-cell">
-                        <span className={cn(
-                          "inline-flex items-center rounded-full border px-2 py-0.5 text-xs",
-                          isExterne
-                            ? "bg-blue-500/10 text-blue-400 border-blue-500/30"
-                            : "bg-emerald-500/10 text-emerald-400 border-emerald-500/30",
-                        )}>
-                          {isExterne ? "Librairie" : "Directe"}
-                        </span>
-                      </td>
-                      <td className="px-4 py-3 hidden md:table-cell">{v.quantite_vendue}</td>
-                      <td className="px-4 py-3 hidden md:table-cell">
-                        {Number(v.remise_fcfa) > 0 && v.prix_catalogue_fcfa ? (
-                          <>
-                            <span className="line-through text-muted-foreground text-xs mr-1">{fcfa(v.prix_catalogue_fcfa)}</span>
-                            {fcfa(v.prix_unitaire_fcfa)}
-                          </>
-                        ) : fcfa(v.prix_unitaire_fcfa)}
-                      </td>
-                      <td className="px-4 py-3 font-semibold">
-                        {fcfa(v.montant_total_fcfa)}
-                        {Number(v.remise_fcfa) > 0 && (
-                          <div className="text-xs font-normal text-orange-400">🏷️ −{fcfa(Number(v.remise_fcfa))}</div>
-                        )}
-                      </td>
-                      <td className="px-4 py-3 hidden md:table-cell text-orange-400">
-                        {Number(v.commission_librairie_fcfa) > 0 ? fcfa(v.commission_librairie_fcfa) : "—"}
-                      </td>
-                      <td className="px-4 py-3 text-[color:var(--gold)] font-semibold">{fcfa(v.droits_auteur_fcfa)}</td>
-                      <td className="px-4 py-3">
-                        <span className={cn("inline-flex items-center rounded-full border px-2.5 py-0.5 text-xs font-medium",
-                          v.statut_paiement === "paye"
-                            ? "bg-primary/15 text-primary border-primary/40"
-                            : "bg-orange-500/15 text-orange-400 border-orange-500/30")}>
-                          {v.statut_paiement === "paye" ? "Payé" : "En attente"}
-                        </span>
-                      </td>
-                      <td className="px-4 py-3 text-muted-foreground hidden lg:table-cell">
-                        {v.date_vente ? new Date(v.date_vente).toLocaleDateString("fr-FR") : "—"}
-                      </td>
-                    </tr>
-                  );
-                })}
-              </tbody>
-            </table>
-          </div>
-        )}
-      </div>
-
-      {/* Royalties section — one card per author */}
-      <div className="rounded-xl border border-border bg-card p-6">
-        <h2 className="text-xl font-semibold mb-4">Royalties à payer par auteur</h2>
-        {ventes === null ? <Skeleton className="h-24 w-full" /> :
-          royaltiesByAuthor.length === 0 ? (
-            <p className="text-sm text-muted-foreground">Aucune royaltie en attente. 🎉</p>
-          ) : (
-            <div className="space-y-2">
-              {royaltiesByAuthor.map((r) => (
-                <div
-                  key={r.key}
-                  className="flex flex-wrap items-center justify-between gap-3 rounded-xl border border-[color-mix(in_oklab,var(--gold)_15%,transparent)] bg-[rgba(26,18,8,0.8)] px-5 py-4"
-                >
-                  <div className="min-w-0">
-                    <p className="font-bold text-[15px] text-foreground truncate">{r.name}</p>
-                    <p className="font-mono text-base font-bold text-[color:var(--gold)]">{fcfa(r.pending)} <span className="text-xs font-normal text-muted-foreground">en attente</span></p>
-                    <p className="text-xs text-muted-foreground">{r.count} vente{r.count > 1 ? "s" : ""} concernée{r.count > 1 ? "s" : ""}</p>
-                    {r.momo && (
-                      <p className="text-[11px] text-muted-foreground">{r.operateur ? `${r.operateur} : ` : ""}{r.momo}</p>
-                    )}
-                  </div>
-                  <Button
-                    size="sm"
-                    onClick={() => setPayTarget({ name: r.name, pending: r.pending, ids: r.ids })}
-                    className="bg-[color:var(--gold)] text-[#1A1208] hover:bg-[color:var(--gold)]/90 font-semibold"
-                  >
-                    <Check className="h-4 w-4" /> Marquer payé
-                  </Button>
-                </div>
-              ))}
+            <div className="rounded-xl border border-border bg-card p-6">
+              <h3 className="font-semibold mb-4">Répartition par titre</h3>
+              <div className="h-64">
+                {loading ? <Skeleton className="h-full w-full" /> : pieData.length === 0 ? (
+                  <div className="h-full flex items-center justify-center text-sm text-muted-foreground">Aucune vente</div>
+                ) : (
+                  <ResponsiveContainer width="100%" height="100%">
+                    <PieChart>
+                      <Pie data={pieData} dataKey="value" nameKey="name" outerRadius={80} label={(e) => `${e.name}`}>
+                        {pieData.map((_, i) => <Cell key={i} fill={COLORS[i % COLORS.length]} />)}
+                      </Pie>
+                      <Tooltip contentStyle={{ background: "#1A1208", border: "1px solid #1E3A5F", borderRadius: 8 }} formatter={(v: number) => fcfa(v)} />
+                    </PieChart>
+                  </ResponsiveContainer>
+                )}
+              </div>
             </div>
+          </div>
+
+          {totals.remises > 0 && (
+            <p className="text-xs text-muted-foreground flex items-center gap-1.5">
+              <Tag className="h-3.5 w-3.5" /> Remises accordées au total : {fcfa(totals.remises)}
+            </p>
           )}
-      </div>
 
-      <ConfirmationModal
-        isOpen={!!payTarget}
-        title="Marquer les royalties comme payées ?"
-        message={payTarget ? `Marquer toutes les royalties de ${payTarget.name} comme payées ? Montant total : ${fcfa(payTarget.pending)}` : ""}
-        confirmLabel={paying ? "En cours…" : "Confirmer"}
-        cancelLabel="Annuler"
-        confirmVariant="gold"
-        iconVariant="gold"
-        onConfirm={confirmMarkPaid}
-        onCancel={() => setPayTarget(null)}
-      />
+          <FinancesAnalytics ventes={ventes} manuscrits={manuscrits} aMap={aMap} mMap={mMap} />
+        </TabsContent>
+
+        {/* ==================== VENTES ==================== */}
+        <TabsContent value="ventes">
+          {loading ? (
+            <div className="space-y-3">{Array.from({ length: 4 }).map((_, i) => <Skeleton key={i} className="h-12 w-full" />)}</div>
+          ) : (
+            <VentesTab ventes={ventes} manuscrits={manuscrits as any} auteurs={auteurs} onChanged={load} />
+          )}
+        </TabsContent>
+
+        {/* ==================== DÉPENSES ==================== */}
+        <TabsContent value="depenses">
+          {loading || !entrepriseId ? (
+            <Skeleton className="h-64 w-full" />
+          ) : (
+            <DepensesTab
+              depenses={depenses}
+              manuscrits={manuscrits}
+              entrepriseId={entrepriseId}
+              userId={userId}
+              onChanged={load}
+            />
+          )}
+        </TabsContent>
+
+        {/* ==================== ROYALTIES ==================== */}
+        <TabsContent value="royalties">
+          {loading ? (
+            <Skeleton className="h-64 w-full" />
+          ) : (
+            <RoyaltiesTab
+              ventes={ventes}
+              manuscrits={manuscrits as any}
+              auteurs={auteurs}
+              paiements={paiements}
+              entrepriseNom={entrepriseNom}
+              entrepriseVille={entrepriseVille}
+              onChanged={load}
+            />
+          )}
+        </TabsContent>
+
+        {/* ==================== RENTABILITÉ ==================== */}
+        <TabsContent value="rentabilite">
+          {loading ? (
+            <Skeleton className="h-64 w-full" />
+          ) : (
+            <RentabiliteTab
+              ventes={ventes}
+              depenses={depenses}
+              stockInterne={stockInterne}
+              manuscrits={manuscrits}
+            />
+          )}
+        </TabsContent>
+
+        {/* ==================== JOURNAL ==================== */}
+        <TabsContent value="journal">
+          <JournalTab />
+        </TabsContent>
+      </Tabs>
 
       <RecordSaleDrawer
         open={sheetOpen}
@@ -423,163 +362,34 @@ function FinancesInner({ entrepriseId, entrepriseNom }: { entrepriseId: string |
   );
 }
 
-function StatCard({ icon: Icon, label, value, accent }: { icon: any; label: string; value: string; accent?: "primary" | "gold" }) {
+function StatCard({
+  icon: Icon, label, value, accent,
+}: {
+  icon: any; label: string; value: string; accent?: "primary" | "gold" | "warn" | "danger";
+}) {
   return (
     <div className="rounded-xl border border-border bg-card p-5">
       <div className="flex items-center gap-3">
-        <div className={cn("h-10 w-10 rounded-lg flex items-center justify-center",
+        <div className={cn(
+          "h-10 w-10 rounded-lg flex items-center justify-center shrink-0",
           accent === "gold" ? "bg-[color:var(--gold)]/15 text-[color:var(--gold)]" :
-          accent === "primary" ? "bg-primary/15 text-primary" : "bg-muted text-muted-foreground")}>
+          accent === "primary" ? "bg-emerald-500/15 text-emerald-400" :
+          accent === "warn" ? "bg-amber-500/15 text-amber-400" :
+          accent === "danger" ? "bg-red-500/15 text-red-400" :
+          "bg-muted text-muted-foreground",
+        )}>
           <Icon className="h-5 w-5" />
         </div>
-        <div>
+        <div className="min-w-0">
           <p className="text-xs uppercase tracking-wider text-muted-foreground">{label}</p>
-          <p className="text-xl font-bold mt-0.5">{value}</p>
+          <p className="text-xl font-bold mt-0.5 truncate">{value}</p>
         </div>
       </div>
     </div>
   );
 }
 
-function VenteSheet({
-  open, onOpenChange, entrepriseId, manuscrits, auteurs, stocks, onSaved,
-}: {
-  open: boolean; onOpenChange: (o: boolean) => void;
-  entrepriseId: string | null;
-  manuscrits: Manuscrit[]; auteurs: Auteur[]; stocks: Stock[];
-  onSaved: () => void;
-}) {
-  const [manuscritId, setManuscritId] = useState("");
-  const [auteurId, setAuteurId] = useState("");
-  const [stockId, setStockId] = useState("");
-  const [qty, setQty] = useState(1);
-  const [prix, setPrix] = useState(0);
-  const [saving, setSaving] = useState(false);
-
-  useEffect(() => {
-    if (!open) {
-      setManuscritId(""); setAuteurId(""); setStockId(""); setQty(1); setPrix(0);
-    }
-  }, [open]);
-
-  useEffect(() => {
-    if (!manuscritId) return;
-    const m = manuscrits.find((x) => x.id === manuscritId);
-    if (m?.auteur_id) setAuteurId(m.auteur_id);
-    const s = stocks.find((x) => x.manuscrit_id === manuscritId);
-    if (s?.prix_unitaire_fcfa) setPrix(Number(s.prix_unitaire_fcfa));
-  }, [manuscritId]);
-
-  const availableStocks = stocks.filter((s) => !manuscritId || s.manuscrit_id === manuscritId);
-  const total = qty * prix;
-  const isExterne = !!stockId;
-  const commission = isExterne ? Math.round(total * 0.2) : 0;
-  const royalties = Math.round(total * 0.1);
-  const netEditeur = total - commission - royalties;
-
-  const submit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!entrepriseId || !manuscritId) return toast.error("Sélectionnez un manuscrit");
-    if (qty <= 0 || prix <= 0) return toast.error("Quantité et prix doivent être positifs");
-    setSaving(true);
-    const { error } = await supabase.from("ventes").insert({
-      entreprise_id: entrepriseId,
-      manuscrit_id: manuscritId,
-      auteur_id: auteurId || null,
-      quantite_vendue: qty,
-      prix_unitaire_fcfa: prix,
-      montant_total_fcfa: total,
-      droits_auteur_fcfa: royalties,
-      commission_librairie_fcfa: commission,
-      canal_vente: isExterne ? "externe" : "interne",
-      montant: total,
-      statut_paiement: "en_attente" as any,
-      date_vente: new Date().toISOString().slice(0, 10),
-    } as any);
-    if (!error && stockId) {
-      const s = stocks.find((x) => x.id === stockId);
-      if (s) {
-        const newVendus = (s.exemplaires_vendus ?? 0) + qty;
-        const newRestants = Math.max(0, (s.exemplaires_restants ?? 0) - qty);
-        await supabase.from("stocks").update({
-          exemplaires_vendus: newVendus,
-          exemplaires_restants: newRestants,
-        }).eq("id", stockId);
-      }
-    }
-    setSaving(false);
-    if (error) return toast.error(error.message);
-    toast.success("Vente enregistrée");
-    onOpenChange(false);
-    onSaved();
-  };
-
-  return (
-    <Sheet open={open} onOpenChange={onOpenChange}>
-      <SheetContent className="bg-card border-border w-full sm:max-w-lg overflow-y-auto">
-        <SheetHeader><SheetTitle>Enregistrer une vente</SheetTitle></SheetHeader>
-        <form onSubmit={submit} className="space-y-4 mt-6 px-4 pb-6">
-          <div className="space-y-2">
-            <Label>Manuscrit *</Label>
-            <Select value={manuscritId} onValueChange={setManuscritId}>
-              <SelectTrigger><SelectValue placeholder="Choisir un manuscrit" /></SelectTrigger>
-              <SelectContent>
-                {manuscrits.map((m) => <SelectItem key={m.id} value={m.id}>{m.titre}</SelectItem>)}
-              </SelectContent>
-            </Select>
-          </div>
-          <div className="space-y-2">
-            <Label>Auteur</Label>
-            <Select value={auteurId} onValueChange={setAuteurId}>
-              <SelectTrigger><SelectValue placeholder="Auto-rempli" /></SelectTrigger>
-              <SelectContent>
-                {auteurs.map((a) => <SelectItem key={a.id} value={a.id}>{a.nom_complet}</SelectItem>)}
-              </SelectContent>
-            </Select>
-          </div>
-          <div className="space-y-2">
-            <Label>Librairie (dépôt de stock)</Label>
-            <Select value={stockId} onValueChange={setStockId}>
-              <SelectTrigger><SelectValue placeholder="Choisir une librairie" /></SelectTrigger>
-              <SelectContent>
-                {availableStocks.map((s) => <SelectItem key={s.id} value={s.id}>{s.librairie_nom ?? "Librairie"} ({s.exemplaires_restants} restants)</SelectItem>)}
-              </SelectContent>
-            </Select>
-          </div>
-          <div className="grid grid-cols-2 gap-3">
-            <div className="space-y-2">
-              <Label>Quantité vendue *</Label>
-              <Input type="number" min={1} value={qty} onChange={(e) => setQty(Number(e.target.value))} />
-            </div>
-            <div className="space-y-2">
-              <Label>Prix unitaire (FCFA) *</Label>
-              <Input type="number" min={0} value={prix} onChange={(e) => setPrix(Number(e.target.value))} />
-            </div>
-          </div>
-          <div className="rounded-lg border border-border bg-background/50 p-4 space-y-1.5">
-            <div className="flex justify-between text-sm"><span className="text-muted-foreground">Chiffre d'affaires</span><span className="font-semibold">{fcfa(total)}</span></div>
-            {isExterne && (
-              <div className="flex justify-between text-sm"><span className="text-muted-foreground">Commission librairie (20%)</span><span className="font-semibold text-orange-400">− {fcfa(commission)}</span></div>
-            )}
-            <div className="flex justify-between text-sm"><span className="text-muted-foreground">Droits d'auteur (10%)</span><span className="font-semibold text-[color:var(--gold)]">− {fcfa(royalties)}</span></div>
-            <div className="flex justify-between text-sm pt-1.5 border-t border-border"><span className="text-foreground font-medium">Net éditeur</span><span className="font-bold text-primary">{fcfa(netEditeur)}</span></div>
-            {!isExterne && (
-              <p className="text-xs text-muted-foreground pt-1">Aucune librairie sélectionnée → vente libre, sans commission.</p>
-            )}
-          </div>
-          <div className="flex justify-end gap-2 pt-2">
-            <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>Annuler</Button>
-            <Button type="submit" disabled={saving} className="bg-primary text-primary-foreground hover:bg-primary/90">
-              {saving ? <Loader2 className="h-4 w-4 animate-spin" /> : "Enregistrer la vente"}
-            </Button>
-          </div>
-        </form>
-      </SheetContent>
-    </Sheet>
-  );
-}
-
-function FinancesAnalytics({ ventes, manuscrits, aMap, mMap }: { ventes: Vente[] | null; manuscrits: Manuscrit[]; aMap: Record<string, string>; mMap: Record<string, Manuscrit> }) {
+function FinancesAnalytics({ ventes, manuscrits, aMap, mMap }: { ventes: VenteRow[] | null; manuscrits: Manuscrit[]; aMap: Record<string, string>; mMap: Record<string, Manuscrit> }) {
   const [range, setRange] = useState<DateRange>(defaultRange());
   const [sortKey, setSortKey] = useState<"copies" | "revenue">("copies");
   if (ventes === null) return <Skeleton className="h-24 w-full" />;
@@ -638,7 +448,7 @@ function FinancesAnalytics({ ventes, manuscrits, aMap, mMap }: { ventes: Vente[]
               <ComposedChart data={months}>
                 <CartesianGrid strokeDasharray="3 3" stroke="#1E3A5F" />
                 <XAxis dataKey="label" stroke="#94A3B8" fontSize={12} />
-                <YAxis stroke="#94A3B8" fontSize={12} tickFormatter={(v) => `${(v/1000).toFixed(0)}k`} />
+                <YAxis stroke="#94A3B8" fontSize={12} tickFormatter={(v) => `${(v / 1000).toFixed(0)}k`} />
                 <Tooltip contentStyle={{ background: "#1A1208", border: "1px solid #1E3A5F", borderRadius: 8 }} formatter={(v: number) => fcfa(v)} />
                 <Legend />
                 <Bar dataKey="revenue" name="Mensuel" fill="#C8922A" radius={[6, 6, 0, 0]} />
@@ -693,3 +503,4 @@ function FCard({ label, value, accent, icon }: { label: string; value: string; a
     </div>
   );
 }
+
