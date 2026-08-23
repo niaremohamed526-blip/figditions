@@ -22,6 +22,7 @@ import { Route as AuthenticatedRouteImport } from './routes/_authenticated'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as RejoindreTokenRouteImport } from './routes/rejoindre.$token'
 import { Route as LectureTokenRouteImport } from './routes/lecture.$token'
+import { Route as ApiMedmoVentesRouteImport } from './routes/api/medmo-ventes'
 import { Route as ApiChatRouteImport } from './routes/api/chat'
 import { Route as AuthenticatedStocksRouteImport } from './routes/_authenticated/stocks'
 import { Route as AuthenticatedParametresRouteImport } from './routes/_authenticated/parametres'
@@ -107,6 +108,11 @@ const RejoindreTokenRoute = RejoindreTokenRouteImport.update({
 const LectureTokenRoute = LectureTokenRouteImport.update({
   id: '/lecture/$token',
   path: '/lecture/$token',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiMedmoVentesRoute = ApiMedmoVentesRouteImport.update({
+  id: '/api/medmo-ventes',
+  path: '/api/medmo-ventes',
   getParentRoute: () => rootRouteImport,
 } as any)
 const ApiChatRoute = ApiChatRouteImport.update({
@@ -247,6 +253,7 @@ export interface FileRoutesByFullPath {
   '/parametres': typeof AuthenticatedParametresRoute
   '/stocks': typeof AuthenticatedStocksRoute
   '/api/chat': typeof ApiChatRoute
+  '/api/medmo-ventes': typeof ApiMedmoVentesRoute
   '/lecture/$token': typeof LectureTokenRoute
   '/rejoindre/$token': typeof RejoindreTokenRoute
   '/admin/paiements': typeof AuthenticatedAdminPaiementsRoute
@@ -281,6 +288,7 @@ export interface FileRoutesByTo {
   '/parametres': typeof AuthenticatedParametresRoute
   '/stocks': typeof AuthenticatedStocksRoute
   '/api/chat': typeof ApiChatRoute
+  '/api/medmo-ventes': typeof ApiMedmoVentesRoute
   '/lecture/$token': typeof LectureTokenRoute
   '/rejoindre/$token': typeof RejoindreTokenRoute
   '/admin/paiements': typeof AuthenticatedAdminPaiementsRoute
@@ -318,6 +326,7 @@ export interface FileRoutesById {
   '/_authenticated/parametres': typeof AuthenticatedParametresRoute
   '/_authenticated/stocks': typeof AuthenticatedStocksRoute
   '/api/chat': typeof ApiChatRoute
+  '/api/medmo-ventes': typeof ApiMedmoVentesRoute
   '/lecture/$token': typeof LectureTokenRoute
   '/rejoindre/$token': typeof RejoindreTokenRoute
   '/_authenticated/admin/paiements': typeof AuthenticatedAdminPaiementsRoute
@@ -355,6 +364,7 @@ export interface FileRouteTypes {
     | '/parametres'
     | '/stocks'
     | '/api/chat'
+    | '/api/medmo-ventes'
     | '/lecture/$token'
     | '/rejoindre/$token'
     | '/admin/paiements'
@@ -389,6 +399,7 @@ export interface FileRouteTypes {
     | '/parametres'
     | '/stocks'
     | '/api/chat'
+    | '/api/medmo-ventes'
     | '/lecture/$token'
     | '/rejoindre/$token'
     | '/admin/paiements'
@@ -425,6 +436,7 @@ export interface FileRouteTypes {
     | '/_authenticated/parametres'
     | '/_authenticated/stocks'
     | '/api/chat'
+    | '/api/medmo-ventes'
     | '/lecture/$token'
     | '/rejoindre/$token'
     | '/_authenticated/admin/paiements'
@@ -452,6 +464,7 @@ export interface RootRouteChildren {
   SignupRoute: typeof SignupRoute
   SitemapDotxmlRoute: typeof SitemapDotxmlRoute
   ApiChatRoute: typeof ApiChatRoute
+  ApiMedmoVentesRoute: typeof ApiMedmoVentesRoute
   LectureTokenRoute: typeof LectureTokenRoute
   RejoindreTokenRoute: typeof RejoindreTokenRoute
   ApiPublicFlutterwaveWebhookRoute: typeof ApiPublicFlutterwaveWebhookRoute
@@ -550,6 +563,13 @@ declare module '@tanstack/react-router' {
       path: '/lecture/$token'
       fullPath: '/lecture/$token'
       preLoaderRoute: typeof LectureTokenRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/medmo-ventes': {
+      id: '/api/medmo-ventes'
+      path: '/api/medmo-ventes'
+      fullPath: '/api/medmo-ventes'
+      preLoaderRoute: typeof ApiMedmoVentesRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/api/chat': {
@@ -789,6 +809,7 @@ const rootRouteChildren: RootRouteChildren = {
   SignupRoute: SignupRoute,
   SitemapDotxmlRoute: SitemapDotxmlRoute,
   ApiChatRoute: ApiChatRoute,
+  ApiMedmoVentesRoute: ApiMedmoVentesRoute,
   LectureTokenRoute: LectureTokenRoute,
   RejoindreTokenRoute: RejoindreTokenRoute,
   ApiPublicFlutterwaveWebhookRoute: ApiPublicFlutterwaveWebhookRoute,
