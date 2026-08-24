@@ -32,6 +32,7 @@ import {
 } from "@/components/ai-elements/prompt-input";
 import { Shimmer } from "@/components/ai-elements/shimmer";
 import { Tool, ToolContent, ToolHeader } from "@/components/ai-elements/tool";
+import { MedmoPhotoVentesCard } from "@/components/medmo-photo-ventes-card";
 
 const TOOL_LABELS: Record<string, string> = {
   vue_ensemble: "Vue d'ensemble",
@@ -48,6 +49,7 @@ const TOOL_LABELS: Record<string, string> = {
   enregistrer_impression: "Enregistrer une impression",
   retour_depot_librairie: "Retour de dépôt vers l'entrepôt",
   changer_statut_manuscrit: "Changer le statut d'un manuscrit",
+  proposer_ventes_cahier: "Lecture du cahier de ventes",
 };
 
 const INPUT_LABELS: Record<string, string> = {
@@ -332,6 +334,29 @@ function ToolPartView({
     return (
       <ApprovalCard part={part} label={label} onRespond={addToolApprovalResponse} disabled={disabled} />
     );
+  }
+
+  // Photo → Ventes : la sortie de l'outil pilote une carte de validation
+  // éditable (rien n'est enregistré en base sans clic sur « Valider »).
+  if (name === "proposer_ventes_cahier") {
+    if (state === "output-available") {
+      const out = part.output as any;
+      if (out && Array.isArray(out.entrees) && out.entrees.length > 0) {
+        return <MedmoPhotoVentesCard output={out} storageKey={String(part.toolCallId ?? "")} />;
+      }
+      return (
+        <div className="my-2 rounded-xl border border-[color:var(--gold)]/40 bg-[color:var(--gold)]/10 px-3.5 py-2.5 text-xs text-muted-foreground">
+          📷 {out?.message ?? "Aucune vente exploitable détectée sur la photo."}
+        </div>
+      );
+    }
+    if (state === "output-error") {
+      return (
+        <div className="my-2 rounded-xl border border-red-500/30 bg-red-500/10 px-3.5 py-2.5 text-xs text-red-400">
+          {String(part.errorText ?? "La lecture du cahier a échoué.")}
+        </div>
+      );
+    }
   }
 
   const input = (part.input ?? {}) as Record<string, unknown>;
