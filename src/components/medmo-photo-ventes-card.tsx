@@ -61,7 +61,14 @@ interface Resultat {
 }
 
 /** Carte de validation « Photo → Ventes » : édition ligne par ligne puis enregistrement en masse. */
-export function MedmoPhotoVentesCard({ output }: { output: SortieCahier }) {
+export function MedmoPhotoVentesCard({
+  output,
+  storageKey,
+}: {
+  output: SortieCahier;
+  /** Clé de persistance locale : après validation, le récapitulatif survit au rechargement du fil. */
+  storageKey?: string;
+}) {
   const [lignes, setLignes] = useState<Ligne[]>(() =>
     (output.entrees ?? []).map((e) => ({
       ...e,
@@ -73,6 +80,22 @@ export function MedmoPhotoVentesCard({ output }: { output: SortieCahier }) {
   const [envoi, setEnvoi] = useState(false);
   const [resultats, setResultats] = useState<Resultat[] | null>(null);
   const [correctionsApprises, setCorrectionsApprises] = useState(0);
+
+  // Restaure le récapitulatif si ces ventes ont déjà été validées (évite le double enregistrement).
+  useEffect(() => {
+    if (!storageKey) return;
+    try {
+      const raw = window.localStorage.getItem(`medmo-cahier:${storageKey}`);
+      if (!raw) return;
+      const saved = JSON.parse(raw) as { resultats?: Resultat[]; corrections?: number };
+      if (Array.isArray(saved.resultats)) {
+        setResultats(saved.resultats);
+        setCorrectionsApprises(saved.corrections ?? 0);
+      }
+    } catch {
+      /* restauration best-effort */
+    }
+  }, [storageKey]);
 
   useEffect(() => {
     let cancelled = false;
@@ -142,6 +165,16 @@ export function MedmoPhotoVentesCard({ output }: { output: SortieCahier }) {
       if (!res.ok) throw new Error(json.erreur ?? "Erreur serveur");
       setResultats(json.resultats as Resultat[]);
       setCorrectionsApprises(json.corrections_apprises ?? 0);
+      if (storageKey) {
+        try {
+          window.localStorage.setItem(
+            `medmo-cahier:${storageKey}`,
+            JSON.stringify({ resultats: json.resultats, corrections: json.corrections_apprises ?? 0 }),
+          );
+        } catch {
+          /* persistance best-effort */
+        }
+      }
       if ((json.succes ?? 0) > 0) {
         toast.success(`${json.succes} vente(s) enregistrée(s) dans FIGDITIONS.`);
         window.dispatchEvent(new CustomEvent("medmo:threads-changed"));
