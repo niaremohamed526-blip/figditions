@@ -165,6 +165,16 @@ export function MedmoPhotoVentesCard({
       if (!res.ok) throw new Error(json.erreur ?? "Erreur serveur");
       setResultats(json.resultats as Resultat[]);
       setCorrectionsApprises(json.corrections_apprises ?? 0);
+      if (storageKey) {
+        try {
+          window.localStorage.setItem(
+            `medmo-cahier:${storageKey}`,
+            JSON.stringify({ resultats: json.resultats, corrections: json.corrections_apprises ?? 0 }),
+          );
+        } catch {
+          /* persistance best-effort */
+        }
+      }
       if ((json.succes ?? 0) > 0) {
         toast.success(`${json.succes} vente(s) enregistrée(s) dans FIGDITIONS.`);
         window.dispatchEvent(new CustomEvent("medmo:threads-changed"));
