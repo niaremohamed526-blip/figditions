@@ -847,11 +847,13 @@ export type Database = {
           auteur: string
           auteur_id: string | null
           created_at: string
+          editeur_origine: string | null
           entreprise_id: string
           genre: string | null
           id: string
           langue: string | null
           nombre_pages: number | null
+          origine: string
           pdf_path: string | null
           statut: Database["public"]["Enums"]["manuscrit_statut"]
           titre: string
@@ -860,11 +862,13 @@ export type Database = {
           auteur: string
           auteur_id?: string | null
           created_at?: string
+          editeur_origine?: string | null
           entreprise_id: string
           genre?: string | null
           id?: string
           langue?: string | null
           nombre_pages?: number | null
+          origine?: string
           pdf_path?: string | null
           statut?: Database["public"]["Enums"]["manuscrit_statut"]
           titre: string
@@ -873,11 +877,13 @@ export type Database = {
           auteur?: string
           auteur_id?: string | null
           created_at?: string
+          editeur_origine?: string | null
           entreprise_id?: string
           genre?: string | null
           id?: string
           langue?: string | null
           nombre_pages?: number | null
+          origine?: string
           pdf_path?: string | null
           statut?: Database["public"]["Enums"]["manuscrit_statut"]
           titre?: string
