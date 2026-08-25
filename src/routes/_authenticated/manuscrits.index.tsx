@@ -45,6 +45,7 @@ function ManuscritsPage() {
   const [items, setItems] = useState<Manuscrit[] | null>(null);
   const [q, setQ] = useState("");
   const [filter, setFilter] = useState<string>("all");
+  const [originFilter, setOriginFilter] = useState<string>("all");
   const [sheetOpen, setSheetOpen] = useState(false);
   const [editing, setEditing] = useState<Manuscrit | null>(null);
   const [toDelete, setToDelete] = useState<Manuscrit | null>(null);
