@@ -35,6 +35,7 @@ export const Route = createFileRoute("/_authenticated/manuscrits/")({
 interface Manuscrit {
   id: string; titre: string; auteur: string; genre: string | null; langue: string | null;
   statut: string; created_at: string;
+  origine: string; editeur_origine: string | null;
 }
 
 function ManuscritsPage() {
@@ -66,9 +67,15 @@ function ManuscritsPage() {
     if (!items) return null;
     return items.filter((m) =>
       (filter === "all" || m.statut === filter) &&
-      (q.trim() === "" || `${m.titre} ${m.auteur} ${m.genre ?? ""}`.toLowerCase().includes(q.toLowerCase()))
+      (originFilter === "all" || (m.origine ?? "propre") === originFilter) &&
+      (q.trim() === "" || `${m.titre} ${m.auteur} ${m.genre ?? ""} ${m.editeur_origine ?? ""}`.toLowerCase().includes(q.toLowerCase()))
     );
-  }, [items, q, filter]);
+  }, [items, q, filter, originFilter]);
+
+  const originCounts = useMemo(() => ({
+    propre: (items ?? []).filter((m) => (m.origine ?? "propre") === "propre").length,
+    etranger: (items ?? []).filter((m) => m.origine === "etranger").length,
+  }), [items]);
 
   const openNew = () => {
     if ((items?.length ?? 0) >= plan.maxManuscrits) { setUpgradeOpen(true); return; }
