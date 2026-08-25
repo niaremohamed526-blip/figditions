@@ -42,6 +42,7 @@ import { fcfa } from "@/lib/format";
 
 interface PubManuscrit {
   id: string; titre: string; auteur: string; auteur_id?: string | null; statut: string;
+  origine?: string; editeur_origine?: string | null;
 }
 interface StockInterne {
   id: string;
@@ -105,7 +106,7 @@ export function StockInterneTab({ entrepriseId, userId }: { entrepriseId: string
     setStocks(null);
     // fetchAllRows : contourne la limite silencieuse de 1000 lignes de l'API.
     const [m, s, mv, ext] = await Promise.all([
-      fetchAllRows<PubManuscrit>(() => supabase.from("manuscrits").select("id, titre, auteur, auteur_id, statut")),
+      fetchAllRows<PubManuscrit>(() => supabase.from("manuscrits").select("id, titre, auteur, auteur_id, statut, origine, editeur_origine")),
       fetchAllRows<StockInterne>(() => (supabase as any).from("stock_interne").select("*").order("created_at", { ascending: false })),
       fetchAllRows<Mouvement>(() => (supabase as any).from("mouvements_stock").select("*").order("created_at", { ascending: false })),
       fetchAllRows<any>(() => (supabase as any).from("stocks").select("id, manuscrit_id, librairie_nom, exemplaires_deposes, exemplaires_restants")),
@@ -123,10 +124,10 @@ export function StockInterneTab({ entrepriseId, userId }: { entrepriseId: string
 
   // Rows: include published books even with no stock row yet (placeholder).
   const rows = useMemo(() => {
-    const map = new Map<string, StockInterne & { titre: string; auteur: string }>();
+    const map = new Map<string, StockInterne & { titre: string; auteur: string; origine: string }>();
     (stocks ?? []).forEach((s) => {
       const m = mMap[s.manuscrit_id];
-      map.set(s.manuscrit_id, { ...s, titre: m?.titre ?? "—", auteur: m?.auteur ?? "—" });
+      map.set(s.manuscrit_id, { ...s, titre: m?.titre ?? "—", auteur: m?.auteur ?? "—", origine: m?.origine ?? "propre" });
     });
     publishedBooks.forEach((m) => {
       if (!map.has(m.id)) {
@@ -138,7 +139,7 @@ export function StockInterneTab({ entrepriseId, userId }: { entrepriseId: string
           quantite_exposee_evenements: 0, seuil_alerte: 10,
           prix_vente_direct_fcfa: 0, cout_unitaire_impression_fcfa: 0,
           emplacement: "Entrepôt principal", date_impression: null, created_at: null,
-          titre: m.titre, auteur: m.auteur,
+          titre: m.titre, auteur: m.auteur, origine: m.origine ?? "propre",
         });
       }
     });
@@ -168,6 +169,10 @@ export function StockInterneTab({ entrepriseId, userId }: { entrepriseId: string
     return list;
   }, [rows, term, level, sort]);
 
+  // Split par origine : notre production vs livres étrangers (sections séparées)
+  const ownRows = useMemo(() => visibleRows.filter((r) => r.origine !== "etranger"), [visibleRows]);
+  const foreignRows = useMemo(() => visibleRows.filter((r) => r.origine === "etranger"), [visibleRows]);
+
 
   const totals = useMemo(() => {
     const list = stocks ?? [];
@@ -177,8 +182,11 @@ export function StockInterneTab({ entrepriseId, userId }: { entrepriseId: string
     const revenueDirect = list.reduce((s, x) => s + x.quantite_vendue_directement * Number(x.prix_vente_direct_fcfa || 0), 0);
     const low = list.filter((x) => x.quantite_disponible <= x.seuil_alerte && x.quantite_imprimee > 0);
     const valeurStock = list.reduce((s, x) => s + x.quantite_disponible * Number(x.cout_unitaire_impression_fcfa || 0), 0);
-    return { disponible, transferees, vendusDirect, revenueDirect, lowCount: low.length, low, valeurStock };
-  }, [stocks]);
+    const isForeign = (x: StockInterne) => mMap[x.manuscrit_id]?.origine === "etranger";
+    const dispoPropre = list.filter((x) => !isForeign(x)).reduce((s, x) => s + x.quantite_disponible, 0);
+    const dispoEtranger = list.filter(isForeign).reduce((s, x) => s + x.quantite_disponible, 0);
+    return { disponible, transferees, vendusDirect, revenueDirect, lowCount: low.length, low, valeurStock, dispoPropre, dispoEtranger };
+  }, [stocks, mMap]);
 
   const openMouvement = (manuscritId?: string) => {
     setMvtPrefillId(manuscritId ?? null);
