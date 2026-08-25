@@ -35,6 +35,7 @@ export const Route = createFileRoute("/_authenticated/manuscrits/")({
 interface Manuscrit {
   id: string; titre: string; auteur: string; genre: string | null; langue: string | null;
   statut: string; created_at: string;
+  origine: string; editeur_origine: string | null;
 }
 
 function ManuscritsPage() {
@@ -44,6 +45,7 @@ function ManuscritsPage() {
   const [items, setItems] = useState<Manuscrit[] | null>(null);
   const [q, setQ] = useState("");
   const [filter, setFilter] = useState<string>("all");
+  const [originFilter, setOriginFilter] = useState<string>("all");
   const [sheetOpen, setSheetOpen] = useState(false);
   const [editing, setEditing] = useState<Manuscrit | null>(null);
   const [toDelete, setToDelete] = useState<Manuscrit | null>(null);
@@ -66,9 +68,15 @@ function ManuscritsPage() {
     if (!items) return null;
     return items.filter((m) =>
       (filter === "all" || m.statut === filter) &&
-      (q.trim() === "" || `${m.titre} ${m.auteur} ${m.genre ?? ""}`.toLowerCase().includes(q.toLowerCase()))
+      (originFilter === "all" || (m.origine ?? "propre") === originFilter) &&
+      (q.trim() === "" || `${m.titre} ${m.auteur} ${m.genre ?? ""} ${m.editeur_origine ?? ""}`.toLowerCase().includes(q.toLowerCase()))
     );
-  }, [items, q, filter]);
+  }, [items, q, filter, originFilter]);
+
+  const originCounts = useMemo(() => ({
+    propre: (items ?? []).filter((m) => (m.origine ?? "propre") === "propre").length,
+    etranger: (items ?? []).filter((m) => m.origine === "etranger").length,
+  }), [items]);
 
   const openNew = () => {
     if ((items?.length ?? 0) >= plan.maxManuscrits) { setUpgradeOpen(true); return; }
@@ -105,7 +113,14 @@ function ManuscritsPage() {
       <header className="flex flex-wrap items-end justify-between gap-4">
         <div>
           <h1 className="text-3xl font-bold tracking-tight">Manuscrits</h1>
-          <p className="text-muted-foreground mt-1">Suivez l'avancement de chaque ouvrage.</p>
+          <p className="text-muted-foreground mt-1">
+            Suivez l'avancement de chaque ouvrage.
+            {items && (
+              <span className="ml-2 text-xs">
+                🏠 {originCounts.propre} publication(s) · 🌍 {originCounts.etranger} livre(s) étranger(s)
+              </span>
+            )}
+          </p>
         </div>
         <div className="flex flex-wrap items-center gap-2">
           <Button variant="outline" onClick={() => setImportOpen(true)}>
@@ -134,6 +149,14 @@ function ManuscritsPage() {
             ))}
           </SelectContent>
         </Select>
+        <Select value={originFilter} onValueChange={setOriginFilter}>
+          <SelectTrigger className="w-full sm:w-56 bg-card"><SelectValue /></SelectTrigger>
+          <SelectContent>
+            <SelectItem value="all">Toutes les origines</SelectItem>
+            <SelectItem value="propre">🏠 Nos publications</SelectItem>
+            <SelectItem value="etranger">🌍 Livres étrangers</SelectItem>
+          </SelectContent>
+        </Select>
       </div>
 
       <div className="rounded-xl border border-border bg-card overflow-hidden">
@@ -160,7 +183,14 @@ function ManuscritsPage() {
               <tbody>
                 {filtered.map((m) => (
                   <tr key={m.id} className="group border-t border-border hover:bg-primary/5 transition-colors">
-                    <td className="px-4 py-3 font-medium">{m.titre}</td>
+                    <td className="px-4 py-3 font-medium">
+                      {m.titre}
+                      {m.origine === "etranger" && (
+                        <span className="ml-2 inline-flex items-center rounded-full border border-blue-500/30 bg-blue-500/15 px-2 py-0.5 text-[10px] font-semibold text-blue-400 align-middle">
+                          🌍 Étranger
+                        </span>
+                      )}
+                    </td>
                     <td className="px-4 py-3 text-muted-foreground">{m.auteur}</td>
                     <td className="px-4 py-3 text-muted-foreground hidden md:table-cell">{m.genre ?? "—"}</td>
                     <td className="px-4 py-3 text-muted-foreground hidden lg:table-cell">{m.langue ?? "—"}</td>
@@ -317,6 +347,8 @@ function ManuscritForm({
     genre: existing?.genre ?? "",
     langue: existing?.langue ?? "Français",
     statut: existing?.statut ?? "recu",
+    origine: existing?.origine ?? "propre",
+    editeur_origine: existing?.editeur_origine ?? "",
   });
   const [loading, setLoading] = useState(false);
 
@@ -330,6 +362,8 @@ function ManuscritForm({
       genre: form.genre || null,
       langue: form.langue,
       statut: form.statut as any,
+      origine: form.origine,
+      editeur_origine: form.origine === "etranger" ? (form.editeur_origine.trim() || null) : null,
     };
     const { error } = existing
       ? await supabase.from("manuscrits").update(payload).eq("id", existing.id)
@@ -350,6 +384,29 @@ function ManuscritForm({
         <Label>Auteur</Label>
         <Input required value={form.auteur} onChange={(e) => setForm({ ...form, auteur: e.target.value })} />
       </div>
+      <div className="space-y-2">
+        <Label>Origine du livre</Label>
+        <Select
+          value={form.origine}
+          onValueChange={(v) => setForm({ ...form, origine: v, statut: v === "etranger" ? "publie" : form.statut })}
+        >
+          <SelectTrigger><SelectValue /></SelectTrigger>
+          <SelectContent>
+            <SelectItem value="propre">🏠 Notre production (publié par nous)</SelectItem>
+            <SelectItem value="etranger">🌍 Livre étranger (édité ailleurs)</SelectItem>
+          </SelectContent>
+        </Select>
+      </div>
+      {form.origine === "etranger" && (
+        <div className="space-y-2">
+          <Label>Éditeur d'origine</Label>
+          <Input
+            value={form.editeur_origine}
+            onChange={(e) => setForm({ ...form, editeur_origine: e.target.value })}
+            placeholder="Ex. Gallimard, Hatier, Nathan…"
+          />
+        </div>
+      )}
       <div className="grid grid-cols-2 gap-3">
         <div className="space-y-2">
           <Label>Genre</Label>
@@ -362,12 +419,21 @@ function ManuscritForm({
       </div>
       <div className="space-y-2">
         <Label>Statut</Label>
-        <Select value={form.statut} onValueChange={(v) => setForm({ ...form, statut: v })}>
+        <Select
+          value={form.statut}
+          onValueChange={(v) => setForm({ ...form, statut: v })}
+          disabled={form.origine === "etranger"}
+        >
           <SelectTrigger><SelectValue /></SelectTrigger>
           <SelectContent>
             {STATUT_OPTIONS.map((o) => <SelectItem key={o.value} value={o.value}>{o.label}</SelectItem>)}
           </SelectContent>
         </Select>
+        {form.origine === "etranger" && (
+          <p className="text-xs text-muted-foreground">
+            Les livres étrangers sont déjà publiés : ils n'entrent pas dans le flux éditorial et vont directement au stock.
+          </p>
+        )}
       </div>
       <Button type="submit" disabled={loading} className="w-full bg-primary text-primary-foreground hover:bg-primary/90">
         {loading ? <Loader2 className="h-4 w-4 animate-spin" /> : (existing ? "Enregistrer les modifications" : "Enregistrer")}

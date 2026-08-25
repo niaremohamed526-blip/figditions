@@ -42,6 +42,7 @@ import { fcfa } from "@/lib/format";
 
 interface PubManuscrit {
   id: string; titre: string; auteur: string; auteur_id?: string | null; statut: string;
+  origine?: string; editeur_origine?: string | null;
 }
 interface StockInterne {
   id: string;
@@ -105,7 +106,7 @@ export function StockInterneTab({ entrepriseId, userId }: { entrepriseId: string
     setStocks(null);
     // fetchAllRows : contourne la limite silencieuse de 1000 lignes de l'API.
     const [m, s, mv, ext] = await Promise.all([
-      fetchAllRows<PubManuscrit>(() => supabase.from("manuscrits").select("id, titre, auteur, auteur_id, statut")),
+      fetchAllRows<PubManuscrit>(() => supabase.from("manuscrits").select("id, titre, auteur, auteur_id, statut, origine, editeur_origine")),
       fetchAllRows<StockInterne>(() => (supabase as any).from("stock_interne").select("*").order("created_at", { ascending: false })),
       fetchAllRows<Mouvement>(() => (supabase as any).from("mouvements_stock").select("*").order("created_at", { ascending: false })),
       fetchAllRows<any>(() => (supabase as any).from("stocks").select("id, manuscrit_id, librairie_nom, exemplaires_deposes, exemplaires_restants")),
@@ -123,10 +124,10 @@ export function StockInterneTab({ entrepriseId, userId }: { entrepriseId: string
 
   // Rows: include published books even with no stock row yet (placeholder).
   const rows = useMemo(() => {
-    const map = new Map<string, StockInterne & { titre: string; auteur: string }>();
+    const map = new Map<string, StockInterne & { titre: string; auteur: string; origine: string }>();
     (stocks ?? []).forEach((s) => {
       const m = mMap[s.manuscrit_id];
-      map.set(s.manuscrit_id, { ...s, titre: m?.titre ?? "—", auteur: m?.auteur ?? "—" });
+      map.set(s.manuscrit_id, { ...s, titre: m?.titre ?? "—", auteur: m?.auteur ?? "—", origine: m?.origine ?? "propre" });
     });
     publishedBooks.forEach((m) => {
       if (!map.has(m.id)) {
@@ -138,7 +139,7 @@ export function StockInterneTab({ entrepriseId, userId }: { entrepriseId: string
           quantite_exposee_evenements: 0, seuil_alerte: 10,
           prix_vente_direct_fcfa: 0, cout_unitaire_impression_fcfa: 0,
           emplacement: "Entrepôt principal", date_impression: null, created_at: null,
-          titre: m.titre, auteur: m.auteur,
+          titre: m.titre, auteur: m.auteur, origine: m.origine ?? "propre",
         });
       }
     });
@@ -168,6 +169,10 @@ export function StockInterneTab({ entrepriseId, userId }: { entrepriseId: string
     return list;
   }, [rows, term, level, sort]);
 
+  // Split par origine : notre production vs livres étrangers (sections séparées)
+  const ownRows = useMemo(() => visibleRows.filter((r) => r.origine !== "etranger"), [visibleRows]);
+  const foreignRows = useMemo(() => visibleRows.filter((r) => r.origine === "etranger"), [visibleRows]);
+
 
   const totals = useMemo(() => {
     const list = stocks ?? [];
@@ -177,13 +182,117 @@ export function StockInterneTab({ entrepriseId, userId }: { entrepriseId: string
     const revenueDirect = list.reduce((s, x) => s + x.quantite_vendue_directement * Number(x.prix_vente_direct_fcfa || 0), 0);
     const low = list.filter((x) => x.quantite_disponible <= x.seuil_alerte && x.quantite_imprimee > 0);
     const valeurStock = list.reduce((s, x) => s + x.quantite_disponible * Number(x.cout_unitaire_impression_fcfa || 0), 0);
-    return { disponible, transferees, vendusDirect, revenueDirect, lowCount: low.length, low, valeurStock };
-  }, [stocks]);
+    const isForeign = (x: StockInterne) => mMap[x.manuscrit_id]?.origine === "etranger";
+    const dispoPropre = list.filter((x) => !isForeign(x)).reduce((s, x) => s + x.quantite_disponible, 0);
+    const dispoEtranger = list.filter(isForeign).reduce((s, x) => s + x.quantite_disponible, 0);
+    return { disponible, transferees, vendusDirect, revenueDirect, lowCount: low.length, low, valeurStock, dispoPropre, dispoEtranger };
+  }, [stocks, mMap]);
 
   const openMouvement = (manuscritId?: string) => {
     setMvtPrefillId(manuscritId ?? null);
     setMvtOpen(true);
   };
+
+  type StockRow = StockInterne & { titre: string; auteur: string; origine: string };
+
+  const renderTable = (list: StockRow[], foreign: boolean) => (
+    <div className="rounded-xl border border-border bg-card overflow-hidden">
+      <div className="overflow-x-auto">
+        <table className="w-full text-sm">
+          <thead className="bg-muted/30 text-muted-foreground">
+            <tr className="text-left">
+              <th className="px-4 py-3 font-medium">Livre</th>
+              <th className="px-4 py-3 font-medium text-center">{foreign ? "Reçus" : "Imprimés"}</th>
+              <th className="px-4 py-3 font-medium text-center">Disponibles</th>
+              <th className="px-4 py-3 font-medium text-center hidden md:table-cell">Réservés</th>
+              <th className="px-4 py-3 font-medium text-center hidden md:table-cell">Librairies</th>
+              <th className="px-4 py-3 font-medium text-center hidden lg:table-cell">Ventes libres</th>
+              <th className="px-4 py-3 font-medium text-center hidden lg:table-cell">Événements</th>
+              <th className="px-4 py-3 font-medium text-right hidden xl:table-cell">Prix direct</th>
+              <th className="px-4 py-3 font-medium text-right hidden xl:table-cell">{foreign ? "Prix d'achat" : "Coût unit."}</th>
+              <th className="px-4 py-3 font-medium text-right">Valeur stock</th>
+              <th className="px-4 py-3 font-medium text-center hidden md:table-cell">Seuil</th>
+              <th className="px-4 py-3 font-medium w-44 text-right">Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            {list.map((r) => {
+              const dispoCls =
+                r.quantite_disponible === 0
+                  ? "text-red-400 bg-red-500/15 border-red-500/30"
+                  : r.quantite_disponible <= r.seuil_alerte
+                  ? "text-orange-400 bg-orange-500/15 border-orange-500/30"
+                  : "text-[#C8922A] bg-primary/15 border-primary/30";
+              const valeur = r.quantite_disponible * Number(r.cout_unitaire_impression_fcfa || 0);
+              return (
+                <tr key={r.manuscrit_id} className="group border-t border-border hover:bg-primary/5 transition-colors">
+                  <td className="px-4 py-3">
+                    <div className="flex items-start gap-2">
+                      <span className="text-lg">{foreign ? "🌍" : "📚"}</span>
+                      <div className="min-w-0">
+                        <p className="font-medium"><Highlight text={r.titre} term={term} /></p>
+                        <p className="text-xs text-[#C8922A]"><Highlight text={r.auteur} term={term} /></p>
+                        {r.emplacement && (
+                          <span className="mt-1 inline-flex rounded-full bg-muted px-2 py-0.5 text-[10px] text-muted-foreground">
+                            <Highlight text={r.emplacement} term={term} />
+                          </span>
+                        )}
+                        <div className="mt-1.5">
+                          <StockBar dispo={r.quantite_disponible} imprimes={r.quantite_imprimee} />
+                        </div>
+                      </div>
+                    </div>
+                  </td>
+                  <td className="px-4 py-3 text-center text-muted-foreground tabular-nums">{r.quantite_imprimee}</td>
+                  <td className="px-4 py-3 text-center">
+                    <span className={cn("inline-flex items-center justify-center min-w-9 px-2 h-6 rounded-full border text-xs font-semibold", dispoCls)}>
+                      {r.quantite_disponible}
+                    </span>
+                  </td>
+                  <td className="px-4 py-3 text-center text-muted-foreground tabular-nums hidden md:table-cell">{r.quantite_reservee}</td>
+                  <td className="px-4 py-3 text-center text-muted-foreground tabular-nums hidden md:table-cell">{r.quantite_transferee_librairies}</td>
+                  <td className="px-4 py-3 text-center text-muted-foreground tabular-nums hidden lg:table-cell">{r.quantite_vendue_directement}</td>
+                  <td className="px-4 py-3 text-center text-muted-foreground tabular-nums hidden lg:table-cell">{r.quantite_exposee_evenements}</td>
+                  <td className="px-4 py-3 text-right text-muted-foreground tabular-nums hidden xl:table-cell">{fcfa(r.prix_vente_direct_fcfa)}</td>
+                  <td className="px-4 py-3 text-right text-muted-foreground tabular-nums hidden xl:table-cell">{fcfa(r.cout_unitaire_impression_fcfa)}</td>
+                  <td className="px-4 py-3 text-right font-semibold text-[color:var(--gold)] tabular-nums">{fcfa(valeur)}</td>
+                  <td className="px-4 py-3 text-center text-muted-foreground hidden md:table-cell">
+                    <button
+                      onClick={() => setEditThresholdFor(r)}
+                      className="inline-flex items-center gap-1 hover:text-foreground"
+                      title="Modifier le seuil"
+                    >
+                      {r.seuil_alerte} <Pencil className="h-3 w-3" />
+                    </button>
+                  </td>
+                  <td className="px-4 py-3 text-right">
+                    <div className="flex items-center justify-end gap-1">
+                      <Button size="icon" variant="ghost" className="h-8 w-8" title="Nouveau stock"
+                        onClick={() => { setMvtPrefillId(r.manuscrit_id); setAddOpen(true); }}>
+                        <Plus className="h-4 w-4" />
+                      </Button>
+                      <Button size="icon" variant="ghost" className="h-8 w-8" title="Corriger / modifier le stock"
+                        onClick={() => r.id && setEditStockFor(r)} disabled={!r.id}>
+                        <Pencil className="h-4 w-4" />
+                      </Button>
+                      <Button size="icon" variant="ghost" className="h-8 w-8" title="Mouvement"
+                        onClick={() => openMouvement(r.manuscrit_id)}>
+                        <ArrowUpDown className="h-4 w-4" />
+                      </Button>
+                      <Button size="icon" variant="ghost" className="h-8 w-8" title="Historique"
+                        onClick={() => r.id && setHistoryFor(r)} disabled={!r.id}>
+                        <History className="h-4 w-4" />
+                      </Button>
+                    </div>
+                  </td>
+                </tr>
+              );
+            })}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  );
 
   if (!entrepriseId || stocks === null) {
     return (
