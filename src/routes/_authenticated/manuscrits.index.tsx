@@ -113,7 +113,14 @@ function ManuscritsPage() {
       <header className="flex flex-wrap items-end justify-between gap-4">
         <div>
           <h1 className="text-3xl font-bold tracking-tight">Manuscrits</h1>
-          <p className="text-muted-foreground mt-1">Suivez l'avancement de chaque ouvrage.</p>
+          <p className="text-muted-foreground mt-1">
+            Suivez l'avancement de chaque ouvrage.
+            {items && (
+              <span className="ml-2 text-xs">
+                🏠 {originCounts.propre} publication(s) · 🌍 {originCounts.etranger} livre(s) étranger(s)
+              </span>
+            )}
+          </p>
         </div>
         <div className="flex flex-wrap items-center gap-2">
           <Button variant="outline" onClick={() => setImportOpen(true)}>
@@ -142,6 +149,14 @@ function ManuscritsPage() {
             ))}
           </SelectContent>
         </Select>
+        <Select value={originFilter} onValueChange={setOriginFilter}>
+          <SelectTrigger className="w-full sm:w-56 bg-card"><SelectValue /></SelectTrigger>
+          <SelectContent>
+            <SelectItem value="all">Toutes les origines</SelectItem>
+            <SelectItem value="propre">🏠 Nos publications</SelectItem>
+            <SelectItem value="etranger">🌍 Livres étrangers</SelectItem>
+          </SelectContent>
+        </Select>
       </div>
 
       <div className="rounded-xl border border-border bg-card overflow-hidden">
@@ -168,7 +183,14 @@ function ManuscritsPage() {
               <tbody>
                 {filtered.map((m) => (
                   <tr key={m.id} className="group border-t border-border hover:bg-primary/5 transition-colors">
-                    <td className="px-4 py-3 font-medium">{m.titre}</td>
+                    <td className="px-4 py-3 font-medium">
+                      {m.titre}
+                      {m.origine === "etranger" && (
+                        <span className="ml-2 inline-flex items-center rounded-full border border-blue-500/30 bg-blue-500/15 px-2 py-0.5 text-[10px] font-semibold text-blue-400 align-middle">
+                          🌍 Étranger
+                        </span>
+                      )}
+                    </td>
                     <td className="px-4 py-3 text-muted-foreground">{m.auteur}</td>
                     <td className="px-4 py-3 text-muted-foreground hidden md:table-cell">{m.genre ?? "—"}</td>
                     <td className="px-4 py-3 text-muted-foreground hidden lg:table-cell">{m.langue ?? "—"}</td>
