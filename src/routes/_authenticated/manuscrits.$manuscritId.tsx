@@ -39,6 +39,7 @@ interface Manuscrit {
   id: string; titre: string; auteur: string; genre: string | null;
   langue: string | null; statut: string; nombre_pages: number | null;
   pdf_path: string | null; entreprise_id: string;
+  origine?: string | null; editeur_origine?: string | null;
 }
 interface Partage {
   id: string; token: string; nom_lecteur: string; email_lecteur: string | null;
