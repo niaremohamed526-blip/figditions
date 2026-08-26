@@ -605,6 +605,8 @@ function AddStockForm({
     notes: "",
   });
   const [loading, setLoading] = useState(false);
+  const isForeign =
+    books.find((b) => b.id === form.manuscrit_id)?.origine === "etranger";
 
   // Auto-fill from last estimation when picking a book
   useEffect(() => {
