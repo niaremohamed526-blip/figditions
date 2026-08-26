@@ -39,6 +39,7 @@ interface Manuscrit {
   id: string; titre: string; auteur: string; genre: string | null;
   langue: string | null; statut: string; nombre_pages: number | null;
   pdf_path: string | null; entreprise_id: string;
+  origine?: string | null; editeur_origine?: string | null;
 }
 interface Partage {
   id: string; token: string; nom_lecteur: string; email_lecteur: string | null;
@@ -184,13 +185,21 @@ function ManuscritDetailPage() {
         </Button>
         <h1 className="text-3xl font-bold">{m.titre}</h1>
         <p className="text-muted-foreground mt-1">{m.auteur}{m.genre ? ` · ${m.genre}` : ""}{m.langue ? ` · ${m.langue}` : ""}</p>
+        {m.origine === "etranger" && (
+          <span className="mt-2 inline-flex items-center gap-1 rounded-full border border-[#C08A55]/40 bg-[#C08A55]/10 px-2.5 py-0.5 text-xs font-medium text-[#C08A55]">
+            🌍 Livre étranger{m.editeur_origine ? ` · ${m.editeur_origine}` : ""}
+          </span>
+        )}
       </div>
 
       {/* Progression */}
-      <section className="rounded-xl border border-border bg-card p-5">
-        <h2 className="font-semibold mb-4">📈 Progression éditoriale</h2>
-        <StatusStepper statut={m.statut} />
-      </section>
+      {m.origine !== "etranger" && (
+        <section className="rounded-xl border border-border bg-card p-5">
+          <h2 className="font-semibold mb-4">📈 Progression éditoriale</h2>
+          <StatusStepper statut={m.statut} />
+        </section>
+      )}
+
 
       {/* Quick convert to ebook */}
       {m.pdf_path && (
