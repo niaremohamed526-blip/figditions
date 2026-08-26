@@ -697,15 +697,17 @@ function AddStockForm({
           value={form.manuscrit_id}
           onChange={(v) => setForm({ ...form, manuscrit_id: v })}
         />
-
+        {isForeign && (
+          <p className="text-xs text-[#C08A55]">🌍 Livre étranger — entrée en stock d'exemplaires achetés/reçus.</p>
+        )}
       </div>
       <div className="space-y-2">
-        <Label>Quantité imprimée reçue</Label>
+        <Label>{isForeign ? "Quantité reçue" : "Quantité imprimée reçue"}</Label>
         <Input type="number" min={1} required value={form.quantite}
           onChange={(e) => setForm({ ...form, quantite: Number(e.target.value) })} />
       </div>
       <div className="space-y-2">
-        <Label>Date d'impression</Label>
+        <Label>{isForeign ? "Date de réception" : "Date d'impression"}</Label>
         <Popover>
           <PopoverTrigger asChild>
             <Button variant="outline" className="w-full justify-start text-left font-normal">
@@ -722,7 +724,7 @@ function AddStockForm({
       </div>
       <div className="grid grid-cols-2 gap-3">
         <div className="space-y-2">
-          <Label>Coût unitaire (FCFA)</Label>
+          <Label>{isForeign ? "Prix d'achat unitaire (FCFA)" : "Coût unitaire (FCFA)"}</Label>
           <Input type="number" min={0} value={form.cout_unitaire}
             onChange={(e) => setForm({ ...form, cout_unitaire: Number(e.target.value) })} />
         </div>
