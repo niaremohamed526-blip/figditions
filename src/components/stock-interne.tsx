@@ -309,7 +309,13 @@ export function StockInterneTab({ entrepriseId, userId }: { entrepriseId: string
     <div className="space-y-6">
       {/* Summary cards */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
-        <SumCard icon={<Warehouse />} label="📦 Total en stock" value={String(totals.disponible)} accent="#C8922A" />
+        <SumCard
+          icon={<Warehouse />}
+          label="📦 Total en stock"
+          value={String(totals.disponible)}
+          sub={`📚 ${totals.dispoPropre} propres · 🌍 ${totals.dispoEtranger} étrangers`}
+          accent="#C8922A"
+        />
         <SumCard icon={<Truck />} label="🔄 Transférés librairies" value={String(totals.transferees)} accent="#3B82F6" />
         <SumCard
           icon={<ShoppingBag />}
