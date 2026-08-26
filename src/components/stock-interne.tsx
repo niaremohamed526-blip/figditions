@@ -640,7 +640,7 @@ function AddStockForm({
         }));
       }
     })();
-  }, [form.manuscrit_id]);
+  }, [form.manuscrit_id, isForeign]);
 
   const submit = async (e: React.FormEvent) => {
     e.preventDefault();
