@@ -621,6 +621,8 @@ function AddStockForm({
       }));
       return;
     }
+    // Les livres étrangers n'ont pas d'estimation d'impression : rien à préremplir.
+    if (isForeign) return;
     (async () => {
       const { data } = await (supabase as any)
         .from("estimations_cout")
