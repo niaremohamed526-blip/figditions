@@ -519,6 +519,73 @@ export type Database = {
           },
         ]
       }
+      depot_batches: {
+        Row: {
+          bordereau_id: string | null
+          created_at: string
+          created_by: string | null
+          date_depot: string
+          entreprise_id: string
+          id: string
+          librairie_nom: string
+          manuscrit_id: string
+          notes: string | null
+          provenance: string
+          quantite_deposee: number
+          stock_id: string | null
+        }
+        Insert: {
+          bordereau_id?: string | null
+          created_at?: string
+          created_by?: string | null
+          date_depot?: string
+          entreprise_id: string
+          id?: string
+          librairie_nom: string
+          manuscrit_id: string
+          notes?: string | null
+          provenance?: string
+          quantite_deposee: number
+          stock_id?: string | null
+        }
+        Update: {
+          bordereau_id?: string | null
+          created_at?: string
+          created_by?: string | null
+          date_depot?: string
+          entreprise_id?: string
+          id?: string
+          librairie_nom?: string
+          manuscrit_id?: string
+          notes?: string | null
+          provenance?: string
+          quantite_deposee?: number
+          stock_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "depot_batches_entreprise_id_fkey"
+            columns: ["entreprise_id"]
+            isOneToOne: false
+            referencedRelation: "entreprises"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "depot_batches_manuscrit_id_fkey"
+            columns: ["manuscrit_id"]
+            isOneToOne: false
+            referencedRelation: "manuscrits"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "depot_batches_stock_id_fkey"
+            columns: ["stock_id"]
+            isOneToOne: false
+            referencedRelation: "stocks"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       entreprises: {
         Row: {
           abonnement_expire_le: string | null
@@ -1748,6 +1815,21 @@ export type Database = {
     }
     Functions: {
       accept_invitation: { Args: { p_token: string }; Returns: Json }
+      add_depot_batch: {
+        Args: {
+          p_applique_droits?: boolean
+          p_date?: string
+          p_librairie_adresse?: string
+          p_librairie_nom: string
+          p_manuscrit_id: string
+          p_notes?: string
+          p_prix?: number
+          p_provenance?: string
+          p_quantite: number
+          p_taux_commission?: number
+        }
+        Returns: Json
+      }
       admin_confirm_paiement: { Args: { p_id: string }; Returns: Json }
       admin_list_paiements: { Args: { p_statut?: string }; Returns: Json }
       admin_paiements_stats: { Args: never; Returns: Json }
