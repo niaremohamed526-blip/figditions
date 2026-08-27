@@ -216,13 +216,14 @@ function DashboardPage() {
       </header>
 
       <section className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 gap-4">
-        {cards.map(({ label, value, icon: Icon, hint }, i) => (
+        {cards.map(({ label, value, icon: Icon, hint, subhint }, i) => (
           <div key={label} className="stat-card glow-card rounded-xl border border-border bg-card p-5 animate-[fade-up_0.5s_ease-out_both]" style={{ animationDelay: `${i * 80}ms` }}>
             <div className="flex items-start justify-between">
               <div>
                 <p className="text-sm text-muted-foreground">{label}</p>
                 <p className="mt-2 text-3xl font-bold tabular-nums"><AnimatedCounter value={value} /></p>
                 {hint && <p className="mt-1 text-[11px] text-muted-foreground">{hint}</p>}
+                {subhint && <p className="mt-0.5 text-[11px] text-[color:var(--gold)]">{subhint}</p>}
               </div>
               <div className="h-10 w-10 rounded-lg bg-primary/10 text-primary flex items-center justify-center">
                 <Icon className="h-5 w-5" />
