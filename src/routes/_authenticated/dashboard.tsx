@@ -103,6 +103,8 @@ function DashboardPage() {
     const ms = manuscrits ?? [];
     return {
       total: ms.length,
+      propres: ms.filter((m) => m.origine !== "etranger").length,
+      etrangers: ms.filter((m) => m.origine === "etranger").length,
       encours: ms.filter((m) => m.statut !== "publie").length,
       stock: totals.stockTotal,
       circulation: totals.externeDepose,
@@ -188,7 +190,7 @@ function DashboardPage() {
   }, [manuscrits, ventes, contrats, stocks, mMap]);
 
   const cards: { label: string; value: number; icon: typeof BookOpen; hint: string; subhint?: string }[] = [
-    { label: "Manuscrits", value: stats.total, icon: BookOpen, hint: "" },
+    { label: "Manuscrits", value: stats.total, icon: BookOpen, hint: "", subhint: `📕 Nos productions: ${nf(stats.propres)} · 🌍 Étrangers: ${nf(stats.etrangers)}` },
     { label: "En cours", value: stats.encours, icon: Clock, hint: "" },
     {
       label: "Stock total",
