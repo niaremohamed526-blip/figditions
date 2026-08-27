@@ -42,7 +42,7 @@ function DashboardPage() {
   const [auteurs, setAuteurs] = useState<Auteur[]>([]);
   const [stocks, setStocks] = useState<Stock[]>([]);
   const [contrats, setContrats] = useState<Contrat[]>([]);
-  const [stockInterne, setStockInterne] = useState<StockInterneRow[]>([]);
+  const [stockInterne, setStockInterne] = useState<StockInterneRowWithM[]>([]);
   const [range, setRange] = useState<DateRange>(defaultRange());
 
   const reload = useMemo(() => {
@@ -81,6 +81,23 @@ function DashboardPage() {
 
   // Source unique de vérité : stock total = entrepôt + librairies
   const totals = useMemo(() => computeStockTotals(stockInterne, stocks), [stockInterne, stocks]);
+
+  // Répartition par origine : productions propres vs livres étrangers
+  const stockByOrigin = useMemo(() => {
+    const originOf = (mid: string | null | undefined) =>
+      (mid && mMap[mid]?.origine) === "etranger" ? "etranger" : "propre";
+    let propres = 0;
+    let etrangers = 0;
+    stockInterne.forEach((i) => {
+      if (originOf(i.manuscrit_id) === "etranger") etrangers += Number(i.quantite_disponible || 0);
+      else propres += Number(i.quantite_disponible || 0);
+    });
+    stocks.forEach((s) => {
+      if (originOf(s.manuscrit_id) === "etranger") etrangers += Number(s.exemplaires_restants || 0);
+      else propres += Number(s.exemplaires_restants || 0);
+    });
+    return { propres, etrangers };
+  }, [stockInterne, stocks, mMap]);
 
   const stats = useMemo(() => {
     const ms = manuscrits ?? [];
