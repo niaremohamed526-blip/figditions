@@ -25,7 +25,8 @@ export const Route = createFileRoute("/_authenticated/dashboard")({
   head: () => ({ meta: [{ title: "Tableau de bord — FIGDITIONS" }] }),
 });
 
-interface Manuscrit { id: string; titre: string; auteur: string; auteur_id?: string | null; genre?: string | null; statut: string; created_at: string; }
+interface Manuscrit { id: string; titre: string; auteur: string; auteur_id?: string | null; genre?: string | null; statut: string; created_at: string; origine?: string | null; }
+interface StockInterneRowWithM extends StockInterneRow { manuscrit_id?: string | null }
 interface Vente { id: string; manuscrit_id: string; auteur_id: string | null; quantite_vendue: number; montant_total_fcfa: number; droits_auteur_fcfa: number; statut_paiement: string; date_vente: string; created_at: string; }
 interface Auteur { id: string; nom_complet: string; }
 interface Stock { id: string; manuscrit_id: string; librairie_nom: string | null; exemplaires_deposes: number; exemplaires_vendus: number; exemplaires_restants: number; prix_unitaire_fcfa: number | null; created_at: string; }
@@ -41,7 +42,7 @@ function DashboardPage() {
   const [auteurs, setAuteurs] = useState<Auteur[]>([]);
   const [stocks, setStocks] = useState<Stock[]>([]);
   const [contrats, setContrats] = useState<Contrat[]>([]);
-  const [stockInterne, setStockInterne] = useState<StockInterneRow[]>([]);
+  const [stockInterne, setStockInterne] = useState<StockInterneRowWithM[]>([]);
   const [range, setRange] = useState<DateRange>(defaultRange());
 
   const reload = useMemo(() => {
@@ -49,12 +50,12 @@ function DashboardPage() {
       if (!profile?.entreprise_id) return;
       // fetchAllRows : contourne la limite silencieuse de 1000 lignes de l'API.
       const [m, v, a, s, c, si] = await Promise.all([
-        fetchAllRows<Manuscrit>(() => supabase.from("manuscrits").select("id, titre, auteur, auteur_id, genre, statut, created_at").order("created_at", { ascending: false })),
+        fetchAllRows<Manuscrit>(() => supabase.from("manuscrits").select("id, titre, auteur, auteur_id, genre, statut, created_at, origine").order("created_at", { ascending: false })),
         fetchAllRows<Vente>(() => supabase.from("ventes").select("*").order("date_vente", { ascending: false })),
         fetchAllRows<Auteur>(() => supabase.from("auteurs").select("id, nom_complet")),
         fetchAllRows<Stock>(() => supabase.from("stocks").select("id, manuscrit_id, librairie_nom, exemplaires_deposes, exemplaires_vendus, exemplaires_restants, prix_unitaire_fcfa, created_at")),
         fetchAllRows<Contrat>(() => supabase.from("contrats").select("id, created_at, statut, manuscrit_id")),
-        fetchAllRows<StockInterneRow>(() => supabase.from("stock_interne").select("quantite_disponible, quantite_imprimee, quantite_transferee_librairies, quantite_vendue_directement, quantite_exposee_evenements, seuil_alerte")),
+        fetchAllRows<StockInterneRowWithM>(() => supabase.from("stock_interne").select("manuscrit_id, quantite_disponible, quantite_imprimee, quantite_transferee_librairies, quantite_vendue_directement, quantite_exposee_evenements, seuil_alerte")),
       ]);
       setManuscrits(m);
       setVentes(v);
@@ -81,10 +82,29 @@ function DashboardPage() {
   // Source unique de vérité : stock total = entrepôt + librairies
   const totals = useMemo(() => computeStockTotals(stockInterne, stocks), [stockInterne, stocks]);
 
+  // Répartition par origine : productions propres vs livres étrangers
+  const stockByOrigin = useMemo(() => {
+    const originOf = (mid: string | null | undefined) =>
+      (mid && mMap[mid]?.origine) === "etranger" ? "etranger" : "propre";
+    let propres = 0;
+    let etrangers = 0;
+    stockInterne.forEach((i) => {
+      if (originOf(i.manuscrit_id) === "etranger") etrangers += Number(i.quantite_disponible || 0);
+      else propres += Number(i.quantite_disponible || 0);
+    });
+    stocks.forEach((s) => {
+      if (originOf(s.manuscrit_id) === "etranger") etrangers += Number(s.exemplaires_restants || 0);
+      else propres += Number(s.exemplaires_restants || 0);
+    });
+    return { propres, etrangers };
+  }, [stockInterne, stocks, mMap]);
+
   const stats = useMemo(() => {
     const ms = manuscrits ?? [];
     return {
       total: ms.length,
+      propres: ms.filter((m) => m.origine !== "etranger").length,
+      etrangers: ms.filter((m) => m.origine === "etranger").length,
       encours: ms.filter((m) => m.statut !== "publie").length,
       stock: totals.stockTotal,
       circulation: totals.externeDepose,
@@ -169,14 +189,15 @@ function DashboardPage() {
     return items.sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime()).slice(0, 10);
   }, [manuscrits, ventes, contrats, stocks, mMap]);
 
-  const cards = [
-    { label: "Manuscrits", value: stats.total, icon: BookOpen, hint: "" },
+  const cards: { label: string; value: number; icon: typeof BookOpen; hint: string; subhint?: string }[] = [
+    { label: "Manuscrits", value: stats.total, icon: BookOpen, hint: "", subhint: `📕 Nos productions: ${nf(stats.propres)} · 🌍 Étrangers: ${nf(stats.etrangers)}` },
     { label: "En cours", value: stats.encours, icon: Clock, hint: "" },
     {
       label: "Stock total",
       value: stats.stock,
       icon: Boxes,
       hint: `Entrepôt: ${nf(totals.interneDisponible)} | Librairies: ${nf(totals.externeRestant)}`,
+      subhint: `📕 Nos productions: ${nf(stockByOrigin.propres)} · 🌍 Livres étrangers: ${nf(stockByOrigin.etrangers)}`,
     },
     { label: "En circulation", value: stats.circulation, icon: Store, hint: "déposés en librairies" },
     { label: "Vendus", value: stats.vendus, icon: Trophy, hint: "exemplaires vendus" },
@@ -197,13 +218,14 @@ function DashboardPage() {
       </header>
 
       <section className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 gap-4">
-        {cards.map(({ label, value, icon: Icon, hint }, i) => (
+        {cards.map(({ label, value, icon: Icon, hint, subhint }, i) => (
           <div key={label} className="stat-card glow-card rounded-xl border border-border bg-card p-5 animate-[fade-up_0.5s_ease-out_both]" style={{ animationDelay: `${i * 80}ms` }}>
             <div className="flex items-start justify-between">
               <div>
                 <p className="text-sm text-muted-foreground">{label}</p>
                 <p className="mt-2 text-3xl font-bold tabular-nums"><AnimatedCounter value={value} /></p>
                 {hint && <p className="mt-1 text-[11px] text-muted-foreground">{hint}</p>}
+                {subhint && <p className="mt-0.5 text-[11px] text-[color:var(--gold)]">{subhint}</p>}
               </div>
               <div className="h-10 w-10 rounded-lg bg-primary/10 text-primary flex items-center justify-center">
                 <Icon className="h-5 w-5" />
