@@ -195,6 +195,7 @@ function DashboardPage() {
       value: stats.stock,
       icon: Boxes,
       hint: `Entrepôt: ${nf(totals.interneDisponible)} | Librairies: ${nf(totals.externeRestant)}`,
+      subhint: `📕 Nos productions: ${nf(stockByOrigin.propres)} · 🌍 Livres étrangers: ${nf(stockByOrigin.etrangers)}`,
     },
     { label: "En circulation", value: stats.circulation, icon: Store, hint: "déposés en librairies" },
     { label: "Vendus", value: stats.vendus, icon: Trophy, hint: "exemplaires vendus" },
