@@ -187,7 +187,7 @@ function DashboardPage() {
     return items.sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime()).slice(0, 10);
   }, [manuscrits, ventes, contrats, stocks, mMap]);
 
-  const cards = [
+  const cards: { label: string; value: number; icon: typeof BookOpen; hint: string; subhint?: string }[] = [
     { label: "Manuscrits", value: stats.total, icon: BookOpen, hint: "" },
     { label: "En cours", value: stats.encours, icon: Clock, hint: "" },
     {
