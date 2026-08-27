@@ -50,12 +50,12 @@ function DashboardPage() {
       if (!profile?.entreprise_id) return;
       // fetchAllRows : contourne la limite silencieuse de 1000 lignes de l'API.
       const [m, v, a, s, c, si] = await Promise.all([
-        fetchAllRows<Manuscrit>(() => supabase.from("manuscrits").select("id, titre, auteur, auteur_id, genre, statut, created_at").order("created_at", { ascending: false })),
+        fetchAllRows<Manuscrit>(() => supabase.from("manuscrits").select("id, titre, auteur, auteur_id, genre, statut, created_at, origine").order("created_at", { ascending: false })),
         fetchAllRows<Vente>(() => supabase.from("ventes").select("*").order("date_vente", { ascending: false })),
         fetchAllRows<Auteur>(() => supabase.from("auteurs").select("id, nom_complet")),
         fetchAllRows<Stock>(() => supabase.from("stocks").select("id, manuscrit_id, librairie_nom, exemplaires_deposes, exemplaires_vendus, exemplaires_restants, prix_unitaire_fcfa, created_at")),
         fetchAllRows<Contrat>(() => supabase.from("contrats").select("id, created_at, statut, manuscrit_id")),
-        fetchAllRows<StockInterneRow>(() => supabase.from("stock_interne").select("quantite_disponible, quantite_imprimee, quantite_transferee_librairies, quantite_vendue_directement, quantite_exposee_evenements, seuil_alerte")),
+        fetchAllRows<StockInterneRowWithM>(() => supabase.from("stock_interne").select("manuscrit_id, quantite_disponible, quantite_imprimee, quantite_transferee_librairies, quantite_vendue_directement, quantite_exposee_evenements, seuil_alerte")),
       ]);
       setManuscrits(m);
       setVentes(v);
