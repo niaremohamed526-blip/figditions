@@ -737,6 +737,28 @@ function StockForm({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [form.librairie_nom, entrepriseId]);
 
+  // Dépôt déjà existant pour ce livre dans cette librairie (aperçu de fusion)
+  const [dejaEnPlace, setDejaEnPlace] = useState<{ exemplaires_restants: number; exemplaires_deposes: number } | null>(null);
+  useEffect(() => {
+    if (existing) { setDejaEnPlace(null); return; }
+    const nom = form.librairie_nom.trim();
+    if (!nom || !form.manuscrit_id || !entrepriseId) { setDejaEnPlace(null); return; }
+    const handler = setTimeout(async () => {
+      const { data } = await (supabase as any)
+        .from("stocks")
+        .select("exemplaires_restants, exemplaires_deposes")
+        .eq("entreprise_id", entrepriseId)
+        .eq("manuscrit_id", form.manuscrit_id)
+        .ilike("librairie_nom", nom)
+        .order("created_at", { ascending: true })
+        .limit(1);
+      setDejaEnPlace(data?.[0] ?? null);
+    }, 300);
+    return () => clearTimeout(handler);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [form.librairie_nom, form.manuscrit_id, entrepriseId]);
+
+
   const restants = Math.max(0, Number(form.exemplaires_deposes) - Number(form.exemplaires_vendus));
   const montantTotal = Number(form.exemplaires_vendus) * Number(form.prix_unitaire_fcfa);
   const tauxComm = Number(form.taux_commission_pct) || 0;
