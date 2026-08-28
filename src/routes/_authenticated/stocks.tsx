@@ -861,6 +861,31 @@ function StockForm({
             onChange={(e) => setForm({ ...form, exemplaires_vendus: Number(e.target.value) })} />
         </div>
       </div>
+
+      {/* Aperçu live : fusion avec un dépôt existant */}
+      {!existing && dejaEnPlace && (
+        <div className="rounded-xl border border-[color:var(--gold)]/30 bg-[color:var(--gold)]/[0.07] p-4 space-y-1.5 text-sm animate-fade-in">
+          <p className="text-xs font-semibold uppercase tracking-[1px] text-[color:var(--gold)]">
+            📦 Dépôt existant chez « {form.librairie_nom.trim()} »
+          </p>
+          <Row icon={<Package className="h-4 w-4" />} label="Stock actuel restant">
+            <span className="font-semibold text-foreground">{dejaEnPlace.exemplaires_restants ?? 0}</span>
+          </Row>
+          <Row icon={<Plus className="h-4 w-4" />} label="Nouveau dépôt">
+            <span className="font-semibold text-[color:var(--gold)]">+ {Number(form.exemplaires_deposes) || 0}</span>
+          </Row>
+          <div className="pt-2 border-t border-[color:var(--gold)]/20">
+            <Row icon={<BookOpen className="h-4 w-4" />} label="Nouveau total restant">
+              <span className="font-bold text-primary text-base">
+                {(dejaEnPlace.exemplaires_restants ?? 0) + (Number(form.exemplaires_deposes) || 0)}
+              </span>
+            </Row>
+          </div>
+          <p className="pt-1 text-[11px] text-muted-foreground">
+            Les exemplaires seront ajoutés à la fiche existante (aucun doublon) et le lot sera enregistré dans l'historique des dépôts.
+          </p>
+        </div>
+      )}
       <div className="space-y-2">
         <Label>Prix unitaire (FCFA)</Label>
         <Input type="number" min={0} required value={form.prix_unitaire_fcfa}
