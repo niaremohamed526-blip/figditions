@@ -175,37 +175,35 @@ export function StockImportDialog({
 
     setImporting(true);
     const valid = rows.filter((r) => !r.error && r.manuscritId);
-    const payload = valid.map((r) => ({
-      entreprise_id: entrepriseId,
-      manuscrit_id: r.manuscritId!,
-      librairie_nom: librairieNom.trim(),
-      librairie_adresse: librairieAdresse.trim() || null,
-      exemplaires_deposes: r.quantite,
-      exemplaires_vendus: 0,
-      exemplaires_restants: r.quantite,
-      exemplaires_total: r.quantite,
-      prix_unitaire_fcfa: r.prix,
-      derniere_visite: r.dateDepot,
-    }));
 
-    const { error } = await supabase.from("stocks").insert(payload as any);
-    if (error) { setImporting(false); return toast.error(error.message); }
-
-    // Déduction de l'entrepôt (stock interne) pour chaque titre déposé
+    // Chaque ligne passe par add_depot_batch : fusion dans la fiche existante
+    // (livre + librairie), historisation du lot, déduction de l'entrepôt.
     const warnings: string[] = [];
+    let merged = 0;
+    let done = 0;
     for (const r of valid) {
-      const { data: res, error: rpcErr } = await (supabase as any).rpc("apply_depot_transfert", {
+      const { data: res, error: rpcErr } = await (supabase as any).rpc("add_depot_batch", {
         p_manuscrit_id: r.manuscritId!,
-        p_delta: r.quantite,
-        p_librairie_nom: librairieNom.trim() || null,
+        p_librairie_nom: librairieNom.trim(),
+        p_quantite: r.quantite,
+        p_prix: r.prix || null,
+        p_librairie_adresse: librairieAdresse.trim() || null,
         p_date: r.dateDepot || null,
+        p_provenance: "interne",
+        p_notes: "Import Excel",
       });
-      if (rpcErr) warnings.push(`${r.titre ?? "Ligne"} : ${rpcErr.message}`);
-      else if (res?.warning) warnings.push(`${r.titre ?? "Ligne"} : ${res.warning}`);
+      if (rpcErr) { warnings.push(`${r.titre ?? "Ligne"} : ${rpcErr.message}`); continue; }
+      done += 1;
+      if (res?.merged) merged += 1;
+      if (res?.warning) warnings.push(`${r.titre ?? "Ligne"} : ${res.warning}`);
     }
     setImporting(false);
     warnings.forEach((w) => toast.warning(w));
-    toast.success(`${valid.length} dépôt(s) importé(s) chez « ${librairieNom} »`);
+    if (done === 0) return toast.error("Aucun dépôt importé");
+    toast.success(
+      `${done} dépôt(s) importé(s) chez « ${librairieNom} »` +
+        (merged > 0 ? ` — ${merged} fusionné(s) avec un dépôt existant` : ""),
+    );
     onImported();
     close();
 

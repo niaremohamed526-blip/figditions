@@ -6,6 +6,82 @@ import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { fcfa } from "@/lib/format";
 import { groupByLibrairie, stockStatus, type ExterneStockRow } from "@/components/librairies-tab";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { supabase } from "@/integrations/supabase/client";
+
+interface DepotBatch {
+  id: string;
+  manuscrit_id: string;
+  librairie_nom: string;
+  quantite_deposee: number;
+  date_depot: string;
+  provenance: string;
+  notes: string | null;
+}
+
+/** Badge « N dépôts » + historique des lots pour un livre dans une librairie. */
+function BatchHistoryBadge({ manuscritId, librairieNom }: { manuscritId: string; librairieNom: string }) {
+  const [batches, setBatches] = useState<DepotBatch[] | null>(null);
+  const [open, setOpen] = useState(false);
+
+  useEffect(() => {
+    if (!open || batches) return;
+    (async () => {
+      const { data } = await supabase
+        .from("depot_batches")
+        .select("id, manuscrit_id, librairie_nom, quantite_deposee, date_depot, provenance, notes")
+        .eq("manuscrit_id", manuscritId)
+        .ilike("librairie_nom", librairieNom)
+        .order("date_depot", { ascending: false });
+      setBatches((data as DepotBatch[]) ?? []);
+    })();
+  }, [open, batches, manuscritId, librairieNom]);
+
+  return (
+    <Popover open={open} onOpenChange={setOpen}>
+      <PopoverTrigger asChild>
+        <button
+          type="button"
+          title="Historique des dépôts"
+          className="inline-flex shrink-0 items-center gap-1 rounded-full border border-[color:var(--gold)]/30 bg-[color:var(--gold)]/10 px-2 py-px text-[10px] font-semibold text-[color:var(--gold)] hover:bg-[color:var(--gold)]/20"
+        >
+          📦 Dépôts
+        </button>
+      </PopoverTrigger>
+      <PopoverContent align="end" className="w-72 border-border bg-card p-3">
+        <p className="mb-2 text-[11px] font-semibold uppercase tracking-[1px] text-[color:var(--gold)]">
+          Historique des dépôts
+        </p>
+        {batches === null ? (
+          <Skeleton className="h-16 w-full rounded-lg" />
+        ) : batches.length === 0 ? (
+          <p className="text-xs text-muted-foreground">Aucun lot enregistré.</p>
+        ) : (
+          <ul className="space-y-1.5">
+            {batches.map((b) => (
+              <li key={b.id} className="flex items-start justify-between gap-2 border-b border-border/60 pb-1.5 last:border-0 last:pb-0">
+                <span className="text-xs text-muted-foreground">
+                  {fdate(b.date_depot)}
+                  {b.provenance === "hors_stock" && <span className="ml-1 opacity-70">📤</span>}
+                  {b.notes && <span className="block text-[10px] opacity-70">{b.notes}</span>}
+                </span>
+                <span className="shrink-0 text-xs font-semibold tabular-nums text-[color:var(--gold)]">
+                  + {b.quantite_deposee}
+                </span>
+              </li>
+            ))}
+            <li className="flex items-center justify-between pt-1 text-xs font-bold">
+              <span>Total déposé</span>
+              <span className="tabular-nums text-primary">
+                {batches.reduce((s, b) => s + (b.quantite_deposee ?? 0), 0)}
+              </span>
+            </li>
+          </ul>
+        )}
+      </PopoverContent>
+    </Popover>
+  );
+}
 
 const LS_KEY = "figditions:externe:collapsed";
 
@@ -256,6 +332,9 @@ export function StockExterneGroups({
                                     </span>
                                   )}
                                 </p>
+                                <div className="mt-1 flex items-center gap-1.5">
+                                  <BatchHistoryBadge manuscritId={r.manuscrit_id} librairieNom={g.nom} />
+                                </div>
                                 {authorMap[r.manuscrit_id] && (
                                   <p className="truncate text-[11px] text-muted-foreground">{authorMap[r.manuscrit_id]}</p>
                                 )}

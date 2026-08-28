@@ -9,6 +9,17 @@ export interface BordereauLigne {
   deposes?: number;
   vendus?: number;
   restants?: number;
+  /** Exemplaires restants AVANT le dernier dépôt (traçabilité multi-lots). */
+  avant?: number;
+  /** Quantité du dépôt le plus récent pour ce titre. */
+  ceDepot?: number;
+}
+
+export interface BordereauLot {
+  date: string;
+  titre: string;
+  quantite: number;
+  provenance?: string | null;
 }
 
 export interface BordereauPdfData {
@@ -32,6 +43,8 @@ export interface BordereauPdfData {
   /** Droits auteur (10% by default). Only shown for "vente" type. */
   droitsAuteurFcfa?: number;
   notes?: string | null;
+  /** Historique des lots de dépôt (type "depot" uniquement). */
+  historiqueLots?: BordereauLot[];
   /** Optional data URL (or http URL) of the publisher's own logo, rendered as a discreet watermark at the center. */
   watermarkLogoUrl?: string | null;
 }
@@ -259,8 +272,23 @@ export async function generateBordereauPdf(
     doc.setTextColor(...INK);
     doc.text(titreLines, M, y + 3);
 
+    let extraH = 0;
+    if (isDepot && (l.ceDepot ?? 0) > 0) {
+      doc.setFont("helvetica", "normal");
+      doc.setFontSize(7.5);
+      doc.setTextColor(...MUTED);
+      doc.text(
+        `avant : ${l.avant ?? 0}   +   ce depot : ${l.ceDepot}   =   nouveau total : ${(l.avant ?? 0) + (l.ceDepot ?? 0)}`
+          .replace(/depot/g, "dépôt"),
+        M,
+        y + titreLines.length * 11 + 2,
+      );
+      extraH = 11;
+    }
+
     doc.setFont("helvetica", "normal");
     doc.setFontSize(9);
+    doc.setTextColor(...INK);
     if (isDepot) {
       doc.text(String(l.deposes ?? l.quantite), W - M - 180, y + 3, { align: "right" });
       doc.text(String(l.vendus ?? 0), W - M - 95, y + 3, { align: "right" });
@@ -271,7 +299,7 @@ export async function generateBordereauPdf(
       doc.setTextColor(...INK);
       doc.text(fmtFcfa(l.total), W - M, y + 3, { align: "right" });
     }
-    y += rowH;
+    y += rowH + extraH;
     doc.setDrawColor(...HAIR);
     doc.setLineWidth(0.3);
     doc.line(M, y - 5, W - M, y - 5);
@@ -338,6 +366,41 @@ export async function generateBordereauPdf(
     doc.setTextColor(...INK);
     doc.text(fmtFcfa(net), W - M, y, { align: "right" });
     y += 20;
+  }
+
+  // ─── Historique des lots de dépôt ────────────────────────────────────
+  if (isDepot && d.historiqueLots && d.historiqueLots.length > 0) {
+    if (y > H - 200) { doc.addPage(); y = M; }
+    doc.setFont("helvetica", "bold");
+    doc.setFontSize(7);
+    doc.setTextColor(...GOLD);
+    doc.text("HISTORIQUE DES DÉPÔTS", M, y);
+    y += 10;
+    doc.setDrawColor(...HAIR);
+    doc.setLineWidth(0.4);
+    doc.line(M, y, W - M, y);
+    y += 12;
+    for (const lot of d.historiqueLots) {
+      if (y > H - 150) { doc.addPage(); y = M; }
+      doc.setFont("helvetica", "normal");
+      doc.setFontSize(8);
+      doc.setTextColor(...MUTED);
+      doc.text(lot.date, M, y);
+      doc.setTextColor(...INK);
+      const t = doc.splitTextToSize(lot.titre, W - 2 * M - 200);
+      doc.text(t[0], M + 70, y);
+      if (lot.provenance === "hors_stock") {
+        doc.setTextColor(...MUTED);
+        doc.setFontSize(7);
+        doc.text("hors stock interne", W - M - 90, y, { align: "right" });
+      }
+      doc.setFont("helvetica", "bold");
+      doc.setFontSize(8);
+      doc.setTextColor(...GOLD);
+      doc.text(`+ ${lot.quantite}`, W - M, y, { align: "right" });
+      y += 12;
+    }
+    y += 8;
   }
 
   // Notes

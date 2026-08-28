@@ -737,6 +737,28 @@ function StockForm({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [form.librairie_nom, entrepriseId]);
 
+  // Dépôt déjà existant pour ce livre dans cette librairie (aperçu de fusion)
+  const [dejaEnPlace, setDejaEnPlace] = useState<{ exemplaires_restants: number; exemplaires_deposes: number } | null>(null);
+  useEffect(() => {
+    if (existing) { setDejaEnPlace(null); return; }
+    const nom = form.librairie_nom.trim();
+    if (!nom || !form.manuscrit_id || !entrepriseId) { setDejaEnPlace(null); return; }
+    const handler = setTimeout(async () => {
+      const { data } = await (supabase as any)
+        .from("stocks")
+        .select("exemplaires_restants, exemplaires_deposes")
+        .eq("entreprise_id", entrepriseId)
+        .eq("manuscrit_id", form.manuscrit_id)
+        .ilike("librairie_nom", nom)
+        .order("created_at", { ascending: true })
+        .limit(1);
+      setDejaEnPlace(data?.[0] ?? null);
+    }, 300);
+    return () => clearTimeout(handler);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [form.librairie_nom, form.manuscrit_id, entrepriseId]);
+
+
   const restants = Math.max(0, Number(form.exemplaires_deposes) - Number(form.exemplaires_vendus));
   const montantTotal = Number(form.exemplaires_vendus) * Number(form.prix_unitaire_fcfa);
   const tauxComm = Number(form.taux_commission_pct) || 0;
@@ -749,6 +771,36 @@ function StockForm({
     e.preventDefault();
     if (!entrepriseId) return toast.error("Profil non chargé");
     if (!form.manuscrit_id) return toast.error("Sélectionnez un manuscrit");
+
+    // Nouveau dépôt : passe par add_depot_batch — fusionne dans la fiche existante
+    // (même livre + même librairie), historise le lot et déduit l'entrepôt.
+    if (!existing) {
+      if (Number(form.exemplaires_deposes) <= 0) return toast.error("Quantité déposée invalide");
+      setLoading(true);
+      const { data: res, error: rpcErr } = await (supabase as any).rpc("add_depot_batch", {
+        p_manuscrit_id: form.manuscrit_id,
+        p_librairie_nom: form.librairie_nom.trim(),
+        p_quantite: Number(form.exemplaires_deposes),
+        p_prix: Number(form.prix_unitaire_fcfa) || null,
+        p_librairie_adresse: form.librairie_adresse.trim() || null,
+        p_date: form.derniere_visite ? format(form.derniere_visite, "yyyy-MM-dd") : null,
+        p_provenance: form.provenance,
+        p_taux_commission: tauxComm,
+        p_applique_droits: form.applique_droits_auteur,
+        p_notes: null,
+      });
+      setLoading(false);
+      if (rpcErr) return toast.error(rpcErr.message);
+      if (res?.warning) toast.warning(res.warning);
+      toast.success(
+        res?.merged
+          ? `Dépôt fusionné : ${res.avant} + ${res.ajout} = ${res.total_restants} exemplaires restants`
+          : `Dépôt ajouté (${res?.ajout ?? form.exemplaires_deposes} ex.)`,
+      );
+      onSaved();
+      return;
+    }
+
     setLoading(true);
     const payload: any = {
       manuscrit_id: form.manuscrit_id,
@@ -861,6 +913,31 @@ function StockForm({
             onChange={(e) => setForm({ ...form, exemplaires_vendus: Number(e.target.value) })} />
         </div>
       </div>
+
+      {/* Aperçu live : fusion avec un dépôt existant */}
+      {!existing && dejaEnPlace && (
+        <div className="rounded-xl border border-[color:var(--gold)]/30 bg-[color:var(--gold)]/[0.07] p-4 space-y-1.5 text-sm animate-fade-in">
+          <p className="text-xs font-semibold uppercase tracking-[1px] text-[color:var(--gold)]">
+            📦 Dépôt existant chez « {form.librairie_nom.trim()} »
+          </p>
+          <Row icon={<Package className="h-4 w-4" />} label="Stock actuel restant">
+            <span className="font-semibold text-foreground">{dejaEnPlace.exemplaires_restants ?? 0}</span>
+          </Row>
+          <Row icon={<Plus className="h-4 w-4" />} label="Nouveau dépôt">
+            <span className="font-semibold text-[color:var(--gold)]">+ {Number(form.exemplaires_deposes) || 0}</span>
+          </Row>
+          <div className="pt-2 border-t border-[color:var(--gold)]/20">
+            <Row icon={<BookOpen className="h-4 w-4" />} label="Nouveau total restant">
+              <span className="font-bold text-primary text-base">
+                {(dejaEnPlace.exemplaires_restants ?? 0) + (Number(form.exemplaires_deposes) || 0)}
+              </span>
+            </Row>
+          </div>
+          <p className="pt-1 text-[11px] text-muted-foreground">
+            Les exemplaires seront ajoutés à la fiche existante (aucun doublon) et le lot sera enregistré dans l'historique des dépôts.
+          </p>
+        </div>
+      )}
       <div className="space-y-2">
         <Label>Prix unitaire (FCFA)</Label>
         <Input type="number" min={0} required value={form.prix_unitaire_fcfa}

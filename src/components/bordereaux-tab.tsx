@@ -21,7 +21,7 @@ import {
 import { cn } from "@/lib/utils";
 import { fcfa } from "@/lib/format";
 import { LockedPage } from "@/components/locked-page";
-import { generateBordereauPdf, type BordereauLigne } from "@/lib/pdf-bordereau";
+import { generateBordereauPdf, type BordereauLigne, type BordereauLot } from "@/lib/pdf-bordereau";
 
 interface StockRow {
   id: string;
@@ -334,17 +334,46 @@ function GenerateDialog({
       let totalEx = 0;
       let totalFcfa = 0;
       let commission: number | undefined;
+      let lots: BordereauLot[] = [];
 
       if (type === "depot") {
-        lignes = selected.rows.map((r) => ({
-          titre: titreMap[r.manuscrit_id] ?? "—",
-          quantite: r.exemplaires_deposes,
-          prix_unitaire: Number(r.prix_unitaire_fcfa ?? 0),
-          total: r.exemplaires_deposes * Number(r.prix_unitaire_fcfa ?? 0),
-          deposes: r.exemplaires_deposes,
-          vendus: r.exemplaires_vendus,
-          restants: r.exemplaires_restants,
+        // Historique des lots de dépôt de cette librairie (traçabilité multi-dépôts)
+        const { data: batchRows } = await supabase
+          .from("depot_batches")
+          .select("manuscrit_id, quantite_deposee, date_depot, provenance")
+          .ilike("librairie_nom", selected.nom)
+          .order("date_depot", { ascending: false });
+        const batches = (batchRows ?? []) as {
+          manuscrit_id: string;
+          quantite_deposee: number;
+          date_depot: string;
+          provenance: string | null;
+        }[];
+        lots = batches.map((b) => ({
+          date: b.date_depot ? b.date_depot.split("-").reverse().join("/") : "—",
+          titre: titreMap[b.manuscrit_id] ?? "—",
+          quantite: Number(b.quantite_deposee ?? 0),
+          provenance: b.provenance,
         }));
+        const dernierLot = new Map<string, number>();
+        batches.forEach((b) => {
+          if (!dernierLot.has(b.manuscrit_id)) dernierLot.set(b.manuscrit_id, Number(b.quantite_deposee ?? 0));
+        });
+
+        lignes = selected.rows.map((r) => {
+          const ceDepot = dernierLot.get(r.manuscrit_id) ?? 0;
+          return {
+            titre: titreMap[r.manuscrit_id] ?? "—",
+            quantite: r.exemplaires_deposes,
+            prix_unitaire: Number(r.prix_unitaire_fcfa ?? 0),
+            total: r.exemplaires_deposes * Number(r.prix_unitaire_fcfa ?? 0),
+            deposes: r.exemplaires_deposes,
+            vendus: r.exemplaires_vendus,
+            restants: r.exemplaires_restants,
+            ceDepot,
+            avant: Math.max(0, Number(r.exemplaires_restants ?? 0) - ceDepot),
+          };
+        });
         totalEx = lignes.reduce((s, l) => s + (l.deposes ?? 0), 0);
         totalFcfa = lignes.reduce((s, l) => s + (l.total ?? 0), 0);
       } else {
