@@ -749,6 +749,36 @@ function StockForm({
     e.preventDefault();
     if (!entrepriseId) return toast.error("Profil non chargé");
     if (!form.manuscrit_id) return toast.error("Sélectionnez un manuscrit");
+
+    // Nouveau dépôt : passe par add_depot_batch — fusionne dans la fiche existante
+    // (même livre + même librairie), historise le lot et déduit l'entrepôt.
+    if (!existing) {
+      if (Number(form.exemplaires_deposes) <= 0) return toast.error("Quantité déposée invalide");
+      setLoading(true);
+      const { data: res, error: rpcErr } = await (supabase as any).rpc("add_depot_batch", {
+        p_manuscrit_id: form.manuscrit_id,
+        p_librairie_nom: form.librairie_nom.trim(),
+        p_quantite: Number(form.exemplaires_deposes),
+        p_prix: Number(form.prix_unitaire_fcfa) || null,
+        p_librairie_adresse: form.librairie_adresse.trim() || null,
+        p_date: form.derniere_visite ? format(form.derniere_visite, "yyyy-MM-dd") : null,
+        p_provenance: form.provenance,
+        p_taux_commission: tauxComm,
+        p_applique_droits: form.applique_droits_auteur,
+        p_notes: null,
+      });
+      setLoading(false);
+      if (rpcErr) return toast.error(rpcErr.message);
+      if (res?.warning) toast.warning(res.warning);
+      toast.success(
+        res?.merged
+          ? `Dépôt fusionné : ${res.avant} + ${res.ajout} = ${res.total_restants} exemplaires restants`
+          : `Dépôt ajouté (${res?.ajout ?? form.exemplaires_deposes} ex.)`,
+      );
+      onSaved();
+      return;
+    }
+
     setLoading(true);
     const payload: any = {
       manuscrit_id: form.manuscrit_id,
