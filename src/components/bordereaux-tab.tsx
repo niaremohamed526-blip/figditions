@@ -443,6 +443,7 @@ function GenerateDialog({
         librairieAdresse: selected.adresse,
         dateEmission: format(new Date(), "dd MMM yyyy", { locale: fr }),
         lignes,
+        historiqueLots: type === "depot" ? lots : undefined,
         totalExemplaires: totalEx,
         totalFcfa: totalFcfa,
         commissionLibrairieFcfa: type === "vente" ? commission : undefined,
