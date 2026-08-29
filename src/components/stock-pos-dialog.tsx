@@ -180,48 +180,40 @@ export function StockPosDialog({
     if (!entrepriseId) return toast.error("Profil non chargé");
     if (lines.length === 0) return toast.error("Aucun livre saisi");
     setSaving(true);
-    const payload = lines.map((l) => ({
-      entreprise_id: entrepriseId,
-      manuscrit_id: l.manuscritId,
-      librairie_nom: librairieNom.trim(),
-      librairie_adresse: librairieAdresse.trim() || null,
-      exemplaires_deposes: l.quantite,
-      exemplaires_vendus: 0,
-      exemplaires_restants: l.quantite,
-      exemplaires_total: l.quantite,
-      prix_unitaire_fcfa: l.prix,
-      derniere_visite: dateDepot || null,
-      provenance,
-    }));
-    const { error } = await supabase.from("stocks").insert(payload as any);
-    if (error) { setSaving(false); return toast.error(error.message); }
-
-    // Déduction de l'entrepôt : uniquement pour les dépôts « depuis le stock interne ».
-    // Un dépôt « hors stock interne » (livres déjà dehors) ne touche jamais l'entrepôt.
+    // Chaque ligne passe par add_depot_batch : fusion avec la fiche existante
+    // (livre + librairie), historisation du lot dans depot_batches, et déduction
+    // de l'entrepôt uniquement si la provenance est « interne ».
     const warnings: string[] = [];
-    if (provenance !== "hors_stock") {
-      for (const l of lines) {
-        const { data: res, error: rpcErr } = await (supabase as any).rpc("apply_depot_transfert", {
-          p_manuscrit_id: l.manuscritId,
-          p_delta: l.quantite,
-          p_librairie_nom: librairieNom.trim() || null,
-          p_date: dateDepot || null,
-        });
-        if (rpcErr) warnings.push(`${l.titre} : ${rpcErr.message}`);
-        else if (res?.warning) warnings.push(`${l.titre} : ${res.warning}`);
-      }
+    let merged = 0;
+    let done = 0;
+    for (const l of lines) {
+      const { data: res, error: rpcErr } = await (supabase as any).rpc("add_depot_batch", {
+        p_manuscrit_id: l.manuscritId,
+        p_librairie_nom: librairieNom.trim(),
+        p_quantite: l.quantite,
+        p_prix: l.prix || null,
+        p_librairie_adresse: librairieAdresse.trim() || null,
+        p_date: dateDepot || null,
+        p_provenance: provenance,
+        p_notes: "Saisie rapide",
+      });
+      if (rpcErr) { warnings.push(`${l.titre} : ${rpcErr.message}`); continue; }
+      done += 1;
+      if (res?.merged) merged += 1;
+      if (res?.warning) warnings.push(`${l.titre} : ${res.warning}`);
     }
     setSaving(false);
     warnings.forEach((w) => toast.warning(w));
+    if (done === 0) return toast.error("Aucun dépôt enregistré");
     try { localStorage.removeItem(DRAFT_KEY); } catch {}
     toast.success(
-      `${lines.length} dépôt(s) enregistré(s) chez « ${librairieNom} »` +
+      `${done} dépôt(s) enregistré(s) chez « ${librairieNom} »` +
+      (merged > 0 ? ` — ${merged} fusionné(s) avec un dépôt existant` : "") +
       (provenance === "hors_stock" ? " — sans déduction de l'entrepôt" : ""),
     );
     onImported();
     reset();
     onOpenChange(false);
-
   };
 
   // Ctrl+S save shortcut
