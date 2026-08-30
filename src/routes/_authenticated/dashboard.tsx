@@ -199,7 +199,13 @@ function DashboardPage() {
       hint: `Entrepôt: ${nf(totals.interneDisponible)} | Librairies: ${nf(totals.externeRestant)}`,
       subhint: `📕 Nos productions: ${nf(stockByOrigin.propres)} · 🌍 Livres étrangers: ${nf(stockByOrigin.etrangers)}`,
     },
-    { label: "En circulation", value: stats.circulation, icon: Store, hint: "déposés en librairies" },
+    {
+      label: "Total déposé",
+      value: stats.circulation,
+      icon: Store,
+      hint: `dont ${nf(totals.externeVendu)} vendus · ${nf(totals.externeRestant)} en rayon`,
+      subhint: `${nf(totals.externeLibrairies)} point(s) de vente`,
+    },
     { label: "Vendus", value: stats.vendus, icon: Trophy, hint: "exemplaires vendus" },
     { label: "Paiements en attente", value: stats.paiements, icon: Wallet, hint: "" },
   ];
