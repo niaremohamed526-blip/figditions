@@ -19,6 +19,7 @@ export interface StockExterneRow {
   exemplaires_restants?: number | null;
   prix_unitaire_fcfa?: number | null;
   librairie_nom?: string | null;
+  librairie_adresse?: string | null;
 }
 
 export interface StockTotals {
