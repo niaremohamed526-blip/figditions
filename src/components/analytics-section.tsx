@@ -33,9 +33,11 @@ interface Props {
   setRange: (r: DateRange) => void;
   children: ReactNode;
   showFilter?: boolean;
+  /** Aperçu affiché dans l'en-tête (sparklines) quand la section est repliée. */
+  preview?: ReactNode;
 }
 
-export function AnalyticsSection({ title, defaultOpen = false, range, setRange, children, showFilter = true }: Props) {
+export function AnalyticsSection({ title, defaultOpen = false, range, setRange, children, showFilter = true, preview }: Props) {
   const [open, setOpen] = useState(defaultOpen);
   const [activePreset, setActivePreset] = useState("6 mois");
 
@@ -46,13 +48,14 @@ export function AnalyticsSection({ title, defaultOpen = false, range, setRange, 
       <button
         type="button"
         onClick={() => setOpen((o) => !o)}
-        className="w-full flex items-center justify-between p-4 hover:bg-primary/5 transition-colors"
+        className="w-full flex items-center gap-3 p-4 hover:bg-primary/5 transition-colors"
       >
-        <h2 className="text-lg font-semibold">{title}</h2>
+        <h2 className="dash-section-label mb-0 font-semibold">{title}</h2>
+        <div className="ml-auto mr-3 hidden items-center gap-4 md:flex">{!open && preview}</div>
         <ChevronDown className={cn("h-5 w-5 text-muted-foreground transition-transform", open && "rotate-180")} />
       </button>
       {open && (
-        <div className="p-4 pt-0 space-y-4 animate-[fade-up_0.3s_ease-out_both]">
+        <div className="dash-stagger p-4 pt-0 space-y-4">
           {showFilter && (
             <div className="flex flex-wrap items-end gap-2 border-t border-border pt-4">
               <div className="flex flex-wrap gap-1.5">
