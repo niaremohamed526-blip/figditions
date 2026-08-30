@@ -1,11 +1,11 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useEffect, useMemo, useState } from "react";
-import { BookOpen, Clock, Boxes, Wallet, Trophy, PenLine, Store, Activity } from "lucide-react";
+import { BookOpen, Clock, Boxes, Wallet, Trophy, PenLine, Store, Activity, CheckCircle2, Plus, MessageSquare, PackagePlus } from "lucide-react";
 import {
   AreaChart, Area, XAxis, YAxis, ResponsiveContainer, Tooltip, CartesianGrid,
   PieChart, Pie, Cell,
 } from "recharts";
-import { format, formatDistanceToNow, startOfMonth, subMonths } from "date-fns";
+import { format, formatDistanceToNow, startOfMonth, subDays, subMonths } from "date-fns";
 import { fr } from "date-fns/locale";
 import { supabase } from "@/integrations/supabase/client";
 import { fetchAllRows } from "@/lib/fetch-all";
@@ -19,6 +19,10 @@ import { fcfa } from "@/lib/format";
 import { useRealtimeTable } from "@/hooks/use-realtime";
 import { ActivityFeed } from "@/components/activity-feed";
 import { computeStockTotals, nf, type StockInterneRow } from "@/lib/stock-totals";
+import {
+  StatCard, BreakdownLine, MiniBar, ProgressRing, StatCardSkeletonV2, Sparkline,
+} from "@/components/dashboard/stat-card";
+import { cn } from "@/lib/utils";
 
 export const Route = createFileRoute("/_authenticated/dashboard")({
   component: DashboardPage,
@@ -44,6 +48,7 @@ function DashboardPage() {
   const [contrats, setContrats] = useState<Contrat[]>([]);
   const [stockInterne, setStockInterne] = useState<StockInterneRowWithM[]>([]);
   const [range, setRange] = useState<DateRange>(defaultRange());
+  const [period, setPeriod] = useState<PeriodKey>("tout");
 
   const reload = useMemo(() => {
     return async () => {
@@ -99,6 +104,18 @@ function DashboardPage() {
     return { propres, etrangers };
   }, [stockInterne, stocks, mMap]);
 
+  const periodRange = useMemo(() => PERIODS.find((p) => p.key === period)!.compute(), [period]);
+  const periodVentes = useMemo(
+    () => (period === "tout" ? ventes : ventes.filter((v) => inRange(v.date_vente, periodRange))),
+    [ventes, period, periodRange],
+  );
+  const prevPeriodVentes = useMemo(() => {
+    if (period === "tout" || !periodRange.from || !periodRange.to) return null;
+    const span = periodRange.to.getTime() - periodRange.from.getTime();
+    const prev = { from: new Date(periodRange.from.getTime() - span), to: periodRange.from };
+    return ventes.filter((v) => inRange(v.date_vente, prev));
+  }, [ventes, period, periodRange]);
+
   const stats = useMemo(() => {
     const ms = manuscrits ?? [];
     return {
@@ -108,10 +125,18 @@ function DashboardPage() {
       encours: ms.filter((m) => m.statut !== "publie").length,
       stock: totals.stockTotal,
       circulation: totals.externeDepose,
-      vendus: ventes.reduce((s, v) => s + Number(v.quantite_vendue || 0), 0),
+      vendus: periodVentes.reduce((s, v) => s + Number(v.quantite_vendue || 0), 0),
       paiements: ventes.filter((v) => v.statut_paiement === "en_attente").length,
     };
-  }, [manuscrits, totals, ventes]);
+  }, [manuscrits, totals, ventes, periodVentes]);
+
+  const vendusTrend = useMemo(() => {
+    if (!prevPeriodVentes) return null;
+    const prev = prevPeriodVentes.reduce((s, v) => s + Number(v.quantite_vendue || 0), 0);
+    if (prev === 0) return null;
+    const pct = Math.round(((stats.vendus - prev) / prev) * 100);
+    return `${pct >= 0 ? "+" : ""}${pct}% vs période précédente`;
+  }, [prevPeriodVentes, stats.vendus]);
 
   const filteredVentes = useMemo(() => ventes.filter((v) => inRange(v.date_vente, range)), [ventes, range]);
 
