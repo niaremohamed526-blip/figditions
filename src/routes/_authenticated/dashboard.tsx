@@ -29,7 +29,7 @@ interface Manuscrit { id: string; titre: string; auteur: string; auteur_id?: str
 interface StockInterneRowWithM extends StockInterneRow { manuscrit_id?: string | null }
 interface Vente { id: string; manuscrit_id: string; auteur_id: string | null; quantite_vendue: number; montant_total_fcfa: number; droits_auteur_fcfa: number; statut_paiement: string; date_vente: string; created_at: string; }
 interface Auteur { id: string; nom_complet: string; }
-interface Stock { id: string; manuscrit_id: string; librairie_nom: string | null; exemplaires_deposes: number; exemplaires_vendus: number; exemplaires_restants: number; prix_unitaire_fcfa: number | null; created_at: string; }
+interface Stock { id: string; manuscrit_id: string; librairie_nom: string | null; librairie_adresse?: string | null; exemplaires_deposes: number; exemplaires_vendus: number; exemplaires_restants: number; prix_unitaire_fcfa: number | null; created_at: string; }
 interface Contrat { id: string; created_at: string; statut: string; manuscrit_id: string; }
 
 const STATUTS = STATUT_PROGRESSION;
