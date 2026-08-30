@@ -59,8 +59,16 @@ export function computeStockTotals(
     externeDepose: sum(externe, (i) => i.exemplaires_deposes),
     externeVendu: sum(externe, (i) => i.exemplaires_vendus),
     externeRestant,
+    // Une librairie = nom + adresse : deux points de vente peuvent porter le même nom.
     externeLibrairies: new Set(
-      externe.map((i) => (i.librairie_nom ?? "").trim()).filter(Boolean),
+      externe
+        .map((i) =>
+          `${(i.librairie_nom ?? "").trim()}|${(i.librairie_adresse ?? "").trim()}`.replace(
+            /^\|$/,
+            "",
+          ),
+        )
+        .filter(Boolean),
     ).size,
     externeCA: externe.reduce(
       (s, i) => s + Number(i.exemplaires_vendus || 0) * Number(i.prix_unitaire_fcfa || 0),
