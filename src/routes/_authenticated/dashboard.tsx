@@ -171,11 +171,15 @@ function DashboardPage() {
   const topStore = useMemo(() => {
     const map = new Map<string, { name: string; copies: number; revenue: number }>();
     stocks.forEach((s) => {
-      const name = s.librairie_nom?.trim() || "—";
-      const e = map.get(name) ?? { name, copies: 0, revenue: 0 };
+      // Clé = nom + adresse : deux librairies homonymes restent distinctes.
+      const nom = s.librairie_nom?.trim() || "—";
+      const adresse = s.librairie_adresse?.trim() || "";
+      const key = `${nom}|${adresse}`;
+      const name = adresse ? `${nom} (${adresse})` : nom;
+      const e = map.get(key) ?? { name, copies: 0, revenue: 0 };
       e.copies += s.exemplaires_vendus ?? 0;
       e.revenue += (s.exemplaires_vendus ?? 0) * Number(s.prix_unitaire_fcfa ?? 0);
-      map.set(name, e);
+      map.set(key, e);
     });
     return [...map.values()].sort((a, b) => b.copies - a.copies)[0];
   }, [stocks]);
