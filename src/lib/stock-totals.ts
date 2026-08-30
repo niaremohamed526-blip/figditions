@@ -96,7 +96,7 @@ export async function getStockTotals(
       supabase
         .from("stocks")
         .select(
-          "exemplaires_deposes, exemplaires_vendus, exemplaires_restants, prix_unitaire_fcfa, librairie_nom",
+          "exemplaires_deposes, exemplaires_vendus, exemplaires_restants, prix_unitaire_fcfa, librairie_nom, librairie_adresse",
         )
         .eq("entreprise_id", entrepriseId),
     ),
