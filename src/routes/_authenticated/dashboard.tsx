@@ -29,7 +29,7 @@ interface Manuscrit { id: string; titre: string; auteur: string; auteur_id?: str
 interface StockInterneRowWithM extends StockInterneRow { manuscrit_id?: string | null }
 interface Vente { id: string; manuscrit_id: string; auteur_id: string | null; quantite_vendue: number; montant_total_fcfa: number; droits_auteur_fcfa: number; statut_paiement: string; date_vente: string; created_at: string; }
 interface Auteur { id: string; nom_complet: string; }
-interface Stock { id: string; manuscrit_id: string; librairie_nom: string | null; exemplaires_deposes: number; exemplaires_vendus: number; exemplaires_restants: number; prix_unitaire_fcfa: number | null; created_at: string; }
+interface Stock { id: string; manuscrit_id: string; librairie_nom: string | null; librairie_adresse?: string | null; exemplaires_deposes: number; exemplaires_vendus: number; exemplaires_restants: number; prix_unitaire_fcfa: number | null; created_at: string; }
 interface Contrat { id: string; created_at: string; statut: string; manuscrit_id: string; }
 
 const STATUTS = STATUT_PROGRESSION;
@@ -53,7 +53,7 @@ function DashboardPage() {
         fetchAllRows<Manuscrit>(() => supabase.from("manuscrits").select("id, titre, auteur, auteur_id, genre, statut, created_at, origine").order("created_at", { ascending: false })),
         fetchAllRows<Vente>(() => supabase.from("ventes").select("*").order("date_vente", { ascending: false })),
         fetchAllRows<Auteur>(() => supabase.from("auteurs").select("id, nom_complet")),
-        fetchAllRows<Stock>(() => supabase.from("stocks").select("id, manuscrit_id, librairie_nom, exemplaires_deposes, exemplaires_vendus, exemplaires_restants, prix_unitaire_fcfa, created_at")),
+        fetchAllRows<Stock>(() => supabase.from("stocks").select("id, manuscrit_id, librairie_nom, librairie_adresse, exemplaires_deposes, exemplaires_vendus, exemplaires_restants, prix_unitaire_fcfa, created_at")),
         fetchAllRows<Contrat>(() => supabase.from("contrats").select("id, created_at, statut, manuscrit_id")),
         fetchAllRows<StockInterneRowWithM>(() => supabase.from("stock_interne").select("manuscrit_id, quantite_disponible, quantite_imprimee, quantite_transferee_librairies, quantite_vendue_directement, quantite_exposee_evenements, seuil_alerte")),
       ]);
@@ -171,11 +171,15 @@ function DashboardPage() {
   const topStore = useMemo(() => {
     const map = new Map<string, { name: string; copies: number; revenue: number }>();
     stocks.forEach((s) => {
-      const name = s.librairie_nom?.trim() || "—";
-      const e = map.get(name) ?? { name, copies: 0, revenue: 0 };
+      // Clé = nom + adresse : deux librairies homonymes restent distinctes.
+      const nom = s.librairie_nom?.trim() || "—";
+      const adresse = s.librairie_adresse?.trim() || "";
+      const key = `${nom}|${adresse}`;
+      const name = adresse ? `${nom} (${adresse})` : nom;
+      const e = map.get(key) ?? { name, copies: 0, revenue: 0 };
       e.copies += s.exemplaires_vendus ?? 0;
       e.revenue += (s.exemplaires_vendus ?? 0) * Number(s.prix_unitaire_fcfa ?? 0);
-      map.set(name, e);
+      map.set(key, e);
     });
     return [...map.values()].sort((a, b) => b.copies - a.copies)[0];
   }, [stocks]);
@@ -199,7 +203,13 @@ function DashboardPage() {
       hint: `Entrepôt: ${nf(totals.interneDisponible)} | Librairies: ${nf(totals.externeRestant)}`,
       subhint: `📕 Nos productions: ${nf(stockByOrigin.propres)} · 🌍 Livres étrangers: ${nf(stockByOrigin.etrangers)}`,
     },
-    { label: "En circulation", value: stats.circulation, icon: Store, hint: "déposés en librairies" },
+    {
+      label: "Total déposé",
+      value: stats.circulation,
+      icon: Store,
+      hint: `dont ${nf(totals.externeVendu)} vendus · ${nf(totals.externeRestant)} en rayon`,
+      subhint: `${nf(totals.externeLibrairies)} point(s) de vente`,
+    },
     { label: "Vendus", value: stats.vendus, icon: Trophy, hint: "exemplaires vendus" },
     { label: "Paiements en attente", value: stats.paiements, icon: Wallet, hint: "" },
   ];
