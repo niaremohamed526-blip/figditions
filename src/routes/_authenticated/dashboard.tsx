@@ -53,7 +53,7 @@ function DashboardPage() {
         fetchAllRows<Manuscrit>(() => supabase.from("manuscrits").select("id, titre, auteur, auteur_id, genre, statut, created_at, origine").order("created_at", { ascending: false })),
         fetchAllRows<Vente>(() => supabase.from("ventes").select("*").order("date_vente", { ascending: false })),
         fetchAllRows<Auteur>(() => supabase.from("auteurs").select("id, nom_complet")),
-        fetchAllRows<Stock>(() => supabase.from("stocks").select("id, manuscrit_id, librairie_nom, exemplaires_deposes, exemplaires_vendus, exemplaires_restants, prix_unitaire_fcfa, created_at")),
+        fetchAllRows<Stock>(() => supabase.from("stocks").select("id, manuscrit_id, librairie_nom, librairie_adresse, exemplaires_deposes, exemplaires_vendus, exemplaires_restants, prix_unitaire_fcfa, created_at")),
         fetchAllRows<Contrat>(() => supabase.from("contrats").select("id, created_at, statut, manuscrit_id")),
         fetchAllRows<StockInterneRowWithM>(() => supabase.from("stock_interne").select("manuscrit_id, quantite_disponible, quantite_imprimee, quantite_transferee_librairies, quantite_vendue_directement, quantite_exposee_evenements, seuil_alerte")),
       ]);
