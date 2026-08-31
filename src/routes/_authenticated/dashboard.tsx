@@ -5,7 +5,7 @@ import {
   AreaChart, Area, XAxis, YAxis, ResponsiveContainer, Tooltip, CartesianGrid,
   PieChart, Pie, Cell,
 } from "recharts";
-import { format, formatDistanceToNow, startOfMonth, subDays, subMonths } from "date-fns";
+import { format, formatDistanceToNow, startOfMonth, subMonths } from "date-fns";
 import { fr } from "date-fns/locale";
 import { supabase } from "@/integrations/supabase/client";
 import { fetchAllRows } from "@/lib/fetch-all";
@@ -22,6 +22,7 @@ import { computeStockTotals, nf, type StockInterneRow } from "@/lib/stock-totals
 import {
   StatCard, BreakdownLine, MiniBar, ProgressRing, StatCardSkeletonV2, Sparkline,
 } from "@/components/dashboard/stat-card";
+import { PERIODS, type PeriodKey } from "@/components/dashboard/periods";
 import { cn } from "@/lib/utils";
 
 export const Route = createFileRoute("/_authenticated/dashboard")({
@@ -37,14 +38,6 @@ interface Stock { id: string; manuscrit_id: string; librairie_nom: string | null
 interface Contrat { id: string; created_at: string; statut: string; manuscrit_id: string; }
 
 const STATUTS = STATUT_PROGRESSION;
-
-type PeriodKey = "7j" | "30j" | "mois" | "tout";
-const PERIODS: { key: PeriodKey; label: string; compute: () => DateRange }[] = [
-  { key: "7j", label: "7 j", compute: () => ({ from: subDays(new Date(), 7), to: new Date() }) },
-  { key: "30j", label: "30 j", compute: () => ({ from: subDays(new Date(), 30), to: new Date() }) },
-  { key: "mois", label: "Ce mois", compute: () => ({ from: startOfMonth(new Date()), to: new Date() }) },
-  { key: "tout", label: "Tout", compute: () => ({ from: null, to: null }) },
-];
 
 function greeting() {
   const h = new Date().getHours();
