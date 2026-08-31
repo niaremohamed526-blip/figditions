@@ -38,6 +38,22 @@ interface Contrat { id: string; created_at: string; statut: string; manuscrit_id
 
 const STATUTS = STATUT_PROGRESSION;
 
+type PeriodKey = "7j" | "30j" | "mois" | "tout";
+const PERIODS: { key: PeriodKey; label: string; compute: () => DateRange }[] = [
+  { key: "7j", label: "7 j", compute: () => ({ from: subDays(new Date(), 7), to: new Date() }) },
+  { key: "30j", label: "30 j", compute: () => ({ from: subDays(new Date(), 30), to: new Date() }) },
+  { key: "mois", label: "Ce mois", compute: () => ({ from: startOfMonth(new Date()), to: new Date() }) },
+  { key: "tout", label: "Tout", compute: () => ({ from: null, to: null }) },
+];
+
+function greeting() {
+  const h = new Date().getHours();
+  if (h < 6) return "Bonne nuit";
+  if (h < 12) return "Bonjour";
+  if (h < 18) return "Bon après-midi";
+  return "Bonsoir";
+}
+
 function DashboardPage() {
   const { user } = useAuth();
   const { profile, entreprise } = useProfile(user?.id);
