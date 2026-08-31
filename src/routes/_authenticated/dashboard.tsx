@@ -234,59 +234,168 @@ function DashboardPage() {
     return items.sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime()).slice(0, 10);
   }, [manuscrits, ventes, contrats, stocks, mMap]);
 
-  const cards: { label: string; value: number; icon: typeof BookOpen; hint: string; subhint?: string }[] = [
-    { label: "Manuscrits", value: stats.total, icon: BookOpen, hint: "", subhint: `📕 Nos productions: ${nf(stats.propres)} · 🌍 Étrangers: ${nf(stats.etrangers)}` },
-    { label: "En cours", value: stats.encours, icon: Clock, hint: "" },
-    {
-      label: "Stock total",
-      value: stats.stock,
-      icon: Boxes,
-      hint: `Entrepôt: ${nf(totals.interneDisponible)} | Librairies: ${nf(totals.externeRestant)}`,
-      subhint: `📕 Nos productions: ${nf(stockByOrigin.propres)} · 🌍 Livres étrangers: ${nf(stockByOrigin.etrangers)}`,
-    },
-    {
-      label: "Total déposé",
-      value: stats.circulation,
-      icon: Store,
-      hint: `dont ${nf(totals.externeVendu)} vendus · ${nf(totals.externeRestant)} en rayon`,
-      subhint: `${nf(totals.externeLibrairies)} point(s) de vente`,
-    },
-    { label: "Vendus", value: stats.vendus, icon: Trophy, hint: "exemplaires vendus" },
-    { label: "Paiements en attente", value: stats.paiements, icon: Wallet, hint: "" },
-  ];
+  const revSpark = useMemo(() => revenueData.map((b) => b.revenue), [revenueData]);
+  const salesSpark = useMemo(() => {
+    const buckets: { key: string; n: number }[] = [];
+    for (let i = 5; i >= 0; i--) {
+      const d = startOfMonth(subMonths(new Date(), i));
+      buckets.push({ key: format(d, "yyyy-MM"), n: 0 });
+    }
+    const map = new Map(buckets.map((b) => [b.key, b]));
+    ventes.forEach((v) => {
+      const b = map.get(v.date_vente?.slice(0, 7));
+      if (b) b.n += Number(v.quantite_vendue || 0);
+    });
+    return buckets.map((b) => b.n);
+  }, [ventes]);
 
   if (manuscrits === null) {
-    return <div className="space-y-4"><Skeleton className="h-24 w-full" /><Skeleton className="h-80 w-full" /></div>;
+    return (
+      <div className="space-y-6">
+        <Skeleton className="h-16 w-64" />
+        <section className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4">
+          {Array.from({ length: 4 }).map((_, i) => <StatCardSkeletonV2 key={i} />)}
+        </section>
+        <Skeleton className="h-80 w-full" />
+      </div>
+    );
   }
 
   return (
-    <div className="space-y-6">
-      <header>
-        <h1 className="text-3xl font-bold tracking-tight">
-          Bonjour, <span className="text-[color:var(--gold)]">{profile?.full_name?.split(" ")[0] ?? "…"}</span>
-        </h1>
-        <p className="text-muted-foreground mt-1">{entreprise?.nom} · {entreprise?.ville}</p>
+    <div className="space-y-7">
+      <header className="grid grid-cols-[minmax(0,1fr)_auto] items-start gap-4 sm:flex sm:items-end sm:justify-between">
+        <div className="min-w-0">
+          <h1 className="truncate text-2xl font-bold tracking-tight sm:text-3xl">
+            {greeting()},{" "}
+            <span className="dash-shimmer">{profile?.full_name?.split(" ")[0] ?? "…"}</span>
+          </h1>
+          <p className="mt-1 truncate text-sm text-muted-foreground">
+            {entreprise?.nom} · {entreprise?.ville} · {format(new Date(), "EEEE d MMMM", { locale: fr })}
+          </p>
+        </div>
+        <div className="flex shrink-0 flex-wrap gap-1.5">
+          {PERIODS.map((p) => (
+            <button
+              key={p.key}
+              type="button"
+              onClick={() => setPeriod(p.key)}
+              className={cn(
+                "rounded-full border px-3 py-1.5 text-xs font-medium transition-colors",
+                period === p.key
+                  ? "border-transparent bg-primary text-primary-foreground"
+                  : "border-border text-muted-foreground hover:text-foreground",
+              )}
+            >
+              {p.label}
+            </button>
+          ))}
+        </div>
       </header>
 
-      <section className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 gap-4">
-        {cards.map(({ label, value, icon: Icon, hint, subhint }, i) => (
-          <div key={label} className="stat-card glow-card rounded-xl border border-border bg-card p-5 animate-[fade-up_0.5s_ease-out_both]" style={{ animationDelay: `${i * 80}ms` }}>
-            <div className="flex items-start justify-between">
-              <div>
-                <p className="text-sm text-muted-foreground">{label}</p>
-                <p className="mt-2 text-3xl font-bold tabular-nums"><AnimatedCounter value={value} /></p>
-                {hint && <p className="mt-1 text-[11px] text-muted-foreground">{hint}</p>}
-                {subhint && <p className="mt-0.5 text-[11px] text-[color:var(--gold)]">{subhint}</p>}
-              </div>
-              <div className="h-10 w-10 rounded-lg bg-primary/10 text-primary flex items-center justify-center">
-                <Icon className="h-5 w-5" />
-              </div>
-            </div>
-          </div>
-        ))}
+      <section className="space-y-3">
+        <h2 className="dash-section-label">Édition &amp; stock</h2>
+        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4">
+          <StatCard label="Manuscrits" icon={<BookOpen className="h-5 w-5" />} to="/manuscrits" delay={0}>
+            <p className="dash-num"><AnimatedCounter value={stats.total} /></p>
+            <BreakdownLine tone="gold">Nos productions : {nf(stats.propres)}</BreakdownLine>
+            <BreakdownLine tone="blue">Livres étrangers : {nf(stats.etrangers)}</BreakdownLine>
+            <MiniBar segments={[{ value: stats.propres, tone: "gold" }, { value: stats.etrangers, tone: "blue" }]} />
+          </StatCard>
+
+          <StatCard label="En cours" icon={<Clock className="h-5 w-5" />} to="/manuscrits" delay={80}>
+            <ProgressRing value={stats.encours} total={stats.total || 1} label={`sur ${nf(stats.total)} manuscrits`} />
+            <BreakdownLine tone="green">Publiés : {nf(stats.total - stats.encours)}</BreakdownLine>
+          </StatCard>
+
+          <StatCard label="Stock total" icon={<Boxes className="h-5 w-5" />} to="/stocks" delay={160}>
+            <p className="dash-num"><AnimatedCounter value={stats.stock} /></p>
+            <BreakdownLine tone="gold">Entrepôt : {nf(totals.interneDisponible)}</BreakdownLine>
+            <BreakdownLine tone="blue">Librairies : {nf(totals.externeRestant)}</BreakdownLine>
+            <MiniBar segments={[{ value: totals.interneDisponible, tone: "gold" }, { value: totals.externeRestant, tone: "blue" }]} />
+            <p className="mt-2 text-[11px] text-[color:var(--gold)]">
+              📕 {nf(stockByOrigin.propres)} nos productions · 🌍 {nf(stockByOrigin.etrangers)} étrangers
+            </p>
+          </StatCard>
+
+          <StatCard label="Total déposé" icon={<Store className="h-5 w-5" />} to="/stocks" delay={240}>
+            <p className="dash-num"><AnimatedCounter value={stats.circulation} /></p>
+            <BreakdownLine tone="green">{nf(totals.externeVendu)} vendus</BreakdownLine>
+            <BreakdownLine tone="grey">{nf(totals.externeRestant)} en rayon</BreakdownLine>
+            <MiniBar segments={[{ value: totals.externeVendu, tone: "green" }, { value: totals.externeRestant, tone: "grey" }]} />
+            <p className="mt-2 text-[11px] text-muted-foreground">{nf(totals.externeLibrairies)} point(s) de vente</p>
+          </StatCard>
+        </div>
       </section>
 
-      <AnalyticsSection title="📊 Analytiques générales" defaultOpen range={range} setRange={setRange}>
+      <section className="space-y-3">
+        <h2 className="dash-section-label">Activité commerciale</h2>
+        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4">
+          <StatCard label="Vendus" icon={<Trophy className="h-5 w-5" />} to="/finances" delay={0} trend={vendusTrend}>
+            <p className="dash-num"><AnimatedCounter value={stats.vendus} /></p>
+            <BreakdownLine tone="gold">exemplaires · {PERIODS.find((p) => p.key === period)!.label}</BreakdownLine>
+          </StatCard>
+
+          <StatCard
+            label="Paiements en attente"
+            icon={<Wallet className="h-5 w-5" />}
+            to="/finances"
+            delay={80}
+            alert={stats.paiements > 0}
+            pulseIcon={stats.paiements > 0}
+          >
+            <p className="dash-num"><AnimatedCounter value={stats.paiements} /></p>
+            <BreakdownLine tone={stats.paiements > 0 ? "gold" : "green"}>
+              {stats.paiements > 0 ? "à régulariser" : "tout est à jour"}
+            </BreakdownLine>
+          </StatCard>
+
+          <StatCard label="Chiffre d'affaires" icon={<Activity className="h-5 w-5" />} to="/finances" delay={160}>
+            <p className="dash-num text-[color:var(--gold)]">{fcfa(totalRevenue)}</p>
+            <BreakdownLine tone="gold">6 derniers mois</BreakdownLine>
+            <MiniBar segments={[{ value: 1, tone: "gold" }]} />
+          </StatCard>
+
+          <StatCard label="Meilleur titre" icon={<CheckCircle2 className="h-5 w-5" />} to="/finances" delay={240}>
+            <p className="mt-1 truncate text-lg font-bold">{bestBook?.titre ?? "—"}</p>
+            <BreakdownLine tone="green">{bestBook ? `${nf(bestBook.copies)} ex. vendus` : "Aucune vente"}</BreakdownLine>
+            {bestBook && <BreakdownLine tone="gold">{fcfa(bestBook.revenue)}</BreakdownLine>}
+          </StatCard>
+        </div>
+      </section>
+
+      <section className="space-y-3">
+        <h2 className="dash-section-label">Actions rapides</h2>
+        <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
+          {[
+            { to: "/manuscrits", icon: Plus, label: "Nouveau manuscrit" },
+            { to: "/stocks", icon: PackagePlus, label: "Ajouter un dépôt" },
+            { to: "/finances", icon: Wallet, label: "Enregistrer une vente" },
+            { to: "/medmo", icon: MessageSquare, label: "Demander à Pr. MEDMO" },
+          ].map(({ to, icon: Icon, label }, i) => (
+            <Link
+              key={to + label}
+              to={to}
+              className="dash-card flex items-center gap-3 animate-[fade-up_0.4s_ease-out_both]"
+              style={{ animationDelay: `${i * 60}ms` }}
+            >
+              <span className="dash-icon"><Icon className="h-4 w-4" /></span>
+              <span className="min-w-0 truncate text-sm font-medium">{label}</span>
+            </Link>
+          ))}
+        </div>
+      </section>
+
+      <AnalyticsSection
+        title="📊 Analytiques générales"
+        range={range}
+        setRange={setRange}
+        preview={
+          <>
+            <Sparkline data={revSpark} label="CA" />
+            <Sparkline data={salesSpark} label="Ventes" tone="green" />
+          </>
+        }
+      >
         <div className="grid lg:grid-cols-2 gap-4">
           <div className="rounded-xl border border-border bg-background/40 p-5">
             <div className="flex items-center justify-between mb-3">
