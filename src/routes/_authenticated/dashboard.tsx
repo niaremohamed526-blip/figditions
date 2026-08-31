@@ -5,7 +5,7 @@ import {
   AreaChart, Area, XAxis, YAxis, ResponsiveContainer, Tooltip, CartesianGrid,
   PieChart, Pie, Cell,
 } from "recharts";
-import { format, formatDistanceToNow, startOfMonth, subDays, subMonths } from "date-fns";
+import { format, formatDistanceToNow, startOfMonth, subMonths } from "date-fns";
 import { fr } from "date-fns/locale";
 import { supabase } from "@/integrations/supabase/client";
 import { fetchAllRows } from "@/lib/fetch-all";
