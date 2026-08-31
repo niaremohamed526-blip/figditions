@@ -336,11 +336,9 @@ export async function generateBordereauPdf(
   // Commission + droits + net éditeur breakdown (vente only)
   if (!isDepot) {
     const commission = Math.round(d.commissionLibrairieFcfa ?? d.totalFcfa * 0.2);
-    const droits = Math.round(d.droitsAuteurFcfa ?? d.totalFcfa * 0.1);
-    const net = d.totalFcfa - commission - droits;
+    const net = d.totalFcfa - commission;
     const rows: [string, string, readonly [number, number, number]][] = [
       ["Commission librairie", `- ${fmtFcfa(commission)}`, [200, 120, 60]],
-      ["Droits d'auteur (10%)", `- ${fmtFcfa(droits)}`, GOLD],
     ];
     doc.setFont("helvetica", "normal");
     doc.setFontSize(9);
