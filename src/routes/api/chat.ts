@@ -720,10 +720,10 @@ function buildTools(supabase: AnySupabase, userId: string, entrepriseId: string 
           const livre = matchLivre(rawTitre);
           const lib = matchLibrairie(rawLib);
           const quantite = e.quantite && e.quantite > 0 ? Math.round(e.quantite) : null;
-          const livreRetenu = livre.choisi && livre.choisi.score >= 0.55 ? livre.choisi : null;
+          const livreRetenu = livre.choisi;
           const key = [
-            livreRetenu ? livreRetenu.id : normalizeTxt(rawTitre ?? "?"),
-            normalizeTxt(lib.nom ?? ""),
+            livreRetenu ? livreRetenu.id : normalizeMatchKey(rawTitre ?? "?"),
+            normalizeMatchKey(lib.nom ?? ""),
             quantite ?? "?",
             e.date ?? "",
           ].join("|");
@@ -738,12 +738,13 @@ function buildTools(supabase: AnySupabase, userId: string, entrepriseId: string 
             extrait_librairie: rawLib,
             manuscrit_id: livreRetenu?.id ?? null,
             titre: livreRetenu?.titre ?? null,
-            confiance_livre: rawTitre ? confianceDe(livre.choisi?.score ?? 0) : "faible",
+            confiance_livre: rawTitre ? livre.confiance : "faible",
             via_correction: livre.viaCorrection,
             suggestions_livres: livre.suggestions.map((s) => ({ id: s.id, titre: s.titre })),
             librairie: lib.nom,
             nouvelle_librairie: lib.nouvelle,
-            confiance_librairie: rawLib ? confianceDe(lib.score) : null,
+            confiance_librairie: rawLib ? lib.confiance : null,
+
             quantite,
             prix_unitaire_fcfa: prix,
             prix_suggere: prixSuggere && prixSuggere > 0 ? prixSuggere : null,
