@@ -25,42 +25,6 @@ type AnySupabase = SupabaseClient<any, "public", any>;
 const num = (v: unknown) => Number(v ?? 0);
 const fcfa = (n: number) => `${Math.round(n).toString().replace(/\B(?=(\d{3})+(?!\d))/g, ".")} FCFA`;
 
-// --- Rapprochement flou pour l'analyse de cahiers de ventes manuscrits ---
-const normalizeTxt = (s: string) =>
-  s
-    .toLowerCase()
-    .normalize("NFD")
-    .replace(/[̀-ͯ]/g, "")
-    .replace(/[^a-z0-9 ]/g, " ")
-    .replace(/\s+/g, " ")
-    .trim();
-
-function levenshtein(a: string, b: string): number {
-  const m = a.length;
-  const n = b.length;
-  if (m === 0) return n;
-  if (n === 0) return m;
-  let prev = Array.from({ length: n + 1 }, (_, j) => j);
-  for (let i = 1; i <= m; i++) {
-    const cur = [i];
-    for (let j = 1; j <= n; j++) {
-      cur[j] = Math.min(prev[j]! + 1, cur[j - 1]! + 1, prev[j - 1]! + (a[i - 1] === b[j - 1] ? 0 : 1));
-    }
-    prev = cur;
-  }
-  return prev[n]!;
-}
-
-function similarity(a: string, b: string): number {
-  if (!a || !b) return 0;
-  if (a === b) return 1;
-  if (a.includes(b) || b.includes(a)) return 0.9;
-  return Math.max(0, 1 - levenshtein(a, b) / Math.max(a.length, b.length));
-}
-
-const confianceDe = (score: number): "haute" | "moyenne" | "faible" =>
-  score >= 0.8 ? "haute" : score >= 0.55 ? "moyenne" : "faible";
-
 /** Server-side Supabase client authenticated as the requesting user (RLS applies). */
 function userClient(token: string): AnySupabase {
   return createClient(process.env["SUPABASE_URL"]!, process.env["SUPABASE_PUBLISHABLE_KEY"]!, {
@@ -69,27 +33,53 @@ function userClient(token: string): AnySupabase {
   });
 }
 
-/** Resolve a published manuscrit by (partial) title for the entreprise. */
-async function findManuscrit(supabase: AnySupabase, entrepriseId: string, livre: string) {
-  const { data } = await supabase
-    .from("manuscrits")
-    .select("id, titre, auteur, auteur_id, statut")
-    .eq("entreprise_id", entrepriseId)
-    .ilike("titre", `%${livre}%`)
-    .order("created_at", { ascending: false })
-    .limit(5);
-  const rows = (data ?? []) as { id: string; titre: string; auteur: string | null; auteur_id: string | null; statut: string }[];
-  if (rows.length === 0) return { error: `Aucun livre trouvé pour « ${livre} ». Vérifiez le titre ou créez d'abord le manuscrit.` };
-  const exact = rows.find((r) => r.titre.toLowerCase() === livre.toLowerCase());
-  const published = rows.filter((r) => r.statut === "publie");
-  const chosen = exact ?? (published.length === 1 ? published[0] : rows.length === 1 ? rows[0] : null);
-  if (!chosen) {
-    return {
-      error: `Plusieurs livres correspondent : ${rows.map((r) => `« ${r.titre} »`).join(", ")}. Précisez le titre exact.`,
-    };
+/** Préfixe de transparence : Pr. MEDMO annonce toujours ce qu'il a compris. */
+const withNote = (note: string | null | undefined, resume: string) => (note ? `${note} ${resume}` : resume);
+
+/**
+ * Rapproche un titre mentionné en conversation du catalogue réel, avec les
+ * mêmes paliers de confiance que les formulaires manuels et l'import Excel.
+ */
+async function findManuscrit(
+  supabase: AnySupabase,
+  entrepriseId: string,
+  livre: string,
+  opts: { publiesSeulement?: boolean } = {},
+): Promise<{ manuscrit: LivreRef; note: string | null } | { error: string }> {
+  const [livres, corrections] = await Promise.all([
+    fetchLivres(supabase, entrepriseId, false),
+    loadCorrections(supabase, entrepriseId),
+  ]);
+  const pool = opts.publiesSeulement ? livres.filter((l) => l.statut === "publie") : livres;
+  if (pool.length === 0) return { error: "Aucun manuscrit enregistré pour cette maison d'édition." };
+  const res = resolveLivre(livre, pool, corrections);
+  if (res.confiance === "haute" && res.match) {
+    return { manuscrit: res.match, note: noteInterpretation(livre, res.match.titre, "votre livre") };
   }
-  return { manuscrit: chosen };
+  const c = besoinConfirmation(res, "titre_livre", (l) => l.titre);
+  return { error: `${c.interpretation} ${c.question}` };
 }
+
+/** Rapproche une librairie mentionnée des dépôts réels d'un livre. */
+function resolveDepot(
+  rows: { id: string; librairie_nom: string; [k: string]: any }[],
+  librairie: string,
+  corrections: Corrections | null,
+): { depot: (typeof rows)[number]; note: string | null } | { error: string } {
+  if (rows.length === 0) return { error: `Aucun dépôt trouvé dans une librairie correspondant à « ${librairie} ».` };
+  const res = resolveLibrairie(librairie, rows.map((r) => ({ nom: r.librairie_nom, adresse: null })), corrections);
+  if (res.confiance === "haute" && res.match) {
+    const nom = res.match.nom;
+    const hits = rows.filter((r) => r.librairie_nom === nom);
+    if (hits.length > 1) {
+      return { error: `Plusieurs dépôts portent le nom « ${nom} » (adresses différentes). Précisez l'adresse de la librairie.` };
+    }
+    return { depot: hits[0]!, note: noteInterpretation(librairie, nom, "la librairie") };
+  }
+  const c = besoinConfirmation(res, "librairie", (l) => l.nom);
+  return { error: `${c.interpretation} ${c.question}` };
+}
+
 
 function buildTools(supabase: AnySupabase, userId: string, entrepriseId: string | null) {
   const requireEntreprise = () => {
@@ -692,63 +682,34 @@ function buildTools(supabase: AnySupabase, userId: string, entrepriseId: string 
           };
         }
 
-        const [{ data: ms }, { data: stk }, { data: si }, { data: corr }] = await Promise.all([
-          supabase.from("manuscrits").select("id, titre, auteur").eq("entreprise_id", eid).eq("statut", "publie").limit(500),
-          supabase.from("stocks").select("librairie_nom").eq("entreprise_id", eid).limit(1000),
+        const [livres, librairies, { data: si }, corrections] = await Promise.all([
+          fetchLivres(supabase, eid, true),
+          fetchLibrairies(supabase, eid),
           supabase.from("stock_interne").select("manuscrit_id, prix_vente_direct_fcfa").eq("entreprise_id", eid).limit(500),
-          supabase.from("medmo_ocr_corrections").select("texte_extrait, valeur_correcte, type_correction").eq("entreprise_id", eid).limit(500),
+          loadCorrections(supabase, eid),
         ]);
-        const livres = (ms ?? []) as { id: string; titre: string; auteur: string | null }[];
         const prixParLivre: Record<string, number> = {};
         for (const r of si ?? []) prixParLivre[(r as any).manuscrit_id as string] = num((r as any).prix_vente_direct_fcfa);
-        const librairies = [...new Set((stk ?? []).map((s) => String((s as any).librairie_nom)))];
-        // Corrections apprises des validations précédentes (prioritaires sur le flou).
-        const correctionsTitre = new Map<string, string>();
-        const correctionsLib = new Map<string, string>();
-        for (const c of corr ?? []) {
-          const row = c as any;
-          const map = row.type_correction === "librairie" ? correctionsLib : row.type_correction === "titre_livre" ? correctionsTitre : null;
-          if (map) map.set(normalizeTxt(String(row.texte_extrait)), String(row.valeur_correcte));
-        }
 
         type LivreScore = { id: string; titre: string; score: number };
         const matchLivre = (raw: string | null) => {
-          if (!raw) return { choisi: null as LivreScore | null, suggestions: [] as LivreScore[], viaCorrection: false };
-          const n = normalizeTxt(raw);
-          const corrige = correctionsTitre.get(n);
-          if (corrige) {
-            const hit = livres.find((l) => normalizeTxt(l.titre) === normalizeTxt(corrige));
-            if (hit) {
-              const s = { id: hit.id, titre: hit.titre, score: 1 };
-              return { choisi: s, suggestions: [s], viaCorrection: true };
-            }
-          }
-          const scored = livres
-            .map((l) => ({ id: l.id, titre: l.titre, score: similarity(n, normalizeTxt(l.titre)) }))
-            .sort((a, b) => b.score - a.score);
-          return {
-            choisi: scored[0] ?? null,
-            suggestions: scored.slice(0, 3).filter((s) => s.score >= 0.35),
-            viaCorrection: false,
-          };
+          if (!raw) return { choisi: null as LivreScore | null, suggestions: [] as LivreScore[], viaCorrection: false, confiance: "faible" as const };
+          const res = resolveLivre(raw, livres, corrections);
+          const best = res.match ? { id: res.match.id, titre: res.match.titre, score: res.score } : null;
+          const sugg = res.suggestions
+            .map((s) => livres.find((l) => l.titre === s.label))
+            .filter(Boolean)
+            .map((l) => ({ id: l!.id, titre: l!.titre, score: 0 }));
+          return { choisi: best, suggestions: sugg, viaCorrection: res.via_correction, confiance: res.confiance };
         };
 
-        const matchLibrairie = (raw: string | null): { nom: string | null; score: number; nouvelle: boolean } => {
-          if (!raw) return { nom: null, score: 0, nouvelle: false };
-          const n = normalizeTxt(raw);
-          const corrige = correctionsLib.get(n);
-          if (corrige) {
-            const hit = librairies.find((l) => normalizeTxt(l) === normalizeTxt(corrige));
-            if (hit) return { nom: hit, score: 1, nouvelle: false };
-          }
-          let best: { nom: string | null; score: number } = { nom: null, score: 0 };
-          for (const l of librairies) {
-            const s = similarity(n, normalizeTxt(l));
-            if (s > best.score) best = { nom: l, score: s };
-          }
-          if (best.score >= 0.55) return { nom: best.nom, score: best.score, nouvelle: false };
-          return { nom: raw.trim(), score: best.score, nouvelle: true };
+        const matchLibrairie = (raw: string | null) => {
+          if (!raw) return { nom: null as string | null, confiance: null, nouvelle: false };
+          const res = resolveLibrairie(raw, librairies, corrections);
+          if (res.match) return { nom: res.match.nom, confiance: res.confiance, nouvelle: false };
+          return { nom: normalizeName(raw), confiance: res.confiance, nouvelle: true };
         };
+
 
         // Fusion des doublons (même vente photographiée deux fois).
         const seen = new Map<string, Record<string, unknown>>();
@@ -759,10 +720,10 @@ function buildTools(supabase: AnySupabase, userId: string, entrepriseId: string 
           const livre = matchLivre(rawTitre);
           const lib = matchLibrairie(rawLib);
           const quantite = e.quantite && e.quantite > 0 ? Math.round(e.quantite) : null;
-          const livreRetenu = livre.choisi && livre.choisi.score >= 0.55 ? livre.choisi : null;
+          const livreRetenu = livre.choisi;
           const key = [
-            livreRetenu ? livreRetenu.id : normalizeTxt(rawTitre ?? "?"),
-            normalizeTxt(lib.nom ?? ""),
+            livreRetenu ? livreRetenu.id : normalizeMatchKey(rawTitre ?? "?"),
+            normalizeMatchKey(lib.nom ?? ""),
             quantite ?? "?",
             e.date ?? "",
           ].join("|");
@@ -777,12 +738,13 @@ function buildTools(supabase: AnySupabase, userId: string, entrepriseId: string 
             extrait_librairie: rawLib,
             manuscrit_id: livreRetenu?.id ?? null,
             titre: livreRetenu?.titre ?? null,
-            confiance_livre: rawTitre ? confianceDe(livre.choisi?.score ?? 0) : "faible",
+            confiance_livre: rawTitre ? livre.confiance : "faible",
             via_correction: livre.viaCorrection,
             suggestions_livres: livre.suggestions.map((s) => ({ id: s.id, titre: s.titre })),
             librairie: lib.nom,
             nouvelle_librairie: lib.nouvelle,
-            confiance_librairie: rawLib ? confianceDe(lib.score) : null,
+            confiance_librairie: rawLib ? lib.confiance : null,
+
             quantite,
             prix_unitaire_fcfa: prix,
             prix_suggere: prixSuggere && prixSuggere > 0 ? prixSuggere : null,
