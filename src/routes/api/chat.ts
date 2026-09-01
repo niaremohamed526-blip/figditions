@@ -25,42 +25,6 @@ type AnySupabase = SupabaseClient<any, "public", any>;
 const num = (v: unknown) => Number(v ?? 0);
 const fcfa = (n: number) => `${Math.round(n).toString().replace(/\B(?=(\d{3})+(?!\d))/g, ".")} FCFA`;
 
-// --- Rapprochement flou pour l'analyse de cahiers de ventes manuscrits ---
-const normalizeTxt = (s: string) =>
-  s
-    .toLowerCase()
-    .normalize("NFD")
-    .replace(/[̀-ͯ]/g, "")
-    .replace(/[^a-z0-9 ]/g, " ")
-    .replace(/\s+/g, " ")
-    .trim();
-
-function levenshtein(a: string, b: string): number {
-  const m = a.length;
-  const n = b.length;
-  if (m === 0) return n;
-  if (n === 0) return m;
-  let prev = Array.from({ length: n + 1 }, (_, j) => j);
-  for (let i = 1; i <= m; i++) {
-    const cur = [i];
-    for (let j = 1; j <= n; j++) {
-      cur[j] = Math.min(prev[j]! + 1, cur[j - 1]! + 1, prev[j - 1]! + (a[i - 1] === b[j - 1] ? 0 : 1));
-    }
-    prev = cur;
-  }
-  return prev[n]!;
-}
-
-function similarity(a: string, b: string): number {
-  if (!a || !b) return 0;
-  if (a === b) return 1;
-  if (a.includes(b) || b.includes(a)) return 0.9;
-  return Math.max(0, 1 - levenshtein(a, b) / Math.max(a.length, b.length));
-}
-
-const confianceDe = (score: number): "haute" | "moyenne" | "faible" =>
-  score >= 0.8 ? "haute" : score >= 0.55 ? "moyenne" : "faible";
-
 /** Server-side Supabase client authenticated as the requesting user (RLS applies). */
 function userClient(token: string): AnySupabase {
   return createClient(process.env["SUPABASE_URL"]!, process.env["SUPABASE_PUBLISHABLE_KEY"]!, {
@@ -69,27 +33,53 @@ function userClient(token: string): AnySupabase {
   });
 }
 
-/** Resolve a published manuscrit by (partial) title for the entreprise. */
-async function findManuscrit(supabase: AnySupabase, entrepriseId: string, livre: string) {
-  const { data } = await supabase
-    .from("manuscrits")
-    .select("id, titre, auteur, auteur_id, statut")
-    .eq("entreprise_id", entrepriseId)
-    .ilike("titre", `%${livre}%`)
-    .order("created_at", { ascending: false })
-    .limit(5);
-  const rows = (data ?? []) as { id: string; titre: string; auteur: string | null; auteur_id: string | null; statut: string }[];
-  if (rows.length === 0) return { error: `Aucun livre trouvé pour « ${livre} ». Vérifiez le titre ou créez d'abord le manuscrit.` };
-  const exact = rows.find((r) => r.titre.toLowerCase() === livre.toLowerCase());
-  const published = rows.filter((r) => r.statut === "publie");
-  const chosen = exact ?? (published.length === 1 ? published[0] : rows.length === 1 ? rows[0] : null);
-  if (!chosen) {
-    return {
-      error: `Plusieurs livres correspondent : ${rows.map((r) => `« ${r.titre} »`).join(", ")}. Précisez le titre exact.`,
-    };
+/** Préfixe de transparence : Pr. MEDMO annonce toujours ce qu'il a compris. */
+const withNote = (note: string | null | undefined, resume: string) => (note ? `${note} ${resume}` : resume);
+
+/**
+ * Rapproche un titre mentionné en conversation du catalogue réel, avec les
+ * mêmes paliers de confiance que les formulaires manuels et l'import Excel.
+ */
+async function findManuscrit(
+  supabase: AnySupabase,
+  entrepriseId: string,
+  livre: string,
+  opts: { publiesSeulement?: boolean } = {},
+): Promise<{ manuscrit: LivreRef; note: string | null } | { error: string }> {
+  const [livres, corrections] = await Promise.all([
+    fetchLivres(supabase, entrepriseId, false),
+    loadCorrections(supabase, entrepriseId),
+  ]);
+  const pool = opts.publiesSeulement ? livres.filter((l) => l.statut === "publie") : livres;
+  if (pool.length === 0) return { error: "Aucun manuscrit enregistré pour cette maison d'édition." };
+  const res = resolveLivre(livre, pool, corrections);
+  if (res.confiance === "haute" && res.match) {
+    return { manuscrit: res.match, note: noteInterpretation(livre, res.match.titre, "votre livre") };
   }
-  return { manuscrit: chosen };
+  const c = besoinConfirmation(res, "titre_livre", (l) => l.titre);
+  return { error: `${c.interpretation} ${c.question}` };
 }
+
+/** Rapproche une librairie mentionnée des dépôts réels d'un livre. */
+function resolveDepot(
+  rows: { id: string; librairie_nom: string; [k: string]: any }[],
+  librairie: string,
+  corrections: Corrections | null,
+): { depot: (typeof rows)[number]; note: string | null } | { error: string } {
+  if (rows.length === 0) return { error: `Aucun dépôt trouvé dans une librairie correspondant à « ${librairie} ».` };
+  const res = resolveLibrairie(librairie, rows.map((r) => ({ nom: r.librairie_nom, adresse: null })), corrections);
+  if (res.confiance === "haute" && res.match) {
+    const nom = res.match.nom;
+    const hits = rows.filter((r) => r.librairie_nom === nom);
+    if (hits.length > 1) {
+      return { error: `Plusieurs dépôts portent le nom « ${nom} » (adresses différentes). Précisez l'adresse de la librairie.` };
+    }
+    return { depot: hits[0]!, note: noteInterpretation(librairie, nom, "la librairie") };
+  }
+  const c = besoinConfirmation(res, "librairie", (l) => l.nom);
+  return { error: `${c.interpretation} ${c.question}` };
+}
+
 
 function buildTools(supabase: AnySupabase, userId: string, entrepriseId: string | null) {
   const requireEntreprise = () => {
