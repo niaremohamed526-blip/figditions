@@ -682,63 +682,34 @@ function buildTools(supabase: AnySupabase, userId: string, entrepriseId: string 
           };
         }
 
-        const [{ data: ms }, { data: stk }, { data: si }, { data: corr }] = await Promise.all([
-          supabase.from("manuscrits").select("id, titre, auteur").eq("entreprise_id", eid).eq("statut", "publie").limit(500),
-          supabase.from("stocks").select("librairie_nom").eq("entreprise_id", eid).limit(1000),
+        const [livres, librairies, { data: si }, corrections] = await Promise.all([
+          fetchLivres(supabase, eid, true),
+          fetchLibrairies(supabase, eid),
           supabase.from("stock_interne").select("manuscrit_id, prix_vente_direct_fcfa").eq("entreprise_id", eid).limit(500),
-          supabase.from("medmo_ocr_corrections").select("texte_extrait, valeur_correcte, type_correction").eq("entreprise_id", eid).limit(500),
+          loadCorrections(supabase, eid),
         ]);
-        const livres = (ms ?? []) as { id: string; titre: string; auteur: string | null }[];
         const prixParLivre: Record<string, number> = {};
         for (const r of si ?? []) prixParLivre[(r as any).manuscrit_id as string] = num((r as any).prix_vente_direct_fcfa);
-        const librairies = [...new Set((stk ?? []).map((s) => String((s as any).librairie_nom)))];
-        // Corrections apprises des validations précédentes (prioritaires sur le flou).
-        const correctionsTitre = new Map<string, string>();
-        const correctionsLib = new Map<string, string>();
-        for (const c of corr ?? []) {
-          const row = c as any;
-          const map = row.type_correction === "librairie" ? correctionsLib : row.type_correction === "titre_livre" ? correctionsTitre : null;
-          if (map) map.set(normalizeTxt(String(row.texte_extrait)), String(row.valeur_correcte));
-        }
 
         type LivreScore = { id: string; titre: string; score: number };
         const matchLivre = (raw: string | null) => {
-          if (!raw) return { choisi: null as LivreScore | null, suggestions: [] as LivreScore[], viaCorrection: false };
-          const n = normalizeTxt(raw);
-          const corrige = correctionsTitre.get(n);
-          if (corrige) {
-            const hit = livres.find((l) => normalizeTxt(l.titre) === normalizeTxt(corrige));
-            if (hit) {
-              const s = { id: hit.id, titre: hit.titre, score: 1 };
-              return { choisi: s, suggestions: [s], viaCorrection: true };
-            }
-          }
-          const scored = livres
-            .map((l) => ({ id: l.id, titre: l.titre, score: similarity(n, normalizeTxt(l.titre)) }))
-            .sort((a, b) => b.score - a.score);
-          return {
-            choisi: scored[0] ?? null,
-            suggestions: scored.slice(0, 3).filter((s) => s.score >= 0.35),
-            viaCorrection: false,
-          };
+          if (!raw) return { choisi: null as LivreScore | null, suggestions: [] as LivreScore[], viaCorrection: false, confiance: "faible" as const };
+          const res = resolveLivre(raw, livres, corrections);
+          const best = res.match ? { id: res.match.id, titre: res.match.titre, score: res.score } : null;
+          const sugg = res.suggestions
+            .map((s) => livres.find((l) => l.titre === s.label))
+            .filter(Boolean)
+            .map((l) => ({ id: l!.id, titre: l!.titre, score: 0 }));
+          return { choisi: best, suggestions: sugg, viaCorrection: res.via_correction, confiance: res.confiance };
         };
 
-        const matchLibrairie = (raw: string | null): { nom: string | null; score: number; nouvelle: boolean } => {
-          if (!raw) return { nom: null, score: 0, nouvelle: false };
-          const n = normalizeTxt(raw);
-          const corrige = correctionsLib.get(n);
-          if (corrige) {
-            const hit = librairies.find((l) => normalizeTxt(l) === normalizeTxt(corrige));
-            if (hit) return { nom: hit, score: 1, nouvelle: false };
-          }
-          let best: { nom: string | null; score: number } = { nom: null, score: 0 };
-          for (const l of librairies) {
-            const s = similarity(n, normalizeTxt(l));
-            if (s > best.score) best = { nom: l, score: s };
-          }
-          if (best.score >= 0.55) return { nom: best.nom, score: best.score, nouvelle: false };
-          return { nom: raw.trim(), score: best.score, nouvelle: true };
+        const matchLibrairie = (raw: string | null) => {
+          if (!raw) return { nom: null as string | null, confiance: null, nouvelle: false };
+          const res = resolveLibrairie(raw, librairies, corrections);
+          if (res.match) return { nom: res.match.nom, confiance: res.confiance, nouvelle: false };
+          return { nom: normalizeName(raw), confiance: res.confiance, nouvelle: true };
         };
+
 
         // Fusion des doublons (même vente photographiée deux fois).
         const seen = new Map<string, Record<string, unknown>>();
