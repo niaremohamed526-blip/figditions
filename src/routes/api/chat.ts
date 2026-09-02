@@ -652,6 +652,67 @@ function buildTools(supabase: AnySupabase, userId: string, entrepriseId: string 
       },
     }),
 
+    verifier_correspondance: tool({
+      description:
+        "Vérifie à quoi correspond un nom mentionné par l'utilisateur (titre de livre, librairie ou auteur) dans les données réelles de la maison d'édition, avec un niveau de confiance et des suggestions. À utiliser AVANT une action quand le nom semble approximatif, abrégé ou mal orthographié.",
+      inputSchema: z.object({
+        type: z.enum(["titre_livre", "librairie", "auteur"]).describe("Type d'entité à rapprocher"),
+        texte: z.string().describe("Nom tel que mentionné par l'utilisateur (brut)"),
+      }),
+      execute: async ({ type, texte }) => {
+        const eid = requireEntreprise();
+        const corrections = await loadCorrections(supabase, eid);
+        if (type === "titre_livre") {
+          const livres = await fetchLivres(supabase, eid, false);
+          const res = resolveLivre(texte, livres, corrections);
+          return {
+            texte,
+            confiance: res.confiance,
+            correspondance: res.match ? { titre: res.match.titre, auteur: res.match.auteur, statut: res.match.statut } : null,
+            via_correction: res.via_correction,
+            suggestions: res.suggestions,
+          };
+        }
+        if (type === "librairie") {
+          const librairies = await fetchLibrairies(supabase, eid);
+          const res = resolveLibrairie(texte, librairies, corrections);
+          return {
+            texte,
+            confiance: res.confiance,
+            correspondance: res.match ? { nom: res.match.nom, adresse: res.match.adresse } : null,
+            via_correction: res.via_correction,
+            suggestions: res.suggestions,
+          };
+        }
+        const auteurs = await fetchAuteurs(supabase, eid);
+        const res = resolveAuteur(texte, auteurs, corrections);
+        return {
+          texte,
+          confiance: res.confiance,
+          correspondance: res.match ? { nom_complet: res.match.nom_complet, id: res.match.id } : null,
+          via_correction: res.via_correction,
+          suggestions: res.suggestions,
+        };
+      },
+    }),
+
+    corriger_rapprochement: tool({
+      description:
+        "Mémorise une correction de rapprochement confirmée par l'utilisateur (ex. « BAH » = « Librairie Bah Mohamed »). À appeler dès que l'utilisateur corrige ou confirme explicitement une interprétation, pour que Pr. MEDMO ne se trompe plus la prochaine fois.",
+      inputSchema: z.object({
+        type: z.enum(["titre_livre", "librairie", "auteur"]).describe("Type d'entité corrigée"),
+        texte_extrait: z.string().describe("Ce que l'utilisateur (ou la photo) avait écrit"),
+        valeur_correcte: z.string().describe("Le nom exact retenu dans FIGDITIONS"),
+      }),
+      execute: async ({ type, texte_extrait, valeur_correcte }) => {
+        const eid = requireEntreprise();
+        await saveCorrection(supabase, eid, userId, type, texte_extrait, valeur_correcte);
+        return { succes: true, resume: `C'est noté : « ${normalizeName(texte_extrait)} » correspond à « ${normalizeName(valeur_correcte)} ».` };
+      },
+    }),
+
+
+
     changer_statut_manuscrit: tool({
       description: "Fait avancer un manuscrit dans le workflow éditorial (recu → relecture → epreuve_1 à 4 → maquette → echantillon → impression → publie). Le passage à « publie » crée automatiquement la fiche de stock interne. Nécessite la confirmation de l'utilisateur.",
       needsApproval: true,
