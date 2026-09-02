@@ -477,16 +477,37 @@ function buildTools(supabase: AnySupabase, userId: string, entrepriseId: string 
         }
 
         // Un seul dépôt par livre et par librairie : on cumule sur la ligne existante.
+        const corrections = await loadCorrections(supabase, eid);
         const { data: existingRows } = await supabase
           .from("stocks")
           .select("id, librairie_nom, exemplaires_deposes, exemplaires_restants, exemplaires_total, prix_unitaire_fcfa")
           .eq("entreprise_id", eid)
           .eq("manuscrit_id", m.id)
-          .ilike("librairie_nom", `%${librairie}%`)
-          .limit(3);
-        const existing = (existingRows ?? []).length === 1 ? existingRows![0] : (existingRows ?? []).find((r) => r.librairie_nom.toLowerCase() === librairie.toLowerCase()) ?? null;
-        if ((existingRows ?? []).length > 1 && !existing) {
-          return { erreur: `Plusieurs dépôts de « ${m.titre} » correspondent à « ${librairie} » : ${(existingRows ?? []).map((r) => r.librairie_nom).join(", ")}. Précisez le nom exact.` };
+          .limit(500);
+        const rows = existingRows ?? [];
+        let existing: (typeof rows)[number] | null = null;
+        let libNote: string | null = null;
+        if (rows.length > 0) {
+          const dep = resolveDepot(rows, librairie, corrections);
+          if ("depot" in dep) {
+            existing = dep.depot;
+            libNote = dep.note;
+          }
+        }
+        if (!existing) {
+          // Pas de dépôt existant pour ce livre : vérifier que la librairie
+          // mentionnée n'est pas une variante d'une librairie déjà connue.
+          const librairies = await fetchLibrairies(supabase, eid);
+          const res = resolveLibrairie(librairie, librairies, corrections);
+          if (res.confiance === "moyenne" && res.match) {
+            const c = besoinConfirmation(res, "librairie", (l) => l.nom);
+            return { erreur: `${c.interpretation} ${c.question}` };
+          }
+          if (res.confiance === "haute" && res.match) {
+            libNote = noteInterpretation(librairie, res.match.nom, "la librairie");
+            librairie = res.match.nom;
+            adresse = adresse ?? res.match.adresse;
+          }
         }
 
         if (existing) {
