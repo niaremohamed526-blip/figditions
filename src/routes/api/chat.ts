@@ -405,17 +405,16 @@ function buildTools(supabase: AnySupabase, userId: string, entrepriseId: string 
         const found = await findManuscrit(supabase, eid, livre);
         if ("error" in found) return { erreur: found.error };
         const m = found.manuscrit;
+        const corrections = await loadCorrections(supabase, eid);
         const { data: stocksRows } = await supabase
           .from("stocks")
           .select("id, librairie_nom, exemplaires_restants, exemplaires_vendus, prix_unitaire_fcfa")
           .eq("entreprise_id", eid)
           .eq("manuscrit_id", m.id)
-          .ilike("librairie_nom", `%${librairie}%`)
-          .limit(3);
-        const rows = stocksRows ?? [];
-        if (rows.length === 0) return { erreur: `Aucun dépôt de « ${m.titre} » trouvé dans une librairie correspondant à « ${librairie} ».` };
-        if (rows.length > 1) return { erreur: `Plusieurs dépôts correspondent : ${rows.map((r) => r.librairie_nom).join(", ")}. Précisez la librairie.` };
-        const s = rows[0];
+          .limit(500);
+        const dep = resolveDepot(stocksRows ?? [], librairie, corrections);
+        if ("error" in dep) return { erreur: dep.error };
+        const s = dep.depot;
         if (num(s.exemplaires_restants) < quantite) {
           return { erreur: `Stock insuffisant chez ${s.librairie_nom} : ${num(s.exemplaires_restants)} exemplaire(s) restant(s), ${quantite} demandé(s).` };
         }
@@ -432,7 +431,10 @@ function buildTools(supabase: AnySupabase, userId: string, entrepriseId: string 
         const restant = Math.max(0, num(s.exemplaires_restants) - quantite);
         return {
           succes: true,
-          resume: `Vente en librairie enregistrée : ${quantite} × « ${m.titre} » chez ${s.librairie_nom} à ${fcfa(prix)} = ${fcfa(quantite * prix)}. Il reste ${restant} exemplaire(s) sur place.${restant <= 5 ? " ⚠️ Pensez au réassort." : ""}`,
+          resume: withNote(
+            [found.note, dep.note].filter(Boolean).join(" ") || null,
+            `Vente en librairie enregistrée : ${quantite} × « ${m.titre} » chez ${s.librairie_nom} à ${fcfa(prix)} = ${fcfa(quantite * prix)}. Il reste ${restant} exemplaire(s) sur place.${restant <= 5 ? " ⚠️ Pensez au réassort." : ""}`,
+          ),
         };
       },
     }),
