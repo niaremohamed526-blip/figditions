@@ -553,13 +553,15 @@ function buildTools(supabase: AnySupabase, userId: string, entrepriseId: string 
 
         return {
           succes: true,
-          resume:
+          resume: withNote(
+            [found.note, libNote].filter(Boolean).join(" ") || null,
             `Dépôt enregistré : ${quantite} × « ${m.titre} » chez ${existing ? existing.librairie_nom : librairie.trim()}` +
-            (prix > 0 ? ` à ${fcfa(prix)}` : "") +
-            (prov === "hors_stock"
-              ? " — hors stock interne : l'entrepôt n'a pas été touché."
-              : ` — ${quantite} exemplaire(s) déduit(s) de l'entrepôt.`) +
-            (warning ? ` ⚠️ ${warning}` : ""),
+              (prix > 0 ? ` à ${fcfa(prix)}` : "") +
+              (prov === "hors_stock"
+                ? " — hors stock interne : l'entrepôt n'a pas été touché."
+                : ` — ${quantite} exemplaire(s) déduit(s) de l'entrepôt.`) +
+              (warning ? ` ⚠️ ${warning}` : ""),
+          ),
         };
       },
     }),
