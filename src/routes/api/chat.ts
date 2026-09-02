@@ -76,11 +76,11 @@ async function findManuscrit(
 }
 
 /** Rapproche une librairie mentionnée des dépôts réels d'un livre. */
-function resolveDepot(
-  rows: { id: string; librairie_nom: string; [k: string]: any }[],
+function resolveDepot<T extends { id: string; librairie_nom: string }>(
+  rows: T[],
   librairie: string,
   corrections: Corrections | null,
-): { depot: (typeof rows)[number]; note: string | null } | { error: string } {
+): { depot: T; note: string | null } | { error: string } {
   if (rows.length === 0) return { error: `Aucun dépôt trouvé dans une librairie correspondant à « ${librairie} ».` };
   const res = resolveLibrairie(librairie, rows.map((r) => ({ nom: r.librairie_nom, adresse: null })), corrections);
   if (res.confiance === "haute" && res.match) {
