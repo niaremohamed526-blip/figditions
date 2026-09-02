@@ -14,6 +14,21 @@ import { z } from "zod";
 import { createClient, type SupabaseClient } from "@supabase/supabase-js";
 import { createGeminiProvider, createLovableAiGatewayProvider } from "@/lib/ai-gateway.server";
 import { buildMedmoSystemPrompt } from "@/lib/medmo-prompt";
+import { normalizeMatchKey, normalizeName } from "@/lib/normalizeText";
+import {
+  besoinConfirmation,
+  fetchAuteurs,
+  fetchLibrairies,
+  fetchLivres,
+  loadCorrections,
+  noteInterpretation,
+  resolveAuteur,
+  resolveLibrairie,
+  resolveLivre,
+  saveCorrection,
+  type Corrections,
+  type LivreRef,
+} from "@/lib/medmo-resolve.server";
 
 // On Lovable hosting the managed LOVABLE_API_KEY is injected; on external
 // deployments (Vercel) the owner provides GEMINI_API_KEY from Google AI Studio.
@@ -61,11 +76,11 @@ async function findManuscrit(
 }
 
 /** Rapproche une librairie mentionnée des dépôts réels d'un livre. */
-function resolveDepot(
-  rows: { id: string; librairie_nom: string; [k: string]: any }[],
+function resolveDepot<T extends { id: string; librairie_nom: string }>(
+  rows: T[],
   librairie: string,
   corrections: Corrections | null,
-): { depot: (typeof rows)[number]; note: string | null } | { error: string } {
+): { depot: T; note: string | null } | { error: string } {
   if (rows.length === 0) return { error: `Aucun dépôt trouvé dans une librairie correspondant à « ${librairie} ».` };
   const res = resolveLibrairie(librairie, rows.map((r) => ({ nom: r.librairie_nom, adresse: null })), corrections);
   if (res.confiance === "haute" && res.match) {
@@ -296,6 +311,14 @@ function buildTools(supabase: AnySupabase, userId: string, entrepriseId: string 
       }),
       execute: async ({ nom_complet, email, telephone, operateur, numero_mobile_money }) => {
         const eid = requireEntreprise();
+        // Variantes d'écriture (« Bah Mohamed » / « Mohamed Bah ») : on demande avant de créer un doublon.
+        const auteurs = await fetchAuteurs(supabase, eid);
+        const proche = resolveAuteur(nom_complet, auteurs, await loadCorrections(supabase, eid));
+        if (proche.match && proche.confiance !== "faible") {
+          return {
+            erreur: `Un auteur très proche existe déjà : « ${proche.match.nom_complet} ». S'agit-il de la même personne (dans ce cas pas besoin de créer) ou d'un auteur différent ?`,
+          };
+        }
         const { data, error } = await supabase
           .from("auteurs")
           .insert({ entreprise_id: eid, nom_complet, email, telephone, operateur, numero_mobile_money })
@@ -317,8 +340,17 @@ function buildTools(supabase: AnySupabase, userId: string, entrepriseId: string 
       }),
       execute: async ({ titre, auteur, genre, langue }) => {
         const eid = requireEntreprise();
-        const { data: existing } = await supabase.from("manuscrits").select("id").eq("entreprise_id", eid).ilike("titre", titre).limit(1);
-        if (existing && existing.length > 0) return { erreur: `Un manuscrit intitulé « ${titre} » existe déjà.` };
+        // Jamais de doublon silencieux : un titre proche déclenche une demande de confirmation.
+        const livres = await fetchLivres(supabase, eid, false);
+        const proche = resolveLivre(titre, livres, await loadCorrections(supabase, eid));
+        if (proche.match && proche.confiance !== "faible") {
+          if (normalizeMatchKey(proche.match.titre) === normalizeMatchKey(titre)) {
+            return { erreur: `Un manuscrit intitulé « ${proche.match.titre} » existe déjà.` };
+          }
+          return {
+            erreur: `Un manuscrit très proche existe déjà : « ${proche.match.titre} » (${proche.match.auteur ?? "auteur inconnu"}). Confirmez-vous qu'il s'agit bien d'un NOUVEAU livre distinct ?`,
+          };
+        }
         const { data, error } = await supabase
           .from("manuscrits")
           .insert({ entreprise_id: eid, titre, auteur, genre, langue: langue ?? "Français", statut: "recu" })
@@ -390,17 +422,16 @@ function buildTools(supabase: AnySupabase, userId: string, entrepriseId: string 
         const found = await findManuscrit(supabase, eid, livre);
         if ("error" in found) return { erreur: found.error };
         const m = found.manuscrit;
+        const corrections = await loadCorrections(supabase, eid);
         const { data: stocksRows } = await supabase
           .from("stocks")
           .select("id, librairie_nom, exemplaires_restants, exemplaires_vendus, prix_unitaire_fcfa")
           .eq("entreprise_id", eid)
           .eq("manuscrit_id", m.id)
-          .ilike("librairie_nom", `%${librairie}%`)
-          .limit(3);
-        const rows = stocksRows ?? [];
-        if (rows.length === 0) return { erreur: `Aucun dépôt de « ${m.titre} » trouvé dans une librairie correspondant à « ${librairie} ».` };
-        if (rows.length > 1) return { erreur: `Plusieurs dépôts correspondent : ${rows.map((r) => r.librairie_nom).join(", ")}. Précisez la librairie.` };
-        const s = rows[0];
+          .limit(500);
+        const dep = resolveDepot(stocksRows ?? [], librairie, corrections);
+        if ("error" in dep) return { erreur: dep.error };
+        const s = dep.depot;
         if (num(s.exemplaires_restants) < quantite) {
           return { erreur: `Stock insuffisant chez ${s.librairie_nom} : ${num(s.exemplaires_restants)} exemplaire(s) restant(s), ${quantite} demandé(s).` };
         }
@@ -417,7 +448,10 @@ function buildTools(supabase: AnySupabase, userId: string, entrepriseId: string 
         const restant = Math.max(0, num(s.exemplaires_restants) - quantite);
         return {
           succes: true,
-          resume: `Vente en librairie enregistrée : ${quantite} × « ${m.titre} » chez ${s.librairie_nom} à ${fcfa(prix)} = ${fcfa(quantite * prix)}. Il reste ${restant} exemplaire(s) sur place.${restant <= 5 ? " ⚠️ Pensez au réassort." : ""}`,
+          resume: withNote(
+            [found.note, dep.note].filter(Boolean).join(" ") || null,
+            `Vente en librairie enregistrée : ${quantite} × « ${m.titre} » chez ${s.librairie_nom} à ${fcfa(prix)} = ${fcfa(quantite * prix)}. Il reste ${restant} exemplaire(s) sur place.${restant <= 5 ? " ⚠️ Pensez au réassort." : ""}`,
+          ),
         };
       },
     }),
@@ -460,16 +494,37 @@ function buildTools(supabase: AnySupabase, userId: string, entrepriseId: string 
         }
 
         // Un seul dépôt par livre et par librairie : on cumule sur la ligne existante.
+        const corrections = await loadCorrections(supabase, eid);
         const { data: existingRows } = await supabase
           .from("stocks")
           .select("id, librairie_nom, exemplaires_deposes, exemplaires_restants, exemplaires_total, prix_unitaire_fcfa")
           .eq("entreprise_id", eid)
           .eq("manuscrit_id", m.id)
-          .ilike("librairie_nom", `%${librairie}%`)
-          .limit(3);
-        const existing = (existingRows ?? []).length === 1 ? existingRows![0] : (existingRows ?? []).find((r) => r.librairie_nom.toLowerCase() === librairie.toLowerCase()) ?? null;
-        if ((existingRows ?? []).length > 1 && !existing) {
-          return { erreur: `Plusieurs dépôts de « ${m.titre} » correspondent à « ${librairie} » : ${(existingRows ?? []).map((r) => r.librairie_nom).join(", ")}. Précisez le nom exact.` };
+          .limit(500);
+        const rows = existingRows ?? [];
+        let existing: (typeof rows)[number] | null = null;
+        let libNote: string | null = null;
+        if (rows.length > 0) {
+          const dep = resolveDepot(rows, librairie, corrections);
+          if ("depot" in dep) {
+            existing = dep.depot;
+            libNote = dep.note;
+          }
+        }
+        if (!existing) {
+          // Pas de dépôt existant pour ce livre : vérifier que la librairie
+          // mentionnée n'est pas une variante d'une librairie déjà connue.
+          const librairies = await fetchLibrairies(supabase, eid);
+          const res = resolveLibrairie(librairie, librairies, corrections);
+          if (res.confiance === "moyenne" && res.match) {
+            const c = besoinConfirmation(res, "librairie", (l) => l.nom);
+            return { erreur: `${c.interpretation} ${c.question}` };
+          }
+          if (res.confiance === "haute" && res.match) {
+            libNote = noteInterpretation(librairie, res.match.nom, "la librairie");
+            librairie = res.match.nom;
+            adresse = adresse ?? res.match.adresse;
+          }
         }
 
         if (existing) {
@@ -515,13 +570,15 @@ function buildTools(supabase: AnySupabase, userId: string, entrepriseId: string 
 
         return {
           succes: true,
-          resume:
+          resume: withNote(
+            [found.note, libNote].filter(Boolean).join(" ") || null,
             `Dépôt enregistré : ${quantite} × « ${m.titre} » chez ${existing ? existing.librairie_nom : librairie.trim()}` +
-            (prix > 0 ? ` à ${fcfa(prix)}` : "") +
-            (prov === "hors_stock"
-              ? " — hors stock interne : l'entrepôt n'a pas été touché."
-              : ` — ${quantite} exemplaire(s) déduit(s) de l'entrepôt.`) +
-            (warning ? ` ⚠️ ${warning}` : ""),
+              (prix > 0 ? ` à ${fcfa(prix)}` : "") +
+              (prov === "hors_stock"
+                ? " — hors stock interne : l'entrepôt n'a pas été touché."
+                : ` — ${quantite} exemplaire(s) déduit(s) de l'entrepôt.`) +
+              (warning ? ` ⚠️ ${warning}` : ""),
+          ),
         };
       },
     }),
@@ -579,17 +636,16 @@ function buildTools(supabase: AnySupabase, userId: string, entrepriseId: string 
         const found = await findManuscrit(supabase, eid, livre);
         if ("error" in found) return { erreur: found.error };
         const m = found.manuscrit;
+        const corrections = await loadCorrections(supabase, eid);
         const { data: stocksRows } = await supabase
           .from("stocks")
           .select("id, librairie_nom, exemplaires_restants")
           .eq("entreprise_id", eid)
           .eq("manuscrit_id", m.id)
-          .ilike("librairie_nom", `%${librairie}%`)
-          .limit(3);
-        const rows = stocksRows ?? [];
-        if (rows.length === 0) return { erreur: `Aucun dépôt de « ${m.titre} » trouvé dans une librairie correspondant à « ${librairie} ».` };
-        if (rows.length > 1) return { erreur: `Plusieurs dépôts correspondent : ${rows.map((r) => r.librairie_nom).join(", ")}. Précisez la librairie.` };
-        const s = rows[0];
+          .limit(500);
+        const dep = resolveDepot(stocksRows ?? [], librairie, corrections);
+        if ("error" in dep) return { erreur: dep.error };
+        const s = dep.depot;
         if (num(s.exemplaires_restants) < quantite) {
           return { erreur: `Maximum retournable depuis ${s.librairie_nom} : ${num(s.exemplaires_restants)} exemplaire(s).` };
         }
@@ -605,10 +661,74 @@ function buildTools(supabase: AnySupabase, userId: string, entrepriseId: string 
         if (error) return { erreur: error.message };
         return {
           succes: true,
-          resume: `Retour enregistré : ${quantite} × « ${m.titre} » de ${s.librairie_nom} vers l'entrepôt. Il reste ${num(s.exemplaires_restants) - quantite} exemplaire(s) sur place.`,
+          resume: withNote(
+            [found.note, dep.note].filter(Boolean).join(" ") || null,
+            `Retour enregistré : ${quantite} × « ${m.titre} » de ${s.librairie_nom} vers l'entrepôt. Il reste ${num(s.exemplaires_restants) - quantite} exemplaire(s) sur place.`,
+          ),
         };
       },
     }),
+
+    verifier_correspondance: tool({
+      description:
+        "Vérifie à quoi correspond un nom mentionné par l'utilisateur (titre de livre, librairie ou auteur) dans les données réelles de la maison d'édition, avec un niveau de confiance et des suggestions. À utiliser AVANT une action quand le nom semble approximatif, abrégé ou mal orthographié.",
+      inputSchema: z.object({
+        type: z.enum(["titre_livre", "librairie", "auteur"]).describe("Type d'entité à rapprocher"),
+        texte: z.string().describe("Nom tel que mentionné par l'utilisateur (brut)"),
+      }),
+      execute: async ({ type, texte }) => {
+        const eid = requireEntreprise();
+        const corrections = await loadCorrections(supabase, eid);
+        if (type === "titre_livre") {
+          const livres = await fetchLivres(supabase, eid, false);
+          const res = resolveLivre(texte, livres, corrections);
+          return {
+            texte,
+            confiance: res.confiance,
+            correspondance: res.match ? { titre: res.match.titre, auteur: res.match.auteur, statut: res.match.statut } : null,
+            via_correction: res.via_correction,
+            suggestions: res.suggestions,
+          };
+        }
+        if (type === "librairie") {
+          const librairies = await fetchLibrairies(supabase, eid);
+          const res = resolveLibrairie(texte, librairies, corrections);
+          return {
+            texte,
+            confiance: res.confiance,
+            correspondance: res.match ? { nom: res.match.nom, adresse: res.match.adresse } : null,
+            via_correction: res.via_correction,
+            suggestions: res.suggestions,
+          };
+        }
+        const auteurs = await fetchAuteurs(supabase, eid);
+        const res = resolveAuteur(texte, auteurs, corrections);
+        return {
+          texte,
+          confiance: res.confiance,
+          correspondance: res.match ? { nom_complet: res.match.nom_complet, id: res.match.id } : null,
+          via_correction: res.via_correction,
+          suggestions: res.suggestions,
+        };
+      },
+    }),
+
+    corriger_rapprochement: tool({
+      description:
+        "Mémorise une correction de rapprochement confirmée par l'utilisateur (ex. « BAH » = « Librairie Bah Mohamed »). À appeler dès que l'utilisateur corrige ou confirme explicitement une interprétation, pour que Pr. MEDMO ne se trompe plus la prochaine fois.",
+      inputSchema: z.object({
+        type: z.enum(["titre_livre", "librairie", "auteur"]).describe("Type d'entité corrigée"),
+        texte_extrait: z.string().describe("Ce que l'utilisateur (ou la photo) avait écrit"),
+        valeur_correcte: z.string().describe("Le nom exact retenu dans FIGDITIONS"),
+      }),
+      execute: async ({ type, texte_extrait, valeur_correcte }) => {
+        const eid = requireEntreprise();
+        await saveCorrection(supabase, eid, userId, type, texte_extrait, valeur_correcte);
+        return { succes: true, resume: `C'est noté : « ${normalizeName(texte_extrait)} » correspond à « ${normalizeName(valeur_correcte)} ».` };
+      },
+    }),
+
+
 
     changer_statut_manuscrit: tool({
       description: "Fait avancer un manuscrit dans le workflow éditorial (recu → relecture → epreuve_1 à 4 → maquette → echantillon → impression → publie). Le passage à « publie » crée automatiquement la fiche de stock interne. Nécessite la confirmation de l'utilisateur.",
