@@ -14,6 +14,21 @@ import { z } from "zod";
 import { createClient, type SupabaseClient } from "@supabase/supabase-js";
 import { createGeminiProvider, createLovableAiGatewayProvider } from "@/lib/ai-gateway.server";
 import { buildMedmoSystemPrompt } from "@/lib/medmo-prompt";
+import { normalizeMatchKey, normalizeName } from "@/lib/normalizeText";
+import {
+  besoinConfirmation,
+  fetchAuteurs,
+  fetchLibrairies,
+  fetchLivres,
+  loadCorrections,
+  noteInterpretation,
+  resolveAuteur,
+  resolveLibrairie,
+  resolveLivre,
+  saveCorrection,
+  type Corrections,
+  type LivreRef,
+} from "@/lib/medmo-resolve.server";
 
 // On Lovable hosting the managed LOVABLE_API_KEY is injected; on external
 // deployments (Vercel) the owner provides GEMINI_API_KEY from Google AI Studio.
