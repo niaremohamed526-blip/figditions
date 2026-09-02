@@ -332,8 +332,17 @@ function buildTools(supabase: AnySupabase, userId: string, entrepriseId: string 
       }),
       execute: async ({ titre, auteur, genre, langue }) => {
         const eid = requireEntreprise();
-        const { data: existing } = await supabase.from("manuscrits").select("id").eq("entreprise_id", eid).ilike("titre", titre).limit(1);
-        if (existing && existing.length > 0) return { erreur: `Un manuscrit intitulé « ${titre} » existe déjà.` };
+        // Jamais de doublon silencieux : un titre proche déclenche une demande de confirmation.
+        const livres = await fetchLivres(supabase, eid, false);
+        const proche = resolveLivre(titre, livres, await loadCorrections(supabase, eid));
+        if (proche.match && proche.confiance !== "faible") {
+          if (normalizeMatchKey(proche.match.titre) === normalizeMatchKey(titre)) {
+            return { erreur: `Un manuscrit intitulé « ${proche.match.titre} » existe déjà.` };
+          }
+          return {
+            erreur: `Un manuscrit très proche existe déjà : « ${proche.match.titre} » (${proche.match.auteur ?? "auteur inconnu"}). Confirmez-vous qu'il s'agit bien d'un NOUVEAU livre distinct ?`,
+          };
+        }
         const { data, error } = await supabase
           .from("manuscrits")
           .insert({ entreprise_id: eid, titre, auteur, genre, langue: langue ?? "Français", statut: "recu" })
