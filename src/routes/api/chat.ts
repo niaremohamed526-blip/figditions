@@ -311,6 +311,14 @@ function buildTools(supabase: AnySupabase, userId: string, entrepriseId: string 
       }),
       execute: async ({ nom_complet, email, telephone, operateur, numero_mobile_money }) => {
         const eid = requireEntreprise();
+        // Variantes d'écriture (« Bah Mohamed » / « Mohamed Bah ») : on demande avant de créer un doublon.
+        const auteurs = await fetchAuteurs(supabase, eid);
+        const proche = resolveAuteur(nom_complet, auteurs, await loadCorrections(supabase, eid));
+        if (proche.match && proche.confiance !== "faible") {
+          return {
+            erreur: `Un auteur très proche existe déjà : « ${proche.match.nom_complet} ». S'agit-il de la même personne (dans ce cas pas besoin de créer) ou d'un auteur différent ?`,
+          };
+        }
         const { data, error } = await supabase
           .from("auteurs")
           .insert({ entreprise_id: eid, nom_complet, email, telephone, operateur, numero_mobile_money })
