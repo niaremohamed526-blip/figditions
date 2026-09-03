@@ -521,6 +521,8 @@ export type Database = {
       }
       depot_batches: {
         Row: {
+          annulee_le: string | null
+          annulee_par: string | null
           bordereau_id: string | null
           created_at: string
           created_by: string | null
@@ -532,9 +534,13 @@ export type Database = {
           notes: string | null
           provenance: string
           quantite_deposee: number
+          raison_annulation: string | null
+          statut_annulation: string
           stock_id: string | null
         }
         Insert: {
+          annulee_le?: string | null
+          annulee_par?: string | null
           bordereau_id?: string | null
           created_at?: string
           created_by?: string | null
@@ -546,9 +552,13 @@ export type Database = {
           notes?: string | null
           provenance?: string
           quantite_deposee: number
+          raison_annulation?: string | null
+          statut_annulation?: string
           stock_id?: string | null
         }
         Update: {
+          annulee_le?: string | null
+          annulee_par?: string | null
           bordereau_id?: string | null
           created_at?: string
           created_by?: string | null
@@ -560,6 +570,8 @@ export type Database = {
           notes?: string | null
           provenance?: string
           quantite_deposee?: number
+          raison_annulation?: string | null
+          statut_annulation?: string
           stock_id?: string | null
         }
         Relationships: [
@@ -1040,6 +1052,8 @@ export type Database = {
       }
       mouvements_stock: {
         Row: {
+          annulee_le: string | null
+          annulee_par: string | null
           created_at: string
           date_mouvement: string
           destination: string | null
@@ -1049,10 +1063,14 @@ export type Database = {
           manuscrit_id: string
           notes: string | null
           quantite: number
+          raison_annulation: string | null
+          statut_annulation: string
           stock_interne_id: string | null
           type_mouvement: string
         }
         Insert: {
+          annulee_le?: string | null
+          annulee_par?: string | null
           created_at?: string
           date_mouvement?: string
           destination?: string | null
@@ -1062,10 +1080,14 @@ export type Database = {
           manuscrit_id: string
           notes?: string | null
           quantite: number
+          raison_annulation?: string | null
+          statut_annulation?: string
           stock_interne_id?: string | null
           type_mouvement: string
         }
         Update: {
+          annulee_le?: string | null
+          annulee_par?: string | null
           created_at?: string
           date_mouvement?: string
           destination?: string | null
@@ -1075,6 +1097,8 @@ export type Database = {
           manuscrit_id?: string
           notes?: string | null
           quantite?: number
+          raison_annulation?: string | null
+          statut_annulation?: string
           stock_interne_id?: string | null
           type_mouvement?: string
         }
@@ -1227,6 +1251,8 @@ export type Database = {
       paiements_royalties: {
         Row: {
           annee: number
+          annulee_le: string | null
+          annulee_par: string | null
           auteur_id: string | null
           auteur_nom: string
           created_at: string
@@ -1239,11 +1265,15 @@ export type Database = {
           paye_le: string
           paye_par: string | null
           paye_par_nom: string | null
+          raison_annulation: string | null
           reference: string | null
+          statut_annulation: string
           vente_ids: string[]
         }
         Insert: {
           annee: number
+          annulee_le?: string | null
+          annulee_par?: string | null
           auteur_id?: string | null
           auteur_nom: string
           created_at?: string
@@ -1256,11 +1286,15 @@ export type Database = {
           paye_le?: string
           paye_par?: string | null
           paye_par_nom?: string | null
+          raison_annulation?: string | null
           reference?: string | null
+          statut_annulation?: string
           vente_ids: string[]
         }
         Update: {
           annee?: number
+          annulee_le?: string | null
+          annulee_par?: string | null
           auteur_id?: string | null
           auteur_nom?: string
           created_at?: string
@@ -1273,7 +1307,9 @@ export type Database = {
           paye_le?: string
           paye_par?: string | null
           paye_par_nom?: string | null
+          raison_annulation?: string | null
           reference?: string | null
+          statut_annulation?: string
           vente_ids?: string[]
         }
         Relationships: [
@@ -1717,6 +1753,8 @@ export type Database = {
       }
       ventes: {
         Row: {
+          annulee_le: string | null
+          annulee_par: string | null
           auteur_id: string | null
           canal_vente: string
           commission_librairie_fcfa: number
@@ -1734,12 +1772,16 @@ export type Database = {
           prix_catalogue_fcfa: number | null
           prix_unitaire_fcfa: number
           quantite_vendue: number
+          raison_annulation: string | null
           remise_fcfa: number
+          statut_annulation: string
           statut_encaissement: string
           statut_paiement: Database["public"]["Enums"]["paiement_statut"]
           stock_id: string | null
         }
         Insert: {
+          annulee_le?: string | null
+          annulee_par?: string | null
           auteur_id?: string | null
           canal_vente?: string
           commission_librairie_fcfa?: number
@@ -1757,12 +1799,16 @@ export type Database = {
           prix_catalogue_fcfa?: number | null
           prix_unitaire_fcfa?: number
           quantite_vendue?: number
+          raison_annulation?: string | null
           remise_fcfa?: number
+          statut_annulation?: string
           statut_encaissement?: string
           statut_paiement?: Database["public"]["Enums"]["paiement_statut"]
           stock_id?: string | null
         }
         Update: {
+          annulee_le?: string | null
+          annulee_par?: string | null
           auteur_id?: string | null
           canal_vente?: string
           commission_librairie_fcfa?: number
@@ -1780,7 +1826,9 @@ export type Database = {
           prix_catalogue_fcfa?: number | null
           prix_unitaire_fcfa?: number
           quantite_vendue?: number
+          raison_annulation?: string | null
           remise_fcfa?: number
+          statut_annulation?: string
           statut_encaissement?: string
           statut_paiement?: Database["public"]["Enums"]["paiement_statut"]
           stock_id?: string | null
@@ -1835,6 +1883,10 @@ export type Database = {
       admin_paiements_stats: { Args: never; Returns: Json }
       admin_reject_paiement: {
         Args: { p_id: string; p_raison: string }
+        Returns: Json
+      }
+      annuler_vente: {
+        Args: { p_raison?: string; p_vente_id: string }
         Returns: Json
       }
       apply_depot_transfert: {
