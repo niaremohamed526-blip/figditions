@@ -18,7 +18,16 @@ export interface VenteRow {
   montant_encaisse_fcfa: number;
   date_encaissement: string | null;
   librairie_nom: string | null;
+  statut_annulation: "active" | "annulee";
+  raison_annulation: string | null;
+  annulee_par: string | null;
+  annulee_le: string | null;
 }
+
+export const ANNULATION_META: Record<string, { label: string; className: string }> = {
+  active: { label: "Active", className: "" },
+  annulee: { label: "Annulée", className: "bg-red-500/10 text-red-400 border-red-500/30 line-through opacity-60" },
+};
 
 export interface DepenseRow {
   id: string;
