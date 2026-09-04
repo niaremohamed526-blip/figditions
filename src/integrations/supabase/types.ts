@@ -1885,6 +1885,14 @@ export type Database = {
         Args: { p_id: string; p_raison: string }
         Returns: Json
       }
+      annuler_depot_batch: {
+        Args: { p_batch_id: string; p_raison?: string }
+        Returns: Json
+      }
+      annuler_mouvement_stock: {
+        Args: { p_mouvement_id: string; p_raison?: string }
+        Returns: Json
+      }
       annuler_vente: {
         Args: { p_raison?: string; p_vente_id: string }
         Returns: Json

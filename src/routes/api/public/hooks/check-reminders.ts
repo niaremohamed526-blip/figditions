@@ -81,6 +81,7 @@ export const Route = createFileRoute("/api/public/hooks/check-reminders")({
         const { data: ventes } = await supabaseAdmin
           .from("ventes")
           .select("id, entreprise_id, auteur_id, droits_auteur_fcfa, date_vente")
+          .eq("statut_annulation", "active")
           .eq("statut_paiement", "en_attente")
           .gt("droits_auteur_fcfa", 0)
           .lte("date_vente", ago30d.toISOString().slice(0, 10));

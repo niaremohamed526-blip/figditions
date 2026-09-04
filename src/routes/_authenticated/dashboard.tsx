@@ -65,7 +65,7 @@ function DashboardPage() {
       // fetchAllRows : contourne la limite silencieuse de 1000 lignes de l'API.
       const [m, v, a, s, c, si] = await Promise.all([
         fetchAllRows<Manuscrit>(() => supabase.from("manuscrits").select("id, titre, auteur, auteur_id, genre, statut, created_at, origine").order("created_at", { ascending: false })),
-        fetchAllRows<Vente>(() => supabase.from("ventes").select("*").order("date_vente", { ascending: false })),
+        fetchAllRows<Vente>(() => supabase.from("ventes").select("*").eq("statut_annulation", "active").order("date_vente", { ascending: false })),
         fetchAllRows<Auteur>(() => supabase.from("auteurs").select("id, nom_complet")),
         fetchAllRows<Stock>(() => supabase.from("stocks").select("id, manuscrit_id, librairie_nom, librairie_adresse, exemplaires_deposes, exemplaires_vendus, exemplaires_restants, prix_unitaire_fcfa, created_at")),
         fetchAllRows<Contrat>(() => supabase.from("contrats").select("id, created_at, statut, manuscrit_id")),

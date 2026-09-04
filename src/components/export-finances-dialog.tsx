@@ -77,7 +77,7 @@ export function ExportFinancesDialog({
     try {
       // Fetch data (RLS scopes to entreprise) — fetchAllRows évite la limite de 1000 lignes.
       const [v, m, a, st, si, dp] = await Promise.all([
-        fetchAllRows<Vente>(() => supabase.from("ventes").select("*").gte("date_vente", from).lte("date_vente", to).order("date_vente", { ascending: true })),
+        fetchAllRows<Vente>(() => supabase.from("ventes").select("*").eq("statut_annulation", "active").gte("date_vente", from).lte("date_vente", to).order("date_vente", { ascending: true })),
         fetchAllRows<Manuscrit>(() => (supabase as any).from("manuscrits").select("id, titre, auteur, auteur_id, genre")),
         fetchAllRows<any>(() => supabase.from("auteurs").select("id, nom_complet, email, telephone, operateur, numero_mobile_money")),
         fetchAllRows<any>(() => supabase.from("stocks").select("id, manuscrit_id, librairie_nom, librairie_adresse, exemplaires_deposes, exemplaires_vendus, exemplaires_restants, derniere_visite, prix_unitaire_fcfa")),
@@ -89,7 +89,7 @@ export function ExportFinancesDialog({
       const days = Math.max(1, Math.round((new Date(to).getTime() - new Date(from).getTime()) / (86400 * 1000)));
       const prevTo = isoDay(new Date(new Date(from).getTime() - 86400 * 1000));
       const prevFrom = isoDay(new Date(new Date(prevTo).getTime() - days * 86400 * 1000));
-      const prevV = await fetchAllRows<Vente>(() => supabase.from("ventes").select("*").gte("date_vente", prevFrom).lte("date_vente", prevTo));
+      const prevV = await fetchAllRows<Vente>(() => supabase.from("ventes").select("*").eq("statut_annulation", "active").gte("date_vente", prevFrom).lte("date_vente", prevTo));
 
       const pdf = generateFinanceReport({
         lang,

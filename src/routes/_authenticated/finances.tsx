@@ -113,8 +113,14 @@ function FinancesInner({
   const mMap = useMemo(() => Object.fromEntries(manuscrits.map((m) => [m.id, m])), [manuscrits]);
   const aMap = useMemo(() => Object.fromEntries(auteurs.map((a) => [a.id, a.nom_complet])), [auteurs]);
 
+  /** Les ventes annulées sont exclues de tous les agrégats financiers. */
+  const ventesActives = useMemo(
+    () => (ventes ?? []).filter((v) => (v.statut_annulation ?? "active") !== "annulee"),
+    [ventes],
+  );
+
   const totals = useMemo(() => {
-    const v = ventes ?? [];
+    const v = ventesActives;
     const revenue = v.reduce((a, x) => a + Number(x.montant_total_fcfa || 0), 0);
     const commission = v.reduce((a, x) => a + Number(x.commission_librairie_fcfa || 0), 0);
     const royalties = v.reduce((a, x) => a + Number(x.droits_auteur_fcfa || 0), 0);
@@ -137,10 +143,10 @@ function FinancesInner({
       totalDepenses,
       resultatNet: revenue - commission - royalties - totalDepenses - coutProduction,
     };
-  }, [ventes, depenses, stockInterne]);
+  }, [ventesActives, depenses, stockInterne]);
 
   const monthlyData = useMemo(() => {
-    const v = ventes ?? [];
+    const v = ventesActives;
     const buckets: { key: string; label: string; revenue: number; depenses: number; net: number }[] = [];
     for (let i = 5; i >= 0; i--) {
       const d = startOfMonth(subMonths(new Date(), i));
@@ -157,17 +163,17 @@ function FinancesInner({
     });
     buckets.forEach((b) => { b.net = b.revenue - b.depenses; });
     return buckets;
-  }, [ventes, depenses]);
+  }, [ventesActives, depenses]);
 
   const pieData = useMemo(() => {
-    const v = ventes ?? [];
+    const v = ventesActives;
     const by: Record<string, number> = {};
     v.forEach((s) => {
       const t = mMap[s.manuscrit_id]?.titre ?? "—";
       by[t] = (by[t] ?? 0) + Number(s.montant_total_fcfa || 0);
     });
     return Object.entries(by).map(([name, value]) => ({ name, value })).sort((a, b) => b.value - a.value).slice(0, 6);
-  }, [ventes, mMap]);
+  }, [ventesActives, mMap]);
 
   const loading = ventes === null;
 
@@ -282,7 +288,7 @@ function FinancesInner({
             </p>
           )}
 
-          <FinancesAnalytics ventes={ventes} manuscrits={manuscrits} aMap={aMap} mMap={mMap} />
+          <FinancesAnalytics ventes={loading ? null : ventesActives} manuscrits={manuscrits} aMap={aMap} mMap={mMap} />
         </TabsContent>
 
         {/* ==================== VENTES ==================== */}
@@ -315,7 +321,7 @@ function FinancesInner({
             <Skeleton className="h-64 w-full" />
           ) : (
             <RoyaltiesTab
-              ventes={ventes}
+              ventes={ventesActives}
               manuscrits={manuscrits as any}
               auteurs={auteurs}
               paiements={paiements}
@@ -332,7 +338,7 @@ function FinancesInner({
             <Skeleton className="h-64 w-full" />
           ) : (
             <RentabiliteTab
-              ventes={ventes}
+              ventes={ventesActives}
               depenses={depenses}
               stockInterne={stockInterne}
               manuscrits={manuscrits}
