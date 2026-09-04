@@ -515,6 +515,7 @@ function StocksPage() {
             onSale={() => setSaleOpen(true)}
             librairieFilter={librairieFilter === "all" ? null : librairieFilter}
             onLibrairieFilter={(v) => setLibrairieFilter(v ?? "all")}
+            onChanged={load}
           />
 
 

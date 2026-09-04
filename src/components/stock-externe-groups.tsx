@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from "react";
-import { Store, ChevronDown, Plus, BookOpen, Pencil, Trash2, Wallet, Package } from "lucide-react";
+import { Store, ChevronDown, Plus, BookOpen, Pencil, Trash2, Wallet, Package, XCircle } from "lucide-react";
 import { format } from "date-fns";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Button } from "@/components/ui/button";
@@ -8,6 +8,7 @@ import { fcfa } from "@/lib/format";
 import { groupByLibrairie, stockStatus, type ExterneStockRow } from "@/components/librairies-tab";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { supabase } from "@/integrations/supabase/client";
+import { toast } from "sonner";
 
 interface DepotBatch {
   id: string;
@@ -17,25 +18,61 @@ interface DepotBatch {
   date_depot: string;
   provenance: string;
   notes: string | null;
+  statut_annulation?: string | null;
+  raison_annulation?: string | null;
 }
 
 /** Badge « N dépôts » + historique des lots pour un livre dans une librairie. */
-function BatchHistoryBadge({ manuscritId, librairieNom }: { manuscritId: string; librairieNom: string }) {
+function BatchHistoryBadge({
+  manuscritId, librairieNom, onChanged,
+}: { manuscritId: string; librairieNom: string; onChanged?: () => void }) {
   const [batches, setBatches] = useState<DepotBatch[] | null>(null);
   const [open, setOpen] = useState(false);
+  const [busyId, setBusyId] = useState<string | null>(null);
+
+  const fetchBatches = async () => {
+    const { data } = await supabase
+      .from("depot_batches")
+      .select("id, manuscrit_id, librairie_nom, quantite_deposee, date_depot, provenance, notes, statut_annulation, raison_annulation")
+      .eq("manuscrit_id", manuscritId)
+      .ilike("librairie_nom", librairieNom)
+      .order("date_depot", { ascending: false });
+    setBatches((data as DepotBatch[]) ?? []);
+  };
 
   useEffect(() => {
     if (!open || batches) return;
-    (async () => {
-      const { data } = await supabase
-        .from("depot_batches")
-        .select("id, manuscrit_id, librairie_nom, quantite_deposee, date_depot, provenance, notes")
-        .eq("manuscrit_id", manuscritId)
-        .ilike("librairie_nom", librairieNom)
-        .order("date_depot", { ascending: false });
-      setBatches((data as DepotBatch[]) ?? []);
-    })();
+    void fetchBatches();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [open, batches, manuscritId, librairieNom]);
+
+  const cancelBatch = async (b: DepotBatch) => {
+    const raison = window.prompt(
+      `Annuler ce dépôt de ${b.quantite_deposee} exemplaire(s) du ${fdate(b.date_depot)} ?\n\nMotif de l'annulation (obligatoire, 10 caractères min.) :`,
+      "",
+    );
+    if (raison === null) return;
+    if (raison.trim().length < 10) { toast.error("Motif trop court (10 caractères minimum)"); return; }
+    setBusyId(b.id);
+    try {
+      const { data, error } = await (supabase as any).rpc("annuler_depot_batch", {
+        p_batch_id: b.id,
+        p_raison: raison.trim(),
+      });
+      if (error) throw error;
+      toast.success(
+        data?.remis_en_stock_interne
+          ? `Dépôt annulé — ${data.quantite_reversee} ex. remis en stock interne`
+          : `Dépôt annulé — ${data?.quantite_reversee ?? b.quantite_deposee} ex. retirés du dépôt`,
+      );
+      await fetchBatches();
+      onChanged?.();
+    } catch (e: any) {
+      toast.error(e?.message ?? "Erreur lors de l'annulation du dépôt");
+    } finally {
+      setBusyId(null);
+    }
+  };
 
   return (
     <Popover open={open} onOpenChange={setOpen}>
@@ -58,22 +95,43 @@ function BatchHistoryBadge({ manuscritId, librairieNom }: { manuscritId: string;
           <p className="text-xs text-muted-foreground">Aucun lot enregistré.</p>
         ) : (
           <ul className="space-y-1.5">
-            {batches.map((b) => (
-              <li key={b.id} className="flex items-start justify-between gap-2 border-b border-border/60 pb-1.5 last:border-0 last:pb-0">
-                <span className="text-xs text-muted-foreground">
-                  {fdate(b.date_depot)}
-                  {b.provenance === "hors_stock" && <span className="ml-1 opacity-70">📤</span>}
-                  {b.notes && <span className="block text-[10px] opacity-70">{b.notes}</span>}
-                </span>
-                <span className="shrink-0 text-xs font-semibold tabular-nums text-[color:var(--gold)]">
-                  + {b.quantite_deposee}
-                </span>
-              </li>
-            ))}
+            {batches.map((b) => {
+              const annule = b.statut_annulation === "annulee";
+              return (
+                <li key={b.id} className="flex items-start justify-between gap-2 border-b border-border/60 pb-1.5 last:border-0 last:pb-0">
+                  <span className={cn("text-xs text-muted-foreground", annule && "line-through opacity-60")}>
+                    {fdate(b.date_depot)}
+                    {b.provenance === "hors_stock" && <span className="ml-1 opacity-70">📤</span>}
+                    {b.notes && <span className="block text-[10px] opacity-70">{b.notes}</span>}
+                    {annule && (
+                      <span className="block text-[10px] text-red-400 no-underline">
+                        Annulé{b.raison_annulation ? ` — ${b.raison_annulation}` : ""}
+                      </span>
+                    )}
+                  </span>
+                  <span className="flex shrink-0 items-center gap-1.5">
+                    <span className={cn("text-xs font-semibold tabular-nums text-[color:var(--gold)]", annule && "line-through opacity-60")}>
+                      + {b.quantite_deposee}
+                    </span>
+                    {!annule && (
+                      <button
+                        type="button"
+                        title="Annuler ce dépôt"
+                        disabled={busyId === b.id}
+                        onClick={() => cancelBatch(b)}
+                        className="rounded p-0.5 text-red-400 hover:bg-red-500/10 disabled:opacity-50"
+                      >
+                        <XCircle className="h-3.5 w-3.5" />
+                      </button>
+                    )}
+                  </span>
+                </li>
+              );
+            })}
             <li className="flex items-center justify-between pt-1 text-xs font-bold">
-              <span>Total déposé</span>
+              <span>Total déposé (actif)</span>
               <span className="tabular-nums text-primary">
-                {batches.reduce((s, b) => s + (b.quantite_deposee ?? 0), 0)}
+                {batches.filter((b) => b.statut_annulation !== "annulee").reduce((s, b) => s + (b.quantite_deposee ?? 0), 0)}
               </span>
             </li>
           </ul>
@@ -124,6 +182,7 @@ export function StockExterneGroups({
   onSale,
   librairieFilter,
   onLibrairieFilter,
+  onChanged,
 }: {
   stocks: ExterneStockRow[] | null;
   titreMap: Record<string, string>;
@@ -134,6 +193,7 @@ export function StockExterneGroups({
   onSale: () => void;
   librairieFilter: string | null;
   onLibrairieFilter: (v: string | null) => void;
+  onChanged?: () => void;
 }) {
   const [collapsed, setCollapsed] = useState<Record<string, boolean>>({});
   const [glow, setGlow] = useState<string | null>(null);
@@ -333,7 +393,7 @@ export function StockExterneGroups({
                                   )}
                                 </p>
                                 <div className="mt-1 flex items-center gap-1.5">
-                                  <BatchHistoryBadge manuscritId={r.manuscrit_id} librairieNom={g.nom} />
+                                  <BatchHistoryBadge manuscritId={r.manuscrit_id} librairieNom={g.nom} onChanged={onChanged} />
                                 </div>
                                 {authorMap[r.manuscrit_id] && (
                                   <p className="truncate text-[11px] text-muted-foreground">{authorMap[r.manuscrit_id]}</p>
