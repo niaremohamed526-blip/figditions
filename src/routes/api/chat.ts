@@ -115,7 +115,7 @@ function buildTools(supabase: AnySupabase, userId: string, entrepriseId: string 
           supabase.from("manuscrits").select("statut").eq("entreprise_id", eid),
           supabase.from("stock_interne").select("quantite_disponible").eq("entreprise_id", eid),
           supabase.from("stocks").select("exemplaires_restants, exemplaires_vendus").eq("entreprise_id", eid),
-          supabase.from("ventes").eq("statut_annulation", "active").select("montant_total_fcfa, droits_auteur_fcfa, statut_paiement").eq("entreprise_id", eid).gte("date_vente", monthIso).neq("statut_paiement", "annule"),
+          supabase.from("ventes").select("montant_total_fcfa, droits_auteur_fcfa, statut_paiement").eq("statut_annulation", "active").eq("entreprise_id", eid).gte("date_vente", monthIso).neq("statut_paiement", "annule"),
           supabase.from("notifications").select("id").eq("entreprise_id", eid).eq("lu", false),
         ]);
         const statuts: Record<string, number> = {};
@@ -178,7 +178,7 @@ function buildTools(supabase: AnySupabase, userId: string, entrepriseId: string 
         const days = periode_jours && periode_jours > 0 ? Math.min(periode_jours, 365) : 30;
         const since = new Date(Date.now() - days * 86400000).toISOString().slice(0, 10);
         const [{ data: ventes }, { data: manuscrits }] = await Promise.all([
-          supabase.from("ventes").eq("statut_annulation", "active").select("manuscrit_id, quantite_vendue, montant_total_fcfa, droits_auteur_fcfa, canal_vente, statut_paiement, remise_fcfa").eq("entreprise_id", eid).gte("date_vente", since).neq("statut_paiement", "annule"),
+          supabase.from("ventes").select("manuscrit_id, quantite_vendue, montant_total_fcfa, droits_auteur_fcfa, canal_vente, statut_paiement, remise_fcfa").eq("statut_annulation", "active").eq("entreprise_id", eid).gte("date_vente", since).neq("statut_paiement", "annule"),
           supabase.from("manuscrits").select("id, titre").eq("entreprise_id", eid),
         ]);
         const titres = Object.fromEntries((manuscrits ?? []).map((m) => [m.id, m.titre]));
@@ -222,7 +222,7 @@ function buildTools(supabase: AnySupabase, userId: string, entrepriseId: string 
       execute: async () => {
         const eid = requireEntreprise();
         const [{ data: ventes }, { data: auteurs }, { data: manuscrits }] = await Promise.all([
-          supabase.from("ventes").eq("statut_annulation", "active").select("auteur_id, manuscrit_id, droits_auteur_fcfa, statut_paiement").eq("entreprise_id", eid).neq("statut_paiement", "annule"),
+          supabase.from("ventes").select("auteur_id, manuscrit_id, droits_auteur_fcfa, statut_paiement").eq("statut_annulation", "active").eq("entreprise_id", eid).neq("statut_paiement", "annule"),
           supabase.from("auteurs").select("id, nom_complet").eq("entreprise_id", eid),
           supabase.from("manuscrits").select("id, auteur, auteur_id").eq("entreprise_id", eid),
         ]);
@@ -256,7 +256,7 @@ function buildTools(supabase: AnySupabase, userId: string, entrepriseId: string 
           supabase.from("stock_interne").select("manuscrit_id, quantite_disponible, seuil_alerte").eq("entreprise_id", eid),
           supabase.from("stocks").select("manuscrit_id, librairie_nom, exemplaires_restants").eq("entreprise_id", eid).lte("exemplaires_restants", 5),
           supabase.from("contrats").select("livres, date_signature, duree_annees, statut").eq("entreprise_id", eid).eq("statut", "signe"),
-          supabase.from("ventes").eq("statut_annulation", "active").select("id, montant_total_fcfa").eq("entreprise_id", eid).eq("statut_paiement", "en_attente"),
+          supabase.from("ventes").select("id, montant_total_fcfa").eq("statut_annulation", "active").eq("entreprise_id", eid).eq("statut_paiement", "en_attente"),
           supabase.from("manuscrits").select("id, titre").eq("entreprise_id", eid),
         ]);
         const titres = Object.fromEntries((manuscrits ?? []).map((m) => [m.id, m.titre]));
