@@ -50,7 +50,7 @@ function AuteurDetailPage() {
         const ids = list.map((m: any) => m.id);
         if (ids.length) {
           const { data: ventes } = await (supabase as any)
-            .from("ventes").select("droits_auteur_fcfa, manuscrit_id, statut_paiement")
+            .from("ventes").select("droits_auteur_fcfa, manuscrit_id, statut_paiement").eq("statut_annulation", "active")
             .in("manuscrit_id", ids).eq("statut_paiement", "en_attente");
           const total = ((ventes ?? []) as any[]).reduce(
             (s, v) => s + Number(v.droits_auteur_fcfa ?? 0), 0

@@ -1061,7 +1061,7 @@ function InventoryAnalytics({ stocks, titreMap }: { stocks: Stock[]; titreMap: R
 
   useEffect(() => {
     (async () => {
-      const data = await fetchAllRows<any>(() => supabase.from("ventes").select("manuscrit_id, quantite_vendue, date_vente"));
+      const data = await fetchAllRows<any>(() => supabase.from("ventes").select("manuscrit_id, quantite_vendue, date_vente").eq("statut_annulation", "active"));
       setVentes(data);
     })();
   }, []);

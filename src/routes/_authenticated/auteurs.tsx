@@ -307,7 +307,7 @@ function AuthorAnalytics({ auteurs, entrepriseId }: { auteurs: Auteur[]; entrepr
     if (!entrepriseId) return;
     (async () => {
       const [v, m] = await Promise.all([
-        fetchAllRows<any>(() => supabase.from("ventes").select("auteur_id, manuscrit_id, quantite_vendue, montant_total_fcfa, droits_auteur_fcfa, statut_paiement, date_vente")),
+        fetchAllRows<any>(() => supabase.from("ventes").select("auteur_id, manuscrit_id, quantite_vendue, montant_total_fcfa, droits_auteur_fcfa, statut_paiement, date_vente").eq("statut_annulation", "active")),
         fetchAllRows<any>(() => supabase.from("manuscrits").select("id, auteur, auteur_id")),
       ]);
       setVentes(v);
