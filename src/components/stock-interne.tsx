@@ -1349,17 +1349,19 @@ function EditStockDialog({
 /* ------------------------------------------------------------------ */
 
 function HistoryView({
-  stock, titre, auteur, mouvements,
+  stock, titre, auteur, mouvements, onChanged,
 }: {
-  stock: StockInterne; titre: string; auteur: string; mouvements: Mouvement[];
+  stock: StockInterne; titre: string; auteur: string; mouvements: Mouvement[]; onChanged?: () => void;
 }) {
+  const [cancelTarget, setCancelTarget] = useState<Mouvement | null>(null);
   const sorted = [...mouvements].sort((a, b) => new Date(a.created_at).getTime() - new Date(b.created_at).getTime());
+  const actifs = sorted.filter((m) => m.statut_annulation !== "annulee");
 
-  // Compute evolution: running availability over time
+  // Compute evolution: running availability over time (mouvements annulés exclus)
   const chartData = useMemo(() => {
     let avail = 0;
     const rows: { date: string; stock: number }[] = [];
-    sorted.forEach((m) => {
+    actifs.forEach((m) => {
       switch (m.type_mouvement) {
         case "impression":
         case "retour_librairie":
@@ -1375,7 +1377,23 @@ function HistoryView({
       rows.push({ date: format(new Date(m.created_at), "dd/MM"), stock: avail });
     });
     return rows;
-  }, [sorted]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [mouvements]);
+
+  const cancelMouvement = async (m: Mouvement, raison: string) => {
+    try {
+      const { error } = await (supabase as any).rpc("annuler_mouvement_stock", {
+        p_mouvement_id: m.id,
+        p_raison: raison,
+      });
+      if (error) throw error;
+      toast.success("Mouvement annulé — stock rétabli");
+      setCancelTarget(null);
+      onChanged?.();
+    } catch (e: any) {
+      toast.error(e?.message ?? "Erreur lors de l'annulation du mouvement");
+    }
+  };
 
   return (
     <div className="space-y-5">
@@ -1409,26 +1427,51 @@ function HistoryView({
       )}
 
       <div>
-        <h4 className="font-medium mb-3 text-sm">🕐 Mouvements ({sorted.length})</h4>
+        <h4 className="font-medium mb-3 text-sm">
+          🕐 Mouvements ({actifs.length}
+          {sorted.length !== actifs.length && ` · ${sorted.length - actifs.length} annulé(s)`})
+        </h4>
         {sorted.length === 0 ? (
           <p className="text-sm text-muted-foreground py-6 text-center">Aucun mouvement enregistré.</p>
         ) : (
           <ol className="space-y-2">
             {[...sorted].reverse().map((m) => {
               const meta = MOUVEMENT_LABEL[m.type_mouvement] ?? { icon: "•", label: m.type_mouvement, sign: "~", color: "" };
+              const annule = m.statut_annulation === "annulee";
+              const annulable = !annule && m.type_mouvement !== "vente_directe" && m.type_mouvement !== "ajustement";
               return (
-                <li key={m.id} className="flex items-start gap-3 p-3 rounded-lg border border-border bg-background/40">
+                <li key={m.id} className={cn(
+                  "flex items-start gap-3 p-3 rounded-lg border border-border bg-background/40",
+                  annule && "opacity-70 border-red-500/30",
+                )}>
                   <span className="text-xl">{meta.icon}</span>
                   <div className="flex-1 min-w-0">
-                    <p className="text-sm font-medium">{meta.label}</p>
-                    {m.destination && <p className="text-xs text-muted-foreground">→ {m.destination}</p>}
+                    <p className={cn("text-sm font-medium", annule && "line-through")}>{meta.label}</p>
+                    {m.destination && <p className={cn("text-xs text-muted-foreground", annule && "line-through")}>→ {m.destination}</p>}
                     {m.notes && <p className="text-xs text-muted-foreground italic">"{m.notes}"</p>}
                     <p className="text-xs text-muted-foreground mt-1">
                       {format(new Date(m.created_at), "dd MMM yyyy à HH:mm", { locale: fr })}
                     </p>
+                    {annule && (
+                      <p className="text-xs text-red-400 mt-1">
+                        Annulé{m.raison_annulation ? ` — ${m.raison_annulation}` : ""}
+                      </p>
+                    )}
                   </div>
-                  <span className={cn("font-semibold tabular-nums whitespace-nowrap", meta.color)}>
-                    {meta.sign === "~" ? "~" : meta.sign}{m.quantite}
+                  <span className="flex shrink-0 items-center gap-2">
+                    <span className={cn("font-semibold tabular-nums whitespace-nowrap", meta.color, annule && "line-through")}>
+                      {meta.sign === "~" ? "~" : meta.sign}{m.quantite}
+                    </span>
+                    {annulable && (
+                      <button
+                        type="button"
+                        title="Annuler ce mouvement"
+                        onClick={() => setCancelTarget(m)}
+                        className="rounded p-1 text-red-400 hover:bg-red-500/10"
+                      >
+                        <XCircle className="h-4 w-4" />
+                      </button>
+                    )}
                   </span>
                 </li>
               );
@@ -1436,9 +1479,26 @@ function HistoryView({
           </ol>
         )}
       </div>
+
+      <CancelReasonDialog
+        open={!!cancelTarget}
+        onOpenChange={(o) => !o && setCancelTarget(null)}
+        title="Annuler ce mouvement ?"
+        description="Le stock interne (et le dépôt concerné le cas échéant) sera rétabli à l'identique."
+        summary={cancelTarget ? (
+          <>
+            <p><span className="text-muted-foreground">Type :</span> {MOUVEMENT_LABEL[cancelTarget.type_mouvement]?.label ?? cancelTarget.type_mouvement}</p>
+            <p><span className="text-muted-foreground">Quantité :</span> {cancelTarget.quantite} exemplaire(s)</p>
+            {cancelTarget.destination && <p><span className="text-muted-foreground">Destination :</span> {cancelTarget.destination}</p>}
+            <p><span className="text-muted-foreground">Date :</span> {format(new Date(cancelTarget.created_at), "dd MMM yyyy", { locale: fr })}</p>
+          </>
+        ) : undefined}
+        onConfirm={(raison) => cancelTarget ? cancelMouvement(cancelTarget, raison) : undefined}
+      />
     </div>
   );
 }
+
 
 function MiniStat({ label, value, highlight }: { label: string; value: number; highlight?: boolean }) {
   return (
