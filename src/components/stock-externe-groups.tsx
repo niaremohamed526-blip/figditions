@@ -28,7 +28,7 @@ function BatchHistoryBadge({
 }: { manuscritId: string; librairieNom: string; onChanged?: () => void }) {
   const [batches, setBatches] = useState<DepotBatch[] | null>(null);
   const [open, setOpen] = useState(false);
-  const [busyId, setBusyId] = useState<string | null>(null);
+  const [cancelTarget, setCancelTarget] = useState<DepotBatch | null>(null);
 
   const fetchBatches = async () => {
     const { data } = await supabase
@@ -46,18 +46,11 @@ function BatchHistoryBadge({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [open, batches, manuscritId, librairieNom]);
 
-  const cancelBatch = async (b: DepotBatch) => {
-    const raison = window.prompt(
-      `Annuler ce dépôt de ${b.quantite_deposee} exemplaire(s) du ${fdate(b.date_depot)} ?\n\nMotif de l'annulation (obligatoire, 10 caractères min.) :`,
-      "",
-    );
-    if (raison === null) return;
-    if (raison.trim().length < 10) { toast.error("Motif trop court (10 caractères minimum)"); return; }
-    setBusyId(b.id);
+  const cancelBatch = async (b: DepotBatch, raison: string) => {
     try {
       const { data, error } = await (supabase as any).rpc("annuler_depot_batch", {
         p_batch_id: b.id,
-        p_raison: raison.trim(),
+        p_raison: raison,
       });
       if (error) throw error;
       toast.success(
@@ -65,14 +58,14 @@ function BatchHistoryBadge({
           ? `Dépôt annulé — ${data.quantite_reversee} ex. remis en stock interne`
           : `Dépôt annulé — ${data?.quantite_reversee ?? b.quantite_deposee} ex. retirés du dépôt`,
       );
+      setCancelTarget(null);
       await fetchBatches();
       onChanged?.();
     } catch (e: any) {
       toast.error(e?.message ?? "Erreur lors de l'annulation du dépôt");
-    } finally {
-      setBusyId(null);
     }
   };
+
 
   return (
     <Popover open={open} onOpenChange={setOpen}>
