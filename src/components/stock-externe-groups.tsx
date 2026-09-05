@@ -130,9 +130,25 @@ function BatchHistoryBadge({
           </ul>
         )}
       </PopoverContent>
+
+      <CancelReasonDialog
+        open={!!cancelTarget}
+        onOpenChange={(o) => !o && setCancelTarget(null)}
+        title="Annuler ce dépôt ?"
+        description="Les exemplaires seront retirés du dépôt (et remis en stock interne si le lot venait de l'entrepôt)."
+        summary={cancelTarget ? (
+          <>
+            <p><span className="text-muted-foreground">Librairie :</span> {cancelTarget.librairie_nom}</p>
+            <p><span className="text-muted-foreground">Date du dépôt :</span> {fdate(cancelTarget.date_depot)}</p>
+            <p><span className="text-muted-foreground">Quantité :</span> {cancelTarget.quantite_deposee} exemplaire(s)</p>
+          </>
+        ) : undefined}
+        onConfirm={(raison) => cancelTarget ? cancelBatch(cancelTarget, raison) : undefined}
+      />
     </Popover>
   );
 }
+
 
 const LS_KEY = "figditions:externe:collapsed";
 
