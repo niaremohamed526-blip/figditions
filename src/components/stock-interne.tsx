@@ -1576,7 +1576,7 @@ function DistributionAnalytics({
         </div>
         <div className="rounded-lg border border-border bg-background/40 p-4">
           <p className="text-xs uppercase tracking-wide text-muted-foreground">🔁 Mouvements enregistrés</p>
-          <p className="mt-1 text-2xl font-bold tabular-nums">{mouvements.length}</p>
+          <p className="mt-1 text-2xl font-bold tabular-nums">{mouvements.filter((m) => m.statut_annulation !== "annulee").length}</p>
         </div>
       </div>
 
