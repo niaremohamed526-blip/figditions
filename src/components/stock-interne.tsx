@@ -71,7 +71,10 @@ interface Mouvement {
   effectue_par: string | null;
   date_mouvement: string;
   created_at: string;
+  statut_annulation?: string | null;
+  raison_annulation?: string | null;
 }
+
 
 const MOUVEMENT_LABEL: Record<string, { icon: string; label: string; sign: "+" | "-" | "~"; color: string }> = {
   impression:          { icon: "📥", label: "Nouveau stock reçu",       sign: "+", color: "text-[#C8922A]" },
