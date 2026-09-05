@@ -536,7 +536,9 @@ export function StockInterneTab({ entrepriseId, userId }: { entrepriseId: string
               titre={mMap[historyFor.manuscrit_id]?.titre ?? "—"}
               auteur={mMap[historyFor.manuscrit_id]?.auteur ?? "—"}
               mouvements={mouvements.filter((m) => m.manuscrit_id === historyFor.manuscrit_id)}
+              onChanged={() => { setHistoryFor(null); load(); }}
             />
+
           )}
         </DialogContent>
       </Dialog>
