@@ -110,8 +110,8 @@ function BatchHistoryBadge({
                       <button
                         type="button"
                         title="Annuler ce dépôt"
-                        disabled={busyId === b.id}
-                        onClick={() => cancelBatch(b)}
+                        onClick={() => setCancelTarget(b)}
+
                         className="rounded p-0.5 text-red-400 hover:bg-red-500/10 disabled:opacity-50"
                       >
                         <XCircle className="h-3.5 w-3.5" />
