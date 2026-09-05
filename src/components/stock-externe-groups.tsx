@@ -9,6 +9,8 @@ import { groupByLibrairie, stockStatus, type ExterneStockRow } from "@/component
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
+import { CancelReasonDialog } from "@/components/cancel-reason-dialog";
+
 
 interface DepotBatch {
   id: string;
@@ -28,7 +30,7 @@ function BatchHistoryBadge({
 }: { manuscritId: string; librairieNom: string; onChanged?: () => void }) {
   const [batches, setBatches] = useState<DepotBatch[] | null>(null);
   const [open, setOpen] = useState(false);
-  const [busyId, setBusyId] = useState<string | null>(null);
+  const [cancelTarget, setCancelTarget] = useState<DepotBatch | null>(null);
 
   const fetchBatches = async () => {
     const { data } = await supabase
@@ -46,18 +48,11 @@ function BatchHistoryBadge({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [open, batches, manuscritId, librairieNom]);
 
-  const cancelBatch = async (b: DepotBatch) => {
-    const raison = window.prompt(
-      `Annuler ce dépôt de ${b.quantite_deposee} exemplaire(s) du ${fdate(b.date_depot)} ?\n\nMotif de l'annulation (obligatoire, 10 caractères min.) :`,
-      "",
-    );
-    if (raison === null) return;
-    if (raison.trim().length < 10) { toast.error("Motif trop court (10 caractères minimum)"); return; }
-    setBusyId(b.id);
+  const cancelBatch = async (b: DepotBatch, raison: string) => {
     try {
       const { data, error } = await (supabase as any).rpc("annuler_depot_batch", {
         p_batch_id: b.id,
-        p_raison: raison.trim(),
+        p_raison: raison,
       });
       if (error) throw error;
       toast.success(
@@ -65,14 +60,14 @@ function BatchHistoryBadge({
           ? `Dépôt annulé — ${data.quantite_reversee} ex. remis en stock interne`
           : `Dépôt annulé — ${data?.quantite_reversee ?? b.quantite_deposee} ex. retirés du dépôt`,
       );
+      setCancelTarget(null);
       await fetchBatches();
       onChanged?.();
     } catch (e: any) {
       toast.error(e?.message ?? "Erreur lors de l'annulation du dépôt");
-    } finally {
-      setBusyId(null);
     }
   };
+
 
   return (
     <Popover open={open} onOpenChange={setOpen}>
@@ -117,8 +112,8 @@ function BatchHistoryBadge({
                       <button
                         type="button"
                         title="Annuler ce dépôt"
-                        disabled={busyId === b.id}
-                        onClick={() => cancelBatch(b)}
+                        onClick={() => setCancelTarget(b)}
+
                         className="rounded p-0.5 text-red-400 hover:bg-red-500/10 disabled:opacity-50"
                       >
                         <XCircle className="h-3.5 w-3.5" />
@@ -137,9 +132,25 @@ function BatchHistoryBadge({
           </ul>
         )}
       </PopoverContent>
+
+      <CancelReasonDialog
+        open={!!cancelTarget}
+        onOpenChange={(o) => !o && setCancelTarget(null)}
+        title="Annuler ce dépôt ?"
+        description="Les exemplaires seront retirés du dépôt (et remis en stock interne si le lot venait de l'entrepôt)."
+        summary={cancelTarget ? (
+          <>
+            <p><span className="text-muted-foreground">Librairie :</span> {cancelTarget.librairie_nom}</p>
+            <p><span className="text-muted-foreground">Date du dépôt :</span> {fdate(cancelTarget.date_depot)}</p>
+            <p><span className="text-muted-foreground">Quantité :</span> {cancelTarget.quantite_deposee} exemplaire(s)</p>
+          </>
+        ) : undefined}
+        onConfirm={(raison) => cancelTarget ? cancelBatch(cancelTarget, raison) : undefined}
+      />
     </Popover>
   );
 }
+
 
 const LS_KEY = "figditions:externe:collapsed";
 
