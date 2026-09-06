@@ -55,6 +55,7 @@ interface StockInterne {
   quantite_transferee_librairies: number;
   quantite_vendue_directement: number;
   quantite_exposee_evenements: number;
+  quantite_donnee?: number;
   seuil_alerte: number;
   prix_vente_direct_fcfa: number;
   cout_unitaire_impression_fcfa: number;
@@ -69,6 +70,7 @@ interface Mouvement {
   type_mouvement: string;
   quantite: number;
   destination: string | null;
+  destinataire_don?: string | null;
   notes: string | null;
   effectue_par: string | null;
   date_mouvement: string;
@@ -85,6 +87,7 @@ const MOUVEMENT_LABEL: Record<string, { icon: string; label: string; sign: "+" |
   evenement:           { icon: "📚", label: "Événement / Exposition",   sign: "-", color: "text-blue-400" },
   retour_librairie:    { icon: "🔄", label: "Retour de dépôt",          sign: "+", color: "text-[#C8922A]" },
   perte:               { icon: "❌", label: "Perte / Dommage",          sign: "-", color: "text-red-400" },
+  don:                 { icon: "🎁", label: "Don / Donation",           sign: "-", color: "text-sky-400" },
   ajustement:          { icon: "🔧", label: "Ajustement manuel",        sign: "~", color: "text-yellow-400" },
 };
 
@@ -141,7 +144,7 @@ export function StockInterneTab({ entrepriseId, userId }: { entrepriseId: string
           manuscrit_id: m.id,
           quantite_imprimee: 0, quantite_disponible: 0, quantite_reservee: 0,
           quantite_transferee_librairies: 0, quantite_vendue_directement: 0,
-          quantite_exposee_evenements: 0, seuil_alerte: 10,
+          quantite_exposee_evenements: 0, quantite_donnee: 0, seuil_alerte: 10,
           prix_vente_direct_fcfa: 0, cout_unitaire_impression_fcfa: 0,
           emplacement: "Entrepôt principal", date_impression: null, created_at: null,
           titre: m.titre, auteur: m.auteur, origine: m.origine ?? "propre",
@@ -190,7 +193,8 @@ export function StockInterneTab({ entrepriseId, userId }: { entrepriseId: string
     const isForeign = (x: StockInterne) => mMap[x.manuscrit_id]?.origine === "etranger";
     const dispoPropre = list.filter((x) => !isForeign(x)).reduce((s, x) => s + x.quantite_disponible, 0);
     const dispoEtranger = list.filter(isForeign).reduce((s, x) => s + x.quantite_disponible, 0);
-    return { disponible, transferees, vendusDirect, revenueDirect, lowCount: low.length, low, valeurStock, dispoPropre, dispoEtranger };
+    const donnes = list.reduce((s, x) => s + Number(x.quantite_donnee || 0), 0);
+    return { disponible, transferees, vendusDirect, revenueDirect, lowCount: low.length, low, valeurStock, dispoPropre, dispoEtranger, donnes };
   }, [stocks, mMap]);
 
   const openMouvement = (manuscritId?: string) => {
@@ -213,6 +217,7 @@ export function StockInterneTab({ entrepriseId, userId }: { entrepriseId: string
               <th className="px-4 py-3 font-medium text-center hidden md:table-cell">Librairies</th>
               <th className="px-4 py-3 font-medium text-center hidden lg:table-cell">Ventes libres</th>
               <th className="px-4 py-3 font-medium text-center hidden lg:table-cell">Événements</th>
+              <th className="px-4 py-3 font-medium text-center hidden lg:table-cell">Dons</th>
               <th className="px-4 py-3 font-medium text-right hidden xl:table-cell">Prix direct</th>
               <th className="px-4 py-3 font-medium text-right hidden xl:table-cell">{foreign ? "Prix d'achat" : "Coût unit."}</th>
               <th className="px-4 py-3 font-medium text-right">Valeur stock</th>
@@ -258,6 +263,11 @@ export function StockInterneTab({ entrepriseId, userId }: { entrepriseId: string
                   <td className="px-4 py-3 text-center text-muted-foreground tabular-nums hidden md:table-cell">{r.quantite_transferee_librairies}</td>
                   <td className="px-4 py-3 text-center text-muted-foreground tabular-nums hidden lg:table-cell">{r.quantite_vendue_directement}</td>
                   <td className="px-4 py-3 text-center text-muted-foreground tabular-nums hidden lg:table-cell">{r.quantite_exposee_evenements}</td>
+                  <td className="px-4 py-3 text-center tabular-nums hidden lg:table-cell">
+                    {Number(r.quantite_donnee || 0) > 0
+                      ? <span className="inline-flex items-center gap-1 rounded-full border border-sky-500/30 bg-sky-500/10 px-2 h-6 text-xs font-semibold text-sky-400">🎁 {r.quantite_donnee}</span>
+                      : <span className="text-muted-foreground">0</span>}
+                  </td>
                   <td className="px-4 py-3 text-right text-muted-foreground tabular-nums hidden xl:table-cell">{fcfa(r.prix_vente_direct_fcfa)}</td>
                   <td className="px-4 py-3 text-right text-muted-foreground tabular-nums hidden xl:table-cell">{fcfa(r.cout_unitaire_impression_fcfa)}</td>
                   <td className="px-4 py-3 text-right font-semibold text-[color:var(--gold)] tabular-nums">{fcfa(valeur)}</td>
@@ -766,6 +776,7 @@ const MVT_TYPES: { value: string; label: string; hint?: string }[] = [
   { value: "vente_directe",       label: "🛍️ Vente libre",              hint: "Vente hors librairie (événement, particulier, en ligne…)" },
   { value: "evenement",           label: "📚 Événement / Exposition",   hint: "Exemplaires envoyés pour un événement ou exposition" },
   { value: "retour_librairie",    label: "🔄 Retour de dépôt",          hint: "Livres retournés depuis une librairie, un événement ou toute autre destination" },
+  { value: "don",                 label: "🎁 Don / Donation",           hint: "Exemplaires offerts (école, ONG, bibliothèque, personne…) — sans chiffre d'affaires ni droits d'auteur" },
   { value: "perte",               label: "❌ Perte / Dommage",          hint: "Exemplaires perdus ou endommagés" },
   { value: "ajustement",          label: "🔧 Ajustement manuel",        hint: "Correction manuelle du stock (note obligatoire)" },
 ];
@@ -806,6 +817,9 @@ function MouvementForm({
   const [etat, setEtat] = useState<"bon" | "endommage" | "mixte">("bon");
   const [qteBon, setQteBon] = useState(1);
   const [qteEndo, setQteEndo] = useState(0);
+  // Don state
+  const [donType, setDonType] = useState<string>("École / Établissement scolaire");
+  const [donNom, setDonNom] = useState("");
 
   const [loading, setLoading] = useState(false);
   const [confirmLoss, setConfirmLoss] = useState(false);
@@ -813,6 +827,7 @@ function MouvementForm({
   const currentStock = stocks.find((s) => s.manuscrit_id === form.manuscrit_id);
   const book = books.find((b) => b.id === form.manuscrit_id);
   const showDestination = ["transfert_librairie", "evenement"].includes(form.type);
+  const isDon = form.type === "don";
   const isRetour = form.type === "retour_librairie";
   const destinationPlaceholder = form.type === "transfert_librairie"
     ? "ex: Librairie Baobab"
