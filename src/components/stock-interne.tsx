@@ -817,6 +817,9 @@ function MouvementForm({
   const [etat, setEtat] = useState<"bon" | "endommage" | "mixte">("bon");
   const [qteBon, setQteBon] = useState(1);
   const [qteEndo, setQteEndo] = useState(0);
+  // Don state
+  const [donType, setDonType] = useState<string>("École / Établissement scolaire");
+  const [donNom, setDonNom] = useState("");
 
   const [loading, setLoading] = useState(false);
   const [confirmLoss, setConfirmLoss] = useState(false);
@@ -824,6 +827,7 @@ function MouvementForm({
   const currentStock = stocks.find((s) => s.manuscrit_id === form.manuscrit_id);
   const book = books.find((b) => b.id === form.manuscrit_id);
   const showDestination = ["transfert_librairie", "evenement"].includes(form.type);
+  const isDon = form.type === "don";
   const isRetour = form.type === "retour_librairie";
   const destinationPlaceholder = form.type === "transfert_librairie"
     ? "ex: Librairie Baobab"
