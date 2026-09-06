@@ -1056,6 +1056,7 @@ export type Database = {
           annulee_par: string | null
           created_at: string
           date_mouvement: string
+          destinataire_don: string | null
           destination: string | null
           effectue_par: string | null
           entreprise_id: string
@@ -1073,6 +1074,7 @@ export type Database = {
           annulee_par?: string | null
           created_at?: string
           date_mouvement?: string
+          destinataire_don?: string | null
           destination?: string | null
           effectue_par?: string | null
           entreprise_id: string
@@ -1090,6 +1092,7 @@ export type Database = {
           annulee_par?: string | null
           created_at?: string
           date_mouvement?: string
+          destinataire_don?: string | null
           destination?: string | null
           effectue_par?: string | null
           entreprise_id?: string
@@ -1622,6 +1625,7 @@ export type Database = {
           manuscrit_id: string
           prix_vente_direct_fcfa: number
           quantite_disponible: number
+          quantite_donnee: number
           quantite_exposee_evenements: number
           quantite_imprimee: number
           quantite_reservee: number
@@ -1640,6 +1644,7 @@ export type Database = {
           manuscrit_id: string
           prix_vente_direct_fcfa?: number
           quantite_disponible?: number
+          quantite_donnee?: number
           quantite_exposee_evenements?: number
           quantite_imprimee?: number
           quantite_reservee?: number
@@ -1658,6 +1663,7 @@ export type Database = {
           manuscrit_id?: string
           prix_vente_direct_fcfa?: number
           quantite_disponible?: number
+          quantite_donnee?: number
           quantite_exposee_evenements?: number
           quantite_imprimee?: number
           quantite_reservee?: number
@@ -1972,22 +1978,40 @@ export type Database = {
         Args: { p_notification_id: string; p_secret: string }
         Returns: Json
       }
-      record_stock_mouvement: {
-        Args: {
-          p_date?: string
-          p_destination?: string
-          p_manuscrit_id: string
-          p_notes?: string
-          p_prix_catalogue?: number
-          p_prix_unitaire?: number
-          p_provenance?: string
-          p_quantite: number
-          p_stock_externe_id?: string
-          p_type: string
-          p_valeur_absolue?: number
-        }
-        Returns: Json
-      }
+      record_stock_mouvement:
+        | {
+            Args: {
+              p_date?: string
+              p_destination?: string
+              p_manuscrit_id: string
+              p_notes?: string
+              p_prix_catalogue?: number
+              p_prix_unitaire?: number
+              p_provenance?: string
+              p_quantite: number
+              p_stock_externe_id?: string
+              p_type: string
+              p_valeur_absolue?: number
+            }
+            Returns: Json
+          }
+        | {
+            Args: {
+              p_date?: string
+              p_destinataire_don?: string
+              p_destination?: string
+              p_manuscrit_id: string
+              p_notes?: string
+              p_prix_catalogue?: number
+              p_prix_unitaire?: number
+              p_provenance?: string
+              p_quantite: number
+              p_stock_externe_id?: string
+              p_type: string
+              p_valeur_absolue?: number
+            }
+            Returns: Json
+          }
       redeem_promo_code: {
         Args: { p_code: string; p_entreprise_id: string }
         Returns: Json
