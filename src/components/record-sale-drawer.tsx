@@ -17,7 +17,7 @@ import { cn } from "@/lib/utils";
 import { UnsavedChangesModal } from "@/components/unsaved-changes-modal";
 import { useCloseGuard } from "@/hooks/useCloseGuard";
 
-interface Manuscrit { id: string; titre: string; auteur: string | null; auteur_id: string | null; statut: string; }
+interface Manuscrit { id: string; titre: string; auteur: string | null; auteur_id: string | null; statut: string; origine?: string | null; }
 interface StockRow {
   id: string; manuscrit_id: string;
   librairie_nom: string | null;
@@ -111,7 +111,7 @@ export function RecordSaleDrawer({
         // fetchAllRows : contourne la limite silencieuse de 1000 lignes de l'API —
         // sans elle, des dépôts entiers (ex. une librairie) n'apparaissaient jamais ici.
         const [ms, as, st, si] = await Promise.all([
-          fetchAllRows<Manuscrit>(() => (supabase as any).from("manuscrits").select("id, titre, auteur, auteur_id, statut").eq("statut", "publie")),
+          fetchAllRows<Manuscrit>(() => (supabase as any).from("manuscrits").select("id, titre, auteur, auteur_id, statut, origine").or("statut.eq.publie,origine.eq.etranger")),
           fetchAllRows<{ id: string; nom_complet: string }>(() => supabase.from("auteurs").select("id, nom_complet")),
           fetchAllRows<StockRow>(() => supabase.from("stocks").select("id, manuscrit_id, librairie_nom, exemplaires_restants, exemplaires_vendus, prix_unitaire_fcfa, taux_commission_pct, applique_droits_auteur")),
           fetchAllRows<StockInterneRow>(() => supabase.from("stock_interne").select("id, manuscrit_id, quantite_disponible, quantite_vendue_directement, prix_vente_direct_fcfa, seuil_alerte")),
@@ -142,8 +142,11 @@ export function RecordSaleDrawer({
 
   // contract royalty %
   const [royaltyPct, setRoyaltyPct] = useState<number>(10);
+  /** Livre étranger : aucun droit d'auteur ne s'applique. */
+  const isEtranger = currentManuscrit?.origine === "etranger";
   useEffect(() => {
     if (!manuscritId) { setRoyaltyPct(10); return; }
+    if (isEtranger) { setRoyaltyPct(0); return; }
     (async () => {
       const { data } = await supabase
         .from("contrats")
@@ -155,7 +158,7 @@ export function RecordSaleDrawer({
       const signed = (data ?? []).find((c: any) => c.statut === "signe");
       setRoyaltyPct(signed ? Number(signed.pourcentage_droits ?? 10) : 10);
     })();
-  }, [manuscritId]);
+  }, [manuscritId, isEtranger]);
 
   // auto-fill price when picking manuscrit or stock changes
   useEffect(() => {
@@ -300,8 +303,14 @@ export function RecordSaleDrawer({
                     <CommandInput placeholder="Titre ou auteur…" />
                     <CommandList>
                       <CommandEmpty>Aucun manuscrit publié.</CommandEmpty>
-                      <CommandGroup>
-                        {manuscrits.map((m) => {
+                      {(["propre", "etranger"] as const).map((grp) => {
+                        const list = manuscrits.filter((m) =>
+                          grp === "etranger" ? m.origine === "etranger" : m.origine !== "etranger",
+                        );
+                        if (list.length === 0) return null;
+                        return (
+                      <CommandGroup key={grp} heading={grp === "etranger" ? "🌍 Livres étrangers" : "📗 Nos productions"}>
+                        {list.map((m) => {
                           const aName = (m.auteur_id && auteurNames[m.auteur_id]) || m.auteur || "—";
                           const si = interne.find((s) => s.manuscrit_id === m.id);
                           const stockExtSum = stocks.filter((s) => s.manuscrit_id === m.id).reduce((a, x) => a + x.exemplaires_restants, 0);
@@ -317,6 +326,8 @@ export function RecordSaleDrawer({
                           );
                         })}
                       </CommandGroup>
+                        );
+                      })}
                     </CommandList>
                   </Command>
                 </PopoverContent>
@@ -509,7 +520,11 @@ export function RecordSaleDrawer({
                     <span className="font-mono text-lg font-bold text-[color:var(--gold)] tabular-nums">{fcfa(total)}</span>
                   </div>
                   <div className="border-t border-border my-1" />
-                  <Row label={`✍️ Droits auteur (${royaltyPct}%)`} value={fcfa(royalties)} mono />
+                  {isEtranger ? (
+                    <Row label="✍️ Droits auteur" value="Non applicable (livre étranger)" />
+                  ) : (
+                    <Row label={`✍️ Droits auteur (${royaltyPct}%)`} value={fcfa(royalties)} mono />
+                  )}
                   <div className="flex items-center justify-between text-sm">
                     <span>📦 Stock restant après vente</span>
                     <span className={cn("font-semibold tabular-nums", stockAfter < 5 ? "text-red-400" : "text-emerald-400")}>
