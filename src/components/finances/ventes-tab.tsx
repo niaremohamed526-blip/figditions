@@ -43,12 +43,16 @@ export function VentesTab({
   manuscrits,
   auteurs,
   onChanged,
+  hideDroits = false,
 }: {
   ventes: VenteRow[];
   manuscrits: ManuscritLite[];
   auteurs: AuteurLite[];
   onChanged: () => void;
+  /** Livres étrangers : la colonne « Droits d'auteur » ne s'applique pas. */
+  hideDroits?: boolean;
 }) {
+
   const [search, setSearch] = useState("");
   const [canalFilter, setCanalFilter] = useState("all");
   const [royFilter, setRoyFilter] = useState("all");
