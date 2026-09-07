@@ -4,8 +4,10 @@ import {
   Menu, X, BookOpen, Users, Package, Wallet, FileText, Calculator,
   Linkedin, Instagram, Facebook, Youtube, ArrowRight, Check,
   Factory, Shield, BarChart3, Store, Sparkles, Boxes, MousePointer2, WifiOff, Receipt, Printer,
+  Camera, Gift, History, Globe2, Layers, MessageSquare,
 } from "lucide-react";
 import { Logo } from "@/components/logo";
+import { MedmoWordmark } from "@/components/medmo-wordmark";
 import { useI18n } from "@/hooks/use-i18n";
 import { Button } from "@/components/ui/button";
 import {
@@ -21,6 +23,7 @@ import { AdminAccessGate } from "@/components/admin-access-gate";
 import { PLANS } from "@/config/plans";
 const figuiraLogo = "/assets/figuira-logo.png";
 const heroAsset = { url: "/assets/hero-figditions.png" };
+
 
 const FAQS = [
   {
