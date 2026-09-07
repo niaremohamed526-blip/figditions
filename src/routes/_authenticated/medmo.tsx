@@ -1,7 +1,7 @@
 import { createFileRoute, Outlet, Link, useRouterState } from "@tanstack/react-router";
 import { Plus, Trash2, MessageSquareText } from "lucide-react";
 import { motion } from "motion/react";
-import { lazy, Suspense } from "react";
+import { Suspense } from "react";
 import { useAuth, useProfile } from "@/hooks/use-auth";
 import { useMedmoThreads } from "@/hooks/use-medmo-threads";
 import { cn } from "@/lib/utils";

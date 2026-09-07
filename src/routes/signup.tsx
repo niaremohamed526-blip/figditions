@@ -1,5 +1,5 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
-import { useState, lazy, Suspense, useMemo, useEffect, type FormEvent } from "react";
+import { useState, Suspense, useMemo, useEffect, type FormEvent } from "react";
 import { lazyWithRetry } from "@/lib/lazy-retry";
 import { supabase } from "@/integrations/supabase/client";
 import { Label } from "@/components/ui/label";
