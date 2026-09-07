@@ -273,6 +273,19 @@ function ManuscritsPage() {
           </div>
         )}
       </div>
+        </TabsContent>
+
+        {/* ==================== LIVRES ÉTRANGERS ==================== */}
+        <TabsContent value="etrangers">
+          <EtrangersTab
+            items={etrangers}
+            entrepriseId={profile?.entreprise_id ?? null}
+            onChanged={load}
+          />
+        </TabsContent>
+      </Tabs>
+
+
 
       <Sheet open={sheetOpen} onOpenChange={setSheetOpen}>
         <SheetContent side="right" className="bg-card border-border w-full sm:max-w-md">
