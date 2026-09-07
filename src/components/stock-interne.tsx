@@ -1618,6 +1618,7 @@ function DistributionAnalytics({
           librairies: Math.round((s.quantite_transferee_librairies / total) * 100),
           direct: Math.round((s.quantite_vendue_directement / total) * 100),
           evenements: Math.round((s.quantite_exposee_evenements / total) * 100),
+          dons: Math.round((Number(s.quantite_donnee || 0) / total) * 100),
           restant: Math.round((s.quantite_disponible / total) * 100),
         };
       })
