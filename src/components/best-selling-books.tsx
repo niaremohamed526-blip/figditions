@@ -7,6 +7,8 @@ export interface BookRanking {
   titre: string;
   auteur: string;
   genre?: string | null;
+  /** Livre distribué pour une autre maison d'édition (aucun droit d'auteur). */
+  etranger?: boolean;
   copies: number;
   revenue: number;
 }
@@ -48,6 +50,11 @@ export function BestSellingBooks({
             <div className="flex-1 min-w-0">
               <div className="flex items-center gap-2 flex-wrap">
                 <p className="font-medium truncate">{b.titre}</p>
+                {b.etranger && (
+                  <span className="inline-flex items-center rounded-full border px-2 py-0.5 text-[10px] font-semibold" style={{ borderColor: "#6B9BD166", background: "#6B9BD11A", color: "#6B9BD1" }}>
+                    🌍 Étranger
+                  </span>
+                )}
                 {b.genre && (
                   <span className="inline-flex items-center rounded-full border border-border bg-muted/30 px-2 py-0.5 text-[10px] uppercase tracking-wide text-muted-foreground">
                     {b.genre}
