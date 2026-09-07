@@ -1443,6 +1443,7 @@ function HistoryView({
         case "transfert_librairie":
         case "vente_directe":
         case "evenement":
+        case "don":
         case "perte":
           avail -= m.quantite; break;
         case "ajustement":
