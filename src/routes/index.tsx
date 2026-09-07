@@ -4,8 +4,10 @@ import {
   Menu, X, BookOpen, Users, Package, Wallet, FileText, Calculator,
   Linkedin, Instagram, Facebook, Youtube, ArrowRight, Check,
   Factory, Shield, BarChart3, Store, Sparkles, Boxes, MousePointer2, WifiOff, Receipt, Printer,
+  Camera, Gift, History, Globe2, Layers, MessageSquare,
 } from "lucide-react";
 import { Logo } from "@/components/logo";
+import { MedmoWordmark } from "@/components/medmo-wordmark";
 import { useI18n } from "@/hooks/use-i18n";
 import { Button } from "@/components/ui/button";
 import {
@@ -21,6 +23,7 @@ import { AdminAccessGate } from "@/components/admin-access-gate";
 import { PLANS } from "@/config/plans";
 const figuiraLogo = "/assets/figuira-logo.png";
 const heroAsset = { url: "/assets/hero-figditions.png" };
+
 
 const FAQS = [
   {
@@ -45,17 +48,30 @@ const FAQS = [
   },
   {
     question: "J'ai déjà tout dans des cahiers. Comment je migre ?",
-    answer: "Nous vous accompagnons. Envoyez-nous vos fichiers existants, sous n'importe quel format, et nous importons gratuitement votre catalogue et vos stocks lors de votre mise en route.",
+    answer: "Nous vous accompagnons. Envoyez-nous vos fichiers existants, sous n'importe quel format, et nous importons gratuitement votre catalogue et vos stocks lors de votre mise en route. Vous pouvez aussi photographier une page de cahier de ventes : Pr. MEDMO la lit et vous propose les ventes à enregistrer, que vous validez d'un clic.",
+  },
+  {
+    question: "Qu'est-ce que Pr. MEDMO ?",
+    answer: "C'est l'assistant intelligent intégré à FIGDITIONS. Il répond à vos questions sur vos données (ventes, stocks, droits d'auteur), lit vos photos de cahiers et vos documents, et peut préparer des actions dans la plateforme. Rien n'est enregistré sans votre validation, et il vous signale toujours quand un titre ou une librairie ressemble à un autre pour éviter les doublons.",
+  },
+  {
+    question: "Puis-je annuler une opération enregistrée par erreur ?",
+    answer: "Oui. Une vente, un mouvement de stock ou un dépôt en librairie peut être annulé avec un motif obligatoire. Les quantités sont remises comme avant, l'opération reste visible barrée avec sa raison, et elle est retirée de tous les totaux et rapports. Tout est conservé dans un historique des annulations.",
+  },
+  {
+    question: "Je vends aussi des livres que je n'ai pas édités. C'est prévu ?",
+    answer: "Oui. Les livres étrangers (ouvrages d'autres éditeurs que vous distribuez) ont leur propre section, distincte de vos productions, aussi bien dans le catalogue que dans le stock interne. Vos chiffres restent séparés et lisibles.",
   },
   {
     question: "Combien de personnes de mon équipe peuvent utiliser la plateforme ?",
-    answer: "Le plan Starter est prévu pour un seul utilisateur, le plan Pro pour trois, et le plan Business n'a aucune limite. Chaque membre reçoit un rôle qui détermine ce qu'il peut voir et modifier.",
+    answer: "Le plan Starter est prévu pour un seul utilisateur, le plan Pro pour trois, et le plan Business n'a aucune limite. Chaque membre reçoit un rôle qui détermine ce qu'il peut voir et modifier. Les invitations se font par lien sécurisé.",
   },
   {
     question: "Puis-je essayer avant de payer ?",
     answer: "Oui. Le plan Starter est gratuit et sans limite de durée : vous pouvez gérer jusqu'à 5 manuscrits, vos auteurs et votre stock interne sans jamais payer. Vous passez à un plan supérieur uniquement quand vous en avez besoin.",
   },
 ];
+
 
 const OG_IMAGE = "https://figditions.xyz/assets/og-figditions.png";
 
@@ -64,11 +80,11 @@ export const Route = createFileRoute("/")({
   head: () => ({
     meta: [
       { title: "FIGDITIONS — Plateforme éditoriale africaine" },
-      { name: "description", content: "Gérez manuscrits, stocks, contrats et finances depuis un tableau de bord unique. Conçu pour les maisons d'édition d'Afrique de l'Ouest." },
+      { name: "description", content: "Manuscrits, stocks, dépôts en librairie, contrats et finances en un seul endroit, avec l'assistant Pr. MEDMO. Conçu pour les maisons d'édition d'Afrique de l'Ouest." },
       { property: "og:title", content: "FIGDITIONS — Plateforme éditoriale africaine" },
-      { property: "og:description", content: "Gérez manuscrits, stocks, contrats et finances depuis un tableau de bord unique. Conçu pour les maisons d'édition d'Afrique de l'Ouest." },
+      { property: "og:description", content: "Manuscrits, stocks, dépôts en librairie, contrats et finances en un seul endroit, avec l'assistant Pr. MEDMO. Conçu pour les maisons d'édition d'Afrique de l'Ouest." },
       { name: "twitter:title", content: "FIGDITIONS — Plateforme éditoriale africaine" },
-      { name: "twitter:description", content: "Gérez manuscrits, stocks, contrats et finances depuis un tableau de bord unique. Conçu pour les maisons d'édition d'Afrique de l'Ouest." },
+      { name: "twitter:description", content: "Manuscrits, stocks, dépôts en librairie, contrats et finances en un seul endroit, avec l'assistant Pr. MEDMO. Conçu pour les maisons d'édition d'Afrique de l'Ouest." },
       { property: "og:image", content: OG_IMAGE },
       { name: "twitter:image", content: OG_IMAGE },
       { property: "og:url", content: "https://figditions.xyz/" },
@@ -125,8 +141,10 @@ function Landing() {
       <Navbar />
       <Hero />
       <Screenshots />
+      <MedmoSection />
       <Features />
       <Partners />
+
       <HowItWorks />
       <Pricing />
       <Faq />
@@ -153,6 +171,7 @@ function Navbar() {
   const navLinks = [
     { label: t("Accueil", "Home"), href: "#top" },
     { label: t("Fonctionnalités", "Features"), href: "#features" },
+    { label: t("Assistant", "Assistant"), href: "#medmo" },
     { label: t("Tarifs", "Pricing"), href: "#pricing" },
     { label: t("Contact", "Contact"), href: "/a-propos#contact" },
   ];
@@ -264,8 +283,8 @@ function Hero() {
           </h1>
           <p className="mt-4 text-[18px] leading-[1.5] max-w-[380px]" style={{ color: "rgba(184,168,152,0.9)" }}>
             {t(
-              "La plateforme centrale pour les éditeurs ouest-africains",
-              "The central platform for West African publishers"
+              "La plateforme centrale des éditeurs ouest-africains : manuscrits, stocks, librairies, finances — et un assistant qui travaille avec vous.",
+              "The central platform for West African publishers: manuscripts, stock, bookstores, finances — and an assistant that works with you."
             )}
           </p>
 
@@ -450,20 +469,28 @@ function Features() {
   const bordereauxFr = "Générez vos bordereaux de dépôt et de vente en quelques clics, prêts à signer avec vos libraires.";
   const imprimeriesFr = "Accédez aux tarifs et contacts des imprimeries de Bamako et de la sous-région pour comparer avant d'imprimer.";
   const items = [
+    { icon: MessageSquare, fr: "Assistant Pr. MEDMO", en: "Pr. MEDMO assistant", dfr: "Posez vos questions en français, envoyez une photo ou un document : l'assistant analyse vos données et prépare les actions que vous validez.", den: "Ask in plain French, send a photo or a document: the assistant reads your data and prepares actions you approve." },
+    { icon: Camera, fr: "Photo de cahier → ventes", en: "Notebook photo → sales", dfr: "Photographiez une page de cahier de ventes : les titres, quantités et prix sont reconnus puis proposés à l'enregistrement.", den: "Photograph a sales notebook page: titles, quantities and prices are recognized then proposed for logging." },
     { icon: WifiOff, fr: "Fonctionne hors-ligne", en: "Fonctionne hors-ligne", dfr: offlineFr, den: offlineFr },
     { icon: BookOpen, fr: "Gestion des manuscrits", en: "Manuscript management", dfr: "Suivez chaque livre à travers 10 étapes éditoriales, de la réception à la publication", den: "Track every book through 10 editorial stages, from reception to publication" },
+    { icon: Globe2, fr: "Livres étrangers", en: "Foreign books", dfr: "Séparez clairement vos propres productions des ouvrages d'autres éditeurs que vous distribuez, au catalogue comme en stock.", den: "Clearly separate your own titles from other publishers' books you distribute, in catalogue and stock." },
     { icon: Users, fr: "Gestion des auteurs", en: "Author management", dfr: "Centralisez les informations, contrats et droits de vos auteurs en un seul endroit", den: "Centralize information, contracts and royalties of your authors in one place" },
     { icon: Factory, fr: "Stock interne", en: "Internal stock", dfr: "Gérez votre entrepôt, suivez chaque exemplaire imprimé et automatisez les mouvements de stock", den: "Manage your warehouse, track every printed copy and automate stock movements" },
     { icon: Store, fr: "Stock externe", en: "External stock", dfr: "Suivez vos dépôts dans toutes les librairies de Bamako avec alertes de stock bas", den: "Track your deposits across all Bamako bookstores with low-stock alerts" },
-    { icon: Wallet, fr: "Finances & Royalties", en: "Finances & Royalties", dfr: "Calculez et suivez les droits d'auteur automatiquement en FCFA", den: "Calculate and track author royalties automatically in FCFA" },
+    { icon: Layers, fr: "Dépôts multiples par librairie", en: "Multi-batch deposits", dfr: "Ajoutez un nouveau dépôt sans écraser l'ancien : chaque lot garde sa date, sa quantité et son historique.", den: "Add a new deposit without erasing the previous one: each batch keeps its date, quantity and history." },
+    { icon: Gift, fr: "Dons et exemplaires offerts", en: "Donations", dfr: "Enregistrez les livres offerts aux écoles, ONG ou bibliothèques : le stock est déduit, sans revenu ni droits d'auteur.", den: "Log books given to schools, NGOs or libraries: stock is deducted, with no revenue or royalties." },
+    { icon: History, fr: "Annulation traçable", en: "Traceable cancellation", dfr: "Annulez une vente, un mouvement ou un dépôt avec motif obligatoire : tout est rétabli et conservé dans l'historique.", den: "Cancel a sale, movement or deposit with a mandatory reason: everything is reversed and kept in the log." },
+    { icon: Wallet, fr: "Finances détaillées & Royalties", en: "Detailed finances & royalties", dfr: "Journal, rentabilité par titre, ventes, dépenses et droits d'auteur en FCFA, avec reçus imprimables.", den: "Ledger, per-title profitability, sales, expenses and royalties in FCFA, with printable receipts." },
     { icon: FileText, fr: "Contrats & Droits", en: "Contracts & Rights", dfr: "Générez des contrats d'édition professionnels conformes au droit malien en quelques clics", den: "Generate professional publishing contracts compliant with Malian law in a few clicks" },
     { icon: Calculator, fr: "Estimateur de coûts", en: "Cost estimator", dfr: "Calculez le coût d'impression exact en FCFA avec recommandation offset vs numérique", den: "Calculate exact printing costs in FCFA with offset vs digital recommendation" },
     { icon: Shield, fr: "Partage PDF sécurisé", en: "Secure PDF sharing", dfr: "Partagez vos manuscrits avec des filigranes personnalisés et un nombre de vues limité", den: "Share manuscripts with custom watermarks and limited view counts" },
     { icon: Sparkles, fr: "Conversion ePub & MOBI", en: "ePub & MOBI conversion", dfr: "Convertissez vos manuscrits en ebooks prêts pour Amazon Kindle, Apple Books et Google Play Books", den: "Convert your manuscripts into ebooks ready for Amazon Kindle, Apple Books and Google Play Books" },
+    { icon: Package, fr: "Import Excel & vente rapide", en: "Excel import & quick sale", dfr: "Importez votre catalogue et vos stocks depuis un fichier Excel, puis enregistrez les ventes en mode caisse rapide.", den: "Import your catalogue and stock from Excel, then log sales in fast checkout mode." },
     { icon: BarChart3, fr: "Analytiques avancées", en: "Advanced analytics", dfr: "Tableaux de bord complets pour piloter votre maison d'édition avec des données en temps réel", den: "Complete dashboards to manage your publishing house with real-time data" },
     { icon: Receipt, fr: "Bordereaux de vente", en: "Bordereaux de vente", dfr: bordereauxFr, den: bordereauxFr },
     { icon: Printer, fr: "Répertoire des imprimeries", en: "Répertoire des imprimeries", dfr: imprimeriesFr, den: imprimeriesFr },
   ];
+
   return (
     <section id="features" className="py-24 px-4 bg-background relative">
       <div className="max-w-7xl mx-auto">
@@ -491,7 +518,61 @@ function Features() {
   );
 }
 
+function MedmoSection() {
+  const points = [
+    {
+      icon: MessageSquare,
+      title: "Posez vos questions",
+      text: "« Combien d'exemplaires reste-t-il à la Librairie Nouvel Horizon ? » — la réponse vient de vos données réelles, en français.",
+    },
+    {
+      icon: Camera,
+      title: "Photographiez votre cahier",
+      text: "Une page de cahier de ventes manuscrite est lue, les titres reconnus dans votre catalogue, et les ventes proposées à l'enregistrement.",
+    },
+    {
+      icon: Check,
+      title: "Vous gardez le dernier mot",
+      text: "Aucune écriture sans votre validation. En cas de doute sur un titre ou une librairie, l'assistant demande confirmation au lieu de créer un doublon.",
+    },
+  ];
+  return (
+    <section id="medmo" className="py-24 px-4 bg-background">
+      <div className="max-w-6xl mx-auto">
+        <div className="text-center mb-14">
+          <span className="inline-flex items-center gap-2 text-xs font-semibold px-3 py-1 rounded-full bg-primary/15 text-primary border border-primary/30">
+            <Sparkles className="h-3.5 w-3.5" /> Assistant intégré
+          </span>
+          <h2 className="mt-4 text-3xl md:text-5xl font-bold tracking-tight">
+            <MedmoWordmark nameClassName="text-3xl md:text-5xl" prClassName="text-3xl md:text-5xl" />
+            <span className="block mt-2 text-xl md:text-2xl font-semibold text-white/90">
+              votre assistant d'édition, jour et nuit
+            </span>
+          </h2>
+          <p className="mt-4 text-muted-foreground max-w-2xl mx-auto">
+            Il connaît votre catalogue, vos stocks et vos chiffres. Il lit vos photos et vos documents, et prépare le travail à votre place — vous validez.
+          </p>
+        </div>
+        <div className="grid md:grid-cols-3 gap-5">
+          {points.map((p, i) => (
+            <RevealOnScroll key={p.title} delay={i * 100}>
+              <div className="h-full rounded-2xl border border-border bg-[#1A1208] p-6">
+                <div className="h-12 w-12 rounded-xl bg-primary/15 text-primary flex items-center justify-center">
+                  <p.icon className="h-6 w-6" />
+                </div>
+                <h3 className="mt-5 font-semibold text-lg">{p.title}</h3>
+                <p className="mt-2 text-sm text-muted-foreground leading-relaxed">{p.text}</p>
+              </div>
+            </RevealOnScroll>
+          ))}
+        </div>
+      </div>
+    </section>
+  );
+}
+
 function Partners() {
+
   const { t } = useI18n();
   const socials = [
     { Icon: Facebook, href: "https://www.facebook.com/figuira", label: "Facebook" },
