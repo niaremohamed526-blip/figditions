@@ -781,6 +781,16 @@ const MVT_TYPES: { value: string; label: string; hint?: string }[] = [
   { value: "ajustement",          label: "🔧 Ajustement manuel",        hint: "Correction manuelle du stock (note obligatoire)" },
 ];
 
+const DON_TYPES: string[] = [
+  "École / Établissement scolaire",
+  "Bibliothèque",
+  "ONG / Association",
+  "Institution publique",
+  "Événement / Salon",
+  "Personne physique",
+  "Autre",
+];
+
 type ProvenanceKey = "librairie" | "evenement" | "exposition" | "scolaire" | "institution" | "autre";
 const PROVENANCE_OPTIONS: { value: ProvenanceKey; label: string }[] = [
   { value: "librairie",   label: "🏪 Librairie partenaire" },
@@ -925,14 +935,24 @@ function MouvementForm({
       return;
     }
 
+    // ------- DON : validations spécifiques -------
+    const destinataireDon = isDon ? `${donType} — ${donNom.trim()}` : null;
+    if (isDon) {
+      if (!donNom.trim()) return toast.error("Indiquez le destinataire du don");
+      if (form.quantite > currentStock.quantite_disponible) {
+        return toast.error(`Stock insuffisant : ${currentStock.quantite_disponible} exemplaire(s) disponibles, don de ${form.quantite} demandé.`);
+      }
+    }
+
     // ------- OTHER MOVEMENTS -------
     setLoading(true);
     const { data, error } = await callRpc({
       p_type: form.type,
       p_quantite: form.quantite,
-      p_destination: form.destination || null,
+      p_destination: isDon ? destinataireDon : (form.destination || null),
       p_notes: form.notes || null,
       p_valeur_absolue: form.type === "ajustement" ? Math.max(0, form.quantite) : null,
+      ...(isDon ? { p_destinataire_don: destinataireDon } : {}),
     });
     if (error) { setLoading(false); return toast.error(error.message); }
 
@@ -940,7 +960,12 @@ function MouvementForm({
     const res = (data ?? {}) as { quantite_disponible?: number; seuil_alerte?: number };
     const newAvail = res.quantite_disponible ?? currentStock.quantite_disponible;
     const seuil = res.seuil_alerte ?? currentStock.seuil_alerte;
-    if (newAvail <= seuil) {
+    if (isDon) {
+      toast.success(`🎁 Don enregistré : ${form.quantite} exemplaire(s) offert(s) à ${donNom.trim()}`);
+      if (newAvail <= seuil) {
+        toast.warning(`⚠️ Stock bas pour ${book?.titre ?? "ce livre"} : seulement ${newAvail} exemplaires restants après ce don`);
+      }
+    } else if (newAvail <= seuil) {
       toast.error(`⚠️ Attention: Le stock de ${book?.titre ?? "ce livre"} est bas (${newAvail} exemplaires restants)`);
     } else if (form.type === "vente_directe") {
       toast.success("Vente libre enregistrée");
@@ -1046,14 +1071,44 @@ function MouvementForm({
           </>
         )}
 
+        {/* Don / Donation */}
+        {isDon && (
+          <>
+            <div className="space-y-2">
+              <Label>Type de bénéficiaire <span className="text-red-400">*</span></Label>
+              <Select value={donType} onValueChange={setDonType}>
+                <SelectTrigger><SelectValue /></SelectTrigger>
+                <SelectContent>
+                  {DON_TYPES.map((t) => <SelectItem key={t} value={t}>{t}</SelectItem>)}
+                </SelectContent>
+              </Select>
+            </div>
+            <div className="space-y-2">
+              <Label>Destinataire du don <span className="text-red-400">*</span></Label>
+              <Input value={donNom} onChange={(e) => setDonNom(e.target.value)}
+                placeholder="ex: École primaire de Sikasso, ONG Educ'Afrique, Bibliothèque municipale de Ségou…" />
+            </div>
+          </>
+        )}
+
         <div className="space-y-2">
-          <Label>{form.type === "ajustement" ? "Nouveau stock disponible" : isRetour ? "Quantité retournée" : "Quantité"}</Label>
+          <Label>{form.type === "ajustement" ? "Nouveau stock disponible" : isRetour ? "Quantité retournée" : isDon ? "Quantité offerte" : "Quantité"}</Label>
           <Input type="number" min={form.type === "ajustement" ? 0 : 1} required value={form.quantite}
             onChange={(e) => setForm({ ...form, quantite: Number(e.target.value) })} />
           {isRetour && form.quantite > maxRetour && (
             <p className="text-xs text-red-400">Dépasse le maximum retournable ({maxRetour})</p>
           )}
+          {isDon && currentStock && form.quantite > currentStock.quantite_disponible && (
+            <p className="text-xs text-red-400">Stock insuffisant : {currentStock.quantite_disponible} exemplaire(s) disponibles.</p>
+          )}
         </div>
+
+        {isDon && (
+          <p className="rounded-r-lg border-l-[3px] border-[#C8922A] bg-[rgba(200,146,42,0.08)] px-3 py-2 text-xs text-muted-foreground">
+            💡 Ce mouvement ne génère aucun chiffre d'affaires ni droits d'auteur — il s'agit d'un don sans contrepartie financière.
+          </p>
+        )}
+
 
         {/* État des livres retournés */}
         {isRetour && (
@@ -1388,6 +1443,7 @@ function HistoryView({
         case "transfert_librairie":
         case "vente_directe":
         case "evenement":
+        case "don":
         case "perte":
           avail -= m.quantite; break;
         case "ajustement":
@@ -1420,11 +1476,12 @@ function HistoryView({
         <p className="text-lg font-semibold">{titre}</p>
         <p className="text-sm text-muted-foreground">{auteur}</p>
       </div>
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-2">
+      <div className="grid grid-cols-2 md:grid-cols-5 gap-2">
         <MiniStat label="Total imprimé" value={stock.quantite_imprimee} />
         <MiniStat label="Disponible" value={stock.quantite_disponible} highlight />
         <MiniStat label="Librairies" value={stock.quantite_transferee_librairies} />
         <MiniStat label="Ventes libres" value={stock.quantite_vendue_directement} />
+        <MiniStat label="🎁 Dons" value={Number(stock.quantite_donnee || 0)} />
       </div>
 
       {chartData.length > 1 && (
@@ -1466,7 +1523,16 @@ function HistoryView({
                   <span className="text-xl">{meta.icon}</span>
                   <div className="flex-1 min-w-0">
                     <p className={cn("text-sm font-medium", annule && "line-through")}>{meta.label}</p>
-                    {m.destination && <p className={cn("text-xs text-muted-foreground", annule && "line-through")}>→ {m.destination}</p>}
+                    {m.type_mouvement === "don" ? (
+                      <>
+                        <span className="mt-0.5 inline-flex items-center rounded-full bg-[#6B9BD1]/15 px-2 py-0.5 text-[10px] font-semibold text-[#6B9BD1]">Don</span>
+                        <p className={cn("text-xs text-muted-foreground", annule && "line-through")}>
+                          Destinataire : {m.destinataire_don || m.destination || "—"}
+                        </p>
+                      </>
+                    ) : (
+                      m.destination && <p className={cn("text-xs text-muted-foreground", annule && "line-through")}>→ {m.destination}</p>
+                    )}
                     {m.notes && <p className="text-xs text-muted-foreground italic">"{m.notes}"</p>}
                     <p className="text-xs text-muted-foreground mt-1">
                       {format(new Date(m.created_at), "dd MMM yyyy à HH:mm", { locale: fr })}
@@ -1508,7 +1574,9 @@ function HistoryView({
           <>
             <p><span className="text-muted-foreground">Type :</span> {MOUVEMENT_LABEL[cancelTarget.type_mouvement]?.label ?? cancelTarget.type_mouvement}</p>
             <p><span className="text-muted-foreground">Quantité :</span> {cancelTarget.quantite} exemplaire(s)</p>
-            {cancelTarget.destination && <p><span className="text-muted-foreground">Destination :</span> {cancelTarget.destination}</p>}
+            {cancelTarget.type_mouvement === "don"
+              ? <p><span className="text-muted-foreground">Don initialement fait à :</span> {cancelTarget.destinataire_don || cancelTarget.destination || "—"}</p>
+              : cancelTarget.destination && <p><span className="text-muted-foreground">Destination :</span> {cancelTarget.destination}</p>}
             <p><span className="text-muted-foreground">Date :</span> {format(new Date(cancelTarget.created_at), "dd MMM yyyy", { locale: fr })}</p>
           </>
         ) : undefined}
@@ -1550,6 +1618,7 @@ function DistributionAnalytics({
           librairies: Math.round((s.quantite_transferee_librairies / total) * 100),
           direct: Math.round((s.quantite_vendue_directement / total) * 100),
           evenements: Math.round((s.quantite_exposee_evenements / total) * 100),
+          dons: Math.round((Number(s.quantite_donnee || 0) / total) * 100),
           restant: Math.round((s.quantite_disponible / total) * 100),
         };
       })
@@ -1580,7 +1649,7 @@ function DistributionAnalytics({
     <div className="rounded-xl border border-border bg-card p-5 space-y-5">
       <h2 className="font-semibold flex items-center gap-2"><BookOpen className="h-4 w-4 text-primary" /> 📊 Analytiques stock interne</h2>
 
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+      <div className="grid grid-cols-1 md:grid-cols-4 gap-3">
         <div className="rounded-lg border border-border bg-background/40 p-4">
           <p className="text-xs uppercase tracking-wide text-muted-foreground">💰 Valeur totale du stock</p>
           <p className="mt-1 text-2xl font-bold text-[color:var(--gold)] tabular-nums">{fcfa(valeurStock)}</p>
@@ -1588,6 +1657,13 @@ function DistributionAnalytics({
         <div className="rounded-lg border border-border bg-background/40 p-4">
           <p className="text-xs uppercase tracking-wide text-muted-foreground">📦 Livres en gestion</p>
           <p className="mt-1 text-2xl font-bold tabular-nums">{stocks.length}</p>
+        </div>
+        <div className="rounded-lg border border-border bg-background/40 p-4">
+          <p className="text-xs uppercase tracking-wide text-muted-foreground">🎁 Total donné</p>
+          <p className="mt-1 text-2xl font-bold tabular-nums text-[#6B9BD1]">
+            {stocks.reduce((s, x) => s + Number(x.quantite_donnee || 0), 0)}
+          </p>
+          <p className="text-[10px] text-muted-foreground">exemplaires · aucun impact financier</p>
         </div>
         <div className="rounded-lg border border-border bg-background/40 p-4">
           <p className="text-xs uppercase tracking-wide text-muted-foreground">🔁 Mouvements enregistrés</p>
@@ -1612,6 +1688,7 @@ function DistributionAnalytics({
                   <Bar dataKey="librairies" name="Librairies" stackId="d" fill="#3B82F6" />
                   <Bar dataKey="direct"     name="Vente libre" stackId="d" fill="#E8B84B" />
                   <Bar dataKey="evenements" name="Événements" stackId="d" fill="#A855F7" />
+                  <Bar dataKey="dons"       name="Dons" stackId="d" fill="#6B9BD1" />
                   <Bar dataKey="restant"    name="Restant" stackId="d" fill="#C8922A" />
                 </BarChart>
               </ResponsiveContainer>
