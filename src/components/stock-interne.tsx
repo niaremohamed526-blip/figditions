@@ -1476,11 +1476,12 @@ function HistoryView({
         <p className="text-lg font-semibold">{titre}</p>
         <p className="text-sm text-muted-foreground">{auteur}</p>
       </div>
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-2">
+      <div className="grid grid-cols-2 md:grid-cols-5 gap-2">
         <MiniStat label="Total imprimé" value={stock.quantite_imprimee} />
         <MiniStat label="Disponible" value={stock.quantite_disponible} highlight />
         <MiniStat label="Librairies" value={stock.quantite_transferee_librairies} />
         <MiniStat label="Ventes libres" value={stock.quantite_vendue_directement} />
+        <MiniStat label="🎁 Dons" value={Number(stock.quantite_donnee || 0)} />
       </div>
 
       {chartData.length > 1 && (
