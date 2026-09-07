@@ -141,8 +141,10 @@ function Landing() {
       <Navbar />
       <Hero />
       <Screenshots />
+      <MedmoSection />
       <Features />
       <Partners />
+
       <HowItWorks />
       <Pricing />
       <Faq />
