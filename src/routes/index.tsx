@@ -517,7 +517,61 @@ function Features() {
   );
 }
 
+function MedmoSection() {
+  const points = [
+    {
+      icon: MessageSquare,
+      title: "Posez vos questions",
+      text: "« Combien d'exemplaires reste-t-il à la Librairie Nouvel Horizon ? » — la réponse vient de vos données réelles, en français.",
+    },
+    {
+      icon: Camera,
+      title: "Photographiez votre cahier",
+      text: "Une page de cahier de ventes manuscrite est lue, les titres reconnus dans votre catalogue, et les ventes proposées à l'enregistrement.",
+    },
+    {
+      icon: Check,
+      title: "Vous gardez le dernier mot",
+      text: "Aucune écriture sans votre validation. En cas de doute sur un titre ou une librairie, l'assistant demande confirmation au lieu de créer un doublon.",
+    },
+  ];
+  return (
+    <section id="medmo" className="py-24 px-4 bg-background">
+      <div className="max-w-6xl mx-auto">
+        <div className="text-center mb-14">
+          <span className="inline-flex items-center gap-2 text-xs font-semibold px-3 py-1 rounded-full bg-primary/15 text-primary border border-primary/30">
+            <Sparkles className="h-3.5 w-3.5" /> Assistant intégré
+          </span>
+          <h2 className="mt-4 text-3xl md:text-5xl font-bold tracking-tight">
+            <MedmoWordmark nameClassName="text-3xl md:text-5xl" prClassName="text-3xl md:text-5xl" />
+            <span className="block mt-2 text-xl md:text-2xl font-semibold text-white/90">
+              votre assistant d'édition, jour et nuit
+            </span>
+          </h2>
+          <p className="mt-4 text-muted-foreground max-w-2xl mx-auto">
+            Il connaît votre catalogue, vos stocks et vos chiffres. Il lit vos photos et vos documents, et prépare le travail à votre place — vous validez.
+          </p>
+        </div>
+        <div className="grid md:grid-cols-3 gap-5">
+          {points.map((p, i) => (
+            <RevealOnScroll key={p.title} delay={i * 100}>
+              <div className="h-full rounded-2xl border border-border bg-[#1A1208] p-6">
+                <div className="h-12 w-12 rounded-xl bg-primary/15 text-primary flex items-center justify-center">
+                  <p.icon className="h-6 w-6" />
+                </div>
+                <h3 className="mt-5 font-semibold text-lg">{p.title}</h3>
+                <p className="mt-2 text-sm text-muted-foreground leading-relaxed">{p.text}</p>
+              </div>
+            </RevealOnScroll>
+          ))}
+        </div>
+      </div>
+    </section>
+  );
+}
+
 function Partners() {
+
   const { t } = useI18n();
   const socials = [
     { Icon: Facebook, href: "https://www.facebook.com/figuira", label: "Facebook" },
