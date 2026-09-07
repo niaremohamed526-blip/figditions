@@ -70,19 +70,29 @@ function ManuscritsPage() {
 
   useEffect(() => { if (profile?.entreprise_id) load(); }, [profile?.entreprise_id]);
 
+  /** Nos productions et livres étrangers ne sont jamais mélangés. */
+  const productions = useMemo(
+    () => (items ? items.filter((m) => (m.origine ?? "propre") !== "etranger") : null),
+    [items],
+  );
+  const etrangers = useMemo(
+    () => (items ? (items.filter((m) => m.origine === "etranger") as unknown as LivreEtranger[]) : null),
+    [items],
+  );
+
   const filtered = useMemo(() => {
-    if (!items) return null;
-    return items.filter((m) =>
+    if (!productions) return null;
+    return productions.filter((m) =>
       (filter === "all" || m.statut === filter) &&
-      (originFilter === "all" || (m.origine ?? "propre") === originFilter) &&
-      (q.trim() === "" || `${m.titre} ${m.auteur} ${m.genre ?? ""} ${m.editeur_origine ?? ""}`.toLowerCase().includes(q.toLowerCase()))
+      (q.trim() === "" || `${m.titre} ${m.auteur} ${m.genre ?? ""}`.toLowerCase().includes(q.toLowerCase()))
     );
-  }, [items, q, filter, originFilter]);
+  }, [productions, q, filter]);
 
   const originCounts = useMemo(() => ({
-    propre: (items ?? []).filter((m) => (m.origine ?? "propre") === "propre").length,
-    etranger: (items ?? []).filter((m) => m.origine === "etranger").length,
-  }), [items]);
+    propre: productions?.length ?? 0,
+    etranger: etrangers?.length ?? 0,
+  }), [productions, etrangers]);
+
 
   const openNew = () => {
     if ((items?.length ?? 0) >= plan.maxManuscrits) { setUpgradeOpen(true); return; }
