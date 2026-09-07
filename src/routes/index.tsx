@@ -80,11 +80,11 @@ export const Route = createFileRoute("/")({
   head: () => ({
     meta: [
       { title: "FIGDITIONS — Plateforme éditoriale africaine" },
-      { name: "description", content: "Gérez manuscrits, stocks, contrats et finances depuis un tableau de bord unique. Conçu pour les maisons d'édition d'Afrique de l'Ouest." },
+      { name: "description", content: "Manuscrits, stocks, dépôts en librairie, contrats et finances en un seul endroit, avec l'assistant Pr. MEDMO. Conçu pour les maisons d'édition d'Afrique de l'Ouest." },
       { property: "og:title", content: "FIGDITIONS — Plateforme éditoriale africaine" },
-      { property: "og:description", content: "Gérez manuscrits, stocks, contrats et finances depuis un tableau de bord unique. Conçu pour les maisons d'édition d'Afrique de l'Ouest." },
+      { property: "og:description", content: "Manuscrits, stocks, dépôts en librairie, contrats et finances en un seul endroit, avec l'assistant Pr. MEDMO. Conçu pour les maisons d'édition d'Afrique de l'Ouest." },
       { name: "twitter:title", content: "FIGDITIONS — Plateforme éditoriale africaine" },
-      { name: "twitter:description", content: "Gérez manuscrits, stocks, contrats et finances depuis un tableau de bord unique. Conçu pour les maisons d'édition d'Afrique de l'Ouest." },
+      { name: "twitter:description", content: "Manuscrits, stocks, dépôts en librairie, contrats et finances en un seul endroit, avec l'assistant Pr. MEDMO. Conçu pour les maisons d'édition d'Afrique de l'Ouest." },
       { property: "og:image", content: OG_IMAGE },
       { name: "twitter:image", content: OG_IMAGE },
       { property: "og:url", content: "https://figditions.xyz/" },
@@ -171,6 +171,7 @@ function Navbar() {
   const navLinks = [
     { label: t("Accueil", "Home"), href: "#top" },
     { label: t("Fonctionnalités", "Features"), href: "#features" },
+    { label: t("Assistant", "Assistant"), href: "#medmo" },
     { label: t("Tarifs", "Pricing"), href: "#pricing" },
     { label: t("Contact", "Contact"), href: "/a-propos#contact" },
   ];
@@ -282,8 +283,8 @@ function Hero() {
           </h1>
           <p className="mt-4 text-[18px] leading-[1.5] max-w-[380px]" style={{ color: "rgba(184,168,152,0.9)" }}>
             {t(
-              "La plateforme centrale pour les éditeurs ouest-africains",
-              "The central platform for West African publishers"
+              "La plateforme centrale des éditeurs ouest-africains : manuscrits, stocks, librairies, finances — et un assistant qui travaille avec vous.",
+              "The central platform for West African publishers: manuscripts, stock, bookstores, finances — and an assistant that works with you."
             )}
           </p>
 
