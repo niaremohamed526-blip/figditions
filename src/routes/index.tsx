@@ -48,17 +48,30 @@ const FAQS = [
   },
   {
     question: "J'ai déjà tout dans des cahiers. Comment je migre ?",
-    answer: "Nous vous accompagnons. Envoyez-nous vos fichiers existants, sous n'importe quel format, et nous importons gratuitement votre catalogue et vos stocks lors de votre mise en route.",
+    answer: "Nous vous accompagnons. Envoyez-nous vos fichiers existants, sous n'importe quel format, et nous importons gratuitement votre catalogue et vos stocks lors de votre mise en route. Vous pouvez aussi photographier une page de cahier de ventes : Pr. MEDMO la lit et vous propose les ventes à enregistrer, que vous validez d'un clic.",
+  },
+  {
+    question: "Qu'est-ce que Pr. MEDMO ?",
+    answer: "C'est l'assistant intelligent intégré à FIGDITIONS. Il répond à vos questions sur vos données (ventes, stocks, droits d'auteur), lit vos photos de cahiers et vos documents, et peut préparer des actions dans la plateforme. Rien n'est enregistré sans votre validation, et il vous signale toujours quand un titre ou une librairie ressemble à un autre pour éviter les doublons.",
+  },
+  {
+    question: "Puis-je annuler une opération enregistrée par erreur ?",
+    answer: "Oui. Une vente, un mouvement de stock ou un dépôt en librairie peut être annulé avec un motif obligatoire. Les quantités sont remises comme avant, l'opération reste visible barrée avec sa raison, et elle est retirée de tous les totaux et rapports. Tout est conservé dans un historique des annulations.",
+  },
+  {
+    question: "Je vends aussi des livres que je n'ai pas édités. C'est prévu ?",
+    answer: "Oui. Les livres étrangers (ouvrages d'autres éditeurs que vous distribuez) ont leur propre section, distincte de vos productions, aussi bien dans le catalogue que dans le stock interne. Vos chiffres restent séparés et lisibles.",
   },
   {
     question: "Combien de personnes de mon équipe peuvent utiliser la plateforme ?",
-    answer: "Le plan Starter est prévu pour un seul utilisateur, le plan Pro pour trois, et le plan Business n'a aucune limite. Chaque membre reçoit un rôle qui détermine ce qu'il peut voir et modifier.",
+    answer: "Le plan Starter est prévu pour un seul utilisateur, le plan Pro pour trois, et le plan Business n'a aucune limite. Chaque membre reçoit un rôle qui détermine ce qu'il peut voir et modifier. Les invitations se font par lien sécurisé.",
   },
   {
     question: "Puis-je essayer avant de payer ?",
     answer: "Oui. Le plan Starter est gratuit et sans limite de durée : vous pouvez gérer jusqu'à 5 manuscrits, vos auteurs et votre stock interne sans jamais payer. Vous passez à un plan supérieur uniquement quand vous en avez besoin.",
   },
 ];
+
 
 const OG_IMAGE = "https://figditions.xyz/assets/og-figditions.png";
 
