@@ -781,6 +781,16 @@ const MVT_TYPES: { value: string; label: string; hint?: string }[] = [
   { value: "ajustement",          label: "🔧 Ajustement manuel",        hint: "Correction manuelle du stock (note obligatoire)" },
 ];
 
+const DON_TYPES: string[] = [
+  "École / Établissement scolaire",
+  "Bibliothèque",
+  "ONG / Association",
+  "Institution publique",
+  "Événement / Salon",
+  "Personne physique",
+  "Autre",
+];
+
 type ProvenanceKey = "librairie" | "evenement" | "exposition" | "scolaire" | "institution" | "autre";
 const PROVENANCE_OPTIONS: { value: ProvenanceKey; label: string }[] = [
   { value: "librairie",   label: "🏪 Librairie partenaire" },
