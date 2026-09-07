@@ -463,7 +463,7 @@ function FinancesAnalytics({ ventes, manuscrits, aMap, mMap }: { ventes: VenteRo
 
   const rankings: BookRanking[] = [...filtered.reduce((map, v) => {
     const m = mMap[v.manuscrit_id]; if (!m) return map;
-    const e = map.get(v.manuscrit_id) ?? { manuscritId: v.manuscrit_id, titre: m.titre, auteur: m.auteur, copies: 0, revenue: 0 };
+    const e = map.get(v.manuscrit_id) ?? { manuscritId: v.manuscrit_id, titre: m.titre, auteur: m.auteur, etranger: (m as any).origine === "etranger", copies: 0, revenue: 0 };
     e.copies += Number(v.quantite_vendue || 0); e.revenue += Number(v.montant_total_fcfa || 0);
     map.set(v.manuscrit_id, e); return map;
   }, new Map<string, BookRanking>()).values()].sort((a, b) => (sortKey === "copies" ? b.copies - a.copies : b.revenue - a.revenue));
