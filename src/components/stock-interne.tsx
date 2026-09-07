@@ -1681,6 +1681,7 @@ function DistributionAnalytics({
                   <Bar dataKey="librairies" name="Librairies" stackId="d" fill="#3B82F6" />
                   <Bar dataKey="direct"     name="Vente libre" stackId="d" fill="#E8B84B" />
                   <Bar dataKey="evenements" name="Événements" stackId="d" fill="#A855F7" />
+                  <Bar dataKey="dons"       name="Dons" stackId="d" fill="#6B9BD1" />
                   <Bar dataKey="restant"    name="Restant" stackId="d" fill="#C8922A" />
                 </BarChart>
               </ResponsiveContainer>
