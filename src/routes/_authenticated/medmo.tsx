@@ -5,10 +5,11 @@ import { lazy, Suspense } from "react";
 import { useAuth, useProfile } from "@/hooks/use-auth";
 import { useMedmoThreads } from "@/hooks/use-medmo-threads";
 import { cn } from "@/lib/utils";
+import { lazyWithRetry } from "@/lib/lazy-retry";
 import { MedmoWordmark } from "@/components/medmo-wordmark";
 import medmoMark from "@/assets/medmo-mark.png";
 
-const Ballpit = lazy(() => import("@/components/Ballpit"));
+const Ballpit = lazyWithRetry(() => import("@/components/Ballpit"));
 
 const MEDMO_BALL_COLORS = [0xc8922a, 0xa0681e, 0x745757];
 

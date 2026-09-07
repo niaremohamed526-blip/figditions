@@ -1,5 +1,6 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useState, lazy, Suspense, useEffect, type FormEvent } from "react";
+import { lazyWithRetry } from "@/lib/lazy-retry";
 import { supabase } from "@/integrations/supabase/client";
 import { Label } from "@/components/ui/label";
 import { toast } from "sonner";
@@ -7,7 +8,7 @@ import { Loader2, Eye, EyeOff } from "lucide-react";
 import { Logo } from "@/components/logo";
 import { authErrorFr } from "@/lib/auth-errors";
 
-const Ballpit = lazy(() => import("@/components/Ballpit"));
+const Ballpit = lazyWithRetry(() => import("@/components/Ballpit"));
 
 export const Route = createFileRoute("/login")({
   component: LoginPage,
