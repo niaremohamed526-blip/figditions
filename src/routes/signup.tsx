@@ -1,5 +1,6 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
-import { useState, lazy, Suspense, useMemo, useEffect, type FormEvent } from "react";
+import { useState, Suspense, useMemo, useEffect, type FormEvent } from "react";
+import { lazyWithRetry } from "@/lib/lazy-retry";
 import { supabase } from "@/integrations/supabase/client";
 import { Label } from "@/components/ui/label";
 import { toast } from "sonner";
@@ -10,7 +11,7 @@ import { PLANS } from "@/config/plans";
 import { fcfa } from "@/lib/format";
 
 
-const Ballpit = lazy(() => import("@/components/Ballpit"));
+const Ballpit = lazyWithRetry(() => import("@/components/Ballpit"));
 
 export const Route = createFileRoute("/signup")({
   component: SignupPage,
