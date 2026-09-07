@@ -148,32 +148,40 @@ function ManuscritsPage() {
         </div>
       </header>
 
-      <EditorialAnalytics items={items} />
+      <Tabs defaultValue="productions" className="space-y-6">
+        <TabsList className="w-full justify-start overflow-x-auto flex-nowrap h-auto p-1 gap-1">
+          <TabsTrigger value="productions" className="gap-1.5 whitespace-nowrap">
+            <Home className="h-4 w-4" /> Nos Productions
+            {items && <Badge variant="secondary" className="ml-1 text-[10px] px-1.5 py-0">{originCounts.propre}</Badge>}
+          </TabsTrigger>
+          <TabsTrigger value="etrangers" className="gap-1.5 whitespace-nowrap">
+            <Globe className="h-4 w-4" /> Livres Étrangers
+            {items && <Badge variant="secondary" className="ml-1 text-[10px] px-1.5 py-0">{originCounts.etranger}</Badge>}
+          </TabsTrigger>
+        </TabsList>
 
-      <div className="flex flex-col sm:flex-row gap-3">
-        <div className="relative flex-1">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-          <Input placeholder="Rechercher par titre, auteur, genre…" value={q}
-            onChange={(e) => setQ(e.target.value)} className="pl-9 bg-card" />
-        </div>
-        <Select value={filter} onValueChange={setFilter}>
-          <SelectTrigger className="w-full sm:w-48 bg-card"><SelectValue /></SelectTrigger>
-          <SelectContent>
-            <SelectItem value="all">Tous les statuts</SelectItem>
-            {STATUT_OPTIONS.map((o) => (
-              <SelectItem key={o.value} value={o.value}>{o.label}</SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
-        <Select value={originFilter} onValueChange={setOriginFilter}>
-          <SelectTrigger className="w-full sm:w-56 bg-card"><SelectValue /></SelectTrigger>
-          <SelectContent>
-            <SelectItem value="all">Toutes les origines</SelectItem>
-            <SelectItem value="propre">🏠 Nos publications</SelectItem>
-            <SelectItem value="etranger">🌍 Livres étrangers</SelectItem>
-          </SelectContent>
-        </Select>
-      </div>
+        {/* ==================== NOS PRODUCTIONS ==================== */}
+        <TabsContent value="productions" className="space-y-6">
+          <EditorialAnalytics items={productions} />
+
+          <div className="flex flex-col sm:flex-row gap-3">
+            <div className="relative flex-1">
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+              <Input placeholder="Rechercher par titre, auteur, genre…" value={q}
+                onChange={(e) => setQ(e.target.value)} className="pl-9 bg-card" />
+            </div>
+            <Select value={filter} onValueChange={setFilter}>
+              <SelectTrigger className="w-full sm:w-48 bg-card"><SelectValue /></SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">Tous les statuts</SelectItem>
+                {STATUT_OPTIONS.map((o) => (
+                  <SelectItem key={o.value} value={o.value}>{o.label}</SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+
+
 
       <div className="rounded-xl border border-border bg-card overflow-hidden">
         {filtered === null ? (
