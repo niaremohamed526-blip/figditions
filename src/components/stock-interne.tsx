@@ -1522,7 +1522,16 @@ function HistoryView({
                   <span className="text-xl">{meta.icon}</span>
                   <div className="flex-1 min-w-0">
                     <p className={cn("text-sm font-medium", annule && "line-through")}>{meta.label}</p>
-                    {m.destination && <p className={cn("text-xs text-muted-foreground", annule && "line-through")}>→ {m.destination}</p>}
+                    {m.type_mouvement === "don" ? (
+                      <>
+                        <span className="mt-0.5 inline-flex items-center rounded-full bg-[#6B9BD1]/15 px-2 py-0.5 text-[10px] font-semibold text-[#6B9BD1]">Don</span>
+                        <p className={cn("text-xs text-muted-foreground", annule && "line-through")}>
+                          Destinataire : {m.destinataire_don || m.destination || "—"}
+                        </p>
+                      </>
+                    ) : (
+                      m.destination && <p className={cn("text-xs text-muted-foreground", annule && "line-through")}>→ {m.destination}</p>
+                    )}
                     {m.notes && <p className="text-xs text-muted-foreground italic">"{m.notes}"</p>}
                     <p className="text-xs text-muted-foreground mt-1">
                       {format(new Date(m.created_at), "dd MMM yyyy à HH:mm", { locale: fr })}
