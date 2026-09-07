@@ -1061,14 +1061,44 @@ function MouvementForm({
           </>
         )}
 
+        {/* Don / Donation */}
+        {isDon && (
+          <>
+            <div className="space-y-2">
+              <Label>Type de bénéficiaire <span className="text-red-400">*</span></Label>
+              <Select value={donType} onValueChange={setDonType}>
+                <SelectTrigger><SelectValue /></SelectTrigger>
+                <SelectContent>
+                  {DON_TYPES.map((t) => <SelectItem key={t} value={t}>{t}</SelectItem>)}
+                </SelectContent>
+              </Select>
+            </div>
+            <div className="space-y-2">
+              <Label>Destinataire du don <span className="text-red-400">*</span></Label>
+              <Input value={donNom} onChange={(e) => setDonNom(e.target.value)}
+                placeholder="ex: École primaire de Sikasso, ONG Educ'Afrique, Bibliothèque municipale de Ségou…" />
+            </div>
+          </>
+        )}
+
         <div className="space-y-2">
-          <Label>{form.type === "ajustement" ? "Nouveau stock disponible" : isRetour ? "Quantité retournée" : "Quantité"}</Label>
+          <Label>{form.type === "ajustement" ? "Nouveau stock disponible" : isRetour ? "Quantité retournée" : isDon ? "Quantité offerte" : "Quantité"}</Label>
           <Input type="number" min={form.type === "ajustement" ? 0 : 1} required value={form.quantite}
             onChange={(e) => setForm({ ...form, quantite: Number(e.target.value) })} />
           {isRetour && form.quantite > maxRetour && (
             <p className="text-xs text-red-400">Dépasse le maximum retournable ({maxRetour})</p>
           )}
+          {isDon && currentStock && form.quantite > currentStock.quantite_disponible && (
+            <p className="text-xs text-red-400">Stock insuffisant : {currentStock.quantite_disponible} exemplaire(s) disponibles.</p>
+          )}
         </div>
+
+        {isDon && (
+          <p className="rounded-r-lg border-l-[3px] border-[#C8922A] bg-[rgba(200,146,42,0.08)] px-3 py-2 text-xs text-muted-foreground">
+            💡 Ce mouvement ne génère aucun chiffre d'affaires ni droits d'auteur — il s'agit d'un don sans contrepartie financière.
+          </p>
+        )}
+
 
         {/* État des livres retournés */}
         {isRetour && (
