@@ -1649,7 +1649,7 @@ function DistributionAnalytics({
     <div className="rounded-xl border border-border bg-card p-5 space-y-5">
       <h2 className="font-semibold flex items-center gap-2"><BookOpen className="h-4 w-4 text-primary" /> 📊 Analytiques stock interne</h2>
 
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+      <div className="grid grid-cols-1 md:grid-cols-4 gap-3">
         <div className="rounded-lg border border-border bg-background/40 p-4">
           <p className="text-xs uppercase tracking-wide text-muted-foreground">💰 Valeur totale du stock</p>
           <p className="mt-1 text-2xl font-bold text-[color:var(--gold)] tabular-nums">{fcfa(valeurStock)}</p>
@@ -1657,6 +1657,13 @@ function DistributionAnalytics({
         <div className="rounded-lg border border-border bg-background/40 p-4">
           <p className="text-xs uppercase tracking-wide text-muted-foreground">📦 Livres en gestion</p>
           <p className="mt-1 text-2xl font-bold tabular-nums">{stocks.length}</p>
+        </div>
+        <div className="rounded-lg border border-border bg-background/40 p-4">
+          <p className="text-xs uppercase tracking-wide text-muted-foreground">🎁 Total donné</p>
+          <p className="mt-1 text-2xl font-bold tabular-nums text-[#6B9BD1]">
+            {stocks.reduce((s, x) => s + Number(x.quantite_donnee || 0), 0)}
+          </p>
+          <p className="text-[10px] text-muted-foreground">exemplaires · aucun impact financier</p>
         </div>
         <div className="rounded-lg border border-border bg-background/40 p-4">
           <p className="text-xs uppercase tracking-wide text-muted-foreground">🔁 Mouvements enregistrés</p>
