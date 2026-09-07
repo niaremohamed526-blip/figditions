@@ -1573,7 +1573,9 @@ function HistoryView({
           <>
             <p><span className="text-muted-foreground">Type :</span> {MOUVEMENT_LABEL[cancelTarget.type_mouvement]?.label ?? cancelTarget.type_mouvement}</p>
             <p><span className="text-muted-foreground">Quantité :</span> {cancelTarget.quantite} exemplaire(s)</p>
-            {cancelTarget.destination && <p><span className="text-muted-foreground">Destination :</span> {cancelTarget.destination}</p>}
+            {cancelTarget.type_mouvement === "don"
+              ? <p><span className="text-muted-foreground">Don initialement fait à :</span> {cancelTarget.destinataire_don || cancelTarget.destination || "—"}</p>
+              : cancelTarget.destination && <p><span className="text-muted-foreground">Destination :</span> {cancelTarget.destination}</p>}
             <p><span className="text-muted-foreground">Date :</span> {format(new Date(cancelTarget.created_at), "dd MMM yyyy", { locale: fr })}</p>
           </>
         ) : undefined}
