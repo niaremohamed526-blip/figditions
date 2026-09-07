@@ -925,14 +925,24 @@ function MouvementForm({
       return;
     }
 
+    // ------- DON : validations spécifiques -------
+    const destinataireDon = isDon ? `${donType} — ${donNom.trim()}` : null;
+    if (isDon) {
+      if (!donNom.trim()) return toast.error("Indiquez le destinataire du don");
+      if (form.quantite > currentStock.quantite_disponible) {
+        return toast.error(`Stock insuffisant : ${currentStock.quantite_disponible} exemplaire(s) disponibles, don de ${form.quantite} demandé.`);
+      }
+    }
+
     // ------- OTHER MOVEMENTS -------
     setLoading(true);
     const { data, error } = await callRpc({
       p_type: form.type,
       p_quantite: form.quantite,
-      p_destination: form.destination || null,
+      p_destination: isDon ? destinataireDon : (form.destination || null),
       p_notes: form.notes || null,
       p_valeur_absolue: form.type === "ajustement" ? Math.max(0, form.quantite) : null,
+      ...(isDon ? { p_destinataire_don: destinataireDon } : {}),
     });
     if (error) { setLoading(false); return toast.error(error.message); }
 
@@ -940,7 +950,12 @@ function MouvementForm({
     const res = (data ?? {}) as { quantite_disponible?: number; seuil_alerte?: number };
     const newAvail = res.quantite_disponible ?? currentStock.quantite_disponible;
     const seuil = res.seuil_alerte ?? currentStock.seuil_alerte;
-    if (newAvail <= seuil) {
+    if (isDon) {
+      toast.success(`🎁 Don enregistré : ${form.quantite} exemplaire(s) offert(s) à ${donNom.trim()}`);
+      if (newAvail <= seuil) {
+        toast.warning(`⚠️ Stock bas pour ${book?.titre ?? "ce livre"} : seulement ${newAvail} exemplaires restants après ce don`);
+      }
+    } else if (newAvail <= seuil) {
       toast.error(`⚠️ Attention: Le stock de ${book?.titre ?? "ce livre"} est bas (${newAvail} exemplaires restants)`);
     } else if (form.type === "vente_directe") {
       toast.success("Vente libre enregistrée");
