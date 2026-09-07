@@ -43,12 +43,16 @@ export function VentesTab({
   manuscrits,
   auteurs,
   onChanged,
+  hideDroits = false,
 }: {
   ventes: VenteRow[];
   manuscrits: ManuscritLite[];
   auteurs: AuteurLite[];
   onChanged: () => void;
+  /** Livres étrangers : la colonne « Droits d'auteur » ne s'applique pas. */
+  hideDroits?: boolean;
 }) {
+
   const [search, setSearch] = useState("");
   const [canalFilter, setCanalFilter] = useState("all");
   const [royFilter, setRoyFilter] = useState("all");
@@ -341,6 +345,7 @@ export function VentesTab({
                 <SelectItem value="en_attente">À encaisser</SelectItem>
               </SelectContent>
             </Select>
+            {!hideDroits && (
             <Select value={royFilter} onValueChange={setRoyFilter}>
               <SelectTrigger><SelectValue placeholder="Royalties" /></SelectTrigger>
               <SelectContent>
@@ -349,6 +354,7 @@ export function VentesTab({
                 <SelectItem value="paye">Droits payés</SelectItem>
               </SelectContent>
             </Select>
+            )}
             <Select value={annulationFilter} onValueChange={(v) => setAnnulationFilter(v as any)}>
               <SelectTrigger><SelectValue placeholder="Statut" /></SelectTrigger>
               <SelectContent>
@@ -363,7 +369,7 @@ export function VentesTab({
             </div>
           </div>
           <p className="text-xs text-muted-foreground mt-3">
-            {filtered.length} vente(s) affichée(s) · {groupes.length} dépôt(s) groupé(s) · {activeTotals.count} active(s) · {activeTotals.annulees} annulée(s) · CA filtré {fmtFCFA(totaux.ca)} · Encaissé {fmtFCFA(totaux.encaisse)} · Droits {fmtFCFA(totaux.droits)}
+            {filtered.length} vente(s) affichée(s) · {groupes.length} dépôt(s) groupé(s) · {activeTotals.count} active(s) · {activeTotals.annulees} annulée(s) · CA filtré {fmtFCFA(totaux.ca)} · Encaissé {fmtFCFA(totaux.encaisse)}{!hideDroits && <> · Droits {fmtFCFA(totaux.droits)}</>}
           </p>
         </CardContent>
       </Card>
@@ -427,7 +433,7 @@ export function VentesTab({
                         </div>
                       </div>
 
-                      <div className="grid grid-cols-3 gap-3 text-xs lg:w-[360px]">
+                      <div className={cn("grid gap-3 text-xs", hideDroits ? "grid-cols-2 lg:w-[260px]" : "grid-cols-3 lg:w-[360px]")}>
                         <div>
                           <p className="text-muted-foreground">Total</p>
                           <p className="font-semibold text-[color:var(--gold)]">{fmtFCFA(g.total_montant)}</p>
@@ -436,10 +442,12 @@ export function VentesTab({
                           <p className="text-muted-foreground">Commission</p>
                           <p className="font-medium">{fmtFCFA(g.total_commission)}</p>
                         </div>
+                        {!hideDroits && (
                         <div>
                           <p className="text-muted-foreground">Droits</p>
                           <p className="font-medium">{fmtFCFA(g.total_droits)}</p>
                         </div>
+                        )}
                       </div>
 
                       <div className="flex flex-wrap items-center gap-2 lg:justify-end">
@@ -499,7 +507,7 @@ export function VentesTab({
                                 <th className="py-1.5 pr-3 text-right">Qté</th>
                                 <th className="py-1.5 pr-3 text-right">P.U.</th>
                                 <th className="py-1.5 pr-3 text-right">Total</th>
-                                <th className="py-1.5 pr-3 text-right">Droits</th>
+                                {!hideDroits && <th className="py-1.5 pr-3 text-right">Droits</th>}
                                 <th className="py-1.5 pr-3">Encaissement</th>
                                 <th className="py-1.5 text-right">Action</th>
                               </tr>
@@ -526,7 +534,7 @@ export function VentesTab({
                                     <td className={cn("py-2 pr-3 text-right font-semibold text-[color:var(--gold)]", cancelled && "line-through")}>
                                       {fmtFCFA(v.montant_total_fcfa)}
                                     </td>
-                                    <td className={cn("py-2 pr-3 text-right", cancelled && "line-through")}>{fmtFCFA(v.droits_auteur_fcfa)}</td>
+                                    {!hideDroits && <td className={cn("py-2 pr-3 text-right", cancelled && "line-through")}>{fmtFCFA(v.droits_auteur_fcfa)}</td>}
                                     <td className="py-2 pr-3">
                                       {cancelled ? (
                                         <Badge variant="outline" className="text-[10px] bg-red-500/10 text-red-400 border-red-500/30">Annulée</Badge>
@@ -593,8 +601,8 @@ export function VentesTab({
                     <th className="py-2 pr-3 text-right">Qté</th>
                     <th className="py-2 pr-3 text-right">P.U.</th>
                     <th className="py-2 pr-3 text-right">Total</th>
-                    <th className="py-2 pr-3 text-right">Droits</th>
-                    <th className="py-2 pr-3 text-center">Royalties</th>
+                    {!hideDroits && <th className="py-2 pr-3 text-right">Droits</th>}
+                    {!hideDroits && <th className="py-2 pr-3 text-center">Royalties</th>}
                     <th className="py-2 pr-3">Encaissement</th>
                     <th className="py-2 pr-3 text-center">Statut</th>
                     <th className="py-2 text-right">Action</th>
@@ -632,8 +640,8 @@ export function VentesTab({
                             </span>
                           )}
                         </td>
-                        <td className={cn("py-2.5 pr-3 text-right", cancelled && "line-through")}>{fmtFCFA(v.droits_auteur_fcfa)}</td>
-                        <td className="py-2.5 pr-3 text-center">
+                        {!hideDroits && <td className={cn("py-2.5 pr-3 text-right", cancelled && "line-through")}>{fmtFCFA(v.droits_auteur_fcfa)}</td>}
+                        {!hideDroits && <td className="py-2.5 pr-3 text-center">
                           <Badge
                             variant="outline"
                             className={cn(
@@ -646,7 +654,7 @@ export function VentesTab({
                           >
                             {v.statut_paiement === "paye" ? "Payés" : "En attente"}
                           </Badge>
-                        </td>
+                        </td>}
                         <td className="py-2.5 pr-3">
                           <Badge variant="outline" className={cn("text-[10px]", enc.className, cancelled && "opacity-60")}>{enc.label}</Badge>
                           {reste > 0 && !cancelled && (
@@ -678,7 +686,7 @@ export function VentesTab({
                                   Encaisser
                                 </Button>
                               )}
-                              {v.statut_paiement !== "paye" && <LigneActions v={v} />}
+                              {(hideDroits || v.statut_paiement !== "paye") && <LigneActions v={v} />}
                             </div>
                           )}
                         </td>
@@ -760,7 +768,7 @@ export function VentesTab({
                 <p>Montant total : <strong className="text-[color:var(--gold)]">{fmtFCFA(encGroupe.total_montant)}</strong></p>
                 <p>Reste à encaisser : <strong className="text-[color:var(--gold)]">{fmtFCFA(encGroupe.total_reste)}</strong></p>
                 <p>Commission librairie : {fmtFCFA(encGroupe.total_commission)}</p>
-                <p>Droits d'auteur : {fmtFCFA(encGroupe.total_droits)}</p>
+                {!hideDroits && <p>Droits d'auteur : {fmtFCFA(encGroupe.total_droits)}</p>}
               </div>
               <div className="space-y-1.5">
                 <Label>Date d'encaissement</Label>

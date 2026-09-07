@@ -26,6 +26,10 @@ import { planFor } from "@/lib/plans";
 import { UpgradeModal } from "@/components/upgrade-modal";
 import { AnalyticsSection, defaultRange, inRange, EmptyChart, type DateRange } from "@/components/analytics-section";
 import { ManuscritImportDialog } from "@/components/manuscrit-import-dialog";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { EtrangersTab, type LivreEtranger } from "@/components/manuscrits/etrangers-tab";
+import { Globe, Home } from "lucide-react";
+import { Badge } from "@/components/ui/badge";
 
 export const Route = createFileRoute("/_authenticated/manuscrits/")({
   component: ManuscritsPage,
@@ -36,7 +40,9 @@ interface Manuscrit {
   id: string; titre: string; auteur: string; genre: string | null; langue: string | null;
   statut: string; created_at: string;
   origine: string; editeur_origine: string | null;
+  statut_distribution?: string | null; prix_vente_fcfa?: number | null; notes?: string | null;
 }
+
 
 function ManuscritsPage() {
   const { user } = useAuth();
@@ -45,7 +51,7 @@ function ManuscritsPage() {
   const [items, setItems] = useState<Manuscrit[] | null>(null);
   const [q, setQ] = useState("");
   const [filter, setFilter] = useState<string>("all");
-  const [originFilter, setOriginFilter] = useState<string>("all");
+  
   const [sheetOpen, setSheetOpen] = useState(false);
   const [editing, setEditing] = useState<Manuscrit | null>(null);
   const [toDelete, setToDelete] = useState<Manuscrit | null>(null);
@@ -64,19 +70,29 @@ function ManuscritsPage() {
 
   useEffect(() => { if (profile?.entreprise_id) load(); }, [profile?.entreprise_id]);
 
+  /** Nos productions et livres étrangers ne sont jamais mélangés. */
+  const productions = useMemo(
+    () => (items ? items.filter((m) => (m.origine ?? "propre") !== "etranger") : null),
+    [items],
+  );
+  const etrangers = useMemo(
+    () => (items ? (items.filter((m) => m.origine === "etranger") as unknown as LivreEtranger[]) : null),
+    [items],
+  );
+
   const filtered = useMemo(() => {
-    if (!items) return null;
-    return items.filter((m) =>
+    if (!productions) return null;
+    return productions.filter((m) =>
       (filter === "all" || m.statut === filter) &&
-      (originFilter === "all" || (m.origine ?? "propre") === originFilter) &&
-      (q.trim() === "" || `${m.titre} ${m.auteur} ${m.genre ?? ""} ${m.editeur_origine ?? ""}`.toLowerCase().includes(q.toLowerCase()))
+      (q.trim() === "" || `${m.titre} ${m.auteur} ${m.genre ?? ""}`.toLowerCase().includes(q.toLowerCase()))
     );
-  }, [items, q, filter, originFilter]);
+  }, [productions, q, filter]);
 
   const originCounts = useMemo(() => ({
-    propre: (items ?? []).filter((m) => (m.origine ?? "propre") === "propre").length,
-    etranger: (items ?? []).filter((m) => m.origine === "etranger").length,
-  }), [items]);
+    propre: productions?.length ?? 0,
+    etranger: etrangers?.length ?? 0,
+  }), [productions, etrangers]);
+
 
   const openNew = () => {
     if ((items?.length ?? 0) >= plan.maxManuscrits) { setUpgradeOpen(true); return; }
@@ -132,32 +148,40 @@ function ManuscritsPage() {
         </div>
       </header>
 
-      <EditorialAnalytics items={items} />
+      <Tabs defaultValue="productions" className="space-y-6">
+        <TabsList className="w-full justify-start overflow-x-auto flex-nowrap h-auto p-1 gap-1">
+          <TabsTrigger value="productions" className="gap-1.5 whitespace-nowrap">
+            <Home className="h-4 w-4" /> Nos Productions
+            {items && <Badge variant="secondary" className="ml-1 text-[10px] px-1.5 py-0">{originCounts.propre}</Badge>}
+          </TabsTrigger>
+          <TabsTrigger value="etrangers" className="gap-1.5 whitespace-nowrap">
+            <Globe className="h-4 w-4" /> Livres Étrangers
+            {items && <Badge variant="secondary" className="ml-1 text-[10px] px-1.5 py-0">{originCounts.etranger}</Badge>}
+          </TabsTrigger>
+        </TabsList>
 
-      <div className="flex flex-col sm:flex-row gap-3">
-        <div className="relative flex-1">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-          <Input placeholder="Rechercher par titre, auteur, genre…" value={q}
-            onChange={(e) => setQ(e.target.value)} className="pl-9 bg-card" />
-        </div>
-        <Select value={filter} onValueChange={setFilter}>
-          <SelectTrigger className="w-full sm:w-48 bg-card"><SelectValue /></SelectTrigger>
-          <SelectContent>
-            <SelectItem value="all">Tous les statuts</SelectItem>
-            {STATUT_OPTIONS.map((o) => (
-              <SelectItem key={o.value} value={o.value}>{o.label}</SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
-        <Select value={originFilter} onValueChange={setOriginFilter}>
-          <SelectTrigger className="w-full sm:w-56 bg-card"><SelectValue /></SelectTrigger>
-          <SelectContent>
-            <SelectItem value="all">Toutes les origines</SelectItem>
-            <SelectItem value="propre">🏠 Nos publications</SelectItem>
-            <SelectItem value="etranger">🌍 Livres étrangers</SelectItem>
-          </SelectContent>
-        </Select>
-      </div>
+        {/* ==================== NOS PRODUCTIONS ==================== */}
+        <TabsContent value="productions" className="space-y-6">
+          <EditorialAnalytics items={productions} />
+
+          <div className="flex flex-col sm:flex-row gap-3">
+            <div className="relative flex-1">
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+              <Input placeholder="Rechercher par titre, auteur, genre…" value={q}
+                onChange={(e) => setQ(e.target.value)} className="pl-9 bg-card" />
+            </div>
+            <Select value={filter} onValueChange={setFilter}>
+              <SelectTrigger className="w-full sm:w-48 bg-card"><SelectValue /></SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">Tous les statuts</SelectItem>
+                {STATUT_OPTIONS.map((o) => (
+                  <SelectItem key={o.value} value={o.value}>{o.label}</SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+
+
 
       <div className="rounded-xl border border-border bg-card overflow-hidden">
         {filtered === null ? (
@@ -183,14 +207,8 @@ function ManuscritsPage() {
               <tbody>
                 {filtered.map((m) => (
                   <tr key={m.id} className="group border-t border-border hover:bg-primary/5 transition-colors">
-                    <td className="px-4 py-3 font-medium">
-                      {m.titre}
-                      {m.origine === "etranger" && (
-                        <span className="ml-2 inline-flex items-center rounded-full border border-blue-500/30 bg-blue-500/15 px-2 py-0.5 text-[10px] font-semibold text-blue-400 align-middle">
-                          🌍 Étranger
-                        </span>
-                      )}
-                    </td>
+                    <td className="px-4 py-3 font-medium">{m.titre}</td>
+
                     <td className="px-4 py-3 text-muted-foreground">{m.auteur}</td>
                     <td className="px-4 py-3 text-muted-foreground hidden md:table-cell">{m.genre ?? "—"}</td>
                     <td className="px-4 py-3 text-muted-foreground hidden lg:table-cell">{m.langue ?? "—"}</td>
@@ -257,6 +275,19 @@ function ManuscritsPage() {
           </div>
         )}
       </div>
+        </TabsContent>
+
+        {/* ==================== LIVRES ÉTRANGERS ==================== */}
+        <TabsContent value="etrangers">
+          <EtrangersTab
+            items={etrangers}
+            entrepriseId={profile?.entreprise_id ?? null}
+            onChanged={load}
+          />
+        </TabsContent>
+      </Tabs>
+
+
 
       <Sheet open={sheetOpen} onOpenChange={setSheetOpen}>
         <SheetContent side="right" className="bg-card border-border w-full sm:max-w-md">

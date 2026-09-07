@@ -932,9 +932,12 @@ export type Database = {
           id: string
           langue: string | null
           nombre_pages: number | null
+          notes: string | null
           origine: string
           pdf_path: string | null
+          prix_vente_fcfa: number
           statut: Database["public"]["Enums"]["manuscrit_statut"]
+          statut_distribution: string
           titre: string
         }
         Insert: {
@@ -947,9 +950,12 @@ export type Database = {
           id?: string
           langue?: string | null
           nombre_pages?: number | null
+          notes?: string | null
           origine?: string
           pdf_path?: string | null
+          prix_vente_fcfa?: number
           statut?: Database["public"]["Enums"]["manuscrit_statut"]
+          statut_distribution?: string
           titre: string
         }
         Update: {
@@ -962,9 +968,12 @@ export type Database = {
           id?: string
           langue?: string | null
           nombre_pages?: number | null
+          notes?: string | null
           origine?: string
           pdf_path?: string | null
+          prix_vente_fcfa?: number
           statut?: Database["public"]["Enums"]["manuscrit_statut"]
+          statut_distribution?: string
           titre?: string
         }
         Relationships: [

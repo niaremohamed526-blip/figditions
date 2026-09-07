@@ -11,6 +11,8 @@ export interface ReportSections {
   stocks: boolean;
   depenses: boolean;
   rentabilite: boolean;
+  /** Livres distribués pour d'autres maisons (sans droits d'auteur). */
+  etrangers?: boolean;
 }
 
 export interface Vente {
@@ -31,7 +33,7 @@ export interface Vente {
   statut_encaissement?: string | null;
   montant_encaisse_fcfa?: number | null;
 }
-export interface Manuscrit { id: string; titre: string; auteur: string | null; auteur_id: string | null; genre?: string | null; }
+export interface Manuscrit { id: string; titre: string; auteur: string | null; auteur_id: string | null; genre?: string | null; origine?: string | null; }
 export interface Auteur { id: string; nom_complet: string; email?: string | null; telephone?: string | null; mobile_money_operateur?: string | null; mobile_money_numero?: string | null; }
 export interface Stock { id: string; manuscrit_id: string; librairie_nom: string | null; librairie_adresse?: string | null; exemplaires_deposes: number; exemplaires_vendus: number; exemplaires_restants: number; derniere_visite?: string | null; prix_unitaire_fcfa: number; }
 export interface StockInterne { id: string; manuscrit_id: string; quantite_imprimee?: number; quantite_disponible: number; quantite_reservee?: number; quantite_vendue_directement?: number; prix_vente_direct_fcfa?: number | null; seuil_alerte?: number; cout_unitaire_impression_fcfa?: number | null; }
@@ -842,6 +844,50 @@ class PdfBuilder {
     );
   }
 
+  /** Livres étrangers distribués : CA et commission, sans droits d'auteur. */
+  buildEtrangers() {
+    const etrangerIds = new Set(
+      this.input.manuscrits.filter((m) => m.origine === "etranger").map((m) => m.id),
+    );
+    const v = this.input.ventes.filter((x) => etrangerIds.has(x.manuscrit_id));
+    this.sectionTitle(this.input.lang === "fr" ? "LIVRES ETRANGERS DISTRIBUES" : "DISTRIBUTED FOREIGN BOOKS");
+    if (v.length === 0) { this.paragraph(this.t.noData); return; }
+    const titre = (id: string) => this.input.manuscrits.find((m) => m.id === id)?.titre ?? "-";
+    const agg: Record<string, { ex: number; ca: number; com: number }> = {};
+    v.forEach((x) => {
+      const a = (agg[x.manuscrit_id] ||= { ex: 0, ca: 0, com: 0 });
+      a.ex += Number(x.quantite_vendue || 0);
+      a.ca += Number(x.montant_total_fcfa || 0);
+      a.com += Number(x.commission_librairie_fcfa || 0);
+    });
+    const ranked = Object.entries(agg).sort((a, b) => b[1].ca - a[1].ca);
+    const rows = ranked.map(([id, r]) => [
+      truncate(clean(titre(id)), 40),
+      String(r.ex),
+      fmtFCFA(r.ca),
+      fmtFCFA(r.com),
+      fmtFCFA(r.ca - r.com),
+    ]);
+    const tot = ranked.reduce((a, [, r]) => ({ ex: a.ex + r.ex, ca: a.ca + r.ca, com: a.com + r.com }), { ex: 0, ca: 0, com: 0 });
+    const cw = this.contentWidth;
+    this.drawTable(
+      this.input.lang === "fr"
+        ? ["Titre", "Ex.", "CA", "Commission", "Net"]
+        : ["Title", "Qty", "Revenue", "Commission", "Net"],
+      rows,
+      {
+        widths: [cw * 0.40, cw * 0.10, cw * 0.17, cw * 0.17, cw * 0.16],
+        aligns: ["left", "center", "right", "right", "right"],
+        totalRow: [this.input.lang === "fr" ? "TOTAL" : "TOTAL", String(tot.ex), fmtFCFA(tot.ca), fmtFCFA(tot.com), fmtFCFA(tot.ca - tot.com)],
+      },
+    );
+    this.paragraph(
+      this.input.lang === "fr"
+        ? "Aucun droit d'auteur n'est calcule sur ces ventes : les livres appartiennent a d'autres maisons d'edition."
+        : "No royalties apply to these sales: the titles belong to other publishers.",
+    );
+  }
+
   buildStocks() {
     this.sectionTitle(this.t.stocks);
     const d = this.doc;
@@ -1048,6 +1094,7 @@ class PdfBuilder {
     if (this.input.sections.livres) this.buildLivres();
     if (this.input.sections.rentabilite) this.buildRentabilite();
     if (this.input.sections.librairies) this.buildLibrairies();
+    if (this.input.sections.etrangers) this.buildEtrangers();
     if (this.input.sections.stocks) this.buildStocks();
     this.buildFooter();
 

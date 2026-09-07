@@ -31,6 +31,8 @@ import { DepensesTab } from "@/components/finances/depenses-tab";
 import { RoyaltiesTab } from "@/components/finances/royalties-tab";
 import { RentabiliteTab } from "@/components/finances/rentabilite-tab";
 import { JournalTab } from "@/components/finances/journal-tab";
+import { EtrangersFinancesTab } from "@/components/finances/etrangers-finances-tab";
+import { Globe } from "lucide-react";
 import type { DepenseRow, PaiementRoyaltiesRow, VenteRow } from "@/lib/finance-types";
 
 export const Route = createFileRoute("/_authenticated/finances")({
@@ -43,7 +45,7 @@ export const Route = createFileRoute("/_authenticated/finances")({
   }),
 });
 
-interface Manuscrit { id: string; titre: string; auteur: string; auteur_id?: string | null; }
+interface Manuscrit { id: string; titre: string; auteur: string; auteur_id?: string | null; origine?: string | null; }
 interface Auteur { id: string; nom_complet: string; numero_mobile_money: string | null; operateur: string | null; }
 interface StockInterneLite { id: string; manuscrit_id: string; quantite_imprimee: number; cout_unitaire_impression_fcfa: number; }
 
@@ -93,7 +95,7 @@ function FinancesInner({
         fetchAllRows<VenteRow>(() => supabase.from("ventes").select("*").order("date_vente", { ascending: false })),
         fetchAllRows<DepenseRow>(() => (supabase as any).from("depenses").select("*").order("date_depense", { ascending: false })),
         fetchAllRows<PaiementRoyaltiesRow>(() => (supabase as any).from("paiements_royalties").select("*").order("paye_le", { ascending: false })),
-        fetchAllRows<Manuscrit>(() => (supabase as any).from("manuscrits").select("id, titre, auteur, auteur_id")),
+        fetchAllRows<Manuscrit>(() => (supabase as any).from("manuscrits").select("id, titre, auteur, auteur_id, origine")),
         fetchAllRows<Auteur>(() => (supabase as any).from("auteurs").select("id, nom_complet, numero_mobile_money, operateur")),
         fetchAllRows<StockInterneLite>(() => (supabase as any).from("stock_interne").select("id, manuscrit_id, quantite_imprimee, cout_unitaire_impression_fcfa")),
       ]);
@@ -113,18 +115,39 @@ function FinancesInner({
   const mMap = useMemo(() => Object.fromEntries(manuscrits.map((m) => [m.id, m])), [manuscrits]);
   const aMap = useMemo(() => Object.fromEntries(auteurs.map((a) => [a.id, a.nom_complet])), [auteurs]);
 
+  /** Livres étrangers : jamais mélangés aux ventes de nos productions. */
+  const etrangerIds = useMemo(
+    () => new Set(manuscrits.filter((m) => m.origine === "etranger").map((m) => m.id)),
+    [manuscrits],
+  );
+  const ventesPropres = useMemo(
+    () => (ventes ?? []).filter((v) => !etrangerIds.has(v.manuscrit_id)),
+    [ventes, etrangerIds],
+  );
+  const ventesEtrangers = useMemo(
+    () => (ventes ?? []).filter((v) => etrangerIds.has(v.manuscrit_id)),
+    [ventes, etrangerIds],
+  );
+
   /** Les ventes annulées sont exclues de tous les agrégats financiers. */
   const ventesActives = useMemo(
     () => (ventes ?? []).filter((v) => (v.statut_annulation ?? "active") !== "annulee"),
     [ventes],
   );
 
+  /** Agrégats de royalties : nos productions uniquement. */
+  const ventesActivesPropres = useMemo(
+    () => ventesActives.filter((v) => !etrangerIds.has(v.manuscrit_id)),
+    [ventesActives, etrangerIds],
+  );
+
   const totals = useMemo(() => {
     const v = ventesActives;
     const revenue = v.reduce((a, x) => a + Number(x.montant_total_fcfa || 0), 0);
     const commission = v.reduce((a, x) => a + Number(x.commission_librairie_fcfa || 0), 0);
-    const royalties = v.reduce((a, x) => a + Number(x.droits_auteur_fcfa || 0), 0);
-    const paid = v.filter((x) => x.statut_paiement === "paye").reduce((a, x) => a + Number(x.droits_auteur_fcfa || 0), 0);
+    const vp = v.filter((x) => !etrangerIds.has(x.manuscrit_id));
+    const royalties = vp.reduce((a, x) => a + Number(x.droits_auteur_fcfa || 0), 0);
+    const paid = vp.filter((x) => x.statut_paiement === "paye").reduce((a, x) => a + Number(x.droits_auteur_fcfa || 0), 0);
     const encaisse = v.reduce((a, x) => a + Number(x.montant_encaisse_fcfa || 0), 0);
     const totalDepenses = depenses.reduce((a, d) => a + Number(d.montant_fcfa || 0), 0);
     const coutProduction = stockInterne.reduce(
@@ -143,7 +166,7 @@ function FinancesInner({
       totalDepenses,
       resultatNet: revenue - commission - royalties - totalDepenses - coutProduction,
     };
-  }, [ventesActives, depenses, stockInterne]);
+  }, [ventesActives, depenses, stockInterne, etrangerIds]);
 
   const monthlyData = useMemo(() => {
     const v = ventesActives;
@@ -212,6 +235,12 @@ function FinancesInner({
               <Badge className="ml-1 text-[10px] px-1.5 py-0 bg-amber-500/20 text-amber-400 border-amber-500/30">
                 {fcfa(totals.pending)}
               </Badge>
+            )}
+          </TabsTrigger>
+          <TabsTrigger value="etrangers" className="gap-1.5 whitespace-nowrap">
+            <Globe className="h-4 w-4" /> Livres Étrangers
+            {ventesEtrangers.length > 0 && (
+              <Badge variant="secondary" className="ml-1 text-[10px] px-1.5 py-0">{ventesEtrangers.length}</Badge>
             )}
           </TabsTrigger>
           <TabsTrigger value="rentabilite" className="gap-1.5 whitespace-nowrap">
@@ -296,7 +325,7 @@ function FinancesInner({
           {loading ? (
             <div className="space-y-3">{Array.from({ length: 4 }).map((_, i) => <Skeleton key={i} className="h-12 w-full" />)}</div>
           ) : (
-            <VentesTab ventes={ventes} manuscrits={manuscrits as any} auteurs={auteurs} onChanged={load} />
+            <VentesTab ventes={ventesPropres} manuscrits={manuscrits as any} auteurs={auteurs} onChanged={load} />
           )}
         </TabsContent>
 
@@ -321,12 +350,25 @@ function FinancesInner({
             <Skeleton className="h-64 w-full" />
           ) : (
             <RoyaltiesTab
-              ventes={ventesActives}
+              ventes={ventesActivesPropres}
               manuscrits={manuscrits as any}
               auteurs={auteurs}
               paiements={paiements}
               entrepriseNom={entrepriseNom}
               entrepriseVille={entrepriseVille}
+              onChanged={load}
+            />
+          )}
+        </TabsContent>
+
+        {/* ==================== LIVRES ÉTRANGERS ==================== */}
+        <TabsContent value="etrangers">
+          {loading ? (
+            <Skeleton className="h-64 w-full" />
+          ) : (
+            <EtrangersFinancesTab
+              ventes={ventesEtrangers}
+              manuscrits={manuscrits as any}
               onChanged={load}
             />
           )}
@@ -421,7 +463,7 @@ function FinancesAnalytics({ ventes, manuscrits, aMap, mMap }: { ventes: VenteRo
 
   const rankings: BookRanking[] = [...filtered.reduce((map, v) => {
     const m = mMap[v.manuscrit_id]; if (!m) return map;
-    const e = map.get(v.manuscrit_id) ?? { manuscritId: v.manuscrit_id, titre: m.titre, auteur: m.auteur, copies: 0, revenue: 0 };
+    const e = map.get(v.manuscrit_id) ?? { manuscritId: v.manuscrit_id, titre: m.titre, auteur: m.auteur, etranger: (m as any).origine === "etranger", copies: 0, revenue: 0 };
     e.copies += Number(v.quantite_vendue || 0); e.revenue += Number(v.montant_total_fcfa || 0);
     map.set(v.manuscrit_id, e); return map;
   }, new Map<string, BookRanking>()).values()].sort((a, b) => (sortKey === "copies" ? b.copies - a.copies : b.revenue - a.revenue));

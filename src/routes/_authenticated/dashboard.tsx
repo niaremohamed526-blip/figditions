@@ -175,7 +175,7 @@ function DashboardPage() {
     filteredVentes.forEach((v) => {
       const m = mMap[v.manuscrit_id];
       if (!m) return;
-      const existing = map.get(v.manuscrit_id) ?? { manuscritId: v.manuscrit_id, titre: m.titre, auteur: m.auteur, genre: m.genre, copies: 0, revenue: 0 };
+      const existing = map.get(v.manuscrit_id) ?? { manuscritId: v.manuscrit_id, titre: m.titre, auteur: m.auteur, genre: m.genre, etranger: m.origine === "etranger", copies: 0, revenue: 0 };
       existing.copies += Number(v.quantite_vendue || 0);
       existing.revenue += Number(v.montant_total_fcfa || 0);
       map.set(v.manuscrit_id, existing);
