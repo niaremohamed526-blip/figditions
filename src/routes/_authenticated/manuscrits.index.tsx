@@ -26,6 +26,10 @@ import { planFor } from "@/lib/plans";
 import { UpgradeModal } from "@/components/upgrade-modal";
 import { AnalyticsSection, defaultRange, inRange, EmptyChart, type DateRange } from "@/components/analytics-section";
 import { ManuscritImportDialog } from "@/components/manuscrit-import-dialog";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { EtrangersTab, type LivreEtranger } from "@/components/manuscrits/etrangers-tab";
+import { Globe, Home } from "lucide-react";
+import { Badge } from "@/components/ui/badge";
 
 export const Route = createFileRoute("/_authenticated/manuscrits/")({
   component: ManuscritsPage,
@@ -36,7 +40,9 @@ interface Manuscrit {
   id: string; titre: string; auteur: string; genre: string | null; langue: string | null;
   statut: string; created_at: string;
   origine: string; editeur_origine: string | null;
+  statut_distribution?: string | null; prix_vente_fcfa?: number | null; notes?: string | null;
 }
+
 
 function ManuscritsPage() {
   const { user } = useAuth();
