@@ -80,6 +80,13 @@ export function AppShell({ children }: { children: ReactNode }) {
   const perms = profile?.permissions ?? {};
   const plan = planFor(entreprise?.plan);
 
+  const changelog = useChangelog({
+    userId: user?.id,
+    permissions: profile?.permissions,
+    isAdmin,
+    ready: !!profile,
+  });
+
   const hasPermission = (n: NavItem) => {
     if (isAdmin) return true;
     if (n.permission === "stocks_any") return !!(perms.stocks_interne || perms.stocks_externe);
