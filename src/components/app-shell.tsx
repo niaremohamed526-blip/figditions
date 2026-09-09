@@ -158,7 +158,7 @@ export function AppShell({ children }: { children: ReactNode }) {
           <Link to="/dashboard" className="flex items-center justify-center flex-1 min-w-0">
             <Logo className="h-16 w-auto" />
           </Link>
-          <NotificationBell entrepriseId={entreprise?.id} />
+          <NotificationBell entrepriseId={entreprise?.id} hasUnseenChangelog={changelog.hasUnseen} onOpenChangelog={changelog.openHistory} />
           <LangToggle lang={lang} setLang={setLang} />
         </div>
         <nav className="flex-1 px-3 py-6 space-y-1 overflow-y-auto">
