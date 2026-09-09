@@ -13,6 +13,8 @@ import { NotificationBell } from "@/components/notification-bell";
 import { useRealtimeTable } from "@/hooks/use-realtime";
 import { notifyEntrepriseUpdated } from "@/hooks/use-auth";
 import type { PermissionKey } from "@/lib/permissions";
+import { useChangelog } from "@/hooks/use-changelog";
+import { ChangelogPanel } from "@/components/changelog-panel";
 
 type NavItem = {
   to: string;
