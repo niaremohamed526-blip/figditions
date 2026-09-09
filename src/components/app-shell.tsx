@@ -189,7 +189,7 @@ export function AppShell({ children }: { children: ReactNode }) {
         <Link to="/dashboard" className="flex-1 flex justify-center">
           <Logo className="h-10 w-auto" />
         </Link>
-        <NotificationBell entrepriseId={entreprise?.id} />
+        <NotificationBell entrepriseId={entreprise?.id} hasUnseenChangelog={changelog.hasUnseen} onOpenChangelog={changelog.openHistory} />
         <LangToggle lang={lang} setLang={setLang} />
       </div>
 
