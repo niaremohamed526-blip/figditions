@@ -187,6 +187,68 @@ export type Database = {
           },
         ]
       }
+      changelog_entries: {
+        Row: {
+          actif: boolean
+          created_at: string
+          date_publication: string
+          hook: string
+          id: string
+          items: Json
+          titre: string
+          version: string | null
+        }
+        Insert: {
+          actif?: boolean
+          created_at?: string
+          date_publication?: string
+          hook: string
+          id?: string
+          items?: Json
+          titre: string
+          version?: string | null
+        }
+        Update: {
+          actif?: boolean
+          created_at?: string
+          date_publication?: string
+          hook?: string
+          id?: string
+          items?: Json
+          titre?: string
+          version?: string | null
+        }
+        Relationships: []
+      }
+      changelog_vu_par: {
+        Row: {
+          changelog_id: string
+          id: string
+          user_id: string
+          vu_le: string
+        }
+        Insert: {
+          changelog_id: string
+          id?: string
+          user_id: string
+          vu_le?: string
+        }
+        Update: {
+          changelog_id?: string
+          id?: string
+          user_id?: string
+          vu_le?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "changelog_vu_par_changelog_id_fkey"
+            columns: ["changelog_id"]
+            isOneToOne: false
+            referencedRelation: "changelog_entries"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       chat_messages: {
         Row: {
           created_at: string

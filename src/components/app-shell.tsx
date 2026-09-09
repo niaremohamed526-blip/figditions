@@ -13,6 +13,8 @@ import { NotificationBell } from "@/components/notification-bell";
 import { useRealtimeTable } from "@/hooks/use-realtime";
 import { notifyEntrepriseUpdated } from "@/hooks/use-auth";
 import type { PermissionKey } from "@/lib/permissions";
+import { useChangelog } from "@/hooks/use-changelog";
+import { ChangelogPanel } from "@/components/changelog-panel";
 
 type NavItem = {
   to: string;
@@ -77,6 +79,13 @@ export function AppShell({ children }: { children: ReactNode }) {
   const isAdmin = profile?.role === "admin";
   const perms = profile?.permissions ?? {};
   const plan = planFor(entreprise?.plan);
+
+  const changelog = useChangelog({
+    userId: user?.id,
+    permissions: profile?.permissions,
+    isAdmin,
+    ready: !!profile,
+  });
 
   const hasPermission = (n: NavItem) => {
     if (isAdmin) return true;
@@ -149,7 +158,7 @@ export function AppShell({ children }: { children: ReactNode }) {
           <Link to="/dashboard" className="flex items-center justify-center flex-1 min-w-0">
             <Logo className="h-16 w-auto" />
           </Link>
-          <NotificationBell entrepriseId={entreprise?.id} />
+          <NotificationBell entrepriseId={entreprise?.id} hasUnseenChangelog={changelog.hasUnseen} onOpenChangelog={changelog.openHistory} />
           <LangToggle lang={lang} setLang={setLang} />
         </div>
         <nav className="flex-1 px-3 py-6 space-y-1 overflow-y-auto">
@@ -180,7 +189,7 @@ export function AppShell({ children }: { children: ReactNode }) {
         <Link to="/dashboard" className="flex-1 flex justify-center">
           <Logo className="h-10 w-auto" />
         </Link>
-        <NotificationBell entrepriseId={entreprise?.id} />
+        <NotificationBell entrepriseId={entreprise?.id} hasUnseenChangelog={changelog.hasUnseen} onOpenChangelog={changelog.openHistory} />
         <LangToggle lang={lang} setLang={setLang} />
       </div>
 
@@ -257,6 +266,13 @@ export function AppShell({ children }: { children: ReactNode }) {
           {children}
         </div>
       </main>
+
+      {changelog.showBlocking && (
+        <ChangelogPanel entries={changelog.unseen} blocking onClose={changelog.dismissBlocking} />
+      )}
+      {changelog.showHistory && (
+        <ChangelogPanel entries={changelog.history} onClose={changelog.closeHistory} />
+      )}
     </div>
   );
 }
