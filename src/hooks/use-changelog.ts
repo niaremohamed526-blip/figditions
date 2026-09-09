@@ -20,7 +20,7 @@ async function fetchEntries(limit: number): Promise<ChangelogEntry[]> {
   if (error) throw error;
   return (data ?? []).map((d) => ({
     ...d,
-    items: Array.isArray(d.items) ? (d.items as ChangelogEntry["items"]) : [],
+    items: Array.isArray(d.items) ? (d.items as unknown as ChangelogEntry["items"]) : [],
   })) as ChangelogEntry[];
 }
 
