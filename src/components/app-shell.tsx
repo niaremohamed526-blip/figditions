@@ -266,6 +266,13 @@ export function AppShell({ children }: { children: ReactNode }) {
           {children}
         </div>
       </main>
+
+      {changelog.showBlocking && (
+        <ChangelogPanel entries={changelog.unseen} blocking onClose={changelog.dismissBlocking} />
+      )}
+      {changelog.showHistory && (
+        <ChangelogPanel entries={changelog.history} onClose={changelog.closeHistory} />
+      )}
     </div>
   );
 }
