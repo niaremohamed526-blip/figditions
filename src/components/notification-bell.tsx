@@ -19,7 +19,15 @@ interface Notification {
   created_at: string;
 }
 
-export function NotificationBell({ entrepriseId }: { entrepriseId: string | null | undefined }) {
+export function NotificationBell({
+  entrepriseId,
+  hasUnseenChangelog = false,
+  onOpenChangelog,
+}: {
+  entrepriseId: string | null | undefined;
+  hasUnseenChangelog?: boolean;
+  onOpenChangelog?: () => void;
+}) {
   const [items, setItems] = useState<Notification[]>([]);
   const [open, setOpen] = useState(false);
   const navigate = useNavigate();
