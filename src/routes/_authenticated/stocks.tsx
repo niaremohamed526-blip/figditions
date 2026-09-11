@@ -603,6 +603,11 @@ function StocksPage() {
         onOpenChange={setSaleOpen}
         entrepriseId={profile?.entreprise_id ?? null}
         onSaved={load}
+        entrepriseNom={(entreprise as any)?.nom ?? "Maison d'édition"}
+        entrepriseVille={(entreprise as any)?.ville ?? null}
+        entrepriseAdresse={(entreprise as any)?.adresse ?? null}
+        entrepriseTelephone={(entreprise as any)?.telephone ?? null}
+        entrepriseEmail={(entreprise as any)?.email ?? null}
       />
 
       {/* Mobile FAB — Enregistrer une vente */}

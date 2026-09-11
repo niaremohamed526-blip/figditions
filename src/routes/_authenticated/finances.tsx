@@ -325,7 +325,14 @@ function FinancesInner({
           {loading ? (
             <div className="space-y-3">{Array.from({ length: 4 }).map((_, i) => <Skeleton key={i} className="h-12 w-full" />)}</div>
           ) : (
-            <VentesTab ventes={ventesPropres} manuscrits={manuscrits as any} auteurs={auteurs} onChanged={load} />
+            <VentesTab
+              ventes={ventesPropres}
+              manuscrits={manuscrits as any}
+              auteurs={auteurs}
+              onChanged={load}
+              entrepriseNom={entrepriseNom}
+              entrepriseVille={entrepriseVille}
+            />
           )}
         </TabsContent>
 
@@ -399,6 +406,8 @@ function FinancesInner({
         onOpenChange={setSheetOpen}
         entrepriseId={entrepriseId}
         onSaved={load}
+        entrepriseNom={entrepriseNom}
+        entrepriseVille={entrepriseVille}
       />
 
       <ExportFinancesDialog
