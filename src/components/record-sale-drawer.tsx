@@ -20,6 +20,8 @@ import { cn } from "@/lib/utils";
 import { UnsavedChangesModal } from "@/components/unsaved-changes-modal";
 import { useCloseGuard } from "@/hooks/useCloseGuard";
 import { generateFactureVentePdf, type FactureVenteData } from "@/lib/pdf-facture-vente";
+import { FactureWatermarkUploader } from "@/components/facture-watermark-uploader";
+import { getFactureWatermark } from "@/lib/facture-watermark";
 
 interface Manuscrit { id: string; titre: string; auteur: string | null; auteur_id: string | null; statut: string; origine?: string | null; }
 interface StockRow {
@@ -441,6 +443,7 @@ export function RecordSaleDrawer({
       remiseFcfa: p.remiseFcfa,
       total: p.total,
       notes: p.notes,
+      watermarkLogoUrl: getFactureWatermark(),
     };
     try {
       await generateFactureVentePdf(d, "download");
@@ -672,6 +675,8 @@ export function RecordSaleDrawer({
                       <Label className="text-xs">📝 Notes (optionnel)</Label>
                       <Textarea value={notes} onChange={(e) => setNotes(e.target.value)} rows={2} placeholder="Commentaire sur cette vente…" />
                     </div>
+
+                    <FactureWatermarkUploader />
 
                     {/* Récapitulatif */}
                     <div className="rounded-xl border border-[color:var(--gold)]/30 bg-[color:var(--gold)]/5 p-4 space-y-2">

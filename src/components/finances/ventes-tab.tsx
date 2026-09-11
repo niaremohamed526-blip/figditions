@@ -19,6 +19,7 @@ import {
   ChevronDown, ChevronUp, ShoppingBag, FileText,
 } from "lucide-react";
 import { generateFactureVentePdf } from "@/lib/pdf-facture-vente";
+import { getFactureWatermark } from "@/lib/facture-watermark";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
 import { ENCAISSEMENT_META, fmtFCFA, ANNULATION_META, type VenteRow } from "@/lib/finance-types";
@@ -238,6 +239,7 @@ export function VentesTab({
         remisePct: Number(g.remise_pct ?? 0),
         remiseFcfa: Math.max(0, sousTotal - total),
         total,
+        watermarkLogoUrl: getFactureWatermark(),
       }, "download");
     } catch (e: any) {
       toast.error(e?.message ?? "Impossible de générer la facture");
