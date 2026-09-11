@@ -1834,23 +1834,28 @@ export type Database = {
           annulee_par: string | null
           auteur_id: string | null
           canal_vente: string
+          client_nom: string | null
           commission_librairie_fcfa: number
           created_at: string
           date_encaissement: string | null
           date_vente: string
           droits_auteur_fcfa: number
           entreprise_id: string
+          facture_numero: string | null
           id: string
           librairie_nom: string | null
           manuscrit_id: string
           montant: number
+          montant_avant_remise_fcfa: number | null
           montant_encaisse_fcfa: number
           montant_total_fcfa: number
+          panier_id: string | null
           prix_catalogue_fcfa: number | null
           prix_unitaire_fcfa: number
           quantite_vendue: number
           raison_annulation: string | null
           remise_fcfa: number
+          remise_pct: number
           statut_annulation: string
           statut_encaissement: string
           statut_paiement: Database["public"]["Enums"]["paiement_statut"]
@@ -1861,23 +1866,28 @@ export type Database = {
           annulee_par?: string | null
           auteur_id?: string | null
           canal_vente?: string
+          client_nom?: string | null
           commission_librairie_fcfa?: number
           created_at?: string
           date_encaissement?: string | null
           date_vente?: string
           droits_auteur_fcfa?: number
           entreprise_id: string
+          facture_numero?: string | null
           id?: string
           librairie_nom?: string | null
           manuscrit_id: string
           montant?: number
+          montant_avant_remise_fcfa?: number | null
           montant_encaisse_fcfa?: number
           montant_total_fcfa?: number
+          panier_id?: string | null
           prix_catalogue_fcfa?: number | null
           prix_unitaire_fcfa?: number
           quantite_vendue?: number
           raison_annulation?: string | null
           remise_fcfa?: number
+          remise_pct?: number
           statut_annulation?: string
           statut_encaissement?: string
           statut_paiement?: Database["public"]["Enums"]["paiement_statut"]
@@ -1888,23 +1898,28 @@ export type Database = {
           annulee_par?: string | null
           auteur_id?: string | null
           canal_vente?: string
+          client_nom?: string | null
           commission_librairie_fcfa?: number
           created_at?: string
           date_encaissement?: string | null
           date_vente?: string
           droits_auteur_fcfa?: number
           entreprise_id?: string
+          facture_numero?: string | null
           id?: string
           librairie_nom?: string | null
           manuscrit_id?: string
           montant?: number
+          montant_avant_remise_fcfa?: number | null
           montant_encaisse_fcfa?: number
           montant_total_fcfa?: number
+          panier_id?: string | null
           prix_catalogue_fcfa?: number | null
           prix_unitaire_fcfa?: number
           quantite_vendue?: number
           raison_annulation?: string | null
           remise_fcfa?: number
+          remise_pct?: number
           statut_annulation?: string
           statut_encaissement?: string
           statut_paiement?: Database["public"]["Enums"]["paiement_statut"]
@@ -2083,6 +2098,16 @@ export type Database = {
             }
             Returns: Json
           }
+      record_vente_libre_panier: {
+        Args: {
+          p_client?: string
+          p_date?: string
+          p_lignes: Json
+          p_notes?: string
+          p_remise_pct?: number
+        }
+        Returns: Json
+      }
       redeem_promo_code: {
         Args: { p_code: string; p_entreprise_id: string }
         Returns: Json

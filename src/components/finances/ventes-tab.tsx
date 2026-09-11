@@ -16,8 +16,9 @@ import {
 } from "@/components/ui/alert-dialog";
 import {
   Search, ShoppingCart, Banknote, Loader2, Store, AlertTriangle, RotateCcw, XCircle,
-  ChevronDown, ChevronUp, ShoppingBag,
+  ChevronDown, ChevronUp, ShoppingBag, FileText,
 } from "lucide-react";
+import { generateFactureVentePdf } from "@/lib/pdf-facture-vente";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
 import { ENCAISSEMENT_META, fmtFCFA, ANNULATION_META, type VenteRow } from "@/lib/finance-types";
@@ -27,8 +28,13 @@ interface AuteurLite { id: string; nom_complet: string; }
 
 interface VenteGroupe {
   key: string;
+  /** « librairie » = un dépôt (librairie + date) · « panier » = une vente libre multi-livres. */
+  kind: "librairie" | "panier";
   librairie_nom: string;
   date_vente: string;
+  facture_numero?: string | null;
+  remise_pct?: number;
+  total_avant_remise?: number;
   lignes: VenteRow[];
   total_qte: number;
   total_montant: number;
@@ -44,6 +50,11 @@ export function VentesTab({
   auteurs,
   onChanged,
   hideDroits = false,
+  entrepriseNom = "Maison d'édition",
+  entrepriseVille = null,
+  entrepriseAdresse = null,
+  entrepriseTelephone = null,
+  entrepriseEmail = null,
 }: {
   ventes: VenteRow[];
   manuscrits: ManuscritLite[];
@@ -51,6 +62,11 @@ export function VentesTab({
   onChanged: () => void;
   /** Livres étrangers : la colonne « Droits d'auteur » ne s'applique pas. */
   hideDroits?: boolean;
+  entrepriseNom?: string;
+  entrepriseVille?: string | null;
+  entrepriseAdresse?: string | null;
+  entrepriseTelephone?: string | null;
+  entrepriseEmail?: string | null;
 }) {
 
   const [search, setSearch] = useState("");
@@ -115,24 +131,36 @@ export function VentesTab({
   const resteDe = (v: VenteRow) =>
     isCancelled(v) ? 0 : Math.max(0, Number(v.montant_total_fcfa || 0) - Number(v.montant_encaisse_fcfa || 0));
 
-  /** Regroupement librairie + date ; les ventes libres restent individuelles. */
-  const { groupes, individuelles } = useMemo(() => {
+  /**
+   * Regroupement : les ventes en librairie par librairie + date, les ventes libres
+   * multi-livres par panier (une transaction = une facture). Les ventes libres
+   * isolées restent individuelles.
+   */
+  const { groupes, paniers, individuelles } = useMemo(() => {
     const map = new Map<string, VenteGroupe>();
     const individual: VenteRow[] = [];
 
     for (const v of filtered) {
-      if ((v.canal_vente ?? "interne") !== "externe") {
+      const externe = (v.canal_vente ?? "interne") === "externe";
+      if (!externe && !v.panier_id) {
         individual.push(v);
         continue;
       }
-      const librairie = v.librairie_nom?.trim() || "Librairie non précisée";
-      const key = `${librairie}__${v.date_vente}`;
+      const kind: "librairie" | "panier" = externe ? "librairie" : "panier";
+      const label = externe
+        ? (v.librairie_nom?.trim() || "Librairie non précisée")
+        : (v.client_nom?.trim() || "Client comptant");
+      const key = externe ? `lib__${label}__${v.date_vente}` : `pan__${v.panier_id}`;
       let g = map.get(key);
       if (!g) {
         g = {
           key,
-          librairie_nom: librairie,
+          kind,
+          librairie_nom: label,
           date_vente: v.date_vente,
+          facture_numero: v.facture_numero ?? null,
+          remise_pct: Number(v.remise_pct ?? 0),
+          total_avant_remise: 0,
           lignes: [],
           total_qte: 0,
           total_montant: 0,
@@ -151,17 +179,70 @@ export function VentesTab({
         g.total_commission += Number(v.commission_librairie_fcfa || 0);
         g.total_droits += Number(v.droits_auteur_fcfa || 0);
         g.total_reste += resteDe(v);
+        g.total_avant_remise = (g.total_avant_remise ?? 0)
+          + Number(v.montant_avant_remise_fcfa ?? v.montant_total_fcfa ?? 0);
       }
     }
 
-    const list = [...map.values()]
-      .filter((g) => g.lignes.length > 0)
-      .sort((a, b) => (a.date_vente < b.date_vente ? 1 : a.date_vente > b.date_vente ? -1 : a.librairie_nom.localeCompare(b.librairie_nom)));
+    const all = [...map.values()].filter((g) => g.lignes.length > 0);
+    const byDate = (a: VenteGroupe, b: VenteGroupe) =>
+      a.date_vente < b.date_vente ? 1 : a.date_vente > b.date_vente ? -1 : a.librairie_nom.localeCompare(b.librairie_nom);
 
     individual.sort((a, b) => (a.date_vente < b.date_vente ? 1 : -1));
-    return { groupes: list, individuelles: individual };
+    return {
+      groupes: all.filter((g) => g.kind === "librairie").sort(byDate),
+      paniers: all.filter((g) => g.kind === "panier").sort(byDate),
+      individuelles: individual,
+    };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [filtered]);
+
+  /** Dépôts en librairie et paniers de vente directe, dans un même fil chronologique. */
+  const tousGroupes = useMemo(
+    () => [...groupes, ...paniers].sort((a, b) =>
+      a.date_vente < b.date_vente ? 1 : a.date_vente > b.date_vente ? -1 : a.librairie_nom.localeCompare(b.librairie_nom),
+    ),
+    [groupes, paniers],
+  );
+
+  /** Facture PDF d'un panier de vente directe. */
+  const voirFacture = async (g: VenteGroupe) => {
+    try {
+      const actives = g.lignes.filter((v) => !isCancelled(v));
+      const lignes = (actives.length > 0 ? actives : g.lignes).map((v) => {
+        const qte = Number(v.quantite_vendue || 0);
+        const pu = Number(v.prix_unitaire_fcfa || 0);
+        return {
+          titre: manuscritMap.get(v.manuscrit_id)?.titre ?? "Livre supprimé",
+          auteur: auteurDe(v),
+          quantite: qte,
+          prix_unitaire: pu,
+          total: Number(v.montant_avant_remise_fcfa ?? Math.round(qte * pu)),
+        };
+      });
+      const sousTotal = lignes.reduce((a, l) => a + l.total, 0);
+      const total = (actives.length > 0 ? actives : g.lignes)
+        .reduce((a, v) => a + Number(v.montant_total_fcfa || 0), 0);
+      const client = g.lignes[0]?.client_nom ?? null;
+      await generateFactureVentePdf({
+        numero: g.facture_numero ?? `FACT-${g.date_vente}`,
+        dateEmission: new Date(g.date_vente).toLocaleDateString("fr-FR"),
+        maison: entrepriseNom,
+        maisonAdresse: entrepriseAdresse,
+        maisonVille: entrepriseVille,
+        maisonTelephone: entrepriseTelephone,
+        maisonEmail: entrepriseEmail,
+        clientNom: client,
+        lignes,
+        sousTotal,
+        remisePct: Number(g.remise_pct ?? 0),
+        remiseFcfa: Math.max(0, sousTotal - total),
+        total,
+      }, "download");
+    } catch (e: any) {
+      toast.error(e?.message ?? "Impossible de générer la facture");
+    }
+  };
 
   const activeTotals = useMemo(() => {
     const active = ventes.filter((v) => v.statut_annulation === "active");
@@ -379,18 +460,19 @@ export function VentesTab({
         <CardHeader>
           <CardTitle className="flex items-center gap-2 text-lg">
             <Store className="h-5 w-5 text-[color:var(--gold)]" />
-            🏪 Ventes en librairie <span className="text-xs font-normal text-muted-foreground">(groupées par dépôt)</span>
+            🏪 Ventes groupées <span className="text-xs font-normal text-muted-foreground">(dépôts en librairie & ventes directes)</span>
           </CardTitle>
           <CardDescription>
-            Un groupe = une librairie et une date. Encaissez tout le dépôt d'un clic, ou dépliez pour voir chaque titre.
+            Un groupe = un dépôt en librairie (librairie + date) ou une vente directe multi-livres (une facture).
+            Encaissez tout le groupe d'un clic, ou dépliez pour voir chaque titre.
           </CardDescription>
         </CardHeader>
         <CardContent>
-          {groupes.length === 0 ? (
-            <p className="text-center py-10 text-muted-foreground text-sm">Aucune vente en librairie ne correspond aux filtres.</p>
+          {tousGroupes.length === 0 ? (
+            <p className="text-center py-10 text-muted-foreground text-sm">Aucune vente groupée ne correspond aux filtres.</p>
           ) : (
             <div className="space-y-2">
-              {groupes.map((g) => {
+              {tousGroupes.map((g) => {
                 const isOpen = !!expanded[g.key];
                 const aEncaisser = g.total_reste > 0;
                 const toutAnnule = g.nb_actives === 0;
@@ -421,10 +503,23 @@ export function VentesTab({
                             <span className="text-sm font-semibold">
                               {new Date(g.date_vente).toLocaleDateString("fr-FR")}
                             </span>
-                            <Badge variant="outline" className="text-[10px] bg-blue-500/10 text-blue-400 border-blue-500/30">
-                              Librairie
+                            <Badge
+                              variant="outline"
+                              className={cn(
+                                "text-[10px]",
+                                g.kind === "panier"
+                                  ? "bg-[color:var(--gold)]/10 text-[color:var(--gold)] border-[color:var(--gold)]/30"
+                                  : "bg-blue-500/10 text-blue-400 border-blue-500/30",
+                              )}
+                            >
+                              {g.kind === "panier" ? "Vente directe" : "Librairie"}
                             </Badge>
-                            <span className="text-sm font-medium truncate">{g.librairie_nom}</span>
+                            <span className="text-sm font-medium truncate">
+                              {g.kind === "panier" ? `🛍️ ${g.librairie_nom}` : g.librairie_nom}
+                            </span>
+                            {g.kind === "panier" && g.facture_numero && (
+                              <span className="text-[10px] text-muted-foreground">n° {g.facture_numero}</span>
+                            )}
                           </div>
                           <p className="mt-1 text-xs text-muted-foreground">
                             {g.nb_actives} titre(s) · {g.total_qte} exemplaire(s)
@@ -478,12 +573,27 @@ export function VentesTab({
                             Encaisser tout
                           </Button>
                         )}
+                        {g.kind === "panier" && (
+                          <Button
+                            size="sm"
+                            variant="outline"
+                            className="h-8 text-xs border-[color:var(--gold)]/40 text-[color:var(--gold)] hover:bg-[color:var(--gold)]/10"
+                            onClick={(e) => { e.stopPropagation(); voirFacture(g); }}
+                          >
+                            <FileText className="h-3.5 w-3.5 mr-1" />
+                            Voir la facture
+                          </Button>
+                        )}
                         {!toutAnnule && (
                           <Button
                             size="sm"
                             variant="outline"
                             className="h-8 text-xs border-red-500/40 text-red-400 hover:bg-red-500/10"
-                            onClick={(e) => { e.stopPropagation(); setChoixGroupe(g); }}
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              if (g.kind === "panier") { setCancelGroupeReason(""); setCancelGroupe(g); }
+                              else setChoixGroupe(g);
+                            }}
                           >
                             <RotateCcw className="h-3.5 w-3.5 mr-1" />
                             Annuler

@@ -22,6 +22,12 @@ export interface VenteRow {
   raison_annulation: string | null;
   annulee_par: string | null;
   annulee_le: string | null;
+  /** Ventes libres multi-livres : identifiant commun à toutes les lignes d'un panier. */
+  panier_id?: string | null;
+  remise_pct?: number | null;
+  montant_avant_remise_fcfa?: number | null;
+  facture_numero?: string | null;
+  client_nom?: string | null;
 }
 
 export const ANNULATION_META: Record<string, { label: string; className: string }> = {
