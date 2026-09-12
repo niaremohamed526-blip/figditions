@@ -116,9 +116,19 @@ export function ConfirmationModal({
           color: "#B8A898",
         };
 
+  // Radix drawers/dialogs listen on document for "interact outside" events and
+  // would treat clicks in this portal as a close attempt on the form beneath.
+  const stopOutside = {
+    onPointerDown: (e: React.PointerEvent) => e.stopPropagation(),
+    onMouseDown: (e: React.MouseEvent) => e.stopPropagation(),
+    onTouchStart: (e: React.TouchEvent) => e.stopPropagation(),
+    onFocus: (e: React.FocusEvent) => e.stopPropagation(),
+  };
+
   return createPortal(
     <>
       <div
+        {...stopOutside}
         onClick={backdropCancels ? onCancel : onConfirm}
         style={{
           position: "fixed",
@@ -135,6 +145,7 @@ export function ConfirmationModal({
         role="dialog"
         aria-modal="true"
         aria-labelledby="figd-confirm-title"
+        {...stopOutside}
         style={{
           position: "fixed",
           top: "50%",
