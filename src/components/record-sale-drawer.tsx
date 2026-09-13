@@ -154,7 +154,7 @@ export function RecordSaleDrawer({
   const [addingLine, setAddingLine] = useState(false);
   const qtyRefs = useRef<Record<string, HTMLInputElement | null>>({});
   const [focusLine, setFocusLine] = useState<string | null>(null);
-  const [watermarkPickerActive, setWatermarkPickerActive] = useState(false);
+  const watermarkPickerActiveRef = useRef(false);
 
   const [saving, setSaving] = useState(false);
   const [success, setSuccess] = useState<RecordSaleResult | null>(null);
@@ -466,7 +466,7 @@ export function RecordSaleDrawer({
     <Sheet
       open={open}
       onOpenChange={(nextOpen) => {
-        if (!nextOpen && watermarkPickerActive) return;
+        if (!nextOpen && watermarkPickerActiveRef.current) return;
         guard.handleOpenChange(nextOpen);
       }}
     >
@@ -683,7 +683,11 @@ export function RecordSaleDrawer({
                       <Textarea value={notes} onChange={(e) => setNotes(e.target.value)} rows={2} placeholder="Commentaire sur cette vente…" />
                     </div>
 
-                    <FactureWatermarkUploader onPickerActiveChange={setWatermarkPickerActive} />
+                    <FactureWatermarkUploader
+                      onPickerActiveChange={(active) => {
+                        watermarkPickerActiveRef.current = active;
+                      }}
+                    />
 
                     {/* Récapitulatif */}
                     <div className="rounded-xl border border-[color:var(--gold)]/30 bg-[color:var(--gold)]/5 p-4 space-y-2">
