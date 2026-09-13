@@ -1,4 +1,4 @@
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { toast } from "sonner";
 import { ImagePlus, Trash2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -11,9 +11,27 @@ import {
 } from "@/lib/facture-watermark";
 
 /** Choix d'un logo utilisé en filigrane sur les factures générées. */
-export function FactureWatermarkUploader() {
+export function FactureWatermarkUploader({
+  onPickerActiveChange,
+}: {
+  onPickerActiveChange?: (active: boolean) => void;
+}) {
   const inputRef = useRef<HTMLInputElement>(null);
   const [logo, setLogo] = useState<string | null>(() => getFactureWatermark());
+
+  useEffect(() => {
+    return () => onPickerActiveChange?.(false);
+  }, [onPickerActiveChange]);
+
+  const openPicker = () => {
+    onPickerActiveChange?.(true);
+    const restore = () => {
+      window.setTimeout(() => onPickerActiveChange?.(false), 400);
+      window.removeEventListener("focus", restore);
+    };
+    window.addEventListener("focus", restore);
+    inputRef.current?.click();
+  };
 
   const pick = async (file: File | undefined) => {
     if (!file) return;
@@ -48,7 +66,7 @@ export function FactureWatermarkUploader() {
           </p>
         </div>
         <div className="flex items-center gap-2">
-          <Button type="button" variant="outline" size="sm" onClick={() => inputRef.current?.click()}>
+          <Button type="button" variant="outline" size="sm" onClick={openPicker}>
             {logo ? "Changer" : "Choisir"}
           </Button>
           {logo && (
@@ -75,6 +93,7 @@ export function FactureWatermarkUploader() {
         onChange={(e) => {
           void pick(e.target.files?.[0]);
           e.currentTarget.value = "";
+          window.setTimeout(() => onPickerActiveChange?.(false), 400);
         }}
       />
     </div>
