@@ -62,7 +62,7 @@ export function generateQuittancePdf(input: QuittanceInput): jsPDF {
   doc.setFont("helvetica", "normal");
   doc.setFontSize(9);
   doc.setTextColor(MUTED);
-  doc.text("La plateforme éditoriale de l'Afrique de l'Ouest — figditions.xyz", M, y + 16);
+  doc.text("La plateforme éditoriale de l'Afrique de l'Ouest | figditions.xyz", M, y + 16);
 
   // Numéro / date à droite
   doc.setFont("helvetica", "bold");
@@ -218,7 +218,7 @@ export function generateQuittancePdf(input: QuittanceInput): jsPDF {
   doc.setFontSize(8);
   doc.setTextColor(MUTED);
   doc.text(
-    `Document généré par FIGDITIONS le ${fmtDate(new Date())} — ${input.numero}`,
+    `Document généré par FIGDITIONS le ${fmtDate(new Date())} | ${input.numero}`,
     W / 2, H - 24, { align: "center" },
   );
 

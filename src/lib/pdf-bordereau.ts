@@ -429,8 +429,8 @@ export async function generateBordereauPdf(
   doc.setFont("helvetica", "bold");
   doc.setFontSize(7);
   doc.setTextColor(...MUTED);
-  doc.text("SIGNATURE — ÉDITEUR", M, y + 12);
-  doc.text("SIGNATURE — LIBRAIRIE", M + sigColW + 36, y + 12);
+  doc.text("SIGNATURE DE L'ÉDITEUR", M, y + 12);
+  doc.text("SIGNATURE DE LA LIBRAIRIE", M + sigColW + 36, y + 12);
   doc.setFont("times", "italic");
   doc.setFontSize(9);
   doc.setTextColor(...INK);

@@ -142,14 +142,14 @@ function PrivacyPage() {
           engagements de sécurité et de confidentialité.
         </p>
         <ul>
-          <li><strong>Lovable Cloud / Supabase</strong> — base de données, authentification, stockage, service email et routage des notifications serveur</li>
-          <li><strong>Vercel</strong> — hébergement du site et des fonctions serveur</li>
-          <li><strong>Flutterwave</strong> — paiements automatiques par carte et mobile money</li>
-          <li><strong>Orange Money Mali / Wave Mali</strong> — traitement des paiements manuels par QR code, validés par FIGDITIONS</li>
-          <li><strong>CloudConvert</strong> — conversion de manuscrits ; le fichier source est transmis via une URL signée temporaire et supprimé côté CloudConvert selon leur politique de rétention</li>
-          <li><strong>Google Gemini (via Lovable AI Gateway)</strong> — génération assistée par IA lorsque vous utilisez explicitement ces fonctionnalités</li>
+          <li><strong>Lovable Cloud / Supabase :</strong> base de données, authentification, stockage, service email et routage des notifications serveur</li>
+          <li><strong>Vercel :</strong> hébergement du site et des fonctions serveur</li>
+          <li><strong>Flutterwave :</strong> paiements automatiques par carte et argent mobile</li>
+          <li><strong>Orange Money Mali / Wave Mali :</strong> traitement des paiements manuels par QR code, validés par FIGDITIONS</li>
+          <li><strong>CloudConvert :</strong> conversion de manuscrits ; le fichier source est transmis via une URL signée temporaire et supprimé côté CloudConvert selon leur politique de rétention</li>
+          <li><strong>Google Gemini (via Lovable AI Gateway) :</strong> génération assistée par IA lorsque vous utilisez explicitement ces fonctionnalités</li>
           
-          <li><strong>Figuira Éditions</strong> — partenaire officiel, uniquement pour les fonctionnalités contractuellement partagées avec votre autorisation</li>
+          <li><strong>Figuira Éditions :</strong> partenaire officiel, uniquement pour les fonctionnalités contractuellement partagées avec votre autorisation</li>
         </ul>
       </Section>
 

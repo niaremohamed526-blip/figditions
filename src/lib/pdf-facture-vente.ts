@@ -119,7 +119,7 @@ export async function generateFactureVentePdf(
   doc.setFont("times", "italic");
   doc.setFontSize(7.5);
   doc.setTextColor(...MUTED);
-  doc.text("Plateforme éditoriale — Bamako", W / 2, y + 11, { align: "center" });
+  doc.text("Plateforme éditoriale, Bamako", W / 2, y + 11, { align: "center" });
 
   // Titre
   y += 34;
@@ -130,7 +130,7 @@ export async function generateFactureVentePdf(
   doc.setFont("times", "normal");
   doc.setFontSize(21);
   doc.setTextColor(...INK);
-  doc.text("FACTURE — Vente directe", M, y + 22);
+  doc.text("FACTURE DE VENTE LIBRE", M, y + 22);
 
   doc.setFont("helvetica", "bold");
   doc.setFontSize(7);
@@ -295,8 +295,8 @@ export async function generateFactureVentePdf(
   doc.setFont("helvetica", "bold");
   doc.setFontSize(7);
   doc.setTextColor(...MUTED);
-  doc.text("SIGNATURE — ÉDITEUR", M, y + 12);
-  doc.text("SIGNATURE — CLIENT", M + sigColW + 36, y + 12);
+  doc.text("SIGNATURE DE L'ÉDITEUR", M, y + 12);
+  doc.text("SIGNATURE DU CLIENT", M + sigColW + 36, y + 12);
   doc.setFont("times", "italic");
   doc.setFontSize(9);
   doc.setTextColor(...INK);

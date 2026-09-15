@@ -973,7 +973,7 @@ class PdfBuilder {
 
     const rows = list.map((d) => [
       fmtDate(d.date_depense),
-      truncate(clean(d.categorie), 18),
+      truncate(readableValue(d.categorie), 18),
       truncate(clean(d.libelle), 34),
       clean(d.manuscrit_id ? (mMap[d.manuscrit_id]?.titre ?? "-") : this.t.nonLiees),
       fmtFCFA(Number(d.montant_fcfa || 0)),
