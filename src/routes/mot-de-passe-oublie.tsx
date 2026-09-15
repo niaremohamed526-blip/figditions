@@ -11,7 +11,7 @@ export const Route = createFileRoute("/mot-de-passe-oublie")({
   component: ForgotPasswordPage,
   head: () => ({
     meta: [
-      { title: "Mot de passe oublié — FIGDITIONS" },
+      { title: "Mot de passe oublié | FIGDITIONS" },
       { name: "description", content: "Réinitialisez votre mot de passe FIGDITIONS." },
     ],
     links: [{ rel: "canonical", href: "https://figditions.xyz/mot-de-passe-oublie" }],

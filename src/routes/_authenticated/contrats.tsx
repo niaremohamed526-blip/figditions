@@ -27,7 +27,7 @@ import { BookCombobox } from "@/components/book-combobox";
 
 export const Route = createFileRoute("/_authenticated/contrats")({
   component: ContratsPage,
-  head: () => ({ meta: [{ title: "Contrats & Droits — FIGDITIONS" }] }),
+  head: () => ({ meta: [{ title: "Contrats et droits | FIGDITIONS" }] }),
 });
 
 interface Contrat {

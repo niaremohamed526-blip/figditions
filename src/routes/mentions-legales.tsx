@@ -9,11 +9,11 @@ export const Route = createFileRoute("/mentions-legales")({
   component: LegalNoticePage,
   head: () => ({
     meta: [
-      { title: "Mentions Légales — FIGDITIONS" },
+      { title: "Mentions Légales | FIGDITIONS" },
       { name: "description", content: DESC },
-      { property: "og:title", content: "Mentions Légales — FIGDITIONS" },
+      { property: "og:title", content: "Mentions Légales | FIGDITIONS" },
       { property: "og:description", content: DESC },
-      { name: "twitter:title", content: "Mentions Légales — FIGDITIONS" },
+      { name: "twitter:title", content: "Mentions Légales | FIGDITIONS" },
       { name: "twitter:description", content: DESC },
       { property: "og:image", content: OG_IMAGE },
       { name: "twitter:image", content: OG_IMAGE },

@@ -39,7 +39,7 @@ export const Route = createFileRoute("/_authenticated/finances")({
   component: FinancesPage,
   head: () => ({
     meta: [
-      { title: "Finances & Royalties — FIGDITIONS" },
+      { title: "Finances et royalties | FIGDITIONS" },
       { name: "description", content: "Pilotage financier complet : ventes, encaissements, dépenses, royalties, rentabilité par livre et journal d'audit vérifiable." },
     ],
   }),
@@ -206,7 +206,7 @@ function FinancesInner({
         <div>
           <h1 className="text-3xl font-bold tracking-tight">Finances</h1>
           <p className="text-muted-foreground mt-1">
-            Ventes, encaissements, dépenses et royalties — chaque opération est traçable et vérifiable.
+            Ventes, encaissements, dépenses et royalties. Chaque opération est traçable et vérifiable.
           </p>
         </div>
         <div className="flex flex-wrap items-center gap-2">

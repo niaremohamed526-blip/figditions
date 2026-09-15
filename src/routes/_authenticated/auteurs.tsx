@@ -23,7 +23,7 @@ import { fcfa } from "@/lib/format";
 
 export const Route = createFileRoute("/_authenticated/auteurs")({
   component: AuteursPage,
-  head: () => ({ meta: [{ title: "Auteurs — FIGDITIONS" }] }),
+  head: () => ({ meta: [{ title: "Auteurs | FIGDITIONS" }] }),
 });
 
 interface Auteur {

@@ -7,7 +7,7 @@ import { MedmoChat } from "@/components/medmo-chat";
 export const Route = createFileRoute("/_authenticated/medmo/$threadId")({
   component: MedmoThreadPage,
   head: () => ({
-    meta: [{ title: "PR MEDMO — Conversation | FIGDITIONS" }],
+    meta: [{ title: "PR MEDMO, conversation | FIGDITIONS" }],
   }),
 });
 

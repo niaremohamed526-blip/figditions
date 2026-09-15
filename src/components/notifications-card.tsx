@@ -63,7 +63,7 @@ export function NotificationsCard({
           <h3 className="font-semibold">Notifications système</h3>
           <p className="text-sm text-muted-foreground mt-1">
             Recevez une alerte (avec son) sur ce téléphone ou cet ordinateur pour chaque
-            vente, stock bas, contrat expirant, royalties, etc. — même quand l'application
+            vente, stock bas, contrat expirant, royalties, etc., même quand l'application
             est fermée.
           </p>
         </div>

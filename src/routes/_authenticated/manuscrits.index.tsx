@@ -33,7 +33,7 @@ import { Badge } from "@/components/ui/badge";
 
 export const Route = createFileRoute("/_authenticated/manuscrits/")({
   component: ManuscritsPage,
-  head: () => ({ meta: [{ title: "Manuscrits — FIGDITIONS" }] }),
+  head: () => ({ meta: [{ title: "Manuscrits | FIGDITIONS" }] }),
 });
 
 interface Manuscrit {

@@ -244,7 +244,7 @@ function NewConversionForm({ onCreated }: { onCreated: () => void }) {
           },
         },
       });
-      toast.success("Conversion lancée — suivez la progression dans l'historique");
+      toast.success("Conversion lancée. Suivez la progression dans l'historique");
       onCreated();
       // reset partial
       setFile(null);
@@ -326,7 +326,7 @@ function NewConversionForm({ onCreated }: { onCreated: () => void }) {
                   <SelectContent>
                     {(manuscrits ?? []).map((m) => (
                       <SelectItem key={m.id} value={m.id}>
-                        {m.titre} — {m.auteur}
+                        {m.titre} | {m.auteur}
                       </SelectItem>
                     ))}
                   </SelectContent>

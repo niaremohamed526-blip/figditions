@@ -79,11 +79,11 @@ export const Route = createFileRoute("/")({
   component: Landing,
   head: () => ({
     meta: [
-      { title: "FIGDITIONS — Plateforme éditoriale africaine" },
+      { title: "FIGDITIONS | Plateforme éditoriale africaine" },
       { name: "description", content: "Manuscrits, stocks, dépôts en librairie, contrats et finances en un seul endroit, avec l'assistant Pr. MEDMO. Conçu pour les maisons d'édition d'Afrique de l'Ouest." },
-      { property: "og:title", content: "FIGDITIONS — Plateforme éditoriale africaine" },
+      { property: "og:title", content: "FIGDITIONS | Plateforme éditoriale africaine" },
       { property: "og:description", content: "Manuscrits, stocks, dépôts en librairie, contrats et finances en un seul endroit, avec l'assistant Pr. MEDMO. Conçu pour les maisons d'édition d'Afrique de l'Ouest." },
-      { name: "twitter:title", content: "FIGDITIONS — Plateforme éditoriale africaine" },
+      { name: "twitter:title", content: "FIGDITIONS | Plateforme éditoriale africaine" },
       { name: "twitter:description", content: "Manuscrits, stocks, dépôts en librairie, contrats et finances en un seul endroit, avec l'assistant Pr. MEDMO. Conçu pour les maisons d'édition d'Afrique de l'Ouest." },
       { property: "og:image", content: OG_IMAGE },
       { name: "twitter:image", content: OG_IMAGE },
@@ -262,7 +262,7 @@ function Hero() {
       {/* Hero image — right side */}
       <img
         src={heroAsset.url}
-        alt="FIGDITIONS — Plateforme éditoriale africaine"
+        alt="FIGDITIONS, plateforme éditoriale africaine"
         className="absolute inset-y-0 right-0 h-full w-full md:w-[70%] object-cover object-center pointer-events-none select-none"
         style={{
           WebkitMaskImage:
@@ -426,7 +426,7 @@ function Screenshots() {
         <div className="text-center mb-12">
           <h2 className="text-3xl md:text-5xl font-bold tracking-tight">Voyez la plateforme en action</h2>
           <p className="mt-3 text-muted-foreground max-w-2xl mx-auto">
-            Pas de promesses abstraites — voici l'interface que vous utiliserez au quotidien.
+            Pas de promesses abstraites. Voici l'interface que vous utiliserez au quotidien.
           </p>
         </div>
         <Tabs defaultValue="manuscrits" className="w-full">
@@ -523,7 +523,7 @@ function MedmoSection() {
     {
       icon: MessageSquare,
       title: "Posez vos questions",
-      text: "« Combien d'exemplaires reste-t-il à la Librairie Nouvel Horizon ? » — la réponse vient de vos données réelles, en français.",
+      text: "« Combien d'exemplaires reste-t-il à la Librairie Nouvel Horizon ? » La réponse vient de vos données réelles, en français.",
     },
     {
       icon: Camera,
@@ -550,7 +550,7 @@ function MedmoSection() {
             </span>
           </h2>
           <p className="mt-4 text-muted-foreground max-w-2xl mx-auto">
-            Il connaît votre catalogue, vos stocks et vos chiffres. Il lit vos photos et vos documents, et prépare le travail à votre place — vous validez.
+            Il connaît votre catalogue, vos stocks et vos chiffres. Il lit vos photos et vos documents, puis prépare le travail à votre place. Vous validez.
           </p>
         </div>
         <div className="grid md:grid-cols-3 gap-5">

@@ -13,7 +13,7 @@ import { LockedPage } from "@/components/locked-page";
 
 export const Route = createFileRoute("/_authenticated/contrats/$contratId")({
   component: ContratDetailPage,
-  head: () => ({ meta: [{ title: "Contrat — FIGDITIONS" }] }),
+  head: () => ({ meta: [{ title: "Contrat | FIGDITIONS" }] }),
 });
 
 const STATUT_LABELS: Record<string, string> = { brouillon: "Brouillon", signe: "Signé", expire: "Expiré", resilie: "Résilié" };

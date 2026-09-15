@@ -413,7 +413,7 @@ export function RecordSaleDrawer({
       });
       setCart([]);
       try { localStorage.removeItem(draftKey); } catch { /* stockage indisponible */ }
-      toast.success(`Vente enregistrée — ${lignesSnapshot.length} livre(s)`);
+      toast.success(`Vente enregistrée : ${lignesSnapshot.length} livre(s)`);
       onSaved?.();
     } catch (err: any) {
       toast.error(err?.message ?? "Erreur lors de l'enregistrement");
@@ -570,7 +570,7 @@ export function RecordSaleDrawer({
                             <div className="flex items-center justify-between text-xs">
                               <span className={cn(over ? "text-red-400" : "text-muted-foreground")}>
                                 {over
-                                  ? `Stock insuffisant — ${l.disponible} disponible(s)`
+                                  ? `Stock insuffisant : ${l.disponible} disponible(s)`
                                   : `${l.disponible} disponible(s) en stock interne`}
                               </span>
                               <span className="font-mono tabular-nums text-[color:var(--gold)]">
@@ -663,7 +663,7 @@ export function RecordSaleDrawer({
                         <span className="absolute right-3 top-1/2 -translate-y-1/2 text-sm text-muted-foreground">%</span>
                       </div>
                       <p className="text-[11px] text-muted-foreground">
-                        Appliquée proportionnellement à chaque livre — les droits d'auteur sont calculés sur le montant remisé.
+                        Appliquée proportionnellement à chaque livre. Les droits d'auteur sont calculés sur le montant remisé.
                       </p>
                     </div>
 
@@ -841,7 +841,7 @@ export function RecordSaleDrawer({
                         {overSell && (
                           <p className="text-xs text-red-400 flex items-center gap-1">
                             <AlertTriangle className="h-3 w-3" />
-                            Stock insuffisant — seulement {availableStock} disponibles
+                            Stock insuffisant : seulement {availableStock} disponibles
                           </p>
                         )}
                       </div>

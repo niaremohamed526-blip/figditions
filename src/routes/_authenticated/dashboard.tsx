@@ -27,7 +27,7 @@ import { cn } from "@/lib/utils";
 
 export const Route = createFileRoute("/_authenticated/dashboard")({
   component: DashboardPage,
-  head: () => ({ meta: [{ title: "Tableau de bord — FIGDITIONS" }] }),
+  head: () => ({ meta: [{ title: "Tableau de bord | FIGDITIONS" }] }),
 });
 
 interface Manuscrit { id: string; titre: string; auteur: string; auteur_id?: string | null; genre?: string | null; statut: string; created_at: string; origine?: string | null; }

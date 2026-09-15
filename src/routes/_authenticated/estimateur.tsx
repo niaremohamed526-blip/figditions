@@ -30,7 +30,7 @@ const searchSchema = z.object({ manuscrit: z.string().uuid().optional() });
 export const Route = createFileRoute("/_authenticated/estimateur")({
   component: EstimateurPage,
   validateSearch: searchSchema,
-  head: () => ({ meta: [{ title: "Estimateur de coûts — FIGDITIONS" }] }),
+  head: () => ({ meta: [{ title: "Estimateur de coûts | FIGDITIONS" }] }),
 });
 
 

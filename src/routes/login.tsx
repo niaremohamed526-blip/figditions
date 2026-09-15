@@ -14,9 +14,9 @@ export const Route = createFileRoute("/login")({
   component: LoginPage,
   head: () => ({
     meta: [
-      { title: "Connexion — FIGDITIONS" },
+      { title: "Connexion | FIGDITIONS" },
       { name: "description", content: "Connectez-vous à votre espace FIGDITIONS pour gérer manuscrits, contrats, stocks et ventes de votre maison d'édition." },
-      { property: "og:title", content: "Connexion — FIGDITIONS" },
+      { property: "og:title", content: "Connexion | FIGDITIONS" },
       { property: "og:description", content: "Accédez à votre espace éditorial FIGDITIONS." },
       { property: "og:url", content: "https://figditions.xyz/login" },
       { property: "og:type", content: "website" },

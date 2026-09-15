@@ -46,7 +46,7 @@ import { StockExterneGroups } from "@/components/stock-externe-groups";
 
 export const Route = createFileRoute("/_authenticated/stocks")({
   component: StocksPage,
-  head: () => ({ meta: [{ title: "Stocks — FIGDITIONS" }] }),
+  head: () => ({ meta: [{ title: "Stocks | FIGDITIONS" }] }),
 });
 
 interface Stock {
@@ -879,7 +879,7 @@ function StockForm({
         {existing ? (
           <p className="rounded-lg border border-border bg-background/40 px-3 py-2 text-xs text-muted-foreground">
             {form.provenance === "hors_stock"
-              ? "📤 Dépôt direct — hors stock interne (aucune déduction de l'entrepôt)"
+              ? "📤 Dépôt direct hors stock interne (aucune déduction de l'entrepôt)"
               : "🏭 Livres prélevés depuis le stock interne"}
             <span className="mt-0.5 block opacity-70">La provenance ne peut pas être modifiée après création.</span>
           </p>
@@ -887,7 +887,7 @@ function StockForm({
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
             {[
               { v: "interne", icon: "🏭", t: "Depuis le stock interne", d: "Déduit les exemplaires de l'entrepôt" },
-              { v: "hors_stock", icon: "📤", t: "Hors stock interne", d: "Livres déjà dehors — aucune déduction de l'entrepôt" },
+              { v: "hors_stock", icon: "📤", t: "Hors stock interne", d: "Livres déjà dehors, aucune déduction de l'entrepôt" },
             ].map((o) => (
               <button
                 key={o.v}

@@ -9,7 +9,7 @@ import { MedmoWordmark } from "@/components/medmo-wordmark";
 export const Route = createFileRoute("/_authenticated/medmo/")({
   component: MedmoIndex,
   head: () => ({
-    meta: [{ title: "PR MEDMO — Assistant IA | FIGDITIONS" }],
+    meta: [{ title: "PR MEDMO, assistant IA | FIGDITIONS" }],
   }),
 });
 
@@ -59,7 +59,7 @@ function MedmoIndex() {
           </h1>
           <p className="text-sm text-muted-foreground mt-2 max-w-md">
             Votre copilote IA pour FIGDITIONS. Posez une question, demandez une analyse de vos stocks
-            ou ventes, ou laissez-le agir pour vous — toujours avec votre confirmation.
+            ou ventes, ou laissez le agir pour vous, toujours avec votre confirmation.
           </p>
         </motion.div>
         <motion.button
