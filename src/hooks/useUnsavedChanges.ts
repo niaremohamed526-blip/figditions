@@ -8,7 +8,7 @@ import { useCallback, useEffect, useRef, useState } from "react";
  *   // call markDirty(currentValues) whenever the form state changes
  *   // call markClean() after a successful save
  *
- * `initialValues` can be re-passed on each render — the hook keeps a stable
+ * `initialValues` can be re-passed on each render : the hook keeps a stable
  * snapshot of the FIRST initial values it saw, so comparisons stay meaningful
  * even when the parent re-computes the object each render.
  */

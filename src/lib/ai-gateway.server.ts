@@ -16,7 +16,7 @@ export function createLovableAiGatewayProvider(apiKey: string) {
 /**
  * Direct Google Gemini provider (OpenAI-compatible endpoint).
  * Used on external deployments (e.g. Vercel) where LOVABLE_API_KEY
- * is not available — the app owner sets GEMINI_API_KEY instead.
+ * is not available : the app owner sets GEMINI_API_KEY instead.
  */
 export function createGeminiProvider(apiKey: string) {
   return createOpenAICompatible({

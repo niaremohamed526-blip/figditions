@@ -62,7 +62,7 @@ export function generateQuittancePdf(input: QuittanceInput): jsPDF {
   doc.setFont("helvetica", "normal");
   doc.setFontSize(9);
   doc.setTextColor(MUTED);
-  doc.text("La plateforme éditoriale de l'Afrique de l'Ouest — figditions.xyz", M, y + 16);
+  doc.text("La plateforme éditoriale de l'Afrique de l'Ouest | figditions.xyz", M, y + 16);
 
   // Numéro / date à droite
   doc.setFont("helvetica", "bold");
@@ -187,7 +187,7 @@ export function generateQuittancePdf(input: QuittanceInput): jsPDF {
   doc.setFontSize(9.5);
   doc.setTextColor(INK);
   const mention = doc.splitTextToSize(
-    `Je soussigné(e) ${input.auteurNom}, reconnais avoir reçu de la part de ${input.entrepriseNom} la somme de ${fmt(input.montant)} au titre des droits d'auteur détaillés ci-dessus. Cette quittance vaut reçu définitif sous réserve d'encaissement effectif.`,
+    `Je soussigné(e) ${input.auteurNom}, reconnais avoir reçu de la part de ${input.entrepriseNom} la somme de ${fmt(input.montant)} au titre des droits d'auteur détaillés plus haut. Cette quittance vaut reçu définitif sous réserve d'encaissement effectif.`,
     CW,
   );
   if (y + mention.length * 13 > H - 220) { doc.addPage(); y = 80; }
@@ -218,7 +218,7 @@ export function generateQuittancePdf(input: QuittanceInput): jsPDF {
   doc.setFontSize(8);
   doc.setTextColor(MUTED);
   doc.text(
-    `Document généré par FIGDITIONS le ${fmtDate(new Date())} — ${input.numero}`,
+    `Document généré par FIGDITIONS le ${fmtDate(new Date())} | ${input.numero}`,
     W / 2, H - 24, { align: "center" },
   );
 

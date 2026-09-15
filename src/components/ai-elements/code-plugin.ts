@@ -7,7 +7,7 @@
  *   [unwasm] Failed to parse WASM module wasm/onig-*.wasm: magic header not detected
  *
  * This plugin implements the same `code-highlighter` interface using
- * `shiki/core` + the JavaScript RegExp engine — no WASM, lazy language/theme
+ * `shiki/core` + the JavaScript RegExp engine : no WASM, lazy language/theme
  * chunks, same rendering result.
  */
 import { createHighlighterCore } from "shiki/core";

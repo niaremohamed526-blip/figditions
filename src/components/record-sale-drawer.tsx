@@ -146,7 +146,7 @@ export function RecordSaleDrawer({
   const [notes, setNotes] = useState("");
   const [pickerOpen, setPickerOpen] = useState(false);
 
-  // vente libre — panier multi-livres
+  // vente libre : panier multi-livres
   const [cart, setCart] = useState<CartLine[]>([]);
   const [remisePct, setRemisePct] = useState<string>("");
   const [clientNom, setClientNom] = useState("");
@@ -321,7 +321,7 @@ export function RecordSaleDrawer({
       ? `« ${l.titre} » : ${l.disponible} disponible(s)`
       : `« ${l.titre} » : quantité et prix requis`);
 
-  /** Top 4 livres les plus vendus en vente libre — ajout en un clic. */
+  /** Top 4 livres les plus vendus en vente libre : ajout en un clic. */
   const quickAdd = useMemo(() => {
     return [...interne]
       .filter((s) => s.quantite_disponible > 0)
@@ -413,7 +413,7 @@ export function RecordSaleDrawer({
       });
       setCart([]);
       try { localStorage.removeItem(draftKey); } catch { /* stockage indisponible */ }
-      toast.success(`Vente enregistrée — ${lignesSnapshot.length} livre(s)`);
+      toast.success(`Vente enregistrée : ${lignesSnapshot.length} livre(s)`);
       onSaved?.();
     } catch (err: any) {
       toast.error(err?.message ?? "Erreur lors de l'enregistrement");
@@ -455,7 +455,7 @@ export function RecordSaleDrawer({
 
   const close = () => { resetForm(); onOpenChange(false); };
 
-  // Dirty tracking — treat any user-edited field as dirty (skip success view).
+  // Dirty tracking : treat any user-edited field as dirty (skip success view).
   const isDirty =
     !success && !panier &&
     (cart.length > 0 || !!manuscritId || qty !== "1" || !!prix || !!notes.trim() || !!stockId || !!clientNom.trim() || !!remisePct);
@@ -491,7 +491,7 @@ export function RecordSaleDrawer({
           <SuccessView result={success} onAnother={() => resetForm()} onClose={close} />
         ) : (
           <div className="space-y-5 mt-6 pb-6">
-            {/* Type de vente — choisi en premier */}
+            {/* Type de vente : choisi en premier */}
             <div className="space-y-2">
               <Label className="text-xs">Type de vente</Label>
               <div className="grid grid-cols-2 gap-3">
@@ -523,7 +523,7 @@ export function RecordSaleDrawer({
 
                   {cart.length === 0 ? (
                     <p className="px-3 py-6 text-center text-xs italic text-muted-foreground">
-                      Aucun livre. Ajoutez-en un ci-dessous.
+                      Aucun livre. Ajoutez un titre dans la zone suivante.
                     </p>
                   ) : (
                     <div className="divide-y divide-border">
@@ -570,7 +570,7 @@ export function RecordSaleDrawer({
                             <div className="flex items-center justify-between text-xs">
                               <span className={cn(over ? "text-red-400" : "text-muted-foreground")}>
                                 {over
-                                  ? `Stock insuffisant — ${l.disponible} disponible(s)`
+                                  ? `Stock insuffisant : ${l.disponible} disponible(s)`
                                   : `${l.disponible} disponible(s) en stock interne`}
                               </span>
                               <span className="font-mono tabular-nums text-[color:var(--gold)]">
@@ -663,7 +663,7 @@ export function RecordSaleDrawer({
                         <span className="absolute right-3 top-1/2 -translate-y-1/2 text-sm text-muted-foreground">%</span>
                       </div>
                       <p className="text-[11px] text-muted-foreground">
-                        Appliquée proportionnellement à chaque livre — les droits d'auteur sont calculés sur le montant remisé.
+                        Appliquée proportionnellement à chaque livre. Les droits d'auteur sont calculés sur le montant remisé.
                       </p>
                     </div>
 
@@ -692,7 +692,7 @@ export function RecordSaleDrawer({
                     {/* Récapitulatif */}
                     <div className="rounded-xl border border-[color:var(--gold)]/30 bg-[color:var(--gold)]/5 p-4 space-y-2">
                       <div className="text-sm font-semibold">📊 Récapitulatif</div>
-                      <Row label="Sous-total" value={fcfa(cartSousTotal)} mono />
+                      <Row label="Total avant remise" value={fcfa(cartSousTotal)} mono />
                       {cartRemise > 0 && (
                         <div className="flex items-center justify-between text-sm">
                           <span className="text-muted-foreground">Remise ({remisePctN}%)</span>
@@ -739,7 +739,7 @@ export function RecordSaleDrawer({
               </>
             ) : (
               <>
-                {/* Manuscrit — flux librairie */}
+                {/* Manuscrit : flux librairie */}
                 <div className="space-y-1.5">
                   <Label className="text-xs">📚 Manuscrit</Label>
                   <Popover open={pickerOpen} onOpenChange={setPickerOpen}>
@@ -841,7 +841,7 @@ export function RecordSaleDrawer({
                         {overSell && (
                           <p className="text-xs text-red-400 flex items-center gap-1">
                             <AlertTriangle className="h-3 w-3" />
-                            Stock insuffisant — seulement {availableStock} disponibles
+                            Stock insuffisant : seulement {availableStock} disponibles
                           </p>
                         )}
                       </div>
@@ -969,7 +969,7 @@ function PanierSuccessView({
           </div>
         ))}
         <div className="border-t border-border my-2" />
-        <Row label="Sous-total" value={fcfa(panier.sousTotal)} mono />
+        <Row label="Total avant remise" value={fcfa(panier.sousTotal)} mono />
         {panier.remiseFcfa > 0 && (
           <div className="flex items-center justify-between text-sm">
             <span className="text-muted-foreground">Remise ({panier.remisePct}%)</span>

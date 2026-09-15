@@ -162,7 +162,7 @@ export function DepensesTab({
                 Dépenses
               </CardTitle>
               <CardDescription>
-                {filtered.length} dépense(s) — total {fmtFCFA(totalFiltered)}. Rattachez une dépense à un livre pour alimenter sa rentabilité.
+                {filtered.length} dépense(s) : total {fmtFCFA(totalFiltered)}. Rattachez une dépense à un livre pour alimenter sa rentabilité.
               </CardDescription>
             </div>
             <Button
@@ -271,7 +271,7 @@ export function DepensesTab({
               <Input
                 value={form.libelle}
                 onChange={(e) => setForm((f) => ({ ...f, libelle: e.target.value }))}
-                placeholder="Ex : Impression 500 ex. — L'ivresse du sommeil"
+                placeholder="Ex : Impression 500 ex. : L'ivresse du sommeil"
               />
             </div>
             <div className="space-y-1.5">
@@ -311,7 +311,7 @@ export function DepensesTab({
           <AlertDialogHeader>
             <AlertDialogTitle>Supprimer cette dépense ?</AlertDialogTitle>
             <AlertDialogDescription>
-              « {toDelete?.libelle} » — {fmtFCFA(toDelete?.montant_fcfa ?? 0)}. La suppression sera consignée dans le journal d'audit.
+              « {toDelete?.libelle} » : {fmtFCFA(toDelete?.montant_fcfa ?? 0)}. La suppression sera consignée dans le journal d'audit.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>

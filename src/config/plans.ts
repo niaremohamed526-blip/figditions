@@ -28,7 +28,7 @@ export const PLANS: readonly PlanConfig[] = [
       "Stock interne basique",
       "Suivi des dépôts (2 librairies max)",
       "Estimateur de coûts FCFA",
-      "Mode hors-ligne (PWA)",
+      "Mode sans connexion (PWA)",
     ],
     excluded: [
       "Contrats & Droits",

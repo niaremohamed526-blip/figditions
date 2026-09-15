@@ -36,7 +36,7 @@ export function AccessDenied({ pathname, adminEmail }: Props) {
 
         <div className="flex flex-col sm:flex-row gap-2 justify-center">
           {adminEmail && (
-            <a href={`mailto:${adminEmail}?subject=Demande d'accès — ${requested}`}>
+            <a href={`mailto:${adminEmail}?subject=Demande d'accès : ${requested}`}>
               <Button variant="outline" className="w-full sm:w-auto">
                 <Mail className="h-4 w-4" /> Contacter l'administrateur
               </Button>

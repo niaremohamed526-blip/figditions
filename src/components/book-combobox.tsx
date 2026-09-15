@@ -22,7 +22,7 @@ interface BookComboboxProps {
 }
 
 /**
- * Champ de recherche de livre (combobox) — filtrage instantané par titre ou auteur.
+ * Champ de recherche de livre (combobox) : filtrage instantané par titre ou auteur.
  * Remplace les listes déroulantes statiques trop longues.
  */
 export function BookCombobox({

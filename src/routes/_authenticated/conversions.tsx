@@ -188,7 +188,7 @@ function NewConversionForm({ onCreated }: { onCreated: () => void }) {
     let format_source: "pdf" | "docx" | "txt" | null = file ? detectFormat(file.name) : null;
     let taille_source_kb = file ? Math.round(file.size / 1024) : 0;
 
-    // If user picked an existing manuscrit with a PDF: copy it across into our bucket? simpler — require upload tab for now.
+    // If user picked an existing manuscrit with a PDF: copy it across into our bucket? simpler : require upload tab for now.
     if (tab === "manuscrit") {
       if (!selectedManuscrit?.pdf_path) {
         return toast.error("Ce manuscrit n'a pas de PDF. Uploadez le fichier dans l'onglet « Uploader ».");
@@ -244,7 +244,7 @@ function NewConversionForm({ onCreated }: { onCreated: () => void }) {
           },
         },
       });
-      toast.success("Conversion lancée — suivez la progression dans l'historique");
+      toast.success("Conversion lancée. Suivez la progression dans l'historique");
       onCreated();
       // reset partial
       setFile(null);
@@ -283,8 +283,8 @@ function NewConversionForm({ onCreated }: { onCreated: () => void }) {
                   className="border-2 border-dashed border-border rounded-xl p-6 text-center cursor-pointer hover:border-primary/50 transition-colors bg-background/30"
                 >
                   <Upload className="h-8 w-8 mx-auto text-muted-foreground" />
-                  <p className="mt-2 text-sm font-medium">Glissez-déposez votre fichier</p>
-                  <p className="text-xs text-muted-foreground">PDF, DOCX ou TXT — max {MAX_SIZE_MB} Mo</p>
+                  <p className="mt-2 text-sm font-medium">Glissez puis déposez votre fichier</p>
+                  <p className="text-xs text-muted-foreground">PDF, DOCX ou TXT, maximum {MAX_SIZE_MB} Mo</p>
                   <input
                     ref={fileInput}
                     type="file"
@@ -326,7 +326,7 @@ function NewConversionForm({ onCreated }: { onCreated: () => void }) {
                   <SelectContent>
                     {(manuscrits ?? []).map((m) => (
                       <SelectItem key={m.id} value={m.id}>
-                        {m.titre} — {m.auteur}
+                        {m.titre} | {m.auteur}
                       </SelectItem>
                     ))}
                   </SelectContent>

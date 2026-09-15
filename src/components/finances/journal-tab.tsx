@@ -8,6 +8,7 @@ import { History, ShoppingCart, Wallet, ReceiptText, Loader2, User } from "lucid
 import { useMemo, useState } from "react";
 import { fmtFCFA, methodeLabel, type AuditRow } from "@/lib/finance-types";
 import { cn } from "@/lib/utils";
+import { humanizeSystemValue } from "@/lib/format";
 
 const ACTION_META: Record<string, { label: string; className: string }> = {
   insert: { label: "Création", className: "bg-emerald-500/15 text-emerald-400 border-emerald-500/30" },
@@ -31,14 +32,14 @@ function summarize(e: AuditRow): string {
 
   if (e.entite === "ventes") {
     if (e.action === "insert")
-      return `Vente de ${num(a.quantite_vendue)} ex. — ${fmtFCFA(num(a.montant_total_fcfa))} (droits : ${fmtFCFA(num(a.droits_auteur_fcfa))})`;
+      return `Vente de ${num(a.quantite_vendue)} ex. : ${fmtFCFA(num(a.montant_total_fcfa))} (droits : ${fmtFCFA(num(a.droits_auteur_fcfa))})`;
     if (e.action === "delete")
-      return `Vente supprimée — ${num(b.quantite_vendue)} ex. — ${fmtFCFA(num(b.montant_total_fcfa))}`;
+      return `Vente supprimée : ${num(b.quantite_vendue)} ex. : ${fmtFCFA(num(b.montant_total_fcfa))}`;
     const changes: string[] = [];
     if (a.statut_paiement !== b.statut_paiement)
       changes.push(`droits : ${b.statut_paiement === "paye" ? "payés" : "en attente"} → ${a.statut_paiement === "paye" ? "payés" : String(a.statut_paiement)}`);
     if (a.statut_encaissement !== b.statut_encaissement)
-      changes.push(`encaissement : ${String(b.statut_encaissement)} → ${String(a.statut_encaissement)}`);
+      changes.push(`encaissement : ${humanizeSystemValue(String(b.statut_encaissement ?? ""))} → ${humanizeSystemValue(String(a.statut_encaissement ?? ""))}`);
     if (num(a.montant_encaisse_fcfa) !== num(b.montant_encaisse_fcfa))
       changes.push(`encaissé : ${fmtFCFA(num(b.montant_encaisse_fcfa))} → ${fmtFCFA(num(a.montant_encaisse_fcfa))}`);
     if (num(a.montant_total_fcfa) !== num(b.montant_total_fcfa))
@@ -47,18 +48,18 @@ function summarize(e: AuditRow): string {
   }
 
   if (e.entite === "depenses") {
-    if (e.action === "insert") return `Dépense « ${String(a.libelle ?? "")} » — ${fmtFCFA(num(a.montant_fcfa))}`;
-    if (e.action === "delete") return `Dépense supprimée « ${String(b.libelle ?? "")} » — ${fmtFCFA(num(b.montant_fcfa))}`;
+    if (e.action === "insert") return `Dépense « ${String(a.libelle ?? "")} » : ${fmtFCFA(num(a.montant_fcfa))}`;
+    if (e.action === "delete") return `Dépense supprimée « ${String(b.libelle ?? "")} » : ${fmtFCFA(num(b.montant_fcfa))}`;
     if (num(a.montant_fcfa) !== num(b.montant_fcfa))
       return `Dépense « ${String(a.libelle ?? "")} » : ${fmtFCFA(num(b.montant_fcfa))} → ${fmtFCFA(num(a.montant_fcfa))}`;
     return `Dépense « ${String(a.libelle ?? "")} » modifiée`;
   }
 
   if (e.entite === "paiements_royalties") {
-    return `Quittance ${String(a.numero ?? "")} — ${String(a.auteur_nom ?? "")} — ${fmtFCFA(num(a.montant_fcfa))} (${methodeLabel(String(a.methode ?? ""))})`;
+    return `Quittance ${String(a.numero ?? "")} : ${String(a.auteur_nom ?? "")} : ${fmtFCFA(num(a.montant_fcfa))} (${methodeLabel(String(a.methode ?? ""))})`;
   }
 
-  return `${e.entite} ${e.action}`;
+  return `${humanizeSystemValue(e.entite)} ${humanizeSystemValue(e.action).toLocaleLowerCase("fr-FR")}`;
 }
 
 export function JournalTab() {
@@ -93,7 +94,7 @@ export function JournalTab() {
               Journal d'audit financier
             </CardTitle>
             <CardDescription>
-              Historique immuable de chaque opération : qui, quoi, quand — avec les valeurs avant/après.
+              Historique immuable de chaque opération : qui, quoi, quand : avec les valeurs avant/après.
             </CardDescription>
           </div>
           <div className="flex flex-col sm:flex-row gap-2 w-full sm:w-auto">

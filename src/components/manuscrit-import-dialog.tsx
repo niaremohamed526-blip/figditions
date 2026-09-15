@@ -132,7 +132,7 @@ export function ManuscritImportDialog({
       }
       if (parsed.length === 0) { toast.error("Aucune ligne de données trouvée"); return; }
       setRows(parsed);
-      toast.success(`${parsed.length} ligne(s) analysée(s) — ${parsed.filter((p) => !p.error).length} valide(s)`);
+      toast.success(`${parsed.length} ligne(s) analysée(s), ${parsed.filter((p) => !p.error).length} valide(s)`);
     } catch (e: any) {
       toast.error("Impossible de lire le fichier : " + (e?.message ?? "format invalide"));
       reset();
@@ -202,7 +202,7 @@ export function ManuscritImportDialog({
                 <label className="flex flex-col items-center justify-center gap-2 rounded-lg border-2 border-dashed border-border py-8 cursor-pointer hover:border-primary/50 hover:bg-primary/5 transition-colors">
                   <Upload className="h-6 w-6 text-muted-foreground" />
                   <span className="text-sm font-medium">Cliquez pour choisir un fichier .xlsx ou .csv</span>
-                  <span className="text-xs text-muted-foreground">Glissez-déposez également accepté</span>
+                  <span className="text-xs text-muted-foreground">Vous pouvez aussi glisser puis déposer le fichier</span>
                   <input
                     ref={fileRef}
                     type="file"
@@ -252,7 +252,9 @@ export function ManuscritImportDialog({
                             </td>
                             <td className="px-2 py-1.5 text-muted-foreground truncate max-w-[120px]">{r.auteur || "—"}</td>
                             <td className="px-2 py-1.5 text-muted-foreground hidden sm:table-cell">{r.genre ?? "—"}</td>
-                            <td className="px-2 py-1.5 text-muted-foreground">{r.statut}</td>
+                            <td className="px-2 py-1.5 text-muted-foreground">
+                              {STATUT_OPTIONS.find((option) => option.value === r.statut)?.label ?? r.statut.replace(/[_-]+/g, " ")}
+                            </td>
                             <td className="px-2 py-1.5 text-center tabular-nums">{r.nombrePages ?? "—"}</td>
                             <td className="px-2 py-1.5">
                               {r.error

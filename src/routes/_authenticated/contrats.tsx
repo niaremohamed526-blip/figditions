@@ -27,7 +27,7 @@ import { BookCombobox } from "@/components/book-combobox";
 
 export const Route = createFileRoute("/_authenticated/contrats")({
   component: ContratsPage,
-  head: () => ({ meta: [{ title: "Contrats & Droits — FIGDITIONS" }] }),
+  head: () => ({ meta: [{ title: "Contrats et droits | FIGDITIONS" }] }),
 });
 
 interface Contrat {
@@ -657,7 +657,7 @@ function ContratSheet({
                 <Label>Auteur *</Label>
                 {auteurs.length === 0 ? (
                   <div className="rounded-lg border border-dashed border-primary/30 bg-primary/5 p-4 text-sm space-y-2">
-                    <p className="text-muted-foreground">Aucun auteur trouvé — ajoutez d'abord un auteur.</p>
+                    <p className="text-muted-foreground">Aucun auteur trouvé. Ajoutez d'abord un auteur.</p>
                     <Link to="/auteurs" className="inline-flex items-center gap-1 text-primary hover:underline text-xs font-medium">
                       → Aller à la page Auteurs
                     </Link>
@@ -803,11 +803,11 @@ function ContratSheet({
                   <Select value={form.reliure} onValueChange={(v) => upd("reliure", v)}>
                     <SelectTrigger className="bg-background border-border/60 focus:ring-primary/40"><SelectValue /></SelectTrigger>
                     <SelectContent className="z-[400]">
-                      <SelectItem value="Dos carré-collé">Dos carré-collé</SelectItem>
+                      <SelectItem value="Dos carré-collé">Dos carré collé</SelectItem>
                       <SelectItem value="Dos cousu">Dos cousu</SelectItem>
                       <SelectItem value="Piqué à cheval">Piqué à cheval (agrafé)</SelectItem>
                       <SelectItem value="Spirale">Spirale</SelectItem>
-                      <SelectItem value="Wire-O">Wire-O</SelectItem>
+                      <SelectItem value="Wire-O">Reliure à anneaux Wire O</SelectItem>
                       <SelectItem value="Reliure suisse">Reliure suisse</SelectItem>
                     </SelectContent>
                   </Select>

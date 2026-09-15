@@ -1,5 +1,5 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-// Ballpit component — adapted from reactbits.dev
+// Ballpit component : adapted from reactbits.dev
 import { useEffect, useRef } from "react";
 import {
   Clock,

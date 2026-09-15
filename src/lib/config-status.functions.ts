@@ -12,7 +12,7 @@ export type EnvCheck = {
 /**
  * Admin-only: report which server env vars are configured on the current
  * runtime (Vercel, Cloudflare, Lovable Cloud, etc.). Values are never
- * returned — only a boolean presence flag.
+ * returned : only a boolean presence flag.
  */
 export const checkConfigStatus = createServerFn({ method: "GET" })
   .middleware([requireSupabaseAuth])

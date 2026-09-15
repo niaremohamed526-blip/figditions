@@ -173,7 +173,7 @@ export function StockSearchBar({
       {activeTerm.trim() ? (
         <div className="flex flex-wrap items-center justify-between gap-2 rounded-xl border border-primary/15 bg-primary/[0.05] px-4 py-2.5 text-sm">
           <p className="text-muted-foreground">
-            Recherche : <span className="font-semibold text-[#C8922A]">« {activeTerm.trim()} »</span> — {resultCount} livre(s) trouvé(s) sur {totalCount} au total
+            Recherche : <span className="font-semibold text-[#C8922A]">« {activeTerm.trim()} »</span> : {resultCount} livre(s) trouvé(s) sur {totalCount} au total
           </p>
           <button
             type="button"

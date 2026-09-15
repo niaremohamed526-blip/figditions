@@ -15,7 +15,7 @@ import { cn } from "@/lib/utils";
 
 export const Route = createFileRoute("/rejoindre/$token")({
   component: JoinPage,
-  head: () => ({ meta: [{ title: "Rejoindre — FIGDITIONS" }] }),
+  head: () => ({ meta: [{ title: "Rejoindre | FIGDITIONS" }] }),
 });
 
 type InviteResult = Awaited<ReturnType<typeof getInvitationByToken>>;
@@ -104,14 +104,14 @@ function JoinPage() {
           const alreadyExists =
             m.includes("already") || m.includes("registered") || m.includes("exists");
           if (alreadyExists) {
-            // Account already exists — try to sign in with provided password
+            // Account already exists : try to sign in with provided password
             const { error: sErr } = await supabase.auth.signInWithPassword({
               email: invite.email,
               password,
             });
             if (sErr) {
               setFormError(
-                "Un compte existe déjà avec cet email. Le mot de passe saisi est incorrect — utilisez votre mot de passe existant ou réinitialisez-le.",
+                "Un compte existe déjà avec cet email. Le mot de passe saisi est incorrect. Utilisez votre mot de passe existant ou réinitialisez-le.",
               );
               triggerShake();
               setSubmitting(false);

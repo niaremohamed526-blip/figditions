@@ -26,7 +26,7 @@ function getSafeUrl(url: string | null): string | null {
 
 export const Route = createFileRoute("/_authenticated/imprimeries")({
   component: ImprimeriesPage,
-  head: () => ({ meta: [{ title: "Imprimeries — FIGDITIONS" }] }),
+  head: () => ({ meta: [{ title: "Imprimeries | FIGDITIONS" }] }),
 });
 
 interface Imprimerie {

@@ -32,7 +32,7 @@ const FAQS = [
   },
   {
     question: "Est-ce que ça fonctionne sans internet ?",
-    answer: "Oui. FIGDITIONS s'installe comme une application sur votre téléphone ou votre ordinateur et fonctionne en mode hors-ligne. Vous pouvez consulter et modifier vos données pendant une coupure ; tout se synchronise automatiquement au retour de la connexion.",
+    answer: "Oui. FIGDITIONS s'installe comme une application sur votre téléphone ou votre ordinateur et fonctionne en mode sans connexion. Vous pouvez consulter et modifier vos données pendant une coupure ; tout se synchronise automatiquement au retour de la connexion.",
   },
   {
     question: "Comment payer si je n'ai pas de carte bancaire ?",
@@ -79,11 +79,11 @@ export const Route = createFileRoute("/")({
   component: Landing,
   head: () => ({
     meta: [
-      { title: "FIGDITIONS — Plateforme éditoriale africaine" },
+      { title: "FIGDITIONS | Plateforme éditoriale africaine" },
       { name: "description", content: "Manuscrits, stocks, dépôts en librairie, contrats et finances en un seul endroit, avec l'assistant Pr. MEDMO. Conçu pour les maisons d'édition d'Afrique de l'Ouest." },
-      { property: "og:title", content: "FIGDITIONS — Plateforme éditoriale africaine" },
+      { property: "og:title", content: "FIGDITIONS | Plateforme éditoriale africaine" },
       { property: "og:description", content: "Manuscrits, stocks, dépôts en librairie, contrats et finances en un seul endroit, avec l'assistant Pr. MEDMO. Conçu pour les maisons d'édition d'Afrique de l'Ouest." },
-      { name: "twitter:title", content: "FIGDITIONS — Plateforme éditoriale africaine" },
+      { name: "twitter:title", content: "FIGDITIONS | Plateforme éditoriale africaine" },
       { name: "twitter:description", content: "Manuscrits, stocks, dépôts en librairie, contrats et finances en un seul endroit, avec l'assistant Pr. MEDMO. Conçu pour les maisons d'édition d'Afrique de l'Ouest." },
       { property: "og:image", content: OG_IMAGE },
       { name: "twitter:image", content: OG_IMAGE },
@@ -259,10 +259,10 @@ function Hero() {
         }}
       />
 
-      {/* Hero image — right side */}
+      {/* Hero image : right side */}
       <img
         src={heroAsset.url}
-        alt="FIGDITIONS — Plateforme éditoriale africaine"
+        alt="FIGDITIONS, plateforme éditoriale africaine"
         className="absolute inset-y-0 right-0 h-full w-full md:w-[70%] object-cover object-center pointer-events-none select-none"
         style={{
           WebkitMaskImage:
@@ -272,7 +272,7 @@ function Hero() {
         }}
       />
 
-      {/* Hero text — bottom left */}
+      {/* Hero text : bottom left */}
       <div className="relative z-10 max-w-7xl mx-auto px-6 lg:px-12 pt-40 md:pt-0 md:absolute md:bottom-[20%] md:left-0 md:right-0">
         <div className="max-w-xl">
           <h1
@@ -283,8 +283,8 @@ function Hero() {
           </h1>
           <p className="mt-4 text-[18px] leading-[1.5] max-w-[380px]" style={{ color: "rgba(184,168,152,0.9)" }}>
             {t(
-              "La plateforme centrale des éditeurs ouest-africains : manuscrits, stocks, librairies, finances — et un assistant qui travaille avec vous.",
-              "The central platform for West African publishers: manuscripts, stock, bookstores, finances — and an assistant that works with you."
+              "La plateforme centrale des éditeurs ouest-africains : manuscrits, stocks, librairies, finances : et un assistant qui travaille avec vous.",
+              "The central platform for West African publishers: manuscripts, stock, bookstores, finances : and an assistant that works with you."
             )}
           </p>
 
@@ -311,7 +311,7 @@ function Hero() {
           {/* Social icons */}
           <div className="mt-8 flex items-center gap-5">
             {[
-              { Icon: Instagram, href: "https://www.instagram.com/[À COMPLÉTER — compte de marque]", label: "FIGDITIONS sur Instagram" },
+              { Icon: Instagram, href: "https://www.instagram.com/[À COMPLÉTER : compte de marque]", label: "FIGDITIONS sur Instagram" },
             ].map(({ Icon, href, label }) => (
               <a
                 key={label}
@@ -426,7 +426,7 @@ function Screenshots() {
         <div className="text-center mb-12">
           <h2 className="text-3xl md:text-5xl font-bold tracking-tight">Voyez la plateforme en action</h2>
           <p className="mt-3 text-muted-foreground max-w-2xl mx-auto">
-            Pas de promesses abstraites — voici l'interface que vous utiliserez au quotidien.
+            Pas de promesses abstraites. Voici l'interface que vous utiliserez au quotidien.
           </p>
         </div>
         <Tabs defaultValue="manuscrits" className="w-full">
@@ -471,13 +471,13 @@ function Features() {
   const items = [
     { icon: MessageSquare, fr: "Assistant Pr. MEDMO", en: "Pr. MEDMO assistant", dfr: "Posez vos questions en français, envoyez une photo ou un document : l'assistant analyse vos données et prépare les actions que vous validez.", den: "Ask in plain French, send a photo or a document: the assistant reads your data and prepares actions you approve." },
     { icon: Camera, fr: "Photo de cahier → ventes", en: "Notebook photo → sales", dfr: "Photographiez une page de cahier de ventes : les titres, quantités et prix sont reconnus puis proposés à l'enregistrement.", den: "Photograph a sales notebook page: titles, quantities and prices are recognized then proposed for logging." },
-    { icon: WifiOff, fr: "Fonctionne hors-ligne", en: "Fonctionne hors-ligne", dfr: offlineFr, den: offlineFr },
+    { icon: WifiOff, fr: "Fonctionne sans connexion", en: "Works offline", dfr: offlineFr, den: offlineFr },
     { icon: BookOpen, fr: "Gestion des manuscrits", en: "Manuscript management", dfr: "Suivez chaque livre à travers 10 étapes éditoriales, de la réception à la publication", den: "Track every book through 10 editorial stages, from reception to publication" },
     { icon: Globe2, fr: "Livres étrangers", en: "Foreign books", dfr: "Séparez clairement vos propres productions des ouvrages d'autres éditeurs que vous distribuez, au catalogue comme en stock.", den: "Clearly separate your own titles from other publishers' books you distribute, in catalogue and stock." },
     { icon: Users, fr: "Gestion des auteurs", en: "Author management", dfr: "Centralisez les informations, contrats et droits de vos auteurs en un seul endroit", den: "Centralize information, contracts and royalties of your authors in one place" },
     { icon: Factory, fr: "Stock interne", en: "Internal stock", dfr: "Gérez votre entrepôt, suivez chaque exemplaire imprimé et automatisez les mouvements de stock", den: "Manage your warehouse, track every printed copy and automate stock movements" },
-    { icon: Store, fr: "Stock externe", en: "External stock", dfr: "Suivez vos dépôts dans toutes les librairies de Bamako avec alertes de stock bas", den: "Track your deposits across all Bamako bookstores with low-stock alerts" },
-    { icon: Layers, fr: "Dépôts multiples par librairie", en: "Multi-batch deposits", dfr: "Ajoutez un nouveau dépôt sans écraser l'ancien : chaque lot garde sa date, sa quantité et son historique.", den: "Add a new deposit without erasing the previous one: each batch keeps its date, quantity and history." },
+    { icon: Store, fr: "Stock externe", en: "External stock", dfr: "Suivez vos dépôts dans toutes les librairies de Bamako avec alertes de stock bas", den: "Track your deposits across all Bamako bookstores with alerts when stock is low" },
+    { icon: Layers, fr: "Dépôts multiples par librairie", en: "Multiple deposits", dfr: "Ajoutez un nouveau dépôt sans écraser l'ancien : chaque lot garde sa date, sa quantité et son historique.", den: "Add a new deposit without erasing the previous one: each batch keeps its date, quantity and history." },
     { icon: Gift, fr: "Dons et exemplaires offerts", en: "Donations", dfr: "Enregistrez les livres offerts aux écoles, ONG ou bibliothèques : le stock est déduit, sans revenu ni droits d'auteur.", den: "Log books given to schools, NGOs or libraries: stock is deducted, with no revenue or royalties." },
     { icon: History, fr: "Annulation traçable", en: "Traceable cancellation", dfr: "Annulez une vente, un mouvement ou un dépôt avec motif obligatoire : tout est rétabli et conservé dans l'historique.", den: "Cancel a sale, movement or deposit with a mandatory reason: everything is reversed and kept in the log." },
     { icon: Wallet, fr: "Finances détaillées & Royalties", en: "Detailed finances & royalties", dfr: "Journal, rentabilité par titre, ventes, dépenses et droits d'auteur en FCFA, avec reçus imprimables.", den: "Ledger, per-title profitability, sales, expenses and royalties in FCFA, with printable receipts." },
@@ -523,7 +523,7 @@ function MedmoSection() {
     {
       icon: MessageSquare,
       title: "Posez vos questions",
-      text: "« Combien d'exemplaires reste-t-il à la Librairie Nouvel Horizon ? » — la réponse vient de vos données réelles, en français.",
+      text: "« Combien d'exemplaires reste-t-il à la Librairie Nouvel Horizon ? » La réponse vient de vos données réelles, en français.",
     },
     {
       icon: Camera,
@@ -550,7 +550,7 @@ function MedmoSection() {
             </span>
           </h2>
           <p className="mt-4 text-muted-foreground max-w-2xl mx-auto">
-            Il connaît votre catalogue, vos stocks et vos chiffres. Il lit vos photos et vos documents, et prépare le travail à votre place — vous validez.
+            Il connaît votre catalogue, vos stocks et vos chiffres. Il lit vos photos et vos documents, puis prépare le travail à votre place. Vous validez.
           </p>
         </div>
         <div className="grid md:grid-cols-3 gap-5">
@@ -946,7 +946,7 @@ function Footer() {
         <div className="flex md:justify-end gap-3">
           {[
             { Icon: Linkedin, href: "https://www.linkedin.com/in/figuira-éditions-113118301/", label: "FIGDITIONS sur LinkedIn" },
-            { Icon: Instagram, href: "https://www.instagram.com/[À COMPLÉTER — compte de marque]", label: "FIGDITIONS sur Instagram" },
+            { Icon: Instagram, href: "https://www.instagram.com/[À COMPLÉTER : compte de marque]", label: "FIGDITIONS sur Instagram" },
           ].map(({ Icon, href, label }) => (
             <a key={label} href={href} target="_blank" rel="noopener noreferrer" aria-label={label} className="h-10 w-10 rounded-full border border-border flex items-center justify-center text-muted-foreground hover:text-primary hover:border-primary transition-colors">
               <Icon className="h-4 w-4" aria-hidden="true" />

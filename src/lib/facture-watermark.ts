@@ -1,4 +1,4 @@
-// Logo de filigrane des factures — stocké localement (data URL) par l'utilisateur.
+// Logo de filigrane des factures : stocké localement (data URL) par l'utilisateur.
 
 const KEY = "figditions:facture-watermark";
 

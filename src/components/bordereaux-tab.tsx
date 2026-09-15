@@ -506,7 +506,7 @@ function GenerateDialog({
           {type === "vente" && (
             <p className="text-xs text-muted-foreground rounded-lg border border-border bg-background/40 px-3 py-2">
               La facture reprend uniquement les exemplaires vendus enregistrés chez cette librairie
-              (source : vos fiches de dépôt — les ventes libres et les autres librairies ne sont jamais comptées).
+              (source : vos fiches de dépôt ; les ventes libres et les autres librairies ne sont jamais comptées).
             </p>
           )}
 
@@ -539,7 +539,7 @@ function GenerateDialog({
                 </label>
               )}
               <p className="text-xs text-muted-foreground flex-1">
-                Ajoutez le logo de votre maison — il apparaîtra en filigrane discret au centre du bordereau. Le logo FIGDITIONS reste en en-tête.
+                Ajoutez le logo de votre maison. Il apparaîtra en filigrane discret au centre du bordereau. Le logo FIGDITIONS reste en en tête.
               </p>
             </div>
           </div>

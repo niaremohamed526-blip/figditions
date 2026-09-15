@@ -208,7 +208,7 @@ export async function generateContratProPdf(d: ContratProPdfData) {
   const article = (n: number, title: string, body: string) => {
     ensureSpace(LH * 3);
     gap(2);
-    writeParagraph(`Article ${n}. — ${title.toUpperCase()}`, { bold: true, size: 11 });
+    writeParagraph(`Article ${n}. : ${title.toUpperCase()}`, { bold: true, size: 11 });
     writeParagraph(body, { align: "justify" });
   };
 
@@ -258,13 +258,13 @@ export async function generateContratProPdf(d: ContratProPdfData) {
     `L'Auteur reste propriétaire de ses œuvres. Cependant, ${d.maison} bénéficie d'une licence exclusive d'exploitation pour une durée de ${d.duree_annees} ans, renouvelable par accord des parties. ${d.maison} conserve les droits d'édition, d'impression, de traduction, d'adaptation, de commercialisation et de promotion pendant cette période sur le territoire du Mali et à l'étranger. Les droits d'auteur sont payés à l'Auteur et fixés à ${d.pourcentage}% du prix public hors taxes par exemplaire effectivement vendu, ou, dans le cas d'une commande institutionnelle ou d'un projet financé, à partir des ${d.tirage_minimum} premiers exemplaires vendus.`);
 
   article(3, "Sélection du texte",
-    `Les textes sélectionnés seront édités et publiés par ladite maison d'édition. ${d.maison} prend à sa charge la responsabilité des devoirs afférents aux différentes contributions : frais de conception infographique, frais de relecture-correction, de traduction, d'édition, d'impression, de communication et de promotion des ouvrages précités.${d.contribution_auteur ? ` Cependant, l'Auteur fera une contribution financière pour ${d.contribution_auteur}.` : ""}`);
+    `Les textes sélectionnés seront édités et publiés par ladite maison d'édition. ${d.maison} prend à sa charge la responsabilité des devoirs afférents aux différentes contributions : frais de conception infographique, frais de relecture et correction, de traduction, d'édition, d'impression, de communication et de promotion des ouvrages précités.${d.contribution_auteur ? ` Cependant, l'Auteur fera une contribution financière pour ${d.contribution_auteur}.` : ""}`);
 
   article(4, "Correction du texte et validation",
-    `L'Auteur s'engage à participer au processus de relecture-correction des ouvrages précités et à l'intégration des suggestions de correction faites par ${d.maison}. Les corrections typographiques, orthographiques et syntaxiques sont à la charge de ${d.maison}, mais les corrections des termes techniques, des noms et prénoms utilisés par l'Auteur sont à la seule charge de ce dernier.`);
+    `L'Auteur s'engage à participer au processus de relecture et correction des ouvrages précités et à l'intégration des suggestions de correction faites par ${d.maison}. Les corrections typographiques, orthographiques et syntaxiques sont à la charge de ${d.maison}, mais les corrections des termes techniques, des noms et prénoms utilisés par l'Auteur sont à la seule charge de ce dernier.`);
 
   article(5, "Caractéristiques techniques",
-    `Format : ${d.format || "24/26, 170gr"} avec une couverture ${d.type_couverture || "quadrichromie cartonnée"}. La reliure sera ${d.reliure || "dos carré-collé"} et les illustrations seront en couleurs.`);
+    `Format : ${d.format || "24/26, 170gr"} avec une couverture ${d.type_couverture || "quadrichromie cartonnée"}. La reliure sera ${d.reliure || "dos carré collé"} et les illustrations seront en couleurs.`);
 
   article(6, "Présentation de l'échantillon",
     `Avant le tirage des ouvrages en quantité, 10 copies de chaque livre seront imprimées pour leur évaluation. ${d.exemplaires_auteur} exemplaires de chaque ouvrage seront envoyés à l'Auteur ${d.auteur.toUpperCase()} comme échantillons des ouvrages (spécimens), soumis une seule fois à son appréciation pour avis, relecture et corrections.`);
@@ -317,7 +317,7 @@ export async function generateContratProPdf(d: ContratProPdfData) {
   const startY = y;
   const boxH = 40;
 
-  // Left column — Auteur
+  // Left column : Auteur
   doc.setFont("times", "bold");
   doc.setFontSize(11);
   doc.setTextColor(20, 20, 20);
@@ -328,7 +328,7 @@ export async function generateContratProPdf(d: ContratProPdfData) {
   doc.setLineWidth(0.3);
   doc.line(M, startY + boxH, M + colW, startY + boxH);
 
-  // Right column — Éditeur (+ cachet)
+  // Right column : Éditeur (+ cachet)
   const rx = M + colW + 20;
   doc.setFont("times", "bold");
   doc.text("L'ÉDITEUR,", rx, startY);

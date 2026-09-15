@@ -1,4 +1,5 @@
 import { cn } from "@/lib/utils";
+import { humanizeSystemValue } from "@/lib/format";
 
 const MAP: Record<string, { label: string; cls: string }> = {
   recu:        { label: "Reçu",        cls: "bg-slate-400/15 text-slate-300 border-slate-400/30" },
@@ -14,7 +15,7 @@ const MAP: Record<string, { label: string; cls: string }> = {
 };
 
 export function StatusBadge({ statut }: { statut: string }) {
-  const s = MAP[statut] ?? { label: statut, cls: "bg-muted text-muted-foreground border-border" };
+  const s = MAP[statut] ?? { label: humanizeSystemValue(statut), cls: "bg-muted text-muted-foreground border-border" };
   const isActive = statut === "impression";
   return (
     <span

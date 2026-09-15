@@ -23,11 +23,11 @@ export const Route = createFileRoute("/signup")({
 
   head: () => ({
     meta: [
-      { title: "Inscription — FIGDITIONS" },
+      { title: "Inscription | FIGDITIONS" },
       { name: "description", content: "Créez votre compte FIGDITIONS et digitalisez la gestion de votre maison d'édition : manuscrits, contrats, stocks et finances." },
-      { property: "og:title", content: "Inscription — FIGDITIONS" },
+      { property: "og:title", content: "Inscription | FIGDITIONS" },
       { property: "og:description", content: "Créez votre compte FIGDITIONS et digitalisez la gestion de votre maison d'édition : manuscrits, contrats, stocks et finances." },
-      { name: "twitter:title", content: "Inscription — FIGDITIONS" },
+      { name: "twitter:title", content: "Inscription | FIGDITIONS" },
       { name: "twitter:description", content: "Créez votre compte FIGDITIONS et digitalisez la gestion de votre maison d'édition : manuscrits, contrats, stocks et finances." },
       { property: "og:image", content: "https://figditions.xyz/assets/og-figditions.png" },
       { name: "twitter:image", content: "https://figditions.xyz/assets/og-figditions.png" },
@@ -331,7 +331,7 @@ function SignupPage() {
           >
             <p className="text-sm" style={{ color: "#E8D9C5", margin: 0 }}>
               Plan sélectionné : <strong style={{ color: "#C8922A" }}>{selectedPlan.name}</strong>
-              {" — "}
+              {" | "}
               {selectedPlan.priceMonthly === 0 ? "Gratuit" : `${fcfa(selectedPlan.priceMonthly)} / mois`}
             </p>
             <a href="/#pricing" className="text-xs font-medium hover:underline shrink-0" style={{ color: "#C8922A" }}>

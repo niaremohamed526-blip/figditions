@@ -44,7 +44,7 @@ const paramsSchema = z.object({
 export const Route = createFileRoute("/_authenticated/parametres")({
   component: ParametresPage,
   validateSearch: paramsSchema,
-  head: () => ({ meta: [{ title: "Paramètres — FIGDITIONS" }] }),
+  head: () => ({ meta: [{ title: "Paramètres | FIGDITIONS" }] }),
 });
 
 const ROLE_LABELS: Record<AppRole, string> = {
@@ -549,7 +549,7 @@ function DangerZone() {
 
   const doDelete = async () => {
     setLoading(true);
-    // Sign out — actual auth deletion requires admin API; we sign out and notify.
+    // Sign out : actual auth deletion requires admin API; we sign out and notify.
     await supabase.auth.signOut();
     setLoading(false);
     toast.success("Compte déconnecté. Contactez le support pour la suppression définitive.");
@@ -1177,8 +1177,8 @@ function InviteModal({
           <DialogTitle>Inviter un membre</DialogTitle>
           <DialogDescription>
             {createdLink ? "Partagez le lien d'invitation."
-              : step === 1 ? "Étape 1/2 — Informations du membre"
-              : "Étape 2/2 — Accès aux pages"}
+              : step === 1 ? "Étape 1/2 : informations du membre"
+              : "Étape 2/2 : accès aux pages"}
           </DialogDescription>
         </DialogHeader>
 

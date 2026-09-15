@@ -208,8 +208,8 @@ export function StockPosDialog({
     try { localStorage.removeItem(DRAFT_KEY); } catch {}
     toast.success(
       `${done} dépôt(s) enregistré(s) chez « ${librairieNom} »` +
-      (merged > 0 ? ` — ${merged} fusionné(s) avec un dépôt existant` : "") +
-      (provenance === "hors_stock" ? " — sans déduction de l'entrepôt" : ""),
+      (merged > 0 ? ` : ${merged} fusionné(s) avec un dépôt existant` : "") +
+      (provenance === "hors_stock" ? " : sans déduction de l'entrepôt" : ""),
     );
     onImported();
     reset();
@@ -250,7 +250,7 @@ export function StockPosDialog({
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
             <Zap className="h-5 w-5 text-primary" />
-            Saisie rapide — Mode caisse
+            Saisie rapide : Mode caisse
             {isDirty && (
               <span
                 title="Modifications non sauvegardées"
@@ -286,7 +286,7 @@ export function StockPosDialog({
         {step === 2 && (lines.length > 0 || isDirty) && (
           <div className="flex flex-wrap items-center justify-between gap-2 text-xs">
             <span className="text-[color:var(--gold)] font-semibold">
-              📝 {lines.length} ligne(s) saisie(s) — Non sauvegardé
+              📝 {lines.length} ligne(s) saisie(s) : Non sauvegardé
             </span>
             {lastSavedAt && (
               <span className="text-muted-foreground">
@@ -329,7 +329,7 @@ export function StockPosDialog({
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
                 {[
                   { v: "interne", icon: "🏭", t: "Depuis le stock interne", d: "Déduit les exemplaires de l'entrepôt" },
-                  { v: "hors_stock", icon: "📤", t: "Hors stock interne", d: "Livres déjà dehors — aucune déduction de l'entrepôt" },
+                  { v: "hors_stock", icon: "📤", t: "Hors stock interne", d: "Livres déjà dehors : aucune déduction de l'entrepôt" },
                 ].map((o) => (
                   <button
                     key={o.v}
@@ -440,7 +440,7 @@ export function StockPosDialog({
                   style={{ background: "rgba(251,146,60,0.1)", border: "1px solid rgba(251,146,60,0.4)", color: "#fb923c" }}
                 >
                   <AlertTriangle className="h-3.5 w-3.5" />
-                  Ligne incomplète — complétez la quantité et le prix, ou effacez le titre avant de continuer.
+                  Ligne incomplète : complétez la quantité et le prix, ou effacez le titre avant de continuer.
                 </div>
               )}
             </div>
@@ -456,7 +456,7 @@ export function StockPosDialog({
             <div className="max-h-72 overflow-auto rounded-lg border border-border">
               {lines.length === 0 ? (
                 <div className="p-6 text-center text-sm text-muted-foreground">
-                  Aucun livre saisi pour le moment. Commencez par choisir un titre ci-dessus.
+                  Aucun livre saisi pour le moment. Commencez par choisir un titre plus haut.
                 </div>
               ) : (
                 <table className="w-full text-xs">
@@ -465,7 +465,7 @@ export function StockPosDialog({
                       <th className="px-2 py-1.5">Titre</th>
                       <th className="px-2 py-1.5 text-center w-16">Qté</th>
                       <th className="px-2 py-1.5 text-right w-24">Prix</th>
-                      <th className="px-2 py-1.5 text-right w-28">Sous-total</th>
+                      <th className="px-2 py-1.5 text-right w-28">Total partiel</th>
                       <th className="px-2 py-1.5 w-10"></th>
                     </tr>
                   </thead>

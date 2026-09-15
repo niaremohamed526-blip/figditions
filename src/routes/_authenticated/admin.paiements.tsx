@@ -19,7 +19,7 @@ export const Route = createFileRoute("/_authenticated/admin/paiements")({
   component: AdminPaiementsPage,
   head: () => ({
     meta: [
-      { title: "Validation des paiements — FIGDITIONS" },
+      { title: "Validation des paiements | FIGDITIONS" },
       { name: "description", content: "Espace super administrateur : validation des paiements Orange Money." },
       { name: "robots", content: "noindex, nofollow" },
     ],
@@ -70,7 +70,7 @@ function AdminPaiementsPage() {
     const res = await adminConfirmPaiement(id);
     setBusyId(null);
     if (!res.ok) return toast.error(res.error ?? "Erreur");
-    toast.success("Paiement confirmé — plan activé");
+    toast.success("Paiement confirmé. Plan activé");
     load();
   };
 
@@ -97,7 +97,7 @@ function AdminPaiementsPage() {
       <header className="flex flex-wrap items-start justify-between gap-3">
         <div>
           <h1 className="text-3xl font-bold tracking-tight">Validation des paiements</h1>
-          <p className="text-muted-foreground mt-1">Espace super administrateur — Orange Money manuel.</p>
+          <p className="text-muted-foreground mt-1">Espace super administrateur pour les paiements Orange Money manuels.</p>
         </div>
         <Button variant="outline" onClick={load} className="min-h-10">
           <RefreshCw className="h-4 w-4" /> Rafraîchir

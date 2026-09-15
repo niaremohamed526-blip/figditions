@@ -39,7 +39,7 @@ export const Route = createFileRoute("/_authenticated/finances")({
   component: FinancesPage,
   head: () => ({
     meta: [
-      { title: "Finances & Royalties — FIGDITIONS" },
+      { title: "Finances et royalties | FIGDITIONS" },
       { name: "description", content: "Pilotage financier complet : ventes, encaissements, dépenses, royalties, rentabilité par livre et journal d'audit vérifiable." },
     ],
   }),
@@ -51,7 +51,7 @@ interface StockInterneLite { id: string; manuscrit_id: string; quantite_imprimee
 
 const COLORS = ["#C8922A", "#E8B84B", "#4F8FF7", "#E85D8C", "#7E5FFF", "#FF9F45"];
 
-/** Normalized author name — stable grouping key when auteur_id is missing. */
+/** Normalized author name : stable grouping key when auteur_id is missing. */
 const normalizeName = (s: string | null | undefined) => (s ?? "").trim().replace(/\s+/g, " ").toLowerCase();
 
 function FinancesPage() {
@@ -206,7 +206,7 @@ function FinancesInner({
         <div>
           <h1 className="text-3xl font-bold tracking-tight">Finances</h1>
           <p className="text-muted-foreground mt-1">
-            Ventes, encaissements, dépenses et royalties — chaque opération est traçable et vérifiable.
+            Ventes, encaissements, dépenses et royalties. Chaque opération est traçable et vérifiable.
           </p>
         </div>
         <div className="flex flex-wrap items-center gap-2">
@@ -271,7 +271,7 @@ function FinancesInner({
 
           <div className="grid lg:grid-cols-2 gap-4">
             <div className="rounded-xl border border-border bg-card p-6">
-              <h3 className="font-semibold mb-4">CA vs dépenses — 6 derniers mois</h3>
+              <h3 className="font-semibold mb-4">CA et dépenses sur les 6 derniers mois</h3>
               <div className="h-64">
                 {loading ? <Skeleton className="h-full w-full" /> : (
                   <ResponsiveContainer width="100%" height="100%">

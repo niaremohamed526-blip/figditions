@@ -75,7 +75,7 @@ export function ExportFinancesDialog({
     if (from > to) { toast.error("La date de début doit précéder la date de fin"); return; }
     setBusy(true);
     try {
-      // Fetch data (RLS scopes to entreprise) — fetchAllRows évite la limite de 1000 lignes.
+      // Fetch data (RLS scopes to entreprise) : fetchAllRows évite la limite de 1000 lignes.
       const [v, m, a, st, si, dp] = await Promise.all([
         fetchAllRows<Vente>(() => supabase.from("ventes").select("*").eq("statut_annulation", "active").gte("date_vente", from).lte("date_vente", to).order("date_vente", { ascending: true })),
         fetchAllRows<Manuscrit>(() => (supabase as any).from("manuscrits").select("id, titre, auteur, auteur_id, genre, origine")),

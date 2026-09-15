@@ -55,7 +55,7 @@ async function loadImageSize(dataUrl: string): Promise<{ w: number; h: number }>
 }
 
 /**
- * Facture A4 « Vente directe » — même identité visuelle que le bordereau
+ * Facture A4 « Vente directe » : même identité visuelle que le bordereau
  * (masthead FIGDITIONS, filets dorés, typographie éditoriale).
  */
 export async function generateFactureVentePdf(
@@ -119,7 +119,7 @@ export async function generateFactureVentePdf(
   doc.setFont("times", "italic");
   doc.setFontSize(7.5);
   doc.setTextColor(...MUTED);
-  doc.text("Plateforme éditoriale — Bamako", W / 2, y + 11, { align: "center" });
+  doc.text("Plateforme éditoriale, Bamako", W / 2, y + 11, { align: "center" });
 
   // Titre
   y += 34;
@@ -130,7 +130,7 @@ export async function generateFactureVentePdf(
   doc.setFont("times", "normal");
   doc.setFontSize(21);
   doc.setTextColor(...INK);
-  doc.text("FACTURE — Vente directe", M, y + 22);
+  doc.text("FACTURE DE VENTE LIBRE", M, y + 22);
 
   doc.setFont("helvetica", "bold");
   doc.setFontSize(7);
@@ -230,7 +230,7 @@ export async function generateFactureVentePdf(
   doc.setFont("helvetica", "normal");
   doc.setFontSize(9);
   doc.setTextColor(...MUTED);
-  doc.text("Sous-total", W / 2 + 20, y);
+  doc.text("Total avant remise", W / 2 + 20, y);
   doc.setFont("helvetica", "bold");
   doc.setTextColor(...INK);
   doc.text(fmtFcfa(d.sousTotal), W - M, y, { align: "right" });
@@ -242,7 +242,7 @@ export async function generateFactureVentePdf(
     doc.text(`Remise (${Math.round(d.remisePct)}%)`, W / 2 + 20, y);
     doc.setFont("helvetica", "bold");
     doc.setTextColor(200, 120, 60);
-    doc.text(`- ${fmtFcfa(d.remiseFcfa)}`, W - M, y, { align: "right" });
+    doc.text(`Remise de ${fmtFcfa(d.remiseFcfa)}`, W - M, y, { align: "right" });
     y += 14;
   }
 
@@ -295,8 +295,8 @@ export async function generateFactureVentePdf(
   doc.setFont("helvetica", "bold");
   doc.setFontSize(7);
   doc.setTextColor(...MUTED);
-  doc.text("SIGNATURE — ÉDITEUR", M, y + 12);
-  doc.text("SIGNATURE — CLIENT", M + sigColW + 36, y + 12);
+  doc.text("SIGNATURE DE L'ÉDITEUR", M, y + 12);
+  doc.text("SIGNATURE DU CLIENT", M + sigColW + 36, y + 12);
   doc.setFont("times", "italic");
   doc.setFontSize(9);
   doc.setTextColor(...INK);

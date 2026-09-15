@@ -122,7 +122,7 @@ export function RoyaltiesTab({
       if (error) throw error;
       if (data?.ok === false) throw new Error(data.error ?? "Erreur");
 
-      toast.success(`✅ Quittance ${data.numero} générée — ${fmtFCFA(data.montant)} payés à ${data.auteur_nom}`);
+      toast.success(`✅ Quittance ${data.numero} générée : ${fmtFCFA(data.montant)} payés à ${data.auteur_nom}`);
 
       // Télécharge immédiatement le reçu PDF
       downloadQuittance({
@@ -184,7 +184,7 @@ export function RoyaltiesTab({
         <CardContent>
           {pendingGroups.length === 0 ? (
             <p className="text-center py-10 text-muted-foreground text-sm flex items-center justify-center gap-2">
-              <CheckCircle2 className="h-4 w-4 text-emerald-400" /> Aucune royalty en attente — tout est réglé. 🎉
+              <CheckCircle2 className="h-4 w-4 text-emerald-400" /> Aucune royalty en attente : tout est réglé. 🎉
             </p>
           ) : (
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -200,7 +200,7 @@ export function RoyaltiesTab({
                   <div className="text-[11px] text-muted-foreground space-y-0.5 max-h-20 overflow-y-auto">
                     {g.ventes.slice(0, 5).map((v) => (
                       <p key={v.id}>
-                        • {manuscritMap.get(v.manuscrit_id)?.titre ?? "Livre"} — {v.quantite_vendue} ex. — {fmtFCFA(v.droits_auteur_fcfa)}
+                        • {manuscritMap.get(v.manuscrit_id)?.titre ?? "Livre"} : {v.quantite_vendue} ex. : {fmtFCFA(v.droits_auteur_fcfa)}
                       </p>
                     ))}
                     {g.ventes.length > 5 && <p>… et {g.ventes.length - 5} autre(s)</p>}
@@ -289,7 +289,7 @@ export function RoyaltiesTab({
       <Dialog open={!!payGroup} onOpenChange={(o) => !o && setPayGroup(null)}>
         <DialogContent className="max-w-md">
           <DialogHeader>
-            <DialogTitle>💰 Payer les royalties — {payGroup?.nom}</DialogTitle>
+            <DialogTitle>💰 Payer les royalties : {payGroup?.nom}</DialogTitle>
             <DialogDescription>
               {payGroup && (
                 <>

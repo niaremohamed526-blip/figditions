@@ -91,7 +91,7 @@ export function generateContratPdf(d: ContratPdfData) {
   const article = (n: number, title: string, body: string) => {
     doc.setFont("helvetica", "bold");
     doc.setFontSize(11);
-    doc.text(`Article ${n} — ${title}`, M, y);
+    doc.text(`Article ${n} : ${title}`, M, y);
     y += 16;
     doc.setFont("helvetica", "normal");
     doc.setFontSize(10);

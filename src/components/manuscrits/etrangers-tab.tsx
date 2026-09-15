@@ -108,7 +108,7 @@ export function EtrangersTab({
             Livres Étrangers
           </h2>
           <p className="text-muted-foreground mt-1 text-sm max-w-2xl">
-            Livres distribués pour d'autres maisons d'édition — sans droits d'auteur ni workflow éditorial.
+            Livres distribués pour d'autres maisons d'édition, sans droits d'auteur ni parcours éditorial.
           </p>
         </div>
         <Button
@@ -239,7 +239,7 @@ export function EtrangersTab({
           <SheetHeader>
             <SheetTitle>{editing ? "Modifier le livre étranger" : "Ajouter un livre étranger"}</SheetTitle>
             <SheetDescription>
-              Aucun workflow éditorial, aucun droit d'auteur — uniquement la distribution.
+              Aucun parcours éditorial ni droit d'auteur, uniquement la distribution.
             </SheetDescription>
           </SheetHeader>
           <EtrangerForm

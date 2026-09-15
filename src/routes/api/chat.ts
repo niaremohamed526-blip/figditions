@@ -575,8 +575,8 @@ function buildTools(supabase: AnySupabase, userId: string, entrepriseId: string 
             `Dépôt enregistré : ${quantite} × « ${m.titre} » chez ${existing ? existing.librairie_nom : librairie.trim()}` +
               (prix > 0 ? ` à ${fcfa(prix)}` : "") +
               (prov === "hors_stock"
-                ? " — hors stock interne : l'entrepôt n'a pas été touché."
-                : ` — ${quantite} exemplaire(s) déduit(s) de l'entrepôt.`) +
+                ? " : hors stock interne : l'entrepôt n'a pas été touché."
+                : ` : ${quantite} exemplaire(s) déduit(s) de l'entrepôt.`) +
               (warning ? ` ⚠️ ${warning}` : ""),
           ),
         };
@@ -749,7 +749,7 @@ function buildTools(supabase: AnySupabase, userId: string, entrepriseId: string 
           succes: true,
           resume:
             `« ${m.titre} » est passé de « ${m.statut} » à « ${nouveau_statut} ».` +
-            (nouveau_statut === "publie" ? " 📘 Une fiche de stock interne a été créée automatiquement — vous pouvez maintenant enregistrer une impression." : ""),
+            (nouveau_statut === "publie" ? " 📘 Une fiche de stock interne a été créée automatiquement : vous pouvez maintenant enregistrer une impression." : ""),
         };
       },
     }),
@@ -778,7 +778,7 @@ function buildTools(supabase: AnySupabase, userId: string, entrepriseId: string 
         const eid = requireEntreprise();
         const photos = nombre_photos && nombre_photos > 0 ? Math.round(nombre_photos) : 1;
 
-        // Journal de session (debug / amélioration du rapprochement) — best-effort.
+        // Journal de session (debug / amélioration du rapprochement) : best-effort.
         const logSession = async (payload: unknown) => {
           try {
             await supabase.from("medmo_ocr_logs").insert({
@@ -932,7 +932,7 @@ export const Route = createFileRoute("/api/chat")({
                 p?.type === "file" && typeof p?.url === "string" && p.url === ""
                   ? {
                       type: "text",
-                      text: `[Pièce jointe précédente : ${p.filename ?? "fichier"} (${p.mediaType ?? "fichier"}) — contenu non conservé dans l'historique]`,
+                      text: `[Pièce jointe précédente : ${p.filename ?? "fichier"} (${p.mediaType ?? "fichier"}) : contenu non conservé dans l'historique]`,
                     }
                   : p,
               )
@@ -941,7 +941,7 @@ export const Route = createFileRoute("/api/chat")({
 
         // Garde : l'hébergeur plafonne la taille TOTALE des requêtes (~4,5 Mo sur
         // Vercel, historique inclus). On vise ~2,8 Mo de pièces jointes (base64)
-        // pour garder une marge de sécurité — au-delà, l'hébergeur renvoie sa
+        // pour garder une marge de sécurité : au-delà, l'hébergeur renvoie sa
         // propre page d'erreur 413 avant même que ce code ne s'exécute.
         const lastUserMsg = [...rawMessages].reverse().find((m: any) => m?.role === "user");
         const payloadChars = (lastUserMsg?.parts ?? []).reduce(

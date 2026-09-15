@@ -133,7 +133,7 @@ export function MedmoPhotoVentesCard({
     try {
       const { data } = await supabase.auth.getSession();
       const token = data.session?.access_token;
-      if (!token) throw new Error("Session expirée — rechargez la page.");
+      if (!token) throw new Error("Session expirée. Rechargez la page.");
       const res = await fetch("/api/medmo-ventes", {
         method: "POST",
         headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
@@ -180,7 +180,7 @@ export function MedmoPhotoVentesCard({
         window.dispatchEvent(new CustomEvent("medmo:threads-changed"));
       }
       if ((json.echecs ?? 0) > 0) {
-        toast.warning(`${json.echecs} ligne(s) n'ont pas pu être enregistrées — voir le détail.`);
+        toast.warning(`${json.echecs} ligne(s) n'ont pas pu être enregistrées. Consultez le détail.`);
       }
     } catch (e) {
       toast.error(e instanceof Error ? e.message : "Erreur lors de l'enregistrement.");
@@ -200,7 +200,7 @@ export function MedmoPhotoVentesCard({
       >
         <div className="flex items-center gap-2 text-sm font-semibold text-[color:var(--gold)]">
           <BookOpenCheck className="h-4 w-4" />
-          Enregistrement terminé — {okCount}/{resultats.length} vente(s) réussie(s)
+          Enregistrement terminé : {okCount}/{resultats.length} vente(s) réussie(s)
         </div>
         <div className="space-y-1.5 text-xs">
           {resultats.map((r) => (
@@ -221,7 +221,7 @@ export function MedmoPhotoVentesCard({
         {correctionsApprises > 0 && (
           <p className="flex items-center gap-1.5 text-[11px] text-muted-foreground">
             <Sparkles className="h-3 w-3 text-[color:var(--gold)]" />
-            PR MEDMO a mémorisé {correctionsApprises} correction(s) — il reconnaîtra mieux ces
+            PR MEDMO a mémorisé {correctionsApprises} correction(s). Il reconnaîtra mieux ces
             titres et librairies la prochaine fois.
           </p>
         )}
@@ -392,7 +392,7 @@ export function MedmoPhotoVentesCard({
                       <span>
                         {l.prix_inhabituel &&
                           `Prix inhabituel (catalogue : ${l.prix_suggere ? fcfa(l.prix_suggere) : "?"}). `}
-                        {l.nouvelle_librairie && "Librairie inconnue — créez d'abord le dépôt. "}
+                        {l.nouvelle_librairie && "Librairie inconnue. Créez d'abord le dépôt. "}
                         {l.incertain.length > 0 && `Lecture incertaine : ${l.incertain.join(", ")}.`}
                       </span>
                     </p>
@@ -408,7 +408,7 @@ export function MedmoPhotoVentesCard({
       <div className="flex items-center justify-between gap-2 border-t border-[color:var(--gold)]/25 pt-2.5">
         <div className="text-xs">
           <span className="font-semibold">{selection.length}</span>
-          <span className="text-muted-foreground"> vente(s) — </span>
+          <span className="text-muted-foreground"> vente(s) : </span>
           <span className="font-semibold text-[color:var(--gold)]">{fcfa(totalEstime)}</span>
         </div>
         <div className="flex gap-2">

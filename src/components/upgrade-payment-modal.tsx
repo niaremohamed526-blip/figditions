@@ -132,7 +132,7 @@ export function UpgradePaymentModal({ open, onOpenChange, plan, defaultPeriode =
             style={{ borderColor: `${m.color}55`, backgroundColor: `${m.color}1A`, color: m.color }}
           >
             <ShieldCheck className="h-4 w-4" />
-            <span className="font-medium">Paiement {m.label} — validation manuelle par FIGDITIONS</span>
+            <span className="font-medium">Paiement {m.label}, validé manuellement par FIGDITIONS</span>
           </div>
 
           {/* ---------- Étape 1 : choix ---------- */}
@@ -270,7 +270,7 @@ export function UpgradePaymentModal({ open, onOpenChange, plan, defaultPeriode =
           {step === "qr" && (
             <div className="space-y-4">
               <ol className="text-sm space-y-1.5 text-muted-foreground">
-                <li>1. Scannez le QR code ci-dessous avec {m.id === "wave" ? "l'application Wave" : "Orange Money"}, ou payez au {m.phone}.</li>
+                <li>1. Scannez le QR code suivant avec {m.id === "wave" ? "l'application Wave" : "Orange Money"}, ou payez au {m.phone}.</li>
                 <li>2. Payez exactement <span className="text-foreground font-semibold">{fcfa(amount)}</span>.</li>
                 <li>3. Envoyez-nous votre référence pour activation.</li>
               </ol>
@@ -318,7 +318,7 @@ export function UpgradePaymentModal({ open, onOpenChange, plan, defaultPeriode =
                   </a>
                 </Button>
                 <Button asChild variant="outline" className="h-11">
-                  <a href={mailtoLink(`Paiement ${reference} — FIGDITIONS`, message)}>
+                  <a href={mailtoLink(`Paiement ${reference} | FIGDITIONS`, message)}>
                     <Mail className="h-4 w-4" /> Envoyer par email
                   </a>
                 </Button>
@@ -366,7 +366,7 @@ export function UpgradePaymentModal({ open, onOpenChange, plan, defaultPeriode =
           {promoApplied && (
             <div className="rounded-xl border border-emerald-500/40 bg-emerald-500/10 p-5 text-center animate-fade-in">
               <CheckCircle2 className="h-10 w-10 text-emerald-400 mx-auto mb-2" />
-              <div className="font-semibold text-base">Code appliqué — Aucun paiement requis</div>
+              <div className="font-semibold text-base">Code appliqué. Aucun paiement requis</div>
               <p className="text-sm text-muted-foreground mt-1">Votre plan est activé gratuitement.</p>
             </div>
           )}

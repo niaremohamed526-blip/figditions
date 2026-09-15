@@ -1,4 +1,4 @@
-// PR MEDMO — thread persistence helpers (browser side, RLS as the signed-in user).
+// PR MEDMO : thread persistence helpers (browser side, RLS as the signed-in user).
 import { supabase } from "@/integrations/supabase/client";
 import type { UIMessage } from "ai";
 

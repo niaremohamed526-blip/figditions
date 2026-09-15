@@ -238,8 +238,8 @@ export async function generateManuelStocksPdf(opts: { maison?: string | null } =
   h1("Sommaire");
   const toc = [
     "1. Bienvenue",
-    "2. Stock interne — Vos livres chez vous",
-    "3. Stock externe — Vos livres en librairie",
+    "2. Stock interne : vos livres chez vous",
+    "3. Stock externe : vos livres en librairie",
     "4. Enregistrer les ventes",
     "5. Bordereaux (plan Business)",
     "6. Comprendre les calculs",
@@ -270,7 +270,7 @@ export async function generateManuelStocksPdf(opts: { maison?: string | null } =
   callout("À retenir", "Toutes vos ventes alimentent automatiquement le calcul des droits d'auteur (10 %) et, quand la vente est faite en librairie, la commission libraire (20 %).", "tip");
 
   // ─── 2. Stock interne ──────────────────────────────────
-  h1("2. Stock interne — Vos livres chez vous");
+  h1("2. Stock interne : vos livres chez vous");
   h2("Ouvrir l'onglet");
   p("Dans la page Stocks, cliquez sur l'onglet 🏭 Stock Interne en haut. Vous voyez alors tous les titres que vous détenez, avec la quantité disponible.");
 
@@ -290,7 +290,7 @@ export async function generateManuelStocksPdf(opts: { maison?: string | null } =
   p("Une pastille orange apparaît quand il reste 5 exemplaires ou moins, et une pastille rouge quand il reste 0. Vous êtes ainsi prévenu à temps pour relancer l'imprimeur.");
 
   // ─── 3. Stock externe ──────────────────────────────────
-  h1("3. Stock externe — Vos livres en librairie");
+  h1("3. Stock externe : vos livres en librairie");
   p("Le stock externe recense tous les dépôts que vous avez faits dans les librairies partenaires. Vous savez à tout moment combien de livres sont physiquement dans chaque librairie.");
 
   h2("Trois façons d'enregistrer un dépôt");
@@ -302,12 +302,12 @@ export async function generateManuelStocksPdf(opts: { maison?: string | null } =
   step(3, "Choisissez le titre, la quantité déposée et le prix de vente.");
   step(4, "Validez.");
 
-  h2("Méthode 2 : Saisie rapide — mode caisse (idéal 5 à 20 livres)");
+  h2("Méthode 2 : saisie rapide en mode caisse (idéal pour 5 à 20 livres)");
   p("Recommandé quand vous venez de faire un dépôt dans une librairie et devez saisir plusieurs titres différents à la suite.");
   step(1, "Cliquez sur « Saisie rapide ».");
   step(2, "Saisissez le nom de la librairie une seule fois.");
   step(3, "Pour chaque livre : choisissez le titre, tapez la quantité, puis le prix.");
-  step(4, "Appuyez sur Entrée pour passer d'un champ à l'autre — sans jamais quitter le clavier.");
+  step(4, "Appuyez sur Entrée pour passer d'un champ à l'autre sans jamais quitter le clavier.");
   step(5, "Quand tout est saisi, appuyez sur Ctrl + Entrée pour tout enregistrer d'un coup.");
   callout("Astuce clavier", "Entrée = champ suivant. Ctrl + Entrée = tout valider. Aucune souris nécessaire.", "tip");
 
@@ -337,22 +337,22 @@ export async function generateManuelStocksPdf(opts: { maison?: string | null } =
 
   h2("Le bouton « 💰 Enregistrer une vente »");
   p("Ce bouton doré est présent en haut à droite de deux pages :");
-  bullet("Page Stocks — visible sur les onglets Stock interne ET Stock externe.");
-  bullet("Page Finances — même bouton, même formulaire.");
+  bullet("Page Stocks : visible sur les onglets Stock interne et Stock externe.");
+  bullet("Page Finances : même bouton, même formulaire.");
   p("Où que vous soyez, un seul clic ouvre le même tiroir latéral pour saisir la vente. Aucun besoin d'ouvrir la fiche du livre au préalable.");
 
-  h2("Étape 1 — Choisir le livre");
+  h2("Étape 1 : choisir le livre");
   step(1, "Cliquez sur « 💰 Enregistrer une vente ».");
   step(2, "Dans le champ « 📚 Manuscrit », tapez les premières lettres du titre ou du nom de l'auteur : la liste se filtre en direct.");
   step(3, "Sélectionnez le livre. Le nom de l'auteur, le prix unitaire et le stock disponible s'affichent automatiquement.");
   callout("Seuls les livres publiés apparaissent", "La liste ne montre que les manuscrits au statut « Publié ». Si un titre manque, vérifiez qu'il est bien passé en publié dans la page Manuscrits.", "tip");
 
-  h2("Étape 2 — Choisir le type de vente");
+  h2("Étape 2 : choisir le type de vente");
   p("Deux cartes cliquables s'affichent côte à côte :");
-  bullet("🏪 Vente en Librairie — pour une vente réalisée par une librairie partenaire. Un sélecteur de librairie apparaît juste en dessous : choisissez le point de dépôt concerné. Les librairies en rupture (0 exemplaire) sont grisées.");
-  bullet("🛍️ Vente Libre — pour une vente libre hors librairie (salon, événement, particulier, boutique en ligne, bureau). La vente sera automatiquement déduite de votre Stock interne.");
+  bullet("🏪 Vente en librairie : pour une vente réalisée par une librairie partenaire. Un sélecteur de librairie apparaît ensuite : choisissez le point de dépôt concerné. Les librairies en rupture (0 exemplaire) sont grisées.");
+  bullet("🛍️ Vente libre : pour une vente libre hors librairie (salon, événement, particulier, boutique en ligne, bureau). La vente sera automatiquement déduite de votre Stock interne.");
 
-  h2("Étape 3 — Détails de la vente");
+  h2("Étape 3 : détails de la vente");
   step(1, "Saisissez la quantité vendue. Le système empêche de dépasser le stock disponible et affiche une alerte rouge en cas de saisie trop élevée.");
   step(2, "Vérifiez le prix unitaire (préchargé). Vous pouvez le modifier ponctuellement, par exemple pour appliquer une remise.");
   step(3, "Choisissez la date de la vente (par défaut : aujourd'hui).");
@@ -367,7 +367,7 @@ export async function generateManuelStocksPdf(opts: { maison?: string | null } =
 
   callout("Contrats reconnus automatiquement", "Si un contrat signé prévoit un pourcentage de droits différent (par ex. 12 %), FIGDITIONS l'utilise à la place du 10 % standard. Aucune saisie manuelle nécessaire.", "tip");
 
-  h2("Étape 4 — Enregistrer");
+  h2("Étape 4 : enregistrer");
   step(1, "Cliquez sur « 💾 Enregistrer la vente ».");
   step(2, "Le tiroir bascule sur un écran vert de confirmation ✅ résumant la vente : titre, auteur, type, librairie (le cas échéant), quantité, prix, total, droits d'auteur, date.");
   step(3, "Deux boutons apparaissent : « 📝 Enregistrer une autre vente » (réinitialise le formulaire pour une saisie en chaîne) ou « ✕ Fermer ».");
@@ -397,7 +397,7 @@ export async function generateManuelStocksPdf(opts: { maison?: string | null } =
   h2("Que contient un bordereau ?");
   bullet("En-tête FIGDITIONS et coordonnées de votre maison d'édition.");
   bullet("Coordonnées de la librairie destinataire.");
-  bullet("Tableau des livres (titre, quantité, prix unitaire, sous-total).");
+  bullet("Tableau des livres avec le titre, la quantité, le prix unitaire et le total par ligne.");
   bullet("Récapitulatif : chiffre d'affaires, commission 20 %, droits auteur 10 %, net éditeur.");
   bullet("Deux zones de signature (éditeur et libraire).");
 

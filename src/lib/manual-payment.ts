@@ -1,4 +1,4 @@
-// Manual QR-code payment (Orange Money / Wave) helpers — client-safe.
+// Manual QR-code payment (Orange Money / Wave) helpers : client-safe.
 import { supabase } from "@/integrations/supabase/client";
 
 /** Orange Money QR code (stored in the `logos` bucket). */

@@ -10,7 +10,7 @@ import { authErrorFr } from "@/lib/auth-errors";
 export const Route = createFileRoute("/reinitialiser-mot-de-passe")({
   component: ResetPasswordPage,
   head: () => ({
-    meta: [{ title: "Nouveau mot de passe — FIGDITIONS" }],
+    meta: [{ title: "Nouveau mot de passe | FIGDITIONS" }],
   }),
 });
 

@@ -10,7 +10,7 @@ import { supabase } from "@/integrations/supabase/client";
 export const Route = createFileRoute("/lecture/$token")({
   component: LecturePage,
   head: () => ({ meta: [
-    { title: "Lecture sécurisée — FIGDITIONS" },
+    { title: "Lecture sécurisée | FIGDITIONS" },
     { name: "robots", content: "noindex,nofollow" },
   ] }),
 });
@@ -54,7 +54,7 @@ const REASONS: Record<string, string> = {
 };
 
 // Erreurs "retryables" : on garde le formulaire et on affiche l'erreur inline
-// au lieu de bloquer la page — l'utilisateur peut corriger et réessayer.
+// au lieu de bloquer la page : l'utilisateur peut corriger et réessayer.
 const RETRYABLE = new Set(["identity_mismatch", "rate_limited"]);
 
 async function callLectureShare<T>(payload: Record<string, unknown>): Promise<T> {
@@ -185,13 +185,13 @@ function SecureViewer({ data }: { data: Extract<OpenResult, { ok: true }> }) {
       const k = e.key.toLowerCase();
       if (e.key === "PrintScreen") {
         e.preventDefault();
-        flashObscure("Capture d'écran détectée — contenu masqué");
+        flashObscure("Capture d'écran détectée. Contenu masqué");
         return;
       }
       // macOS screenshot shortcuts: Cmd+Shift+3, Cmd+Shift+4, Cmd+Shift+5
       if (e.metaKey && e.shiftKey && ["3", "4", "5"].includes(e.key)) {
         e.preventDefault();
-        flashObscure("Capture d'écran détectée — contenu masqué");
+        flashObscure("Capture d'écran détectée. Contenu masqué");
         return;
       }
       if ((e.ctrlKey || e.metaKey) && ["s", "p", "c", "u", "a"].includes(k)) e.preventDefault();
@@ -199,16 +199,16 @@ function SecureViewer({ data }: { data: Extract<OpenResult, { ok: true }> }) {
       if (e.key === "F12") e.preventDefault();
     };
     // Blur automatically when window loses focus (Alt+Tab, Snipping Tool, screen-record app)
-    const onBlur = () => flashObscure("Fenêtre inactive — contenu masqué", 60_000);
+    const onBlur = () => flashObscure("Fenêtre inactive. Contenu masqué", 60_000);
     const onFocus = () => setObscured(false);
     const onVis = () => {
-      if (document.visibilityState === "hidden") flashObscure("Onglet inactif — contenu masqué", 60_000);
+      if (document.visibilityState === "hidden") flashObscure("Onglet inactif. Contenu masqué", 60_000);
       else setObscured(false);
     };
     // Detect DevTools open via viewport gap heuristic
     const devtoolsCheck = () => {
       const gap = Math.max(window.outerWidth - window.innerWidth, window.outerHeight - window.innerHeight);
-      if (gap > 200) flashObscure("Outils de développement détectés — contenu masqué", 5000);
+      if (gap > 200) flashObscure("Outils de développement détectés. Contenu masqué", 5000);
     };
     document.addEventListener("contextmenu", onCtx);
     document.addEventListener("keydown", onKey);
@@ -320,12 +320,12 @@ function SecureViewer({ data }: { data: Extract<OpenResult, { ok: true }> }) {
 
       {/* Footer */}
       <footer className="px-4 py-2 border-t border-border/60 bg-background/80 text-xs text-muted-foreground flex flex-wrap items-center justify-between gap-2">
-        <span>Document protégé par FIGDITIONS — Toute reproduction est interdite</span>
+        <span>Document protégé par FIGDITIONS. Toute reproduction est interdite</span>
         <span>{now.toLocaleString("fr-FR")}</span>
         <span>Lecteur : {data.nom_lecteur}</span>
       </footer>
 
-      {/* Blur overlay — masque le contenu lors d'événements suspects */}
+      {/* Blur overlay : masque le contenu lors d'événements suspects */}
       {obscured && (
         <div
           className="fixed inset-0 z-50 flex items-center justify-center backdrop-blur-2xl"

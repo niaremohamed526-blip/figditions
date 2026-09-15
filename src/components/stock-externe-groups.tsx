@@ -57,8 +57,8 @@ function BatchHistoryBadge({
       if (error) throw error;
       toast.success(
         data?.remis_en_stock_interne
-          ? `Dépôt annulé — ${data.quantite_reversee} ex. remis en stock interne`
-          : `Dépôt annulé — ${data?.quantite_reversee ?? b.quantite_deposee} ex. retirés du dépôt`,
+          ? `Dépôt annulé : ${data.quantite_reversee} ex. remis en stock interne`
+          : `Dépôt annulé : ${data?.quantite_reversee ?? b.quantite_deposee} ex. retirés du dépôt`,
       );
       setCancelTarget(null);
       await fetchBatches();
@@ -100,7 +100,7 @@ function BatchHistoryBadge({
                     {b.notes && <span className="block text-[10px] opacity-70">{b.notes}</span>}
                     {annule && (
                       <span className="block text-[10px] text-red-400 no-underline">
-                        Annulé{b.raison_annulation ? ` — ${b.raison_annulation}` : ""}
+                        Annulé{b.raison_annulation ? ` : ${b.raison_annulation}` : ""}
                       </span>
                     )}
                   </span>

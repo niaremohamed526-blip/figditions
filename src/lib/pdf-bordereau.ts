@@ -52,7 +52,7 @@ export interface BordereauPdfData {
 /**
  * Amounts formatted with a dot as thousands separator (ex. 98.000 FCFA).
  * jsPDF built-in fonts cannot render the narrow no-break space produced by
- * Intl.NumberFormat("fr-FR") — it shows up as "/" — so we format manually.
+ * Intl.NumberFormat("fr-FR") : it shows up as "/" : so we format manually.
  */
 const fmtFcfa = (n: number | null | undefined) => {
   const v = Math.round(Number(n ?? 0) || 0);
@@ -117,7 +117,7 @@ export async function generateBordereauPdf(
         doc.addImage(dataUrl, "PNG", x, y, drawW, drawH, undefined, "FAST");
       }
     } catch {
-      // silent — watermark is optional
+      // silent : watermark is optional
     }
   }
 
@@ -149,7 +149,7 @@ export async function generateBordereauPdf(
   doc.setFont("times", "italic");
   doc.setFontSize(7.5);
   doc.setTextColor(...MUTED);
-  doc.text("Plateforme éditoriale — Bamako", W / 2, y + 11);
+  doc.text("Plateforme éditoriale, Bamako", W / 2, y + 11);
 
   // ─── Title block (asymmetric editorial) ──────────────────────────────
   y += 34;
@@ -184,7 +184,7 @@ export async function generateBordereauPdf(
     doc.setFont("times", "italic");
     doc.setFontSize(9);
     doc.setTextColor(...INK);
-    doc.text(`${d.periodeDebut} — ${d.periodeFin}`, W - M, y + 40, { align: "right" });
+    doc.text(`${d.periodeDebut} au ${d.periodeFin}`, W - M, y + 40, { align: "right" });
   }
 
   y += 52;
@@ -234,7 +234,7 @@ export async function generateBordereauPdf(
 
   y += 74;
 
-  // ─── Table — clean rows, gold accents ────────────────────────────────
+  // ─── Table : clean rows, gold accents ────────────────────────────────
   doc.setDrawColor(...INK);
   doc.setLineWidth(0.8);
   doc.line(M, y, W - M, y);
@@ -429,8 +429,8 @@ export async function generateBordereauPdf(
   doc.setFont("helvetica", "bold");
   doc.setFontSize(7);
   doc.setTextColor(...MUTED);
-  doc.text("SIGNATURE — ÉDITEUR", M, y + 12);
-  doc.text("SIGNATURE — LIBRAIRIE", M + sigColW + 36, y + 12);
+  doc.text("SIGNATURE DE L'ÉDITEUR", M, y + 12);
+  doc.text("SIGNATURE DE LA LIBRAIRIE", M + sigColW + 36, y + 12);
   doc.setFont("times", "italic");
   doc.setFontSize(9);
   doc.setTextColor(...INK);

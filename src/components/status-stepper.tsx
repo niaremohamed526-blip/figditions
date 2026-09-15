@@ -9,7 +9,7 @@ export function StatusStepper({ statut }: { statut: string }) {
 
   return (
     <div className="space-y-4">
-      {/* Horizontal stepper — md+ */}
+      {/* Horizontal stepper : md+ */}
       <ol className="hidden md:flex items-start gap-1 overflow-x-auto">
         {STATUT_PROGRESSION.map((s, i) => {
           const state = i < currentIdx ? "done" : i === currentIdx ? "current" : "todo";
@@ -54,7 +54,7 @@ export function StatusStepper({ statut }: { statut: string }) {
         })}
       </ol>
 
-      {/* Vertical stepper — mobile */}
+      {/* Vertical stepper : mobile */}
       <ol className="md:hidden space-y-0">
         {STATUT_PROGRESSION.map((s, i) => {
           const state = i < currentIdx ? "done" : i === currentIdx ? "current" : "todo";

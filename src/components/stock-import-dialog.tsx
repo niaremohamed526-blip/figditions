@@ -161,7 +161,7 @@ export function StockImportDialog({
       }
       setRows(parsed);
       const ok = parsed.filter((p) => !p.error).length;
-      toast.success(`${parsed.length} ligne(s) analysée(s) — ${ok} valide(s)`);
+      toast.success(`${parsed.length} ligne(s) analysée(s) : ${ok} valide(s)`);
     } catch (e: any) {
       toast.error("Impossible de lire le fichier : " + (e?.message ?? "format invalide"));
       reset();
@@ -202,7 +202,7 @@ export function StockImportDialog({
     if (done === 0) return toast.error("Aucun dépôt importé");
     toast.success(
       `${done} dépôt(s) importé(s) chez « ${librairieNom} »` +
-        (merged > 0 ? ` — ${merged} fusionné(s) avec un dépôt existant` : ""),
+        (merged > 0 ? ` : ${merged} fusionné(s) avec un dépôt existant` : ""),
     );
     onImported();
     close();
@@ -269,7 +269,7 @@ export function StockImportDialog({
               <label className="flex flex-col items-center justify-center gap-2 rounded-lg border-2 border-dashed border-border py-8 cursor-pointer hover:border-primary/50 hover:bg-primary/5 transition-colors">
                 <Upload className="h-6 w-6 text-muted-foreground" />
                 <span className="text-sm font-medium">Cliquez pour choisir un fichier .xlsx ou .csv</span>
-                <span className="text-xs text-muted-foreground">Glissez-déposez également accepté</span>
+                <span className="text-xs text-muted-foreground">Vous pouvez aussi glisser puis déposer le fichier</span>
                 <input
                   ref={fileRef}
                   type="file"

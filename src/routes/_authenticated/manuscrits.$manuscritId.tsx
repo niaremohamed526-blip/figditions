@@ -32,7 +32,7 @@ interface PdfMeta { name: string; size: number; updated_at: string }
 
 export const Route = createFileRoute("/_authenticated/manuscrits/$manuscritId")({
   component: ManuscritDetailPage,
-  head: () => ({ meta: [{ title: "Manuscrit — FIGDITIONS" }] }),
+  head: () => ({ meta: [{ title: "Manuscrit | FIGDITIONS" }] }),
 });
 
 interface Manuscrit {

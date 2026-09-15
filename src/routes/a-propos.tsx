@@ -12,7 +12,7 @@ export const Route = createFileRoute("/a-propos")({
   component: AboutPage,
   head: () => ({
     meta: [
-      { title: "À propos — FIGDITIONS" },
+      { title: "À propos | FIGDITIONS" },
       { name: "description", content: "FIGDITIONS, la première plateforme éditoriale conçue pour l'Afrique de l'Ouest. Fondée à Bamako en 2026." },
       { property: "og:title", content: "À propos de FIGDITIONS" },
       { property: "og:description", content: "FIGDITIONS, la première plateforme éditoriale conçue pour l'Afrique de l'Ouest. Fondée à Bamako en 2026." },
@@ -110,9 +110,9 @@ function Story() {
         <h2 className="text-3xl md:text-4xl font-bold tracking-tight">Notre Histoire</h2>
         <div className="mt-6 space-y-4 text-muted-foreground leading-relaxed text-[15px]">
           <p>
-            En 2026, face aux défis quotidiens rencontrés par les éditeurs maliens — gestion
+            En 2026, face aux défis quotidiens rencontrés par les éditeurs maliens, notamment la gestion
             manuelle des manuscrits, stocks dans des cahiers, paiements des droits d'auteur
-            non automatisés — FIGDITIONS a été créée pour apporter une solution numérique
+            non automatisés, FIGDITIONS a été créée pour apporter une solution numérique
             complète et locale.
           </p>
           <p>
@@ -128,7 +128,7 @@ function Story() {
 
 function Numbers() {
   const stats = [
-    { icon: "🏢", value: "126+", label: "Maisons d'édition recensées au Mali — notre marché" },
+    { icon: "🏢", value: "126+", label: "Maisons d'édition recensées au Mali, notre marché" },
     { icon: "📚", value: "10", label: "Étapes de workflow éditorial" },
     { icon: "🌍", value: "8+", label: "Pays d'Afrique de l'Ouest supportés" },
     { icon: "⚡", value: "99,5%", label: "Objectif de disponibilité de la plateforme" },
@@ -246,7 +246,7 @@ function Contact() {
   const [form, setForm] = useState({ name: "", email: "", message: "" });
   const onSubmit = (e: FormEvent) => {
     e.preventDefault();
-    const subject = encodeURIComponent(`Contact FIGDITIONS — ${form.name}`);
+    const subject = encodeURIComponent(`Contact FIGDITIONS : ${form.name}`);
     const body = encodeURIComponent(`Nom: ${form.name}\nEmail: ${form.email}\n\n${form.message}`);
     window.location.href = `mailto:contact@figditions.xyz?subject=${subject}&body=${body}`;
   };
