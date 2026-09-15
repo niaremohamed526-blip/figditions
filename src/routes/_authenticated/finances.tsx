@@ -271,7 +271,7 @@ function FinancesInner({
 
           <div className="grid lg:grid-cols-2 gap-4">
             <div className="rounded-xl border border-border bg-card p-6">
-              <h3 className="font-semibold mb-4">CA vs dépenses — 6 derniers mois</h3>
+              <h3 className="font-semibold mb-4">CA et dépenses sur les 6 derniers mois</h3>
               <div className="h-64">
                 {loading ? <Skeleton className="h-full w-full" /> : (
                   <ResponsiveContainer width="100%" height="100%">

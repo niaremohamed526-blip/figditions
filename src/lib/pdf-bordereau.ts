@@ -149,7 +149,7 @@ export async function generateBordereauPdf(
   doc.setFont("times", "italic");
   doc.setFontSize(7.5);
   doc.setTextColor(...MUTED);
-  doc.text("Plateforme éditoriale — Bamako", W / 2, y + 11);
+  doc.text("Plateforme éditoriale, Bamako", W / 2, y + 11);
 
   // ─── Title block (asymmetric editorial) ──────────────────────────────
   y += 34;
@@ -184,7 +184,7 @@ export async function generateBordereauPdf(
     doc.setFont("times", "italic");
     doc.setFontSize(9);
     doc.setTextColor(...INK);
-    doc.text(`${d.periodeDebut} — ${d.periodeFin}`, W - M, y + 40, { align: "right" });
+    doc.text(`${d.periodeDebut} au ${d.periodeFin}`, W - M, y + 40, { align: "right" });
   }
 
   y += 52;

@@ -715,7 +715,7 @@ function AddStockForm({
           onChange={(v) => setForm({ ...form, manuscrit_id: v })}
         />
         {isForeign && (
-          <p className="text-xs text-[#C08A55]">🌍 Livre étranger — entrée en stock d'exemplaires achetés/reçus.</p>
+          <p className="text-xs text-[#C08A55]">🌍 Livre étranger : entrée en stock d'exemplaires achetés ou reçus.</p>
         )}
       </div>
       <div className="space-y-2">
@@ -1539,7 +1539,7 @@ function HistoryView({
                     </p>
                     {annule && (
                       <p className="text-xs text-red-400 mt-1">
-                        Annulé{m.raison_annulation ? ` — ${m.raison_annulation}` : ""}
+                        Annulé{m.raison_annulation ? ` : ${m.raison_annulation}` : ""}
                       </p>
                     )}
                   </div>

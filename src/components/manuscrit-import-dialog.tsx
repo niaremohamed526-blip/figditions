@@ -132,7 +132,7 @@ export function ManuscritImportDialog({
       }
       if (parsed.length === 0) { toast.error("Aucune ligne de données trouvée"); return; }
       setRows(parsed);
-      toast.success(`${parsed.length} ligne(s) analysée(s) — ${parsed.filter((p) => !p.error).length} valide(s)`);
+      toast.success(`${parsed.length} ligne(s) analysée(s), ${parsed.filter((p) => !p.error).length} valide(s)`);
     } catch (e: any) {
       toast.error("Impossible de lire le fichier : " + (e?.message ?? "format invalide"));
       reset();
@@ -252,7 +252,9 @@ export function ManuscritImportDialog({
                             </td>
                             <td className="px-2 py-1.5 text-muted-foreground truncate max-w-[120px]">{r.auteur || "—"}</td>
                             <td className="px-2 py-1.5 text-muted-foreground hidden sm:table-cell">{r.genre ?? "—"}</td>
-                            <td className="px-2 py-1.5 text-muted-foreground">{r.statut}</td>
+                            <td className="px-2 py-1.5 text-muted-foreground">
+                              {STATUT_OPTIONS.find((option) => option.value === r.statut)?.label ?? r.statut.replace(/[_-]+/g, " ")}
+                            </td>
                             <td className="px-2 py-1.5 text-center tabular-nums">{r.nombrePages ?? "—"}</td>
                             <td className="px-2 py-1.5">
                               {r.error

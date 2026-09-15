@@ -97,7 +97,7 @@ export function ChangelogPanel({ entries, blocking = false, onClose }: Props) {
 
           {list.length === 0 && (
             <p className="text-sm text-muted-foreground py-10">
-              Rien de neuf pour le moment — revenez bientôt, ça bouge souvent ici.
+              Rien de neuf pour le moment. Revenez bientôt, ça bouge souvent ici.
             </p>
           )}
 

@@ -60,7 +60,7 @@ const T = {
     title: "RAPPORT FINANCIER",
     period: (a: string, b: string) => `Du ${a} au ${b}`,
     generatedAt: (d: string) => `Généré le ${d}`,
-    confidential: "Confidentiel - Usage interne",
+    confidential: "Confidentiel, usage interne",
     resume: "RÉSUMÉ EXÉCUTIF",
     ventes: "DÉTAIL DES VENTES",
     droits: "DROITS D'AUTEUR",
@@ -265,6 +265,10 @@ function clean(s: string): string {
     .replace(/[\u202F\u00A0\u2007\u2009\u200A\u200B]/g, " ")
     // strip emoji + all remaining non-WinAnsi symbols (keep accented latin letters)
     .replace(/[^\x20-\x7EÀ-ÖØ-öø-ÿ€œŒŸ]/g, "");
+}
+
+function readableValue(value: string | null | undefined): string {
+  return clean(String(value ?? "").replace(/[_-]+/g, " ").replace(/\s+/g, " ").trim());
 }
 const fmtFCFA = (n: number) => clean(new Intl.NumberFormat("fr-FR").format(Math.round(n || 0))) + " FCFA";
 const fmtDate = (d: string | null | undefined) => {

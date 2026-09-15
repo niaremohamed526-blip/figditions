@@ -320,7 +320,7 @@ function SecureViewer({ data }: { data: Extract<OpenResult, { ok: true }> }) {
 
       {/* Footer */}
       <footer className="px-4 py-2 border-t border-border/60 bg-background/80 text-xs text-muted-foreground flex flex-wrap items-center justify-between gap-2">
-        <span>Document protégé par FIGDITIONS — Toute reproduction est interdite</span>
+        <span>Document protégé par FIGDITIONS. Toute reproduction est interdite</span>
         <span>{now.toLocaleString("fr-FR")}</span>
         <span>Lecteur : {data.nom_lecteur}</span>
       </footer>

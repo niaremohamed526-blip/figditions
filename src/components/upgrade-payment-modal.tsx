@@ -366,7 +366,7 @@ export function UpgradePaymentModal({ open, onOpenChange, plan, defaultPeriode =
           {promoApplied && (
             <div className="rounded-xl border border-emerald-500/40 bg-emerald-500/10 p-5 text-center animate-fade-in">
               <CheckCircle2 className="h-10 w-10 text-emerald-400 mx-auto mb-2" />
-              <div className="font-semibold text-base">Code appliqué — Aucun paiement requis</div>
+              <div className="font-semibold text-base">Code appliqué. Aucun paiement requis</div>
               <p className="text-sm text-muted-foreground mt-1">Votre plan est activé gratuitement.</p>
             </div>
           )}

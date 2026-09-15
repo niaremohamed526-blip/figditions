@@ -8,6 +8,7 @@ import { History, ShoppingCart, Wallet, ReceiptText, Loader2, User } from "lucid
 import { useMemo, useState } from "react";
 import { fmtFCFA, methodeLabel, type AuditRow } from "@/lib/finance-types";
 import { cn } from "@/lib/utils";
+import { humanizeSystemValue } from "@/lib/format";
 
 const ACTION_META: Record<string, { label: string; className: string }> = {
   insert: { label: "Création", className: "bg-emerald-500/15 text-emerald-400 border-emerald-500/30" },
@@ -38,7 +39,7 @@ function summarize(e: AuditRow): string {
     if (a.statut_paiement !== b.statut_paiement)
       changes.push(`droits : ${b.statut_paiement === "paye" ? "payés" : "en attente"} → ${a.statut_paiement === "paye" ? "payés" : String(a.statut_paiement)}`);
     if (a.statut_encaissement !== b.statut_encaissement)
-      changes.push(`encaissement : ${String(b.statut_encaissement)} → ${String(a.statut_encaissement)}`);
+      changes.push(`encaissement : ${humanizeSystemValue(String(b.statut_encaissement ?? ""))} → ${humanizeSystemValue(String(a.statut_encaissement ?? ""))}`);
     if (num(a.montant_encaisse_fcfa) !== num(b.montant_encaisse_fcfa))
       changes.push(`encaissé : ${fmtFCFA(num(b.montant_encaisse_fcfa))} → ${fmtFCFA(num(a.montant_encaisse_fcfa))}`);
     if (num(a.montant_total_fcfa) !== num(b.montant_total_fcfa))
@@ -58,7 +59,7 @@ function summarize(e: AuditRow): string {
     return `Quittance ${String(a.numero ?? "")} — ${String(a.auteur_nom ?? "")} — ${fmtFCFA(num(a.montant_fcfa))} (${methodeLabel(String(a.methode ?? ""))})`;
   }
 
-  return `${e.entite} ${e.action}`;
+  return `${humanizeSystemValue(e.entite)} ${humanizeSystemValue(e.action).toLocaleLowerCase("fr-FR")}`;
 }
 
 export function JournalTab() {
