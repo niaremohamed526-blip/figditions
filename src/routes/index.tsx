@@ -259,7 +259,7 @@ function Hero() {
         }}
       />
 
-      {/* Hero image — right side */}
+      {/* Hero image : right side */}
       <img
         src={heroAsset.url}
         alt="FIGDITIONS, plateforme éditoriale africaine"
@@ -272,7 +272,7 @@ function Hero() {
         }}
       />
 
-      {/* Hero text — bottom left */}
+      {/* Hero text : bottom left */}
       <div className="relative z-10 max-w-7xl mx-auto px-6 lg:px-12 pt-40 md:pt-0 md:absolute md:bottom-[20%] md:left-0 md:right-0">
         <div className="max-w-xl">
           <h1
@@ -283,8 +283,8 @@ function Hero() {
           </h1>
           <p className="mt-4 text-[18px] leading-[1.5] max-w-[380px]" style={{ color: "rgba(184,168,152,0.9)" }}>
             {t(
-              "La plateforme centrale des éditeurs ouest-africains : manuscrits, stocks, librairies, finances — et un assistant qui travaille avec vous.",
-              "The central platform for West African publishers: manuscripts, stock, bookstores, finances — and an assistant that works with you."
+              "La plateforme centrale des éditeurs ouest-africains : manuscrits, stocks, librairies, finances : et un assistant qui travaille avec vous.",
+              "The central platform for West African publishers: manuscripts, stock, bookstores, finances : and an assistant that works with you."
             )}
           </p>
 
@@ -311,7 +311,7 @@ function Hero() {
           {/* Social icons */}
           <div className="mt-8 flex items-center gap-5">
             {[
-              { Icon: Instagram, href: "https://www.instagram.com/[À COMPLÉTER — compte de marque]", label: "FIGDITIONS sur Instagram" },
+              { Icon: Instagram, href: "https://www.instagram.com/[À COMPLÉTER : compte de marque]", label: "FIGDITIONS sur Instagram" },
             ].map(({ Icon, href, label }) => (
               <a
                 key={label}
@@ -946,7 +946,7 @@ function Footer() {
         <div className="flex md:justify-end gap-3">
           {[
             { Icon: Linkedin, href: "https://www.linkedin.com/in/figuira-éditions-113118301/", label: "FIGDITIONS sur LinkedIn" },
-            { Icon: Instagram, href: "https://www.instagram.com/[À COMPLÉTER — compte de marque]", label: "FIGDITIONS sur Instagram" },
+            { Icon: Instagram, href: "https://www.instagram.com/[À COMPLÉTER : compte de marque]", label: "FIGDITIONS sur Instagram" },
           ].map(({ Icon, href, label }) => (
             <a key={label} href={href} target="_blank" rel="noopener noreferrer" aria-label={label} className="h-10 w-10 rounded-full border border-border flex items-center justify-center text-muted-foreground hover:text-primary hover:border-primary transition-colors">
               <Icon className="h-4 w-4" aria-hidden="true" />

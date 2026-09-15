@@ -287,7 +287,7 @@ export function VentesTab({
       toast.success(
         data.statut === "encaisse"
           ? "✅ Vente totalement encaissée"
-          : `✅ Encaissement partiel enregistré — reste ${fmtFCFA(data.reste)}`,
+          : `✅ Encaissement partiel enregistré : reste ${fmtFCFA(data.reste)}`,
       );
       setEncVente(null);
       onChanged();
@@ -313,7 +313,7 @@ export function VentesTab({
       });
       if (error) throw error;
       if (data?.ok === false) throw new Error(data.error ?? "Erreur");
-      toast.success(`✅ Vente annulée — ${data.quantite_reversee} exemplaire(s) restauré(s) en stock`);
+      toast.success(`✅ Vente annulée : ${data.quantite_reversee} exemplaire(s) restauré(s) en stock`);
       setCancelVente(null);
       onChanged();
     } catch (e: any) {
@@ -344,7 +344,7 @@ export function VentesTab({
         ok += 1;
         montant += reste;
       }
-      if (ok > 0) toast.success(`✅ ${ok} vente(s) encaissée(s) — ${fmtFCFA(montant)}`);
+      if (ok > 0) toast.success(`✅ ${ok} vente(s) encaissée(s) : ${fmtFCFA(montant)}`);
       if (echecs > 0) toast.error(`${echecs} vente(s) n'ont pas pu être encaissées`);
       setEncGroupe(null);
       onChanged();
@@ -373,7 +373,7 @@ export function VentesTab({
         ok += 1;
         ex += Number(data?.quantite_reversee ?? 0);
       }
-      if (ok > 0) toast.success(`✅ ${ok} vente(s) annulée(s) — ${ex} exemplaire(s) restauré(s) en stock`);
+      if (ok > 0) toast.success(`✅ ${ok} vente(s) annulée(s) : ${ex} exemplaire(s) restauré(s) en stock`);
       if (echecs > 0) toast.error(`${echecs} vente(s) n'ont pas pu être annulées (droits déjà payés ?)`);
       setCancelGroupe(null);
       setCancelGroupeReason("");
@@ -457,7 +457,7 @@ export function VentesTab({
         </CardContent>
       </Card>
 
-      {/* Ventes en librairie — groupées */}
+      {/* Ventes en librairie : groupées */}
       <Card className="bg-card/70">
         <CardHeader>
           <CardTitle className="flex items-center gap-2 text-lg">
@@ -688,7 +688,7 @@ export function VentesTab({
         </CardContent>
       </Card>
 
-      {/* Ventes libres — individuelles */}
+      {/* Ventes libres : individuelles */}
       <Card className="bg-card/70">
         <CardHeader>
           <CardTitle className="flex items-center gap-2 text-lg">
@@ -820,7 +820,7 @@ export function VentesTab({
             <DialogDescription>
               {encVente && (
                 <>
-                  {manuscritMap.get(encVente.manuscrit_id)?.titre ?? "Vente"} — reste à encaisser :{" "}
+                  {manuscritMap.get(encVente.manuscrit_id)?.titre ?? "Vente"} : reste à encaisser :{" "}
                   <strong className="text-[color:var(--gold)]">{fmtFCFA(encVente ? resteDe(encVente) : 0)}</strong>
                   {encVente.librairie_nom && <> · {encVente.librairie_nom}</>}
                 </>
@@ -838,7 +838,7 @@ export function VentesTab({
                 placeholder="Ex : 25000"
               />
               <p className="text-[11px] text-muted-foreground">
-                Vous pouvez saisir un montant partiel — la vente passera en « Partiel » jusqu'au solde complet.
+                Vous pouvez saisir un montant partiel : la vente passera en « Partiel » jusqu'au solde complet.
               </p>
             </div>
             <div className="space-y-1.5">
@@ -910,7 +910,7 @@ export function VentesTab({
             <DialogDescription>
               {choixGroupe && (
                 <>
-                  {choixGroupe.librairie_nom} — {new Date(choixGroupe.date_vente).toLocaleDateString("fr-FR")} · {choixGroupe.nb_actives} titre(s) actif(s)
+                  {choixGroupe.librairie_nom} : {new Date(choixGroupe.date_vente).toLocaleDateString("fr-FR")} · {choixGroupe.nb_actives} titre(s) actif(s)
                 </>
               )}
             </DialogDescription>
@@ -953,7 +953,7 @@ export function VentesTab({
               {cancelVente && (
                 <>
                   <p>
-                    <strong>{manuscritMap.get(cancelVente.manuscrit_id)?.titre ?? "Vente"}</strong> — {fmtFCFA(cancelVente.montant_total_fcfa)} — {cancelVente.quantite_vendue} exemplaire(s)
+                    <strong>{manuscritMap.get(cancelVente.manuscrit_id)?.titre ?? "Vente"}</strong> : {fmtFCFA(cancelVente.montant_total_fcfa)} : {cancelVente.quantite_vendue} exemplaire(s)
                   </p>
 
                   <div className="rounded-lg border border-amber-500/30 bg-amber-500/10 p-3 text-sm">
@@ -1015,7 +1015,7 @@ export function VentesTab({
               {cancelGroupe && (
                 <>
                   <p>
-                    <strong>{cancelGroupe.librairie_nom}</strong> — {new Date(cancelGroupe.date_vente).toLocaleDateString("fr-FR")} ·{" "}
+                    <strong>{cancelGroupe.librairie_nom}</strong> : {new Date(cancelGroupe.date_vente).toLocaleDateString("fr-FR")} ·{" "}
                     {cancelGroupe.nb_actives} vente(s) · {cancelGroupe.total_qte} exemplaire(s) · {fmtFCFA(cancelGroupe.total_montant)}
                   </p>
                   <p className="text-xs text-muted-foreground">

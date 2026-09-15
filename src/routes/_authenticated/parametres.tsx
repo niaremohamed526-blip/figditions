@@ -549,7 +549,7 @@ function DangerZone() {
 
   const doDelete = async () => {
     setLoading(true);
-    // Sign out — actual auth deletion requires admin API; we sign out and notify.
+    // Sign out : actual auth deletion requires admin API; we sign out and notify.
     await supabase.auth.signOut();
     setLoading(false);
     toast.success("Compte déconnecté. Contactez le support pour la suppression définitive.");

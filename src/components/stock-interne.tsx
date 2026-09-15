@@ -450,7 +450,7 @@ export function StockInterneTab({ entrepriseId, userId }: { entrepriseId: string
         />
       )}
 
-      {/* Inventaire — sections séparées par origine */}
+      {/* Inventaire : sections séparées par origine */}
       {rows.length === 0 ? (
         <div className="rounded-xl border border-border bg-card py-14 text-center px-4">
           <Warehouse className="h-10 w-10 mx-auto text-muted-foreground/60" />
@@ -776,7 +776,7 @@ const MVT_TYPES: { value: string; label: string; hint?: string }[] = [
   { value: "vente_directe",       label: "🛍️ Vente libre",              hint: "Vente hors librairie (événement, particulier, en ligne…)" },
   { value: "evenement",           label: "📚 Événement / Exposition",   hint: "Exemplaires envoyés pour un événement ou exposition" },
   { value: "retour_librairie",    label: "🔄 Retour de dépôt",          hint: "Livres retournés depuis une librairie, un événement ou toute autre destination" },
-  { value: "don",                 label: "🎁 Don / Donation",           hint: "Exemplaires offerts (école, ONG, bibliothèque, personne…) — sans chiffre d'affaires ni droits d'auteur" },
+  { value: "don",                 label: "🎁 Don / Donation",           hint: "Exemplaires offerts (école, ONG, bibliothèque, personne…) : sans chiffre d'affaires ni droits d'auteur" },
   { value: "perte",               label: "❌ Perte / Dommage",          hint: "Exemplaires perdus ou endommagés" },
   { value: "ajustement",          label: "🔧 Ajustement manuel",        hint: "Correction manuelle du stock (note obligatoire)" },
 ];
@@ -902,7 +902,7 @@ function MouvementForm({
       const destLabel = provenance === "librairie"
         ? (selectedLibrairie?.librairie_nom ?? "Librairie")
         : provenanceTexte.trim();
-      const noteBase = `Provenance : ${provLabel}${form.notes ? " — " + form.notes : ""}`;
+      const noteBase = `Provenance : ${provLabel}${form.notes ? " : " + form.notes : ""}`;
 
       // 1) Good copies → increase disponible + decrement source counter (atomic, server-side)
       if (goodQty > 0) {
@@ -923,7 +923,7 @@ function MouvementForm({
           p_type: "perte",
           p_quantite: damagedQty,
           p_destination: destLabel,
-          p_notes: `Retour endommagé depuis ${provLabel}${form.notes ? " — " + form.notes : ""}`,
+          p_notes: `Retour endommagé depuis ${provLabel}${form.notes ? " : " + form.notes : ""}`,
         });
         if (error) { setLoading(false); return toast.error(error.message); }
         toast.warning(`⚠️ ${damagedQty} exemplaire(s) endommagé(s) enregistré(s) comme perte`);
@@ -936,7 +936,7 @@ function MouvementForm({
     }
 
     // ------- DON : validations spécifiques -------
-    const destinataireDon = isDon ? `${donType} — ${donNom.trim()}` : null;
+    const destinataireDon = isDon ? `${donType} : ${donNom.trim()}` : null;
     if (isDon) {
       if (!donNom.trim()) return toast.error("Indiquez le destinataire du don");
       if (form.quantite > currentStock.quantite_disponible) {
@@ -1036,7 +1036,7 @@ function MouvementForm({
                     <SelectContent>
                       {librairiesForBook.map((s) => (
                         <SelectItem key={s.id} value={s.id}>
-                          {s.librairie_nom} — {s.exemplaires_restants} ex. restants{s.provenance === "hors_stock" ? " · 📤 hors stock interne" : ""}
+                          {s.librairie_nom} : {s.exemplaires_restants} ex. restants{s.provenance === "hors_stock" ? " · 📤 hors stock interne" : ""}
                         </SelectItem>
                       ))}
                     </SelectContent>
@@ -1044,7 +1044,7 @@ function MouvementForm({
                 )}
                 {selectedLibrairie && (
                   <p className="text-xs text-muted-foreground">
-                    {selectedLibrairie.exemplaires_deposes} ex. envoyés — <span className="text-[#C8922A] font-semibold">Maximum retournable : {maxRetour}</span>
+                    {selectedLibrairie.exemplaires_deposes} ex. envoyés : <span className="text-[#C8922A] font-semibold">Maximum retournable : {maxRetour}</span>
                     {selectedLibrairie.provenance === "hors_stock" && (
                       <span className="mt-0.5 block text-[11px] text-[#C8922A]">
                         📤 Dépôt direct : le retour fera entrer ces exemplaires dans l'entrepôt (jamais prélevés du stock interne).
@@ -1105,7 +1105,7 @@ function MouvementForm({
 
         {isDon && (
           <p className="rounded-r-lg border-l-[3px] border-[#C8922A] bg-[rgba(200,146,42,0.08)] px-3 py-2 text-xs text-muted-foreground">
-            💡 Ce mouvement ne génère aucun chiffre d'affaires ni droits d'auteur — il s'agit d'un don sans contrepartie financière.
+            💡 Ce mouvement ne génère aucun chiffre d'affaires ni droits d'auteur : il s'agit d'un don sans contrepartie financière.
           </p>
         )}
 
@@ -1342,7 +1342,7 @@ function EditStockDialog({
     <Dialog open={open} onOpenChange={(o) => !o && onClose()}>
       <DialogContent className="bg-card border-border max-w-lg max-h-[90vh] overflow-y-auto">
         <DialogHeader>
-          <DialogTitle>✏️ Corriger le stock — {titre}</DialogTitle>
+          <DialogTitle>✏️ Corriger le stock : {titre}</DialogTitle>
         </DialogHeader>
         <div className="space-y-4">
           <p className="text-xs text-muted-foreground">
@@ -1462,7 +1462,7 @@ function HistoryView({
         p_raison: raison,
       });
       if (error) throw error;
-      toast.success("Mouvement annulé — stock rétabli");
+      toast.success("Mouvement annulé : stock rétabli");
       setCancelTarget(null);
       onChanged?.();
     } catch (e: any) {

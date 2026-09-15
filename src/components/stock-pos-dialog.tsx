@@ -208,8 +208,8 @@ export function StockPosDialog({
     try { localStorage.removeItem(DRAFT_KEY); } catch {}
     toast.success(
       `${done} dépôt(s) enregistré(s) chez « ${librairieNom} »` +
-      (merged > 0 ? ` — ${merged} fusionné(s) avec un dépôt existant` : "") +
-      (provenance === "hors_stock" ? " — sans déduction de l'entrepôt" : ""),
+      (merged > 0 ? ` : ${merged} fusionné(s) avec un dépôt existant` : "") +
+      (provenance === "hors_stock" ? " : sans déduction de l'entrepôt" : ""),
     );
     onImported();
     reset();
@@ -250,7 +250,7 @@ export function StockPosDialog({
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
             <Zap className="h-5 w-5 text-primary" />
-            Saisie rapide — Mode caisse
+            Saisie rapide : Mode caisse
             {isDirty && (
               <span
                 title="Modifications non sauvegardées"
@@ -286,7 +286,7 @@ export function StockPosDialog({
         {step === 2 && (lines.length > 0 || isDirty) && (
           <div className="flex flex-wrap items-center justify-between gap-2 text-xs">
             <span className="text-[color:var(--gold)] font-semibold">
-              📝 {lines.length} ligne(s) saisie(s) — Non sauvegardé
+              📝 {lines.length} ligne(s) saisie(s) : Non sauvegardé
             </span>
             {lastSavedAt && (
               <span className="text-muted-foreground">
@@ -329,7 +329,7 @@ export function StockPosDialog({
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
                 {[
                   { v: "interne", icon: "🏭", t: "Depuis le stock interne", d: "Déduit les exemplaires de l'entrepôt" },
-                  { v: "hors_stock", icon: "📤", t: "Hors stock interne", d: "Livres déjà dehors — aucune déduction de l'entrepôt" },
+                  { v: "hors_stock", icon: "📤", t: "Hors stock interne", d: "Livres déjà dehors : aucune déduction de l'entrepôt" },
                 ].map((o) => (
                   <button
                     key={o.v}

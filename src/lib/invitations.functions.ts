@@ -19,7 +19,7 @@ function sanitizePermissions(input: unknown): Permissions {
   return result;
 }
 
-/** PUBLIC — fetch invitation by token via SECURITY DEFINER RPC (no service-role needed). */
+/** PUBLIC : fetch invitation by token via SECURITY DEFINER RPC (no service-role needed). */
 export const getInvitationByToken = createServerFn({ method: "GET" })
   .inputValidator((d: { token: string }) => z.object({ token: z.string().uuid() }).parse(d))
   .handler(async ({ data }) => {
@@ -51,7 +51,7 @@ export const getInvitationByToken = createServerFn({ method: "GET" })
     };
   });
 
-/** Called after sign-up/sign-in — uses SECURITY DEFINER RPC. */
+/** Called after sign-up/sign-in : uses SECURITY DEFINER RPC. */
 export const acceptInvitation = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .inputValidator((d: { token: string }) => z.object({ token: z.string().uuid() }).parse(d))

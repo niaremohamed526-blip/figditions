@@ -55,7 +55,7 @@ async function loadImageSize(dataUrl: string): Promise<{ w: number; h: number }>
 }
 
 /**
- * Facture A4 « Vente directe » — même identité visuelle que le bordereau
+ * Facture A4 « Vente directe » : même identité visuelle que le bordereau
  * (masthead FIGDITIONS, filets dorés, typographie éditoriale).
  */
 export async function generateFactureVentePdf(

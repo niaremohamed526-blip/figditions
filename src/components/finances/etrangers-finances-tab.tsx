@@ -37,7 +37,7 @@ export function EtrangersFinancesTab({
           Ventes de livres étrangers
         </h2>
         <p className="text-sm text-muted-foreground mt-1">
-          Ces ventes ne génèrent aucun droit d'auteur — seule la commission librairie s'applique.
+          Ces ventes ne génèrent aucun droit d'auteur : seule la commission librairie s'applique.
         </p>
       </div>
 

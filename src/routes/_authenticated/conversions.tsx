@@ -188,7 +188,7 @@ function NewConversionForm({ onCreated }: { onCreated: () => void }) {
     let format_source: "pdf" | "docx" | "txt" | null = file ? detectFormat(file.name) : null;
     let taille_source_kb = file ? Math.round(file.size / 1024) : 0;
 
-    // If user picked an existing manuscrit with a PDF: copy it across into our bucket? simpler — require upload tab for now.
+    // If user picked an existing manuscrit with a PDF: copy it across into our bucket? simpler : require upload tab for now.
     if (tab === "manuscrit") {
       if (!selectedManuscrit?.pdf_path) {
         return toast.error("Ce manuscrit n'a pas de PDF. Uploadez le fichier dans l'onglet « Uploader ».");

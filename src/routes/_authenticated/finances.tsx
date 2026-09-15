@@ -51,7 +51,7 @@ interface StockInterneLite { id: string; manuscrit_id: string; quantite_imprimee
 
 const COLORS = ["#C8922A", "#E8B84B", "#4F8FF7", "#E85D8C", "#7E5FFF", "#FF9F45"];
 
-/** Normalized author name — stable grouping key when auteur_id is missing. */
+/** Normalized author name : stable grouping key when auteur_id is missing. */
 const normalizeName = (s: string | null | undefined) => (s ?? "").trim().replace(/\s+/g, " ").toLowerCase();
 
 function FinancesPage() {

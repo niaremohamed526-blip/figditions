@@ -54,7 +54,7 @@ const REASONS: Record<string, string> = {
 };
 
 // Erreurs "retryables" : on garde le formulaire et on affiche l'erreur inline
-// au lieu de bloquer la page — l'utilisateur peut corriger et réessayer.
+// au lieu de bloquer la page : l'utilisateur peut corriger et réessayer.
 const RETRYABLE = new Set(["identity_mismatch", "rate_limited"]);
 
 async function callLectureShare<T>(payload: Record<string, unknown>): Promise<T> {
@@ -325,7 +325,7 @@ function SecureViewer({ data }: { data: Extract<OpenResult, { ok: true }> }) {
         <span>Lecteur : {data.nom_lecteur}</span>
       </footer>
 
-      {/* Blur overlay — masque le contenu lors d'événements suspects */}
+      {/* Blur overlay : masque le contenu lors d'événements suspects */}
       {obscured && (
         <div
           className="fixed inset-0 z-50 flex items-center justify-center backdrop-blur-2xl"

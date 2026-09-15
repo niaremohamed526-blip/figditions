@@ -408,7 +408,7 @@ export function MedmoPhotoVentesCard({
       <div className="flex items-center justify-between gap-2 border-t border-[color:var(--gold)]/25 pt-2.5">
         <div className="text-xs">
           <span className="font-semibold">{selection.length}</span>
-          <span className="text-muted-foreground"> vente(s) — </span>
+          <span className="text-muted-foreground"> vente(s) : </span>
           <span className="font-semibold text-[color:var(--gold)]">{fcfa(totalEstime)}</span>
         </div>
         <div className="flex gap-2">

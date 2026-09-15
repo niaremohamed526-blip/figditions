@@ -11,9 +11,9 @@ export function Logo({
   alt?: string;
   style?: React.CSSProperties;
   /**
-   * `glow` — gold glow for dark backgrounds (default, use everywhere in-app)
-   * `gold` — solid gold tint for light backgrounds (PDF thumbnails, print previews)
-   * `plain` — no filter
+   * `glow` : gold glow for dark backgrounds (default, use everywhere in-app)
+   * `gold` : solid gold tint for light backgrounds (PDF thumbnails, print previews)
+   * `plain` : no filter
    */
   variant?: "glow" | "gold" | "plain";
 }) {

@@ -52,7 +52,7 @@ export interface BordereauPdfData {
 /**
  * Amounts formatted with a dot as thousands separator (ex. 98.000 FCFA).
  * jsPDF built-in fonts cannot render the narrow no-break space produced by
- * Intl.NumberFormat("fr-FR") — it shows up as "/" — so we format manually.
+ * Intl.NumberFormat("fr-FR") : it shows up as "/" : so we format manually.
  */
 const fmtFcfa = (n: number | null | undefined) => {
   const v = Math.round(Number(n ?? 0) || 0);
@@ -117,7 +117,7 @@ export async function generateBordereauPdf(
         doc.addImage(dataUrl, "PNG", x, y, drawW, drawH, undefined, "FAST");
       }
     } catch {
-      // silent — watermark is optional
+      // silent : watermark is optional
     }
   }
 
@@ -234,7 +234,7 @@ export async function generateBordereauPdf(
 
   y += 74;
 
-  // ─── Table — clean rows, gold accents ────────────────────────────────
+  // ─── Table : clean rows, gold accents ────────────────────────────────
   doc.setDrawColor(...INK);
   doc.setLineWidth(0.8);
   doc.line(M, y, W - M, y);

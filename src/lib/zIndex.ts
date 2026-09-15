@@ -1,5 +1,5 @@
 /**
- * Global z-index scale — single source of truth for stacking order.
+ * Global z-index scale : single source of truth for stacking order.
  * Prefer these constants over hardcoded numbers or ad-hoc `z-[...]` values.
  */
 export const Z_INDEX = {

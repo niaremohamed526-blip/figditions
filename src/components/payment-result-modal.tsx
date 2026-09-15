@@ -10,7 +10,7 @@ interface Props {
 }
 
 export function PaymentResultModal({ status, onClose, onRetry }: Props) {
-  // Confetti via emojis — no extra dependency
+  // Confetti via emojis : no extra dependency
   useEffect(() => {
     if (status !== "success") return;
     const root = document.createElement("div");

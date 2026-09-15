@@ -91,7 +91,7 @@ export const openSharedPdf = createServerFn({ method: "POST" })
       return { ok: false as const, reason: "not_found" as const };
     }
 
-    // SECURITY: prevent cross-tenant path injection — the manuscrit's pdf_path
+    // SECURITY: prevent cross-tenant path injection : the manuscrit's pdf_path
     // MUST live under that manuscrit's own tenant prefix.
     if (!m.pdf_path.startsWith(`${m.entreprise_id}/`)) {
       return { ok: false as const, reason: "no_file" as const };

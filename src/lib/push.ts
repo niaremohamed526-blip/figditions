@@ -1,7 +1,7 @@
 // Web Push subscription helpers (client-side).
 import { supabase } from "@/integrations/supabase/client";
 
-// Public VAPID key (safe in codebase — it's the public half).
+// Public VAPID key (safe in codebase : it's the public half).
 export const VAPID_PUBLIC_KEY =
   "BJXIbzbDyHSRFLnaWbXrMXU6gBCWcgMtyoBD3024d3K95gpAUkE95Vvf9-Ol9gRYk8jnWnzMl_uYkstiPR66ey0";
 

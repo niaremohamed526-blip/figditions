@@ -186,7 +186,7 @@ function RootComponent() {
       maxAge: 1000 * 60 * 60 * 24 * 30, // 30 days
       buster: "v1",
     });
-    // Register the service worker (guarded — no-op in preview/dev/iframe).
+    // Register the service worker (guarded : no-op in preview/dev/iframe).
     registerPwa();
     return () => unsubscribe();
   }, [queryClient]);

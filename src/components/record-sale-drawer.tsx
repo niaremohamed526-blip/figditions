@@ -146,7 +146,7 @@ export function RecordSaleDrawer({
   const [notes, setNotes] = useState("");
   const [pickerOpen, setPickerOpen] = useState(false);
 
-  // vente libre — panier multi-livres
+  // vente libre : panier multi-livres
   const [cart, setCart] = useState<CartLine[]>([]);
   const [remisePct, setRemisePct] = useState<string>("");
   const [clientNom, setClientNom] = useState("");
@@ -321,7 +321,7 @@ export function RecordSaleDrawer({
       ? `« ${l.titre} » : ${l.disponible} disponible(s)`
       : `« ${l.titre} » : quantité et prix requis`);
 
-  /** Top 4 livres les plus vendus en vente libre — ajout en un clic. */
+  /** Top 4 livres les plus vendus en vente libre : ajout en un clic. */
   const quickAdd = useMemo(() => {
     return [...interne]
       .filter((s) => s.quantite_disponible > 0)
@@ -455,7 +455,7 @@ export function RecordSaleDrawer({
 
   const close = () => { resetForm(); onOpenChange(false); };
 
-  // Dirty tracking — treat any user-edited field as dirty (skip success view).
+  // Dirty tracking : treat any user-edited field as dirty (skip success view).
   const isDirty =
     !success && !panier &&
     (cart.length > 0 || !!manuscritId || qty !== "1" || !!prix || !!notes.trim() || !!stockId || !!clientNom.trim() || !!remisePct);
@@ -491,7 +491,7 @@ export function RecordSaleDrawer({
           <SuccessView result={success} onAnother={() => resetForm()} onClose={close} />
         ) : (
           <div className="space-y-5 mt-6 pb-6">
-            {/* Type de vente — choisi en premier */}
+            {/* Type de vente : choisi en premier */}
             <div className="space-y-2">
               <Label className="text-xs">Type de vente</Label>
               <div className="grid grid-cols-2 gap-3">
@@ -739,7 +739,7 @@ export function RecordSaleDrawer({
               </>
             ) : (
               <>
-                {/* Manuscrit — flux librairie */}
+                {/* Manuscrit : flux librairie */}
                 <div className="space-y-1.5">
                   <Label className="text-xs">📚 Manuscrit</Label>
                   <Popover open={pickerOpen} onOpenChange={setPickerOpen}>

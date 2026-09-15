@@ -2,7 +2,7 @@ import { createFileRoute } from "@tanstack/react-router";
 import { createClient, type SupabaseClient } from "@supabase/supabase-js";
 
 // Photo-to-Action : enregistrement en masse des ventes validées dans la carte
-// PR MEDMO. Même auth bearer que /api/chat — RLS appliquée en tant que
+// PR MEDMO. Même auth bearer que /api/chat : RLS appliquée en tant que
 // l'utilisateur connecté. Aucune clé service requise (compatible Vercel).
 
 type AnySupabase = SupabaseClient<any, "public", any>;
@@ -73,7 +73,7 @@ export const Route = createFileRoute("/api/medmo-ventes")({
           const prix = Math.round(num(e.prix_unitaire_fcfa));
           const titreAff = e.titre ?? "ce livre";
           if (!e.manuscrit_id || quantite <= 0 || prix <= 0) {
-            resultats.push({ index, ok: false, message: `« ${titreAff} » : livre, quantité ou prix manquant — ligne ignorée.` });
+            resultats.push({ index, ok: false, message: `« ${titreAff} » : livre, quantité ou prix manquant : ligne ignorée.` });
             continue;
           }
 
@@ -89,7 +89,7 @@ export const Route = createFileRoute("/api/medmo-ventes")({
             continue;
           }
 
-          const notesBase = `Saisie via photo de cahier (PR MEDMO)${e.statut_paiement === "en_attente" ? " — paiement à encaisser" : ""}`;
+          const notesBase = `Saisie via photo de cahier (PR MEDMO)${e.statut_paiement === "en_attente" ? " : paiement à encaisser" : ""}`;
           const librairie = e.librairie?.trim() || null;
 
           if (librairie) {

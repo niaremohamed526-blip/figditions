@@ -212,7 +212,7 @@ function StocksPage() {
   return (
     <div className="space-y-6">
       {/* ============================================================
-          HEADER — mobile (preserved) + desktop (redesigned)
+          HEADER : mobile (preserved) + desktop (redesigned)
          ============================================================ */}
 
       {/* Mobile header */}
@@ -235,7 +235,7 @@ function StocksPage() {
         </div>
       </header>
 
-      {/* Desktop header — 2026 SaaS style */}
+      {/* Desktop header : 2026 SaaS style */}
       <header className="hidden sm:flex items-end justify-between gap-4 flex-wrap">
         <div className="min-w-0">
           <div className="flex items-center gap-1.5 text-xs text-muted-foreground mb-1.5">
@@ -351,7 +351,7 @@ function StocksPage() {
 
         <TabsContent value="externe" className="space-y-6 mt-0 animate-fade-in">
           {/* ============================================================
-              STATS — mobile 2x2 preserved; desktop = hero + 4 supporting
+              STATS : mobile 2x2 preserved; desktop = hero + 4 supporting
              ============================================================ */}
 
           {/* Mobile stats (existing) */}
@@ -364,7 +364,7 @@ function StocksPage() {
 
           {/* Desktop hero + supporting metrics */}
           <div className="hidden sm:block space-y-3">
-            {/* Hero — CA total */}
+            {/* Hero : CA total */}
             <div className="relative rounded-2xl border border-border bg-gradient-to-br from-card via-card to-[color:var(--gold)]/[0.04] pl-8 pr-8 py-6 overflow-hidden">
               <div className="absolute left-0 top-0 bottom-0 w-1 bg-gradient-to-b from-[color:var(--gold)] to-primary" />
               <div className="flex items-center justify-between gap-6 flex-wrap">
@@ -386,7 +386,7 @@ function StocksPage() {
                   </span>
                 </div>
               </div>
-              {/* Progress bar — sell-through */}
+              {/* Progress bar : sell-through */}
               <div className="mt-5">
                 <div className="flex items-center justify-between text-[11px] text-muted-foreground mb-1.5">
                   <span>Taux d'écoulement</span>
@@ -436,7 +436,7 @@ function StocksPage() {
           </div>
 
           {/* ============================================================
-              GLOBAL FILTER BAR — desktop only
+              GLOBAL FILTER BAR : desktop only
              ============================================================ */}
           <div className="hidden sm:block rounded-2xl border border-border bg-card p-4 space-y-3">
             <div className="relative">
@@ -610,7 +610,7 @@ function StocksPage() {
         entrepriseEmail={(entreprise as any)?.email ?? null}
       />
 
-      {/* Mobile FAB — Enregistrer une vente */}
+      {/* Mobile FAB : Enregistrer une vente */}
       <button
         onClick={() => setSaleOpen(true)}
         aria-label="Enregistrer une vente"
@@ -778,7 +778,7 @@ function StockForm({
     if (!entrepriseId) return toast.error("Profil non chargé");
     if (!form.manuscrit_id) return toast.error("Sélectionnez un manuscrit");
 
-    // Nouveau dépôt : passe par add_depot_batch — fusionne dans la fiche existante
+    // Nouveau dépôt : passe par add_depot_batch : fusionne dans la fiche existante
     // (même livre + même librairie), historise le lot et déduit l'entrepôt.
     if (!existing) {
       if (Number(form.exemplaires_deposes) <= 0) return toast.error("Quantité déposée invalide");
@@ -1165,7 +1165,7 @@ function InventoryAnalytics({ stocks, titreMap }: { stocks: Stock[]; titreMap: R
           {critical.map((s) => (
             <div key={s.id} className="flex items-center justify-between gap-3 p-3 rounded-lg border border-red-500/30 bg-red-500/10">
               <p className="text-sm">
-                ⚠️ Stock critique: <span className="font-semibold">{titreMap[s.manuscrit_id] ?? "—"}</span> à {s.librairie_nom ?? "—"} — Plus que {s.exemplaires_restants} exemplaire(s)
+                ⚠️ Stock critique: <span className="font-semibold">{titreMap[s.manuscrit_id] ?? "—"}</span> à {s.librairie_nom ?? "—"} : Plus que {s.exemplaires_restants} exemplaire(s)
               </p>
               <Link to="/imprimeries" className="text-xs px-3 py-1.5 rounded-md bg-primary text-primary-foreground hover:bg-primary/90 whitespace-nowrap">
                 Contacter l'imprimeur

@@ -2,8 +2,8 @@ import { ConfirmationModal } from "@/components/ui/confirmation-modal";
 
 interface Props {
   open: boolean;
-  onContinue: () => void; // "Continuer la saisie" — dismiss the modal, keep form
-  onDiscard: () => void;  // "Abandonner"          — close form, drop data
+  onContinue: () => void; // "Continuer la saisie" : dismiss the modal, keep form
+  onDiscard: () => void;  // "Abandonner"          : close form, drop data
   title?: string;
   message?: string;
 }

@@ -208,7 +208,7 @@ export async function generateContratProPdf(d: ContratProPdfData) {
   const article = (n: number, title: string, body: string) => {
     ensureSpace(LH * 3);
     gap(2);
-    writeParagraph(`Article ${n}. — ${title.toUpperCase()}`, { bold: true, size: 11 });
+    writeParagraph(`Article ${n}. : ${title.toUpperCase()}`, { bold: true, size: 11 });
     writeParagraph(body, { align: "justify" });
   };
 
@@ -317,7 +317,7 @@ export async function generateContratProPdf(d: ContratProPdfData) {
   const startY = y;
   const boxH = 40;
 
-  // Left column — Auteur
+  // Left column : Auteur
   doc.setFont("times", "bold");
   doc.setFontSize(11);
   doc.setTextColor(20, 20, 20);
@@ -328,7 +328,7 @@ export async function generateContratProPdf(d: ContratProPdfData) {
   doc.setLineWidth(0.3);
   doc.line(M, startY + boxH, M + colW, startY + boxH);
 
-  // Right column — Éditeur (+ cachet)
+  // Right column : Éditeur (+ cachet)
   const rx = M + colW + 20;
   doc.setFont("times", "bold");
   doc.text("L'ÉDITEUR,", rx, startY);

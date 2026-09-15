@@ -19,7 +19,7 @@ export interface Corrections {
   get(type: CorrectionType, raw: string): string | null;
 }
 
-/** Charge les corrections apprises (chat ET photo — même table). */
+/** Charge les corrections apprises (chat ET photo : même table). */
 export async function loadCorrections(supabase: AnySupabase, entrepriseId: string): Promise<Corrections> {
   const { data } = await supabase
     .from("medmo_ocr_corrections")

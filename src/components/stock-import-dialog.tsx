@@ -161,7 +161,7 @@ export function StockImportDialog({
       }
       setRows(parsed);
       const ok = parsed.filter((p) => !p.error).length;
-      toast.success(`${parsed.length} ligne(s) analysée(s) — ${ok} valide(s)`);
+      toast.success(`${parsed.length} ligne(s) analysée(s) : ${ok} valide(s)`);
     } catch (e: any) {
       toast.error("Impossible de lire le fichier : " + (e?.message ?? "format invalide"));
       reset();
@@ -202,7 +202,7 @@ export function StockImportDialog({
     if (done === 0) return toast.error("Aucun dépôt importé");
     toast.success(
       `${done} dépôt(s) importé(s) chez « ${librairieNom} »` +
-        (merged > 0 ? ` — ${merged} fusionné(s) avec un dépôt existant` : ""),
+        (merged > 0 ? ` : ${merged} fusionné(s) avec un dépôt existant` : ""),
     );
     onImported();
     close();

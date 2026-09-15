@@ -233,7 +233,7 @@ function MedmoAttachmentChips() {
   );
 }
 
-/** PR MEDMO brand avatar — gold book mark on a deep disc, with an optional sonar pulse. */
+/** PR MEDMO brand avatar : gold book mark on a deep disc, with an optional sonar pulse. */
 function MedmoAvatar({ pulsing = false, size = "md" }: { pulsing?: boolean; size?: "md" | "lg" }) {
   const dims = size === "lg" ? "h-16 w-16" : "h-8 w-8";
   const imgDims = size === "lg" ? "h-10 w-10" : "h-5 w-5";
@@ -280,7 +280,7 @@ function ApprovalCard({
       className="my-2 rounded-xl border border-[color:var(--gold)]/40 bg-[color:var(--gold)]/10 p-3.5 space-y-3"
     >
       <div className="flex items-center gap-2 text-sm font-semibold text-[color:var(--gold)]">
-        <ShieldCheck className="h-4 w-4" /> {label} — confirmation requise
+        <ShieldCheck className="h-4 w-4" /> {label} : confirmation requise
       </div>
       <div className="rounded-lg bg-background/60 border border-border px-3 py-2 text-xs space-y-1">
         {Object.entries(input)
@@ -463,7 +463,7 @@ export function MedmoChat({
 
   return (
     <div className="flex flex-col h-full min-h-0">
-      {/* Mobile header (hidden in compact floating panel — the panel has its own header) */}
+      {/* Mobile header (hidden in compact floating panel : the panel has its own header) */}
       <div className={cn("md:hidden flex items-center gap-2 px-3 py-2.5 border-b border-border bg-sidebar/60", compact && "hidden")}>
         <Link
           to="/medmo"
@@ -693,7 +693,7 @@ export function MedmoChat({
           </PromptInput>
         </motion.div>
         <p className="max-w-3xl mx-auto text-[10px] text-muted-foreground mt-1.5 text-center">
-          PR MEDMO peut se tromper — vérifiez les actions importantes avant de confirmer.
+          PR MEDMO peut se tromper : vérifiez les actions importantes avant de confirmer.
         </p>
       </div>
     </div>

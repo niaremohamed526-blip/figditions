@@ -104,7 +104,7 @@ function JoinPage() {
           const alreadyExists =
             m.includes("already") || m.includes("registered") || m.includes("exists");
           if (alreadyExists) {
-            // Account already exists — try to sign in with provided password
+            // Account already exists : try to sign in with provided password
             const { error: sErr } = await supabase.auth.signInWithPassword({
               email: invite.email,
               password,

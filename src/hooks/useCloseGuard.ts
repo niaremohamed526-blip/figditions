@@ -32,7 +32,7 @@ export function useCloseGuard(isDirty: boolean, doClose: () => void) {
     }
   }, [isDirty, doClose]);
 
-  // "Continuer la saisie": pure UI state change — the form stays open and filled.
+  // "Continuer la saisie": pure UI state change : the form stays open and filled.
   const cancelClose = useCallback(() => {
     showModalRef.current = false;
     cooldownUntil.current = Date.now() + 500;
