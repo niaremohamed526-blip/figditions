@@ -1,29 +1,33 @@
-# Configuration des variables Vercel pour les notifications push
+# Nettoyer les tirets et underscores dans FIGDITIONS
 
-## Ce que vous pouvez coller tout de suite dans Vercel
+## Objectif
+Retirer les tirets (`-`) et underscores (`_`) de tout ce que les utilisateurs voient, téléchargent ou impriment, sans casser l’application.
 
-| Variable | Valeur |
-|---|---|
-| `VAPID_PUBLIC_KEY` | `BJWxqit4Asas6CGXI_TPIbqt020oxkGefCQKVoaFyceUovkkVR7jjXeW-CEMVrdhEZH2OraZASFjcBuwFR59AXw` |
-| `PUSH_TRIGGER_SECRET` | `8a48db41e0c770d8596be13c11aa9a88ea26e2526f8000f9045dcf304670e153` |
-| `VAPID_SUBJECT` | `mailto:contact@figditions.xyz` (remplacez par votre email si vous préférez) |
+Une suppression littérale dans tout le code n’est pas techniquement possible : ces caractères font partie de la syntaxe, des adresses web, des noms de fichiers, des styles, des champs de la base de données et des échanges avec les services externes. Les retirer empêcherait le site de démarrer et rendrait les données inaccessibles.
 
-## Le cas de `VAPID_PRIVATE_KEY`
+## Modifications prévues
 
-Une clé privée, une fois stockée dans le coffre sécurisé Lovable, ne se relit plus — elle ne peut qu'être utilisée côté serveur. Je ne peux donc pas vous l'afficher, même si c'est moi qui l'ai générée.
+1. **Interface complète**
+   - Examiner toutes les pages, fenêtres, tableaux, boutons, messages, filtres, notifications et textes français/anglais.
+   - Remplacer les tirets visibles par une ponctuation naturelle, un espace ou une formulation sans tiret.
+   - Transformer les valeurs techniques affichées avec underscore en libellés lisibles, par exemple `epreuve_1` → `Épreuve 1` et `en_attente` → `En attente`.
 
-Solution proposée : **régénérer une paire VAPID complète** et vous fournir les deux clés à copier dans Vercel.
+2. **Documents et exports**
+   - Nettoyer les factures, bordereaux, contrats, quittances, exports et textes générés par Pr. MEDMO.
+   - Conserver les formats réglementaires ou normalisés qui exigent un tiret, notamment les ISBN et certaines références de facture.
 
-## Étapes d'implémentation (en mode build)
+3. **Données existantes affichées**
+   - Ajouter une présentation lisible des valeurs historiques contenant des underscores, sans modifier leurs valeurs internes.
+   - Ne pas altérer les noms propres, titres de livres, adresses, emails ou contenus saisis par les utilisateurs.
 
-1. Générer une nouvelle paire VAPID (P-256).
-2. Afficher **les deux clés** (publique + privée) directement dans le chat pour que vous les colliez dans Vercel.
-3. Mettre à jour la clé publique dans le code : `src/lib/push.ts` (constante `VAPID_PUBLIC_KEY`).
-4. Purger la table `push_subscriptions` (les abonnements existants deviennent invalides avec une nouvelle paire).
-5. Résumé final avec la liste des 4 variables à coller dans Vercel + rappel de redéployer sans cache.
+4. **Éléments techniques conservés**
+   - Conserver les tirets et underscores indispensables dans le code, les adresses, les routes, les noms de fichiers, les styles, les clés de configuration, les champs de base de données et les intégrations externes.
+   - Ne pas renommer les colonnes ou statuts internes : l’interface les convertira uniquement à l’affichage.
 
-## Ce que vous ferez ensuite dans Vercel
+5. **Validation**
+   - Vérifier la compilation et les principaux parcours sur ordinateur et mobile.
+   - Rechercher une dernière fois les caractères visibles restants et documenter les exceptions obligatoires.
+   - Ajouter l’entrée correspondante dans « Quoi de neuf ».
 
-1. Ajouter les 4 variables ci-dessus dans **Settings → Environment Variables** (Production + Preview).
-2. Redéployer sans cache.
-3. Ouvrir FIGDITIONS → Paramètres → Compte → **Activer les notifications**.
+## Résultat attendu
+Les utilisateurs ne verront plus de tirets ou underscores techniques dans l’interface et les documents. Le fonctionnement interne restera intact et compatible avec les données existantes.
