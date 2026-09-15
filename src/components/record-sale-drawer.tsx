@@ -523,7 +523,7 @@ export function RecordSaleDrawer({
 
                   {cart.length === 0 ? (
                     <p className="px-3 py-6 text-center text-xs italic text-muted-foreground">
-                      Aucun livre. Ajoutez-en un ci-dessous.
+                      Aucun livre. Ajoutez un titre dans la zone suivante.
                     </p>
                   ) : (
                     <div className="divide-y divide-border">
@@ -692,7 +692,7 @@ export function RecordSaleDrawer({
                     {/* Récapitulatif */}
                     <div className="rounded-xl border border-[color:var(--gold)]/30 bg-[color:var(--gold)]/5 p-4 space-y-2">
                       <div className="text-sm font-semibold">📊 Récapitulatif</div>
-                      <Row label="Sous-total" value={fcfa(cartSousTotal)} mono />
+                      <Row label="Total avant remise" value={fcfa(cartSousTotal)} mono />
                       {cartRemise > 0 && (
                         <div className="flex items-center justify-between text-sm">
                           <span className="text-muted-foreground">Remise ({remisePctN}%)</span>
@@ -969,7 +969,7 @@ function PanierSuccessView({
           </div>
         ))}
         <div className="border-t border-border my-2" />
-        <Row label="Sous-total" value={fcfa(panier.sousTotal)} mono />
+        <Row label="Total avant remise" value={fcfa(panier.sousTotal)} mono />
         {panier.remiseFcfa > 0 && (
           <div className="flex items-center justify-between text-sm">
             <span className="text-muted-foreground">Remise ({panier.remisePct}%)</span>

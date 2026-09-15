@@ -5,12 +5,12 @@ export const Route = createFileRoute("/politique-de-confidentialite")({
   component: PrivacyPage,
   head: () => ({
     meta: [
-      { title: "Politique de Confidentialité — FIGDITIONS" },
-      { name: "description", content: "Politique de confidentialité de FIGDITIONS : données collectées, sous-traitants, sécurité, RGPD/OHADA et droits des utilisateurs." },
-      { property: "og:title", content: "Politique de Confidentialité — FIGDITIONS" },
-      { property: "og:description", content: "Politique de confidentialité de FIGDITIONS : données collectées, sous-traitants, sécurité, RGPD/OHADA et droits des utilisateurs." },
-      { name: "twitter:title", content: "Politique de Confidentialité — FIGDITIONS" },
-      { name: "twitter:description", content: "Politique de confidentialité de FIGDITIONS : données collectées, sous-traitants, sécurité, RGPD/OHADA et droits des utilisateurs." },
+      { title: "Politique de Confidentialité | FIGDITIONS" },
+      { name: "description", content: "Politique de confidentialité de FIGDITIONS : données collectées, prestataires, sécurité, RGPD/OHADA et droits des utilisateurs." },
+      { property: "og:title", content: "Politique de Confidentialité | FIGDITIONS" },
+      { property: "og:description", content: "Politique de confidentialité de FIGDITIONS : données collectées, prestataires, sécurité, RGPD/OHADA et droits des utilisateurs." },
+      { name: "twitter:title", content: "Politique de Confidentialité | FIGDITIONS" },
+      { name: "twitter:description", content: "Politique de confidentialité de FIGDITIONS : données collectées, prestataires, sécurité, RGPD/OHADA et droits des utilisateurs." },
       { property: "og:image", content: "https://figditions.xyz/assets/og-figditions.png" },
       { name: "twitter:image", content: "https://figditions.xyz/assets/og-figditions.png" },
       { property: "og:url", content: "https://figditions.xyz/politique-de-confidentialite" },
@@ -27,7 +27,7 @@ const toc = [
   { id: "usage", label: "3. Utilisation" },
   { id: "base-legale", label: "4. Base légale" },
   { id: "stockage", label: "5. Stockage & hébergement" },
-  { id: "sous-traitants", label: "6. Sous-traitants" },
+  { id: "sous-traitants", label: "6. Prestataires" },
   { id: "securite", label: "7. Sécurité & sauvegardes" },
   { id: "conservation", label: "8. Durée de conservation" },
   { id: "droits", label: "9. Vos droits" },
@@ -82,7 +82,7 @@ function PrivacyPage() {
         </ul>
         <h3>Données de paiement</h3>
         <ul>
-          <li>Les paiements par carte bancaire et mobile-money automatiques sont traités par Flutterwave. FIGDITIONS ne stocke <strong>aucune</strong> donnée de carte bancaire.</li>
+          <li>Les paiements automatiques par carte bancaire et argent mobile sont traités par Flutterwave. FIGDITIONS ne stocke <strong>aucune</strong> donnée de carte bancaire.</li>
           <li>Les paiements manuels par QR code (Orange Money Mali et Wave Mali) sont validés manuellement par FIGDITIONS après réception de la transaction. Nous recevons la référence de paiement, le plan choisi, la période et le montant, mais <strong>aucun</strong> mot de passe, code PIN ou numéro de compte financier.</li>
           <li>Quel que soit le mode de paiement, nous ne stockons que le statut de la transaction, l'identifiant ou la référence de paiement, et les détails de l'abonnement associé.</li>
         </ul>
@@ -135,9 +135,9 @@ function PrivacyPage() {
         </table>
       </Section>
 
-      <Section id="sous-traitants" title="6. Sous-traitants">
+      <Section id="sous-traitants" title="6. Prestataires">
         <p>
-          Chaque sous-traitant listé ci-dessus traite uniquement les données strictement
+          Chaque prestataire listé plus haut traite uniquement les données strictement
           nécessaires à la prestation qui lui est confiée. Ils sont soumis à leurs propres
           engagements de sécurité et de confidentialité.
         </p>
@@ -159,9 +159,9 @@ function PrivacyPage() {
           <li>Chiffrement des données en transit (HTTPS / TLS)</li>
           <li>Chiffrement au repos fourni par l'infrastructure Supabase</li>
           <li>Sauvegardes automatiques de la base de données assurées par le fournisseur</li>
-          <li>Row Level Security (RLS) — chaque maison d'édition n'accède qu'à ses propres données</li>
+          <li>Sécurité au niveau des lignes (RLS) : chaque maison d'édition n'accède qu'à ses propres données</li>
           <li>Contrôle d'accès basé sur les rôles pour les membres de l'équipe</li>
-          <li>Liens de partage sécurisé signés, avec journal d'accès et protection anti-capture (filigrane, flou hors-focus)</li>
+          <li>Liens de partage sécurisé signés, avec journal d'accès, filigrane, protection contre la capture et flou lorsque la page perd le focus</li>
           <li>Application PWA installable avec cache local chiffré par le navigateur</li>
           <li>Le personnel de FIGDITIONS n'accède pas au contenu de vos manuscrits sans motif légitime ou autorisation explicite</li>
         </ul>
@@ -207,7 +207,7 @@ function PrivacyPage() {
         </p>
         <ul>
           <li>Cookies / stockage locaux techniques essentiels à l'authentification et à la session</li>
-          <li>IndexedDB et cache du Service Worker pour le mode hors-ligne de la PWA</li>
+          <li>IndexedDB et cache du Service Worker pour le mode sans connexion de la PWA</li>
           <li>Aucun cookie marketing, aucun pixel publicitaire</li>
         </ul>
       </Section>

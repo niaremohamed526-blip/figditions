@@ -202,7 +202,7 @@ export function ManuscritImportDialog({
                 <label className="flex flex-col items-center justify-center gap-2 rounded-lg border-2 border-dashed border-border py-8 cursor-pointer hover:border-primary/50 hover:bg-primary/5 transition-colors">
                   <Upload className="h-6 w-6 text-muted-foreground" />
                   <span className="text-sm font-medium">Cliquez pour choisir un fichier .xlsx ou .csv</span>
-                  <span className="text-xs text-muted-foreground">Glissez-déposez également accepté</span>
+                  <span className="text-xs text-muted-foreground">Vous pouvez aussi glisser puis déposer le fichier</span>
                   <input
                     ref={fileRef}
                     type="file"

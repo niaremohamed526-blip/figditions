@@ -350,7 +350,7 @@ function EstimateurPage() {
             </Field>
             <Field label="Nom de l'estimation *">
               <Input value={nom} onChange={(e) => setNom(e.target.value)}
-                placeholder="ex: Estimation impression 500 ex - Roman" />
+                placeholder="ex. Estimation impression 500 ex, Roman" />
             </Field>
             <div className="grid sm:grid-cols-2 gap-3">
               <Field label="Type de livre">
@@ -372,7 +372,7 @@ function EstimateurPage() {
             </div>
             {calc.isNational && (
               <Badge tone="orange" icon={<Info className="h-3.5 w-3.5" />}>
-                Supplément typographie langue nationale : +30% sur les coûts de pré-presse
+                Supplément typographie langue nationale : +30% sur les coûts de préparation
               </Badge>
             )}
             <div className="grid sm:grid-cols-2 gap-3">
@@ -449,7 +449,7 @@ function EstimateurPage() {
             </Field>
           </Group>
 
-          <Group title="Pré-presse (optionnel)" icon={<Palette className="h-4 w-4" />} open={openGroups.g4}
+          <Group title="Préparation (optionnel)" icon={<Palette className="h-4 w-4" />} open={openGroups.g4}
             onToggle={() => setOpenGroups((o) => ({ ...o, g4: !o.g4 }))}>
             <p className="text-xs text-muted-foreground">Ces coûts sont estimatifs. Laissez à 0 si vous gérez ces services en interne.</p>
             <Slider label="Mise en page / Layout" value={miseEnPage} onChange={setMiseEnPage} min={50_000} max={200_000} step={5_000} />
@@ -487,12 +487,12 @@ function EstimateurPage() {
 
             {/* Breakdown */}
             <div className="rounded-2xl border border-border bg-card p-5 space-y-4">
-              <Section title="📋 Pré-presse">
+              <Section title="📋 Préparation">
                 <CostRow label="Mise en page" value={calc.coutMiseEnPage} />
                 <CostRow label="Conception couverture" value={calc.coutConception} />
                 <CostRow label="ISBN" value={calc.coutIsbn} />
                 {calc.supplementLang > 0 && <CostRow label="Supplément langue nationale (+30%)" value={calc.supplementLang} accent />}
-                <Subtotal label="Sous-total pré-presse" value={calc.sousTotalPrepress} />
+                <Subtotal label="Total de la préparation" value={calc.sousTotalPrepress} />
               </Section>
 
               <Section title={`🖨️ Production (${calc.tirageFinal.toLocaleString("fr-FR")} ex.)`}>
@@ -501,14 +501,14 @@ function EstimateurPage() {
                 <CostRow label="Reliure" value={calc.coutReliure} />
                 {calc.setupOffset > 0 && <CostRow label="Setup offset" value={calc.setupOffset} />}
                 {calc.generatorSurcharge > 0 && <CostRow label="Surcoût groupe électrogène (+15%)" value={calc.generatorSurcharge} accent />}
-                <Subtotal label="Sous-total production" value={calc.sousTotalProduction} />
+                <Subtotal label="Total de la production" value={calc.sousTotalProduction} />
               </Section>
 
-              <Section title="📦 Post-presse">
+              <Section title="📦 Finition">
                 <CostRow label="Découpe et finition" value={calc.coutDecoupe} />
                 <CostRow label="Emballage" value={calc.coutEmballage} />
                 <CostRow label="Livraison" value={calc.coutLivraison} />
-                <Subtotal label="Sous-total post-presse" value={calc.sousTotalPostpress} />
+                <Subtotal label="Total de la finition" value={calc.sousTotalPostpress} />
               </Section>
 
               <div className="flex items-center justify-between rounded-lg px-3 py-2 bg-muted/30">

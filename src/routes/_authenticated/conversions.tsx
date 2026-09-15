@@ -283,8 +283,8 @@ function NewConversionForm({ onCreated }: { onCreated: () => void }) {
                   className="border-2 border-dashed border-border rounded-xl p-6 text-center cursor-pointer hover:border-primary/50 transition-colors bg-background/30"
                 >
                   <Upload className="h-8 w-8 mx-auto text-muted-foreground" />
-                  <p className="mt-2 text-sm font-medium">Glissez-déposez votre fichier</p>
-                  <p className="text-xs text-muted-foreground">PDF, DOCX ou TXT — max {MAX_SIZE_MB} Mo</p>
+                  <p className="mt-2 text-sm font-medium">Glissez puis déposez votre fichier</p>
+                  <p className="text-xs text-muted-foreground">PDF, DOCX ou TXT, maximum {MAX_SIZE_MB} Mo</p>
                   <input
                     ref={fileInput}
                     type="file"

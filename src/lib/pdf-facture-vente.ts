@@ -230,7 +230,7 @@ export async function generateFactureVentePdf(
   doc.setFont("helvetica", "normal");
   doc.setFontSize(9);
   doc.setTextColor(...MUTED);
-  doc.text("Sous-total", W / 2 + 20, y);
+  doc.text("Total avant remise", W / 2 + 20, y);
   doc.setFont("helvetica", "bold");
   doc.setTextColor(...INK);
   doc.text(fmtFcfa(d.sousTotal), W - M, y, { align: "right" });
@@ -242,7 +242,7 @@ export async function generateFactureVentePdf(
     doc.text(`Remise (${Math.round(d.remisePct)}%)`, W / 2 + 20, y);
     doc.setFont("helvetica", "bold");
     doc.setTextColor(200, 120, 60);
-    doc.text(`- ${fmtFcfa(d.remiseFcfa)}`, W - M, y, { align: "right" });
+    doc.text(`Remise de ${fmtFcfa(d.remiseFcfa)}`, W - M, y, { align: "right" });
     y += 14;
   }
 

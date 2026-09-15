@@ -32,7 +32,7 @@ const FAQS = [
   },
   {
     question: "Est-ce que ça fonctionne sans internet ?",
-    answer: "Oui. FIGDITIONS s'installe comme une application sur votre téléphone ou votre ordinateur et fonctionne en mode hors-ligne. Vous pouvez consulter et modifier vos données pendant une coupure ; tout se synchronise automatiquement au retour de la connexion.",
+    answer: "Oui. FIGDITIONS s'installe comme une application sur votre téléphone ou votre ordinateur et fonctionne en mode sans connexion. Vous pouvez consulter et modifier vos données pendant une coupure ; tout se synchronise automatiquement au retour de la connexion.",
   },
   {
     question: "Comment payer si je n'ai pas de carte bancaire ?",
@@ -471,13 +471,13 @@ function Features() {
   const items = [
     { icon: MessageSquare, fr: "Assistant Pr. MEDMO", en: "Pr. MEDMO assistant", dfr: "Posez vos questions en français, envoyez une photo ou un document : l'assistant analyse vos données et prépare les actions que vous validez.", den: "Ask in plain French, send a photo or a document: the assistant reads your data and prepares actions you approve." },
     { icon: Camera, fr: "Photo de cahier → ventes", en: "Notebook photo → sales", dfr: "Photographiez une page de cahier de ventes : les titres, quantités et prix sont reconnus puis proposés à l'enregistrement.", den: "Photograph a sales notebook page: titles, quantities and prices are recognized then proposed for logging." },
-    { icon: WifiOff, fr: "Fonctionne hors-ligne", en: "Fonctionne hors-ligne", dfr: offlineFr, den: offlineFr },
+    { icon: WifiOff, fr: "Fonctionne sans connexion", en: "Works offline", dfr: offlineFr, den: offlineFr },
     { icon: BookOpen, fr: "Gestion des manuscrits", en: "Manuscript management", dfr: "Suivez chaque livre à travers 10 étapes éditoriales, de la réception à la publication", den: "Track every book through 10 editorial stages, from reception to publication" },
     { icon: Globe2, fr: "Livres étrangers", en: "Foreign books", dfr: "Séparez clairement vos propres productions des ouvrages d'autres éditeurs que vous distribuez, au catalogue comme en stock.", den: "Clearly separate your own titles from other publishers' books you distribute, in catalogue and stock." },
     { icon: Users, fr: "Gestion des auteurs", en: "Author management", dfr: "Centralisez les informations, contrats et droits de vos auteurs en un seul endroit", den: "Centralize information, contracts and royalties of your authors in one place" },
     { icon: Factory, fr: "Stock interne", en: "Internal stock", dfr: "Gérez votre entrepôt, suivez chaque exemplaire imprimé et automatisez les mouvements de stock", den: "Manage your warehouse, track every printed copy and automate stock movements" },
-    { icon: Store, fr: "Stock externe", en: "External stock", dfr: "Suivez vos dépôts dans toutes les librairies de Bamako avec alertes de stock bas", den: "Track your deposits across all Bamako bookstores with low-stock alerts" },
-    { icon: Layers, fr: "Dépôts multiples par librairie", en: "Multi-batch deposits", dfr: "Ajoutez un nouveau dépôt sans écraser l'ancien : chaque lot garde sa date, sa quantité et son historique.", den: "Add a new deposit without erasing the previous one: each batch keeps its date, quantity and history." },
+    { icon: Store, fr: "Stock externe", en: "External stock", dfr: "Suivez vos dépôts dans toutes les librairies de Bamako avec alertes de stock bas", den: "Track your deposits across all Bamako bookstores with alerts when stock is low" },
+    { icon: Layers, fr: "Dépôts multiples par librairie", en: "Multiple deposits", dfr: "Ajoutez un nouveau dépôt sans écraser l'ancien : chaque lot garde sa date, sa quantité et son historique.", den: "Add a new deposit without erasing the previous one: each batch keeps its date, quantity and history." },
     { icon: Gift, fr: "Dons et exemplaires offerts", en: "Donations", dfr: "Enregistrez les livres offerts aux écoles, ONG ou bibliothèques : le stock est déduit, sans revenu ni droits d'auteur.", den: "Log books given to schools, NGOs or libraries: stock is deducted, with no revenue or royalties." },
     { icon: History, fr: "Annulation traçable", en: "Traceable cancellation", dfr: "Annulez une vente, un mouvement ou un dépôt avec motif obligatoire : tout est rétabli et conservé dans l'historique.", den: "Cancel a sale, movement or deposit with a mandatory reason: everything is reversed and kept in the log." },
     { icon: Wallet, fr: "Finances détaillées & Royalties", en: "Detailed finances & royalties", dfr: "Journal, rentabilité par titre, ventes, dépenses et droits d'auteur en FCFA, avec reçus imprimables.", den: "Ledger, per-title profitability, sales, expenses and royalties in FCFA, with printable receipts." },

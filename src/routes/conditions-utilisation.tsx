@@ -7,11 +7,11 @@ export const Route = createFileRoute("/conditions-utilisation")({
   component: TermsPage,
   head: () => ({
     meta: [
-      { title: "Conditions Générales d'Utilisation — FIGDITIONS" },
+      { title: "Conditions Générales d'Utilisation | FIGDITIONS" },
       { name: "description", content: "Conditions générales d'utilisation de FIGDITIONS : plans, responsabilités, propriété des contenus, IA, paiements et droit applicable." },
-      { property: "og:title", content: "Conditions d'Utilisation — FIGDITIONS" },
+      { property: "og:title", content: "Conditions d'Utilisation | FIGDITIONS" },
       { property: "og:description", content: "Conditions générales d'utilisation de FIGDITIONS : plans, responsabilités, propriété des contenus, IA, paiements et droit applicable." },
-      { name: "twitter:title", content: "Conditions d'Utilisation — FIGDITIONS" },
+      { name: "twitter:title", content: "Conditions d'Utilisation | FIGDITIONS" },
       { name: "twitter:description", content: "Conditions générales d'utilisation de FIGDITIONS : plans, responsabilités, propriété des contenus, IA, paiements et droit applicable." },
       { property: "og:image", content: "https://figditions.xyz/assets/og-figditions.png" },
       { name: "twitter:image", content: "https://figditions.xyz/assets/og-figditions.png" },
@@ -34,7 +34,7 @@ const toc = [
   { id: "conversion", label: "8. Conversion & partage" },
   { id: "ia", label: "9. Fonctionnalités IA" },
   { id: "responsabilites", label: "10. Responsabilités" },
-  { id: "disponibilite", label: "11. Disponibilité & sous-traitants" },
+  { id: "disponibilite", label: "11. Disponibilité et prestataires" },
   { id: "limitation", label: "12. Limitation de responsabilité" },
   { id: "resiliation", label: "13. Résiliation" },
   { id: "droit", label: "14. Droit applicable" },
@@ -61,7 +61,7 @@ function TermsPage() {
           FIGDITIONS est une plateforme SaaS destinée aux maisons d'édition, principalement
           en zone OHADA, pour gérer manuscrits, auteurs, contrats, stocks, ventes, bordereaux,
           finances, partage sécurisé de lecture et conversion de fichiers. Elle est accessible
-          via le web et installable en tant qu'application (PWA) avec un mode hors-ligne et
+          via le web et installable en tant qu'application (PWA) avec un mode sans connexion et
           des notifications push optionnelles.
         </p>
       </Section>
@@ -69,7 +69,7 @@ function TermsPage() {
       <Section id="compte" title="3. Compte et équipe">
         <ul>
           <li>La création de compte se fait par email et mot de passe.</li>
-          <li>Chaque maison d'édition dispose d'un espace isolé (multi-tenant) avec ses propres membres et rôles.</li>
+          <li>Chaque maison d'édition dispose d'un espace isolé par organisation avec ses propres membres et rôles.</li>
           <li>L'administrateur peut inviter des membres par email et leur attribuer un rôle. Chaque membre est responsable de la confidentialité de ses identifiants.</li>
           <li>Toute activité effectuée depuis un compte est réputée réalisée sous la responsabilité de son titulaire.</li>
         </ul>
@@ -138,7 +138,7 @@ function TermsPage() {
       <Section id="conversion" title="8. Conversion et partage sécurisé">
         <ul>
           <li>La conversion de fichiers (PDF, DOCX, TXT vers EPUB / MOBI) est effectuée via CloudConvert. Le fichier source est transmis via une URL signée temporaire et n'est pas conservé au-delà de la durée nécessaire à la conversion.</li>
-          <li>Le partage sécurisé génère un lien signé avec durée de validité, filigrane et protections anti-capture. Ces protections dissuasives ne peuvent garantir l'impossibilité absolue de copie hors-ligne.</li>
+          <li>Le partage sécurisé génère un lien signé avec durée de validité, filigrane et protections contre la capture. Ces protections dissuasives ne peuvent garantir l'impossibilité absolue de copie sans connexion.</li>
           <li>Vous êtes responsable de la légalité des contenus que vous partagez et de la vérification des droits associés.</li>
         </ul>
       </Section>
@@ -169,9 +169,9 @@ function TermsPage() {
         </ul>
       </Section>
 
-      <Section id="disponibilite" title="11. Disponibilité et sous-traitants">
+      <Section id="disponibilite" title="11. Disponibilité et prestataires">
         <p>
-          Le service repose sur des sous-traitants tiers (Lovable Cloud / Supabase, Vercel,
+          Le service repose sur des prestataires tiers (Lovable Cloud / Supabase, Vercel,
           Flutterwave, CloudConvert, Google Gemini) et sur des services validés manuellement par
           FIGDITIONS (paiements Orange Money / Wave). Les notifications push installées
           dépendent du navigateur et du système de l'utilisateur. Une interruption de la part
