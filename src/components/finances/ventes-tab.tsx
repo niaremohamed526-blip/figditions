@@ -808,6 +808,11 @@ export function VentesTab({
                   })}
                 </tbody>
               </table>
+              </div>
+              <div className="pointer-events-none absolute right-0 top-0 h-full w-10 bg-gradient-to-l from-card to-transparent md:hidden" />
+              <p className="mt-2 text-center text-[11px] text-muted-foreground md:hidden">
+                👉 Glissez le tableau vers la gauche pour voir les autres colonnes
+              </p>
             </div>
           )}
         </CardContent>
