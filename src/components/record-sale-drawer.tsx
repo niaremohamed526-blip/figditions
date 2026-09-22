@@ -167,7 +167,7 @@ export function RecordSaleDrawer({
     setManuscritId(""); setStockId("");
     setQty("1"); setPrix(""); setDateVente(new Date().toISOString().slice(0, 10));
     setNotes(""); setSuccess(null); setPanier(null);
-    setCart([]); setRemisePct(""); setClientNom("");
+    setCart([]); setRemisePct(""); setClientNom(""); setPaiementRecu(true);
     try { localStorage.removeItem(draftKey); } catch { /* stockage indisponible */ }
   };
 
