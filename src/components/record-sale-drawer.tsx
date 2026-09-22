@@ -150,6 +150,7 @@ export function RecordSaleDrawer({
   const [cart, setCart] = useState<CartLine[]>([]);
   const [remisePct, setRemisePct] = useState<string>("");
   const [clientNom, setClientNom] = useState("");
+  const [paiementRecu, setPaiementRecu] = useState(true);
   const [cartPickerOpen, setCartPickerOpen] = useState(false);
   const [addingLine, setAddingLine] = useState(false);
   const qtyRefs = useRef<Record<string, HTMLInputElement | null>>({});
@@ -166,7 +167,7 @@ export function RecordSaleDrawer({
     setManuscritId(""); setStockId("");
     setQty("1"); setPrix(""); setDateVente(new Date().toISOString().slice(0, 10));
     setNotes(""); setSuccess(null); setPanier(null);
-    setCart([]); setRemisePct(""); setClientNom("");
+    setCart([]); setRemisePct(""); setClientNom(""); setPaiementRecu(true);
     try { localStorage.removeItem(draftKey); } catch { /* stockage indisponible */ }
   };
 
@@ -387,6 +388,7 @@ export function RecordSaleDrawer({
         p_date: dateVente,
         p_client: clientNom.trim() || null,
         p_notes: notes.trim() || null,
+        p_paiement_recu: paiementRecu,
       });
       if (error) throw error;
 
@@ -677,6 +679,23 @@ export function RecordSaleDrawer({
                         <Input value={clientNom} onChange={(e) => setClientNom(e.target.value)} placeholder="Client comptant" />
                       </div>
                     </div>
+
+                    <label className="flex items-start gap-3 rounded-xl border border-border bg-muted/20 p-3 cursor-pointer">
+                      <input
+                        type="checkbox"
+                        checked={paiementRecu}
+                        onChange={(e) => setPaiementRecu(e.target.checked)}
+                        className="mt-0.5 h-4 w-4 accent-[color:var(--gold)]"
+                      />
+                      <span className="text-xs">
+                        <span className="block font-semibold">💵 Paiement reçu maintenant</span>
+                        <span className="block text-muted-foreground">
+                          {paiementRecu
+                            ? "La vente sera marquée « Encaissé »."
+                            : "La vente sera marquée « À encaisser » : vous pourrez l'encaisser plus tard dans Finances."}
+                        </span>
+                      </span>
+                    </label>
 
                     <div className="space-y-1.5">
                       <Label className="text-xs">📝 Notes (optionnel)</Label>

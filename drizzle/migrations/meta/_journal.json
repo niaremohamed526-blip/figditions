@@ -8,6 +8,13 @@
       "when": 1789141747020,
       "tag": "0000_vente_libre_panier",
       "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "7",
+      "when": 1790039635589,
+      "tag": "0001_vente_libre_paiement_recu",
+      "breakpoints": true
     }
   ]
 }

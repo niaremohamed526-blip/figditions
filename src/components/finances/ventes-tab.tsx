@@ -462,7 +462,7 @@ export function VentesTab({
         <CardHeader>
           <CardTitle className="flex items-center gap-2 text-lg">
             <Store className="h-5 w-5 text-[color:var(--gold)]" />
-            🏪 Ventes groupées <span className="text-xs font-normal text-muted-foreground">(dépôts en librairie & ventes directes)</span>
+            Ventes groupées <span className="text-xs font-normal text-muted-foreground">(dépôts en librairie & ventes directes)</span>
           </CardTitle>
           <CardDescription>
             Un groupe = un dépôt en librairie (librairie + date) ou une vente directe multi-livres (une facture).
@@ -693,7 +693,7 @@ export function VentesTab({
         <CardHeader>
           <CardTitle className="flex items-center gap-2 text-lg">
             <ShoppingBag className="h-5 w-5 text-[color:var(--gold)]" />
-            🛍️ Ventes libres
+            Ventes libres
           </CardTitle>
           <CardDescription>
             Ventes directes hors librairie : chaque vente garde son propre encaissement et son annulation.
@@ -703,7 +703,8 @@ export function VentesTab({
           {individuelles.length === 0 ? (
             <p className="text-center py-10 text-muted-foreground text-sm">Aucune vente libre ne correspond aux filtres.</p>
           ) : (
-            <div className="overflow-x-auto">
+            <div className="relative">
+              <div className="overflow-x-auto">
               <table className="w-full text-sm min-w-[980px]">
                 <thead>
                   <tr className="border-b border-border text-left text-xs uppercase tracking-wide text-muted-foreground">
@@ -807,6 +808,11 @@ export function VentesTab({
                   })}
                 </tbody>
               </table>
+              </div>
+              <div className="pointer-events-none absolute right-0 top-0 h-full w-10 bg-gradient-to-l from-card to-transparent md:hidden" />
+              <p className="mt-2 text-center text-[11px] text-muted-foreground md:hidden">
+                👉 Glissez le tableau vers la gauche pour voir les autres colonnes
+              </p>
             </div>
           )}
         </CardContent>

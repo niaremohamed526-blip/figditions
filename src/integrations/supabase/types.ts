@@ -2104,6 +2104,7 @@ export type Database = {
           p_date?: string
           p_lignes: Json
           p_notes?: string
+          p_paiement_recu?: boolean
           p_remise_pct?: number
         }
         Returns: Json
