@@ -15,6 +15,13 @@
       "when": 1790039635589,
       "tag": "0001_vente_libre_paiement_recu",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1793292786483,
+      "tag": "0002_drop_duplicate_record_stock_mouvement",
+      "breakpoints": true
     }
   ]
 }
