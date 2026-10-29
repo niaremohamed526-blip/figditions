@@ -8,10 +8,10 @@ type Auth = {
 const sessionFailure = { message: "Votre session a expiré. Reconnectez-vous puis réessayez : votre saisie reste ouverte.", code: "SESSION_EXPIRED" };
 
 /** Retry only an explicit expired-token rejection: never retry an uncertain write. */
-export async function withSessionRecovery<T extends { error: Failure | null }>(
+export async function withSessionRecovery<T extends { data?: unknown; error: Failure | null }>(
   auth: Auth,
   operation: () => PromiseLike<T>,
-): Promise<T | { data: null; error: Failure }> {
+): Promise<(T & { data?: unknown }) | { data: null; error: Failure }> {
   const initial = await auth.getSession();
   const session = initial.data.session;
   if (initial.error || !session) return { data: null, error: sessionFailure };
