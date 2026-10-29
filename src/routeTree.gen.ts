@@ -9,55 +9,74 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
-import { Route as SitemapDotxmlRouteImport } from './routes/sitemap[.]xml'
-import { Route as SignupRouteImport } from './routes/signup'
-import { Route as ReinitialiserMotDePasseRouteImport } from './routes/reinitialiser-mot-de-passe'
-import { Route as PolitiqueDeConfidentialiteRouteImport } from './routes/politique-de-confidentialite'
-import { Route as MotDePasseOublieRouteImport } from './routes/mot-de-passe-oublie'
-import { Route as MentionsLegalesRouteImport } from './routes/mentions-legales'
-import { Route as LoginRouteImport } from './routes/login'
-import { Route as ConditionsUtilisationRouteImport } from './routes/conditions-utilisation'
-import { Route as AProposRouteImport } from './routes/a-propos'
-import { Route as AuthenticatedRouteImport } from './routes/_authenticated'
 import { Route as IndexRouteImport } from './routes/index'
-import { Route as RejoindreTokenRouteImport } from './routes/rejoindre.$token'
-import { Route as LectureTokenRouteImport } from './routes/lecture.$token'
-import { Route as ApiMedmoVentesRouteImport } from './routes/api/medmo-ventes'
-import { Route as ApiChatRouteImport } from './routes/api/chat'
-import { Route as AuthenticatedStocksRouteImport } from './routes/_authenticated/stocks'
-import { Route as AuthenticatedParametresRouteImport } from './routes/_authenticated/parametres'
-import { Route as AuthenticatedMedmoRouteImport } from './routes/_authenticated/medmo'
-import { Route as AuthenticatedImprimeriesRouteImport } from './routes/_authenticated/imprimeries'
-import { Route as AuthenticatedFinancesRouteImport } from './routes/_authenticated/finances'
-import { Route as AuthenticatedEstimateurRouteImport } from './routes/_authenticated/estimateur'
-import { Route as AuthenticatedDashboardRouteImport } from './routes/_authenticated/dashboard'
-import { Route as AuthenticatedConversionsRouteImport } from './routes/_authenticated/conversions'
-import { Route as AuthenticatedContratsRouteImport } from './routes/_authenticated/contrats'
+import { Route as AuthenticatedRouteImport } from './routes/_authenticated'
+import { Route as AProposRouteImport } from './routes/a-propos'
+import { Route as ConditionsUtilisationRouteImport } from './routes/conditions-utilisation'
+import { Route as LoginRouteImport } from './routes/login'
+import { Route as MentionsLegalesRouteImport } from './routes/mentions-legales'
+import { Route as MotDePasseOublieRouteImport } from './routes/mot-de-passe-oublie'
+import { Route as PolitiqueDeConfidentialiteRouteImport } from './routes/politique-de-confidentialite'
+import { Route as ReinitialiserMotDePasseRouteImport } from './routes/reinitialiser-mot-de-passe'
+import { Route as SignupRouteImport } from './routes/signup'
+import { Route as SitemapDotxmlRouteImport } from './routes/sitemap[.]xml'
 import { Route as AuthenticatedAuteursRouteImport } from './routes/_authenticated/auteurs'
-import { Route as AuthenticatedMedmoIndexRouteImport } from './routes/_authenticated/medmo.index'
-import { Route as AuthenticatedManuscritsIndexRouteImport } from './routes/_authenticated/manuscrits.index'
-import { Route as ApiPublicFlutterwaveWebhookRouteImport } from './routes/api/public/flutterwave-webhook'
-import { Route as AuthenticatedMedmoThreadIdRouteImport } from './routes/_authenticated/medmo.$threadId'
-import { Route as AuthenticatedManuscritsManuscritIdRouteImport } from './routes/_authenticated/manuscrits.$manuscritId'
-import { Route as AuthenticatedContratsContratIdRouteImport } from './routes/_authenticated/contrats.$contratId'
-import { Route as AuthenticatedAuteursAuteurIdRouteImport } from './routes/_authenticated/auteurs.$auteurId'
+import { Route as AuthenticatedContratsRouteImport } from './routes/_authenticated/contrats'
+import { Route as AuthenticatedConversionsRouteImport } from './routes/_authenticated/conversions'
+import { Route as AuthenticatedDashboardRouteImport } from './routes/_authenticated/dashboard'
+import { Route as AuthenticatedEstimateurRouteImport } from './routes/_authenticated/estimateur'
+import { Route as AuthenticatedFinancesRouteImport } from './routes/_authenticated/finances'
+import { Route as AuthenticatedImprimeriesRouteImport } from './routes/_authenticated/imprimeries'
+import { Route as AuthenticatedMedmoRouteImport } from './routes/_authenticated/medmo'
+import { Route as AuthenticatedParametresRouteImport } from './routes/_authenticated/parametres'
+import { Route as AuthenticatedStocksRouteImport } from './routes/_authenticated/stocks'
+import { Route as ApiChatRouteImport } from './routes/api/chat'
+import { Route as ApiMedmoVentesRouteImport } from './routes/api/medmo-ventes'
+import { Route as LectureTokenRouteImport } from './routes/lecture.$token'
+import { Route as RejoindreTokenRouteImport } from './routes/rejoindre.$token'
 import { Route as AuthenticatedAdminPaiementsRouteImport } from './routes/_authenticated/admin.paiements'
-import { Route as ApiPublicHooksSendPushRouteImport } from './routes/api/public/hooks/send-push'
+import { Route as AuthenticatedAuteursAuteurIdRouteImport } from './routes/_authenticated/auteurs.$auteurId'
+import { Route as AuthenticatedContratsContratIdRouteImport } from './routes/_authenticated/contrats.$contratId'
+import { Route as AuthenticatedManuscritsIndexRouteImport } from './routes/_authenticated/manuscrits.index'
+import { Route as AuthenticatedManuscritsManuscritIdRouteImport } from './routes/_authenticated/manuscrits.$manuscritId'
+import { Route as AuthenticatedMedmoIndexRouteImport } from './routes/_authenticated/medmo.index'
+import { Route as AuthenticatedMedmoThreadIdRouteImport } from './routes/_authenticated/medmo.$threadId'
+import { Route as ApiPublicFlutterwaveWebhookRouteImport } from './routes/api/public/flutterwave-webhook'
 import { Route as ApiPublicHooksCheckRemindersRouteImport } from './routes/api/public/hooks/check-reminders'
+import { Route as ApiPublicHooksSendPushRouteImport } from './routes/api/public/hooks/send-push'
 
-const SitemapDotxmlRoute = SitemapDotxmlRouteImport.update({
-  id: '/sitemap.xml',
-  path: '/sitemap.xml',
+const IndexRoute = IndexRouteImport.update({
+  id: '/',
+  path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
-const SignupRoute = SignupRouteImport.update({
-  id: '/signup',
-  path: '/signup',
+const AuthenticatedRoute = AuthenticatedRouteImport.update({
+  id: '/_authenticated',
   getParentRoute: () => rootRouteImport,
 } as any)
-const ReinitialiserMotDePasseRoute = ReinitialiserMotDePasseRouteImport.update({
-  id: '/reinitialiser-mot-de-passe',
-  path: '/reinitialiser-mot-de-passe',
+const AProposRoute = AProposRouteImport.update({
+  id: '/a-propos',
+  path: '/a-propos',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ConditionsUtilisationRoute = ConditionsUtilisationRouteImport.update({
+  id: '/conditions-utilisation',
+  path: '/conditions-utilisation',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const LoginRoute = LoginRouteImport.update({
+  id: '/login',
+  path: '/login',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const MentionsLegalesRoute = MentionsLegalesRouteImport.update({
+  id: '/mentions-legales',
+  path: '/mentions-legales',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const MotDePasseOublieRoute = MotDePasseOublieRouteImport.update({
+  id: '/mot-de-passe-oublie',
+  path: '/mot-de-passe-oublie',
   getParentRoute: () => rootRouteImport,
 } as any)
 const PolitiqueDeConfidentialiteRoute =
@@ -66,94 +85,29 @@ const PolitiqueDeConfidentialiteRoute =
     path: '/politique-de-confidentialite',
     getParentRoute: () => rootRouteImport,
   } as any)
-const MotDePasseOublieRoute = MotDePasseOublieRouteImport.update({
-  id: '/mot-de-passe-oublie',
-  path: '/mot-de-passe-oublie',
+const ReinitialiserMotDePasseRoute = ReinitialiserMotDePasseRouteImport.update({
+  id: '/reinitialiser-mot-de-passe',
+  path: '/reinitialiser-mot-de-passe',
   getParentRoute: () => rootRouteImport,
 } as any)
-const MentionsLegalesRoute = MentionsLegalesRouteImport.update({
-  id: '/mentions-legales',
-  path: '/mentions-legales',
+const SignupRoute = SignupRouteImport.update({
+  id: '/signup',
+  path: '/signup',
   getParentRoute: () => rootRouteImport,
 } as any)
-const LoginRoute = LoginRouteImport.update({
-  id: '/login',
-  path: '/login',
+const SitemapDotxmlRoute = SitemapDotxmlRouteImport.update({
+  id: '/sitemap.xml',
+  path: '/sitemap.xml',
   getParentRoute: () => rootRouteImport,
 } as any)
-const ConditionsUtilisationRoute = ConditionsUtilisationRouteImport.update({
-  id: '/conditions-utilisation',
-  path: '/conditions-utilisation',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const AProposRoute = AProposRouteImport.update({
-  id: '/a-propos',
-  path: '/a-propos',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const AuthenticatedRoute = AuthenticatedRouteImport.update({
-  id: '/_authenticated',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const IndexRoute = IndexRouteImport.update({
-  id: '/',
-  path: '/',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const RejoindreTokenRoute = RejoindreTokenRouteImport.update({
-  id: '/rejoindre/$token',
-  path: '/rejoindre/$token',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const LectureTokenRoute = LectureTokenRouteImport.update({
-  id: '/lecture/$token',
-  path: '/lecture/$token',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const ApiMedmoVentesRoute = ApiMedmoVentesRouteImport.update({
-  id: '/api/medmo-ventes',
-  path: '/api/medmo-ventes',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const ApiChatRoute = ApiChatRouteImport.update({
-  id: '/api/chat',
-  path: '/api/chat',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const AuthenticatedStocksRoute = AuthenticatedStocksRouteImport.update({
-  id: '/stocks',
-  path: '/stocks',
+const AuthenticatedAuteursRoute = AuthenticatedAuteursRouteImport.update({
+  id: '/auteurs',
+  path: '/auteurs',
   getParentRoute: () => AuthenticatedRoute,
 } as any)
-const AuthenticatedParametresRoute = AuthenticatedParametresRouteImport.update({
-  id: '/parametres',
-  path: '/parametres',
-  getParentRoute: () => AuthenticatedRoute,
-} as any)
-const AuthenticatedMedmoRoute = AuthenticatedMedmoRouteImport.update({
-  id: '/medmo',
-  path: '/medmo',
-  getParentRoute: () => AuthenticatedRoute,
-} as any)
-const AuthenticatedImprimeriesRoute =
-  AuthenticatedImprimeriesRouteImport.update({
-    id: '/imprimeries',
-    path: '/imprimeries',
-    getParentRoute: () => AuthenticatedRoute,
-  } as any)
-const AuthenticatedFinancesRoute = AuthenticatedFinancesRouteImport.update({
-  id: '/finances',
-  path: '/finances',
-  getParentRoute: () => AuthenticatedRoute,
-} as any)
-const AuthenticatedEstimateurRoute = AuthenticatedEstimateurRouteImport.update({
-  id: '/estimateur',
-  path: '/estimateur',
-  getParentRoute: () => AuthenticatedRoute,
-} as any)
-const AuthenticatedDashboardRoute = AuthenticatedDashboardRouteImport.update({
-  id: '/dashboard',
-  path: '/dashboard',
+const AuthenticatedContratsRoute = AuthenticatedContratsRouteImport.update({
+  id: '/contrats',
+  path: '/contrats',
   getParentRoute: () => AuthenticatedRoute,
 } as any)
 const AuthenticatedConversionsRoute =
@@ -162,50 +116,67 @@ const AuthenticatedConversionsRoute =
     path: '/conversions',
     getParentRoute: () => AuthenticatedRoute,
   } as any)
-const AuthenticatedContratsRoute = AuthenticatedContratsRouteImport.update({
-  id: '/contrats',
-  path: '/contrats',
+const AuthenticatedDashboardRoute = AuthenticatedDashboardRouteImport.update({
+  id: '/dashboard',
+  path: '/dashboard',
   getParentRoute: () => AuthenticatedRoute,
 } as any)
-const AuthenticatedAuteursRoute = AuthenticatedAuteursRouteImport.update({
-  id: '/auteurs',
-  path: '/auteurs',
+const AuthenticatedEstimateurRoute = AuthenticatedEstimateurRouteImport.update({
+  id: '/estimateur',
+  path: '/estimateur',
   getParentRoute: () => AuthenticatedRoute,
 } as any)
-const AuthenticatedMedmoIndexRoute = AuthenticatedMedmoIndexRouteImport.update({
-  id: '/',
-  path: '/',
-  getParentRoute: () => AuthenticatedMedmoRoute,
+const AuthenticatedFinancesRoute = AuthenticatedFinancesRouteImport.update({
+  id: '/finances',
+  path: '/finances',
+  getParentRoute: () => AuthenticatedRoute,
 } as any)
-const AuthenticatedManuscritsIndexRoute =
-  AuthenticatedManuscritsIndexRouteImport.update({
-    id: '/manuscrits/',
-    path: '/manuscrits/',
+const AuthenticatedImprimeriesRoute =
+  AuthenticatedImprimeriesRouteImport.update({
+    id: '/imprimeries',
+    path: '/imprimeries',
     getParentRoute: () => AuthenticatedRoute,
   } as any)
-const ApiPublicFlutterwaveWebhookRoute =
-  ApiPublicFlutterwaveWebhookRouteImport.update({
-    id: '/api/public/flutterwave-webhook',
-    path: '/api/public/flutterwave-webhook',
-    getParentRoute: () => rootRouteImport,
-  } as any)
-const AuthenticatedMedmoThreadIdRoute =
-  AuthenticatedMedmoThreadIdRouteImport.update({
-    id: '/$threadId',
-    path: '/$threadId',
-    getParentRoute: () => AuthenticatedMedmoRoute,
-  } as any)
-const AuthenticatedManuscritsManuscritIdRoute =
-  AuthenticatedManuscritsManuscritIdRouteImport.update({
-    id: '/manuscrits/$manuscritId',
-    path: '/manuscrits/$manuscritId',
+const AuthenticatedMedmoRoute = AuthenticatedMedmoRouteImport.update({
+  id: '/medmo',
+  path: '/medmo',
+  getParentRoute: () => AuthenticatedRoute,
+} as any)
+const AuthenticatedParametresRoute = AuthenticatedParametresRouteImport.update({
+  id: '/parametres',
+  path: '/parametres',
+  getParentRoute: () => AuthenticatedRoute,
+} as any)
+const AuthenticatedStocksRoute = AuthenticatedStocksRouteImport.update({
+  id: '/stocks',
+  path: '/stocks',
+  getParentRoute: () => AuthenticatedRoute,
+} as any)
+const ApiChatRoute = ApiChatRouteImport.update({
+  id: '/api/chat',
+  path: '/api/chat',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiMedmoVentesRoute = ApiMedmoVentesRouteImport.update({
+  id: '/api/medmo-ventes',
+  path: '/api/medmo-ventes',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const LectureTokenRoute = LectureTokenRouteImport.update({
+  id: '/lecture/$token',
+  path: '/lecture/$token',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const RejoindreTokenRoute = RejoindreTokenRouteImport.update({
+  id: '/rejoindre/$token',
+  path: '/rejoindre/$token',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AuthenticatedAdminPaiementsRoute =
+  AuthenticatedAdminPaiementsRouteImport.update({
+    id: '/admin/paiements',
+    path: '/admin/paiements',
     getParentRoute: () => AuthenticatedRoute,
-  } as any)
-const AuthenticatedContratsContratIdRoute =
-  AuthenticatedContratsContratIdRouteImport.update({
-    id: '/$contratId',
-    path: '/$contratId',
-    getParentRoute: () => AuthenticatedContratsRoute,
   } as any)
 const AuthenticatedAuteursAuteurIdRoute =
   AuthenticatedAuteursAuteurIdRouteImport.update({
@@ -213,23 +184,52 @@ const AuthenticatedAuteursAuteurIdRoute =
     path: '/$auteurId',
     getParentRoute: () => AuthenticatedAuteursRoute,
   } as any)
-const AuthenticatedAdminPaiementsRoute =
-  AuthenticatedAdminPaiementsRouteImport.update({
-    id: '/admin/paiements',
-    path: '/admin/paiements',
+const AuthenticatedContratsContratIdRoute =
+  AuthenticatedContratsContratIdRouteImport.update({
+    id: '/$contratId',
+    path: '/$contratId',
+    getParentRoute: () => AuthenticatedContratsRoute,
+  } as any)
+const AuthenticatedManuscritsIndexRoute =
+  AuthenticatedManuscritsIndexRouteImport.update({
+    id: '/manuscrits/',
+    path: '/manuscrits/',
     getParentRoute: () => AuthenticatedRoute,
   } as any)
-const ApiPublicHooksSendPushRoute = ApiPublicHooksSendPushRouteImport.update({
-  id: '/api/public/hooks/send-push',
-  path: '/api/public/hooks/send-push',
-  getParentRoute: () => rootRouteImport,
+const AuthenticatedManuscritsManuscritIdRoute =
+  AuthenticatedManuscritsManuscritIdRouteImport.update({
+    id: '/manuscrits/$manuscritId',
+    path: '/manuscrits/$manuscritId',
+    getParentRoute: () => AuthenticatedRoute,
+  } as any)
+const AuthenticatedMedmoIndexRoute = AuthenticatedMedmoIndexRouteImport.update({
+  id: '/',
+  path: '/',
+  getParentRoute: () => AuthenticatedMedmoRoute,
 } as any)
+const AuthenticatedMedmoThreadIdRoute =
+  AuthenticatedMedmoThreadIdRouteImport.update({
+    id: '/$threadId',
+    path: '/$threadId',
+    getParentRoute: () => AuthenticatedMedmoRoute,
+  } as any)
+const ApiPublicFlutterwaveWebhookRoute =
+  ApiPublicFlutterwaveWebhookRouteImport.update({
+    id: '/api/public/flutterwave-webhook',
+    path: '/api/public/flutterwave-webhook',
+    getParentRoute: () => rootRouteImport,
+  } as any)
 const ApiPublicHooksCheckRemindersRoute =
   ApiPublicHooksCheckRemindersRouteImport.update({
     id: '/api/public/hooks/check-reminders',
     path: '/api/public/hooks/check-reminders',
     getParentRoute: () => rootRouteImport,
   } as any)
+const ApiPublicHooksSendPushRoute = ApiPublicHooksSendPushRouteImport.update({
+  id: '/api/public/hooks/send-push',
+  path: '/api/public/hooks/send-push',
+  getParentRoute: () => rootRouteImport,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
@@ -474,67 +474,11 @@ export interface RootRouteChildren {
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
-    '/sitemap.xml': {
-      id: '/sitemap.xml'
-      path: '/sitemap.xml'
-      fullPath: '/sitemap.xml'
-      preLoaderRoute: typeof SitemapDotxmlRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/signup': {
-      id: '/signup'
-      path: '/signup'
-      fullPath: '/signup'
-      preLoaderRoute: typeof SignupRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/reinitialiser-mot-de-passe': {
-      id: '/reinitialiser-mot-de-passe'
-      path: '/reinitialiser-mot-de-passe'
-      fullPath: '/reinitialiser-mot-de-passe'
-      preLoaderRoute: typeof ReinitialiserMotDePasseRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/politique-de-confidentialite': {
-      id: '/politique-de-confidentialite'
-      path: '/politique-de-confidentialite'
-      fullPath: '/politique-de-confidentialite'
-      preLoaderRoute: typeof PolitiqueDeConfidentialiteRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/mot-de-passe-oublie': {
-      id: '/mot-de-passe-oublie'
-      path: '/mot-de-passe-oublie'
-      fullPath: '/mot-de-passe-oublie'
-      preLoaderRoute: typeof MotDePasseOublieRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/mentions-legales': {
-      id: '/mentions-legales'
-      path: '/mentions-legales'
-      fullPath: '/mentions-legales'
-      preLoaderRoute: typeof MentionsLegalesRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/login': {
-      id: '/login'
-      path: '/login'
-      fullPath: '/login'
-      preLoaderRoute: typeof LoginRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/conditions-utilisation': {
-      id: '/conditions-utilisation'
-      path: '/conditions-utilisation'
-      fullPath: '/conditions-utilisation'
-      preLoaderRoute: typeof ConditionsUtilisationRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/a-propos': {
-      id: '/a-propos'
-      path: '/a-propos'
-      fullPath: '/a-propos'
-      preLoaderRoute: typeof AProposRouteImport
+    '/': {
+      id: '/'
+      path: '/'
+      fullPath: '/'
+      preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/_authenticated': {
@@ -544,95 +488,74 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/': {
-      id: '/'
-      path: '/'
-      fullPath: '/'
-      preLoaderRoute: typeof IndexRouteImport
+    '/a-propos': {
+      id: '/a-propos'
+      path: '/a-propos'
+      fullPath: '/a-propos'
+      preLoaderRoute: typeof AProposRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/rejoindre/$token': {
-      id: '/rejoindre/$token'
-      path: '/rejoindre/$token'
-      fullPath: '/rejoindre/$token'
-      preLoaderRoute: typeof RejoindreTokenRouteImport
+    '/conditions-utilisation': {
+      id: '/conditions-utilisation'
+      path: '/conditions-utilisation'
+      fullPath: '/conditions-utilisation'
+      preLoaderRoute: typeof ConditionsUtilisationRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/lecture/$token': {
-      id: '/lecture/$token'
-      path: '/lecture/$token'
-      fullPath: '/lecture/$token'
-      preLoaderRoute: typeof LectureTokenRouteImport
+    '/login': {
+      id: '/login'
+      path: '/login'
+      fullPath: '/login'
+      preLoaderRoute: typeof LoginRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/api/medmo-ventes': {
-      id: '/api/medmo-ventes'
-      path: '/api/medmo-ventes'
-      fullPath: '/api/medmo-ventes'
-      preLoaderRoute: typeof ApiMedmoVentesRouteImport
+    '/mentions-legales': {
+      id: '/mentions-legales'
+      path: '/mentions-legales'
+      fullPath: '/mentions-legales'
+      preLoaderRoute: typeof MentionsLegalesRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/api/chat': {
-      id: '/api/chat'
-      path: '/api/chat'
-      fullPath: '/api/chat'
-      preLoaderRoute: typeof ApiChatRouteImport
+    '/mot-de-passe-oublie': {
+      id: '/mot-de-passe-oublie'
+      path: '/mot-de-passe-oublie'
+      fullPath: '/mot-de-passe-oublie'
+      preLoaderRoute: typeof MotDePasseOublieRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/_authenticated/stocks': {
-      id: '/_authenticated/stocks'
-      path: '/stocks'
-      fullPath: '/stocks'
-      preLoaderRoute: typeof AuthenticatedStocksRouteImport
-      parentRoute: typeof AuthenticatedRoute
+    '/politique-de-confidentialite': {
+      id: '/politique-de-confidentialite'
+      path: '/politique-de-confidentialite'
+      fullPath: '/politique-de-confidentialite'
+      preLoaderRoute: typeof PolitiqueDeConfidentialiteRouteImport
+      parentRoute: typeof rootRouteImport
     }
-    '/_authenticated/parametres': {
-      id: '/_authenticated/parametres'
-      path: '/parametres'
-      fullPath: '/parametres'
-      preLoaderRoute: typeof AuthenticatedParametresRouteImport
-      parentRoute: typeof AuthenticatedRoute
+    '/reinitialiser-mot-de-passe': {
+      id: '/reinitialiser-mot-de-passe'
+      path: '/reinitialiser-mot-de-passe'
+      fullPath: '/reinitialiser-mot-de-passe'
+      preLoaderRoute: typeof ReinitialiserMotDePasseRouteImport
+      parentRoute: typeof rootRouteImport
     }
-    '/_authenticated/medmo': {
-      id: '/_authenticated/medmo'
-      path: '/medmo'
-      fullPath: '/medmo'
-      preLoaderRoute: typeof AuthenticatedMedmoRouteImport
-      parentRoute: typeof AuthenticatedRoute
+    '/signup': {
+      id: '/signup'
+      path: '/signup'
+      fullPath: '/signup'
+      preLoaderRoute: typeof SignupRouteImport
+      parentRoute: typeof rootRouteImport
     }
-    '/_authenticated/imprimeries': {
-      id: '/_authenticated/imprimeries'
-      path: '/imprimeries'
-      fullPath: '/imprimeries'
-      preLoaderRoute: typeof AuthenticatedImprimeriesRouteImport
-      parentRoute: typeof AuthenticatedRoute
+    '/sitemap.xml': {
+      id: '/sitemap.xml'
+      path: '/sitemap.xml'
+      fullPath: '/sitemap.xml'
+      preLoaderRoute: typeof SitemapDotxmlRouteImport
+      parentRoute: typeof rootRouteImport
     }
-    '/_authenticated/finances': {
-      id: '/_authenticated/finances'
-      path: '/finances'
-      fullPath: '/finances'
-      preLoaderRoute: typeof AuthenticatedFinancesRouteImport
-      parentRoute: typeof AuthenticatedRoute
-    }
-    '/_authenticated/estimateur': {
-      id: '/_authenticated/estimateur'
-      path: '/estimateur'
-      fullPath: '/estimateur'
-      preLoaderRoute: typeof AuthenticatedEstimateurRouteImport
-      parentRoute: typeof AuthenticatedRoute
-    }
-    '/_authenticated/dashboard': {
-      id: '/_authenticated/dashboard'
-      path: '/dashboard'
-      fullPath: '/dashboard'
-      preLoaderRoute: typeof AuthenticatedDashboardRouteImport
-      parentRoute: typeof AuthenticatedRoute
-    }
-    '/_authenticated/conversions': {
-      id: '/_authenticated/conversions'
-      path: '/conversions'
-      fullPath: '/conversions'
-      preLoaderRoute: typeof AuthenticatedConversionsRouteImport
+    '/_authenticated/auteurs': {
+      id: '/_authenticated/auteurs'
+      path: '/auteurs'
+      fullPath: '/auteurs'
+      preLoaderRoute: typeof AuthenticatedAuteursRouteImport
       parentRoute: typeof AuthenticatedRoute
     }
     '/_authenticated/contrats': {
@@ -642,11 +565,123 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedContratsRouteImport
       parentRoute: typeof AuthenticatedRoute
     }
-    '/_authenticated/auteurs': {
-      id: '/_authenticated/auteurs'
-      path: '/auteurs'
-      fullPath: '/auteurs'
-      preLoaderRoute: typeof AuthenticatedAuteursRouteImport
+    '/_authenticated/conversions': {
+      id: '/_authenticated/conversions'
+      path: '/conversions'
+      fullPath: '/conversions'
+      preLoaderRoute: typeof AuthenticatedConversionsRouteImport
+      parentRoute: typeof AuthenticatedRoute
+    }
+    '/_authenticated/dashboard': {
+      id: '/_authenticated/dashboard'
+      path: '/dashboard'
+      fullPath: '/dashboard'
+      preLoaderRoute: typeof AuthenticatedDashboardRouteImport
+      parentRoute: typeof AuthenticatedRoute
+    }
+    '/_authenticated/estimateur': {
+      id: '/_authenticated/estimateur'
+      path: '/estimateur'
+      fullPath: '/estimateur'
+      preLoaderRoute: typeof AuthenticatedEstimateurRouteImport
+      parentRoute: typeof AuthenticatedRoute
+    }
+    '/_authenticated/finances': {
+      id: '/_authenticated/finances'
+      path: '/finances'
+      fullPath: '/finances'
+      preLoaderRoute: typeof AuthenticatedFinancesRouteImport
+      parentRoute: typeof AuthenticatedRoute
+    }
+    '/_authenticated/imprimeries': {
+      id: '/_authenticated/imprimeries'
+      path: '/imprimeries'
+      fullPath: '/imprimeries'
+      preLoaderRoute: typeof AuthenticatedImprimeriesRouteImport
+      parentRoute: typeof AuthenticatedRoute
+    }
+    '/_authenticated/medmo': {
+      id: '/_authenticated/medmo'
+      path: '/medmo'
+      fullPath: '/medmo'
+      preLoaderRoute: typeof AuthenticatedMedmoRouteImport
+      parentRoute: typeof AuthenticatedRoute
+    }
+    '/_authenticated/parametres': {
+      id: '/_authenticated/parametres'
+      path: '/parametres'
+      fullPath: '/parametres'
+      preLoaderRoute: typeof AuthenticatedParametresRouteImport
+      parentRoute: typeof AuthenticatedRoute
+    }
+    '/_authenticated/stocks': {
+      id: '/_authenticated/stocks'
+      path: '/stocks'
+      fullPath: '/stocks'
+      preLoaderRoute: typeof AuthenticatedStocksRouteImport
+      parentRoute: typeof AuthenticatedRoute
+    }
+    '/api/chat': {
+      id: '/api/chat'
+      path: '/api/chat'
+      fullPath: '/api/chat'
+      preLoaderRoute: typeof ApiChatRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/medmo-ventes': {
+      id: '/api/medmo-ventes'
+      path: '/api/medmo-ventes'
+      fullPath: '/api/medmo-ventes'
+      preLoaderRoute: typeof ApiMedmoVentesRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/lecture/$token': {
+      id: '/lecture/$token'
+      path: '/lecture/$token'
+      fullPath: '/lecture/$token'
+      preLoaderRoute: typeof LectureTokenRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/rejoindre/$token': {
+      id: '/rejoindre/$token'
+      path: '/rejoindre/$token'
+      fullPath: '/rejoindre/$token'
+      preLoaderRoute: typeof RejoindreTokenRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/_authenticated/admin/paiements': {
+      id: '/_authenticated/admin/paiements'
+      path: '/admin/paiements'
+      fullPath: '/admin/paiements'
+      preLoaderRoute: typeof AuthenticatedAdminPaiementsRouteImport
+      parentRoute: typeof AuthenticatedRoute
+    }
+    '/_authenticated/auteurs/$auteurId': {
+      id: '/_authenticated/auteurs/$auteurId'
+      path: '/$auteurId'
+      fullPath: '/auteurs/$auteurId'
+      preLoaderRoute: typeof AuthenticatedAuteursAuteurIdRouteImport
+      parentRoute: typeof AuthenticatedAuteursRoute
+    }
+    '/_authenticated/contrats/$contratId': {
+      id: '/_authenticated/contrats/$contratId'
+      path: '/$contratId'
+      fullPath: '/contrats/$contratId'
+      preLoaderRoute: typeof AuthenticatedContratsContratIdRouteImport
+      parentRoute: typeof AuthenticatedContratsRoute
+    }
+    '/_authenticated/manuscrits/': {
+      id: '/_authenticated/manuscrits/'
+      path: '/manuscrits'
+      fullPath: '/manuscrits/'
+      preLoaderRoute: typeof AuthenticatedManuscritsIndexRouteImport
+      parentRoute: typeof AuthenticatedRoute
+    }
+    '/_authenticated/manuscrits/$manuscritId': {
+      id: '/_authenticated/manuscrits/$manuscritId'
+      path: '/manuscrits/$manuscritId'
+      fullPath: '/manuscrits/$manuscritId'
+      preLoaderRoute: typeof AuthenticatedManuscritsManuscritIdRouteImport
       parentRoute: typeof AuthenticatedRoute
     }
     '/_authenticated/medmo/': {
@@ -656,12 +691,12 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedMedmoIndexRouteImport
       parentRoute: typeof AuthenticatedMedmoRoute
     }
-    '/_authenticated/manuscrits/': {
-      id: '/_authenticated/manuscrits/'
-      path: '/manuscrits'
-      fullPath: '/manuscrits/'
-      preLoaderRoute: typeof AuthenticatedManuscritsIndexRouteImport
-      parentRoute: typeof AuthenticatedRoute
+    '/_authenticated/medmo/$threadId': {
+      id: '/_authenticated/medmo/$threadId'
+      path: '/$threadId'
+      fullPath: '/medmo/$threadId'
+      preLoaderRoute: typeof AuthenticatedMedmoThreadIdRouteImport
+      parentRoute: typeof AuthenticatedMedmoRoute
     }
     '/api/public/flutterwave-webhook': {
       id: '/api/public/flutterwave-webhook'
@@ -670,53 +705,18 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiPublicFlutterwaveWebhookRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/_authenticated/medmo/$threadId': {
-      id: '/_authenticated/medmo/$threadId'
-      path: '/$threadId'
-      fullPath: '/medmo/$threadId'
-      preLoaderRoute: typeof AuthenticatedMedmoThreadIdRouteImport
-      parentRoute: typeof AuthenticatedMedmoRoute
-    }
-    '/_authenticated/manuscrits/$manuscritId': {
-      id: '/_authenticated/manuscrits/$manuscritId'
-      path: '/manuscrits/$manuscritId'
-      fullPath: '/manuscrits/$manuscritId'
-      preLoaderRoute: typeof AuthenticatedManuscritsManuscritIdRouteImport
-      parentRoute: typeof AuthenticatedRoute
-    }
-    '/_authenticated/contrats/$contratId': {
-      id: '/_authenticated/contrats/$contratId'
-      path: '/$contratId'
-      fullPath: '/contrats/$contratId'
-      preLoaderRoute: typeof AuthenticatedContratsContratIdRouteImport
-      parentRoute: typeof AuthenticatedContratsRoute
-    }
-    '/_authenticated/auteurs/$auteurId': {
-      id: '/_authenticated/auteurs/$auteurId'
-      path: '/$auteurId'
-      fullPath: '/auteurs/$auteurId'
-      preLoaderRoute: typeof AuthenticatedAuteursAuteurIdRouteImport
-      parentRoute: typeof AuthenticatedAuteursRoute
-    }
-    '/_authenticated/admin/paiements': {
-      id: '/_authenticated/admin/paiements'
-      path: '/admin/paiements'
-      fullPath: '/admin/paiements'
-      preLoaderRoute: typeof AuthenticatedAdminPaiementsRouteImport
-      parentRoute: typeof AuthenticatedRoute
+    '/api/public/hooks/check-reminders': {
+      id: '/api/public/hooks/check-reminders'
+      path: '/api/public/hooks/check-reminders'
+      fullPath: '/api/public/hooks/check-reminders'
+      preLoaderRoute: typeof ApiPublicHooksCheckRemindersRouteImport
+      parentRoute: typeof rootRouteImport
     }
     '/api/public/hooks/send-push': {
       id: '/api/public/hooks/send-push'
       path: '/api/public/hooks/send-push'
       fullPath: '/api/public/hooks/send-push'
       preLoaderRoute: typeof ApiPublicHooksSendPushRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/api/public/hooks/check-reminders': {
-      id: '/api/public/hooks/check-reminders'
-      path: '/api/public/hooks/check-reminders'
-      fullPath: '/api/public/hooks/check-reminders'
-      preLoaderRoute: typeof ApiPublicHooksCheckRemindersRouteImport
       parentRoute: typeof rootRouteImport
     }
   }
