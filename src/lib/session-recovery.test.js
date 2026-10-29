@@ -28,8 +28,6 @@ describe("sale session recovery", () => {
   });
   test("does not write when refreshing fails", async () => {
     const s = setup(1); let calls = 0;
-    s.auth.refreshSession = async () => { throw new Error("offline"); };
-    // Auth SDK returns auth failures rather than throwing them.
     const auth = { ...s.auth, refreshSession: async () => ({ data: { session: null }, error: { message: "refresh token expired" } }) };
     const result = await withSessionRecovery(auth, async () => { calls++; return { error: null }; });
     expect(result.error?.code).toBe("SESSION_EXPIRED"); expect(calls).toBe(0);
