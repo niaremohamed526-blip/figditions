@@ -12,11 +12,11 @@ export async function withSessionRecovery<T extends { data?: unknown; error: Fai
   auth: Auth,
   operation: () => PromiseLike<T>,
 ): Promise<(T & { data?: unknown }) | { data: null; error: Failure }> {
-  const initial = await auth.getSession();
+  const initial = await auth.getSession().catch(() => ({ data: { session: null }, error: sessionFailure }));
   const session = initial.data.session;
   if (initial.error || !session) return { data: null, error: sessionFailure };
   const refresh = async () => {
-    const result = await auth.refreshSession();
+    const result = await auth.refreshSession().catch(() => ({ data: { session: null }, error: sessionFailure }));
     return !result.error && result.data.session?.user.id === session.user.id;
   };
   let refreshed = false;
