@@ -1,0 +1,1 @@
+DROP FUNCTION IF EXISTS public.record_stock_mouvement(uuid, text, integer, text, text, date, uuid, text, numeric, integer, numeric);

@@ -2064,40 +2064,23 @@ export type Database = {
         Args: { p_notification_id: string; p_secret: string }
         Returns: Json
       }
-      record_stock_mouvement:
-        | {
-            Args: {
-              p_date?: string
-              p_destination?: string
-              p_manuscrit_id: string
-              p_notes?: string
-              p_prix_catalogue?: number
-              p_prix_unitaire?: number
-              p_provenance?: string
-              p_quantite: number
-              p_stock_externe_id?: string
-              p_type: string
-              p_valeur_absolue?: number
-            }
-            Returns: Json
-          }
-        | {
-            Args: {
-              p_date?: string
-              p_destinataire_don?: string
-              p_destination?: string
-              p_manuscrit_id: string
-              p_notes?: string
-              p_prix_catalogue?: number
-              p_prix_unitaire?: number
-              p_provenance?: string
-              p_quantite: number
-              p_stock_externe_id?: string
-              p_type: string
-              p_valeur_absolue?: number
-            }
-            Returns: Json
-          }
+      record_stock_mouvement: {
+        Args: {
+          p_date?: string
+          p_destinataire_don?: string
+          p_destination?: string
+          p_manuscrit_id: string
+          p_notes?: string
+          p_prix_catalogue?: number
+          p_prix_unitaire?: number
+          p_provenance?: string
+          p_quantite: number
+          p_stock_externe_id?: string
+          p_type: string
+          p_valeur_absolue?: number
+        }
+        Returns: Json
+      }
       record_vente_libre_panier: {
         Args: {
           p_client?: string
