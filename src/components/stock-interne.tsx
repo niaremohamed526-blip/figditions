@@ -11,6 +11,7 @@ import {
 } from "recharts";
 import { Link } from "@tanstack/react-router";
 import { supabase } from "@/integrations/supabase/client";
+import { withSessionRecovery } from "@/lib/session-recovery";
 import { fetchAllRows } from "@/lib/fetch-all";
 import { CancelReasonDialog } from "@/components/cancel-reason-dialog";
 
@@ -870,11 +871,11 @@ function MouvementForm({
     if (showDestination && !form.destination.trim()) return toast.error("Destination requise");
 
     const callRpc = (args: Record<string, unknown>) =>
-      (supabase as any).rpc("record_stock_mouvement", {
+      withSessionRecovery(supabase.auth, () => (supabase as any).rpc("record_stock_mouvement", {
         p_manuscrit_id: form.manuscrit_id,
         p_date: format(form.date_mouvement, "yyyy-MM-dd"),
         ...args,
-      });
+      }));
 
     // ------- RETOUR DE DÉPÔT (dedicated flow) -------
     if (isRetour) {

@@ -13,6 +13,7 @@ import {
   Trash2, Plus, FileText, Zap,
 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
+import { withSessionRecovery } from "@/lib/session-recovery";
 import { fetchAllRows } from "@/lib/fetch-all";
 import { toast } from "sonner";
 import { fcfa } from "@/lib/format";
@@ -340,11 +341,11 @@ export function RecordSaleDrawer({
     if (!canSubmitLibrairie || !currentStock) return;
     setSaving(true);
     try {
-      const { error } = await supabase.from("stocks").update({
+      const { error } = await withSessionRecovery(supabase.auth, () => supabase.from("stocks").update({
         prix_unitaire_fcfa: prixN,
         exemplaires_vendus: (currentStock.exemplaires_vendus ?? 0) + qtyN,
         exemplaires_restants: Math.max(0, (currentStock.exemplaires_restants ?? 0) - qtyN),
-      } as any).eq("id", currentStock.id);
+      } as any).eq("id", currentStock.id));
       if (error) throw error;
 
       const restant = Math.max(0, (currentStock.exemplaires_restants ?? 0) - qtyN);
@@ -377,7 +378,7 @@ export function RecordSaleDrawer({
     setSaving(true);
     try {
       // Tout-ou-rien : la fonction serveur valide chaque ligne avant toute écriture.
-      const { data, error } = await (supabase as any).rpc("record_vente_libre_panier", {
+      const { data, error } = await withSessionRecovery(supabase.auth, () => (supabase as any).rpc("record_vente_libre_panier", {
         p_lignes: cart.map((l) => ({
           manuscrit_id: l.manuscrit_id,
           titre: l.titre,
@@ -389,7 +390,7 @@ export function RecordSaleDrawer({
         p_client: clientNom.trim() || null,
         p_notes: notes.trim() || null,
         p_paiement_recu: paiementRecu,
-      });
+      }));
       if (error) throw error;
 
       const lignesSnapshot = cart;
