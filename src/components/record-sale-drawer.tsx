@@ -10,13 +10,14 @@ import {
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import {
   CheckCircle2, Loader2, Store, ShoppingBag, ChevronsUpDown, AlertTriangle, Save,
-  Trash2, Plus, FileText, Zap,
+  Trash2, Plus, FileText, Zap, Search, X,
 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { withSessionRecovery } from "@/lib/session-recovery";
 import { fetchAllRows } from "@/lib/fetch-all";
 import { toast } from "sonner";
 import { fcfa } from "@/lib/format";
+import { normalizeMatchKey } from "@/lib/normalizeText";
 import { cn } from "@/lib/utils";
 import { UnsavedChangesModal } from "@/components/unsaved-changes-modal";
 import { useCloseGuard } from "@/hooks/useCloseGuard";
@@ -141,6 +142,7 @@ export function RecordSaleDrawer({
   const [manuscritId, setManuscritId] = useState("");
   const [saleType, setSaleType] = useState<SaleType>("libre");
   const [stockId, setStockId] = useState("");
+  const [librairieQuery, setLibrairieQuery] = useState("");
   const [qty, setQty] = useState<string>("1");
   const [prix, setPrix] = useState<string>("");
   const [dateVente, setDateVente] = useState<string>(new Date().toISOString().slice(0, 10));
@@ -165,7 +167,7 @@ export function RecordSaleDrawer({
   const draftKey = `figditions:vente-libre-cart:${entrepriseId ?? "anon"}`;
 
   const resetForm = () => {
-    setManuscritId(""); setStockId("");
+    setManuscritId(""); setStockId(""); setLibrairieQuery("");
     setQty("1"); setPrix(""); setDateVente(new Date().toISOString().slice(0, 10));
     setNotes(""); setSuccess(null); setPanier(null);
     setCart([]); setRemisePct(""); setClientNom(""); setPaiementRecu(true);
@@ -243,6 +245,12 @@ export function RecordSaleDrawer({
     () => stocks.filter((s) => s.manuscrit_id === manuscritId),
     [stocks, manuscritId],
   );
+  /** Recherche rapide dans la liste des librairies : casse et accents ignorés. */
+  const filteredBookstores = useMemo(() => {
+    const key = normalizeMatchKey(librairieQuery);
+    if (!key) return bookstoresForManuscrit;
+    return bookstoresForManuscrit.filter((s) => normalizeMatchKey(s.librairie_nom).includes(key));
+  }, [bookstoresForManuscrit, librairieQuery]);
   const currentStock = stocks.find((s) => s.id === stockId);
 
   // contract royalty % (flux librairie)
@@ -787,7 +795,7 @@ export function RecordSaleDrawer({
                                   const stockExtSum = stocks.filter((s) => s.manuscrit_id === m.id).reduce((a, x) => a + x.exemplaires_restants, 0);
                                   const stockTotal = (si?.quantite_disponible ?? 0) + stockExtSum;
                                   return (
-                                    <CommandItem key={m.id} value={`${m.titre} ${aName}`} onSelect={() => { setManuscritId(m.id); setStockId(""); setPickerOpen(false); }}>
+                                    <CommandItem key={m.id} value={`${m.titre} ${aName}`} onSelect={() => { setManuscritId(m.id); setStockId(""); setLibrairieQuery(""); setPickerOpen(false); }}>
                                       <div className="flex-1 min-w-0">
                                         <div className="font-semibold truncate">{m.titre}</div>
                                         <div className="text-xs text-muted-foreground truncate">{aName}</div>
