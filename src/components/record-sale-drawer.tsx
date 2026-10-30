@@ -10,13 +10,14 @@ import {
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import {
   CheckCircle2, Loader2, Store, ShoppingBag, ChevronsUpDown, AlertTriangle, Save,
-  Trash2, Plus, FileText, Zap,
+  Trash2, Plus, FileText, Zap, Search, X,
 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { withSessionRecovery } from "@/lib/session-recovery";
 import { fetchAllRows } from "@/lib/fetch-all";
 import { toast } from "sonner";
 import { fcfa } from "@/lib/format";
+import { normalizeMatchKey } from "@/lib/normalizeText";
 import { cn } from "@/lib/utils";
 import { UnsavedChangesModal } from "@/components/unsaved-changes-modal";
 import { useCloseGuard } from "@/hooks/useCloseGuard";
@@ -141,6 +142,7 @@ export function RecordSaleDrawer({
   const [manuscritId, setManuscritId] = useState("");
   const [saleType, setSaleType] = useState<SaleType>("libre");
   const [stockId, setStockId] = useState("");
+  const [librairieQuery, setLibrairieQuery] = useState("");
   const [qty, setQty] = useState<string>("1");
   const [prix, setPrix] = useState<string>("");
   const [dateVente, setDateVente] = useState<string>(new Date().toISOString().slice(0, 10));
@@ -165,7 +167,7 @@ export function RecordSaleDrawer({
   const draftKey = `figditions:vente-libre-cart:${entrepriseId ?? "anon"}`;
 
   const resetForm = () => {
-    setManuscritId(""); setStockId("");
+    setManuscritId(""); setStockId(""); setLibrairieQuery("");
     setQty("1"); setPrix(""); setDateVente(new Date().toISOString().slice(0, 10));
     setNotes(""); setSuccess(null); setPanier(null);
     setCart([]); setRemisePct(""); setClientNom(""); setPaiementRecu(true);
@@ -243,6 +245,12 @@ export function RecordSaleDrawer({
     () => stocks.filter((s) => s.manuscrit_id === manuscritId),
     [stocks, manuscritId],
   );
+  /** Recherche rapide dans la liste des librairies : casse et accents ignorés. */
+  const filteredBookstores = useMemo(() => {
+    const key = normalizeMatchKey(librairieQuery);
+    if (!key) return bookstoresForManuscrit;
+    return bookstoresForManuscrit.filter((s) => normalizeMatchKey(s.librairie_nom).includes(key));
+  }, [bookstoresForManuscrit, librairieQuery]);
   const currentStock = stocks.find((s) => s.id === stockId);
 
   // contract royalty % (flux librairie)
@@ -787,7 +795,7 @@ export function RecordSaleDrawer({
                                   const stockExtSum = stocks.filter((s) => s.manuscrit_id === m.id).reduce((a, x) => a + x.exemplaires_restants, 0);
                                   const stockTotal = (si?.quantite_disponible ?? 0) + stockExtSum;
                                   return (
-                                    <CommandItem key={m.id} value={`${m.titre} ${aName}`} onSelect={() => { setManuscritId(m.id); setStockId(""); setPickerOpen(false); }}>
+                                    <CommandItem key={m.id} value={`${m.titre} ${aName}`} onSelect={() => { setManuscritId(m.id); setStockId(""); setLibrairieQuery(""); setPickerOpen(false); }}>
                                       <div className="flex-1 min-w-0">
                                         <div className="font-semibold truncate">{m.titre}</div>
                                         <div className="text-xs text-muted-foreground truncate">{aName}</div>
@@ -820,30 +828,65 @@ export function RecordSaleDrawer({
                         Aucun dépôt en librairie pour ce titre. Utilisez « Vente Libre » ou créez un dépôt.
                       </div>
                     ) : (
-                      <div className="space-y-1.5 max-h-52 overflow-y-auto">
-                        {bookstoresForManuscrit.map((s) => {
-                          const empty = s.exemplaires_restants <= 0;
-                          const selected = s.id === stockId;
-                          return (
-                            <button
-                              key={s.id}
-                              type="button"
-                              disabled={empty}
-                              onClick={() => setStockId(s.id)}
-                              className={cn(
-                                "w-full flex items-center justify-between rounded-md border px-3 py-2 text-left text-sm transition-colors",
-                                selected ? "border-primary bg-primary/10" : "border-border hover:bg-muted/30",
-                                empty && "opacity-60 cursor-not-allowed",
-                              )}
-                            >
-                              <span className="truncate">{s.librairie_nom ?? "Librairie"}</span>
-                              <span className={cn("text-xs tabular-nums", empty ? "text-red-400 font-semibold" : "text-muted-foreground")}>
-                                {empty ? "Stock épuisé" : `${s.exemplaires_restants} ex. disponibles`}
-                              </span>
-                            </button>
-                          );
-                        })}
-                      </div>
+                      <>
+                        {bookstoresForManuscrit.length > 1 && (
+                          <div className="relative">
+                            <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+                            <Input
+                              value={librairieQuery}
+                              onChange={(e) => setLibrairieQuery(e.target.value)}
+                              placeholder="Rechercher une librairie…"
+                              aria-label="Rechercher une librairie"
+                              className="h-9 pl-9 pr-8 text-sm"
+                            />
+                            {librairieQuery && (
+                              <button
+                                type="button"
+                                onClick={() => setLibrairieQuery("")}
+                                aria-label="Effacer la recherche"
+                                className="absolute right-2 top-1/2 -translate-y-1/2 rounded-full p-1 text-muted-foreground hover:text-foreground"
+                              >
+                                <X className="h-3.5 w-3.5" />
+                              </button>
+                            )}
+                          </div>
+                        )}
+                        {filteredBookstores.length === 0 ? (
+                          <div className="rounded-md border border-border bg-muted/20 text-muted-foreground text-xs px-3 py-2">
+                            Aucune librairie ne correspond à « {librairieQuery} ».
+                          </div>
+                        ) : (
+                          <div className="space-y-1.5 max-h-52 overflow-y-auto">
+                            {filteredBookstores.map((s) => {
+                              const empty = s.exemplaires_restants <= 0;
+                              const selected = s.id === stockId;
+                              return (
+                                <button
+                                  key={s.id}
+                                  type="button"
+                                  disabled={empty}
+                                  onClick={() => setStockId(s.id)}
+                                  className={cn(
+                                    "w-full flex items-center justify-between rounded-md border px-3 py-2 text-left text-sm transition-colors",
+                                    selected ? "border-primary bg-primary/10" : "border-border hover:bg-muted/30",
+                                    empty && "opacity-60 cursor-not-allowed",
+                                  )}
+                                >
+                                  <span className="truncate">{s.librairie_nom ?? "Librairie"}</span>
+                                  <span className={cn("text-xs tabular-nums", empty ? "text-red-400 font-semibold" : "text-muted-foreground")}>
+                                    {empty ? "Stock épuisé" : `${s.exemplaires_restants} ex. disponibles`}
+                                  </span>
+                                </button>
+                              );
+                            })}
+                          </div>
+                        )}
+                        {librairieQuery && filteredBookstores.length > 0 && (
+                          <p className="text-[11px] text-muted-foreground">
+                            {filteredBookstores.length} librairie{filteredBookstores.length > 1 ? "s" : ""} sur {bookstoresForManuscrit.length}
+                          </p>
+                        )}
+                      </>
                     )}
                   </div>
                 )}
