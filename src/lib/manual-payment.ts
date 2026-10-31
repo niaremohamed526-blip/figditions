@@ -3,11 +3,11 @@ import { supabase } from "@/integrations/supabase/client";
 
 /** Orange Money QR code (stored in the `logos` bucket). */
 export const ORANGE_MONEY_QR_URL =
-  "https://yqufxcfllbyoadhedypc.supabase.co/storage/v1/object/public/logos/payments%2Forange-money-qr.jpeg";
+  "https://diklslghxbwbyqyzvygn.supabase.co/storage/v1/object/public/logos/payments%2Forange-money-qr.jpeg";
 
 /** Wave QR code (stored in the `logos` bucket). */
 export const WAVE_QR_URL =
-  "https://yqufxcfllbyoadhedypc.supabase.co/storage/v1/object/public/logos/payments%2Fwave-qr.png";
+  "https://diklslghxbwbyqyzvygn.supabase.co/storage/v1/object/public/logos/payments%2Fwave-qr.png";
 
 export type PaymentMethod = "orange_money" | "wave";
 
