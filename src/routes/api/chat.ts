@@ -33,7 +33,7 @@ import {
 // On Lovable hosting the managed LOVABLE_API_KEY is injected; on external
 // deployments (Vercel) the owner provides GEMINI_API_KEY from Google AI Studio.
 const LOVABLE_MODEL_ID = "google/gemini-3-flash";
-const GEMINI_MODEL_ID = "gemini-2.5-flash";
+const GEMINI_MODEL_ID = "gemini-3.8-flash";
 
 type AnySupabase = SupabaseClient<any, "public", any>;
 

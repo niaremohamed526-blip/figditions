@@ -1,5 +1,6 @@
 // Server-only: AI providers for the AI SDK.
 // Never import this file from client code.
+import { createGoogleGenerativeAI } from "@ai-sdk/google";
 import { createOpenAICompatible } from "@ai-sdk/openai-compatible";
 
 export function createLovableAiGatewayProvider(apiKey: string) {
@@ -14,16 +15,12 @@ export function createLovableAiGatewayProvider(apiKey: string) {
 }
 
 /**
- * Direct Google Gemini provider (OpenAI-compatible endpoint).
+ * Direct Google Gemini provider (native Gemini API).
  * Used on external deployments (e.g. Vercel) where LOVABLE_API_KEY
  * is not available : the app owner sets GEMINI_API_KEY instead.
+ * The native provider (not the OpenAI-compatible endpoint) is required for
+ * Gemini 3+ tool calling, which must send thought signatures back.
  */
 export function createGeminiProvider(apiKey: string) {
-  return createOpenAICompatible({
-    name: "gemini",
-    baseURL: "https://generativelanguage.googleapis.com/v1beta/openai/",
-    headers: {
-      Authorization: `Bearer ${apiKey}`,
-    },
-  });
+  return createGoogleGenerativeAI({ apiKey });
 }
