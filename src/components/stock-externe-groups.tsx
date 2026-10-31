@@ -12,6 +12,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { CancelReasonDialog } from "@/components/cancel-reason-dialog";
 import { BulkDepotDateDialog } from "@/components/bulk-depot-date-dialog";
+import { RenameLibrairieDialog } from "@/components/rename-librairie-dialog";
 
 
 interface DepotBatch {
@@ -252,6 +253,7 @@ export function StockExterneGroups({
   // Latest active deposit date per book + bookshop, for the « Dépôt du » headings.
   const [depotDates, setDepotDates] = useState<Record<string, string>>({});
   const [bulkFor, setBulkFor] = useState<string | null>(null);
+  const [renameFor, setRenameFor] = useState<string | null>(null);
   useEffect(() => {
     if (!stocks) return;
     let alive = true;
@@ -272,6 +274,7 @@ export function StockExterneGroups({
   }, [stocks]);
   const depotDate = (r: ExterneStockRow, nom: string) =>
     depotDates[`${r.manuscrit_id}|${nom.trim().toLowerCase()}`] ?? ((r.created_at ?? "").split("T")[0] || "—");
+  const renameGroup = renameFor ? allGroups?.find((g) => g.nom === renameFor) ?? null : null;
   const bulkGroup = bulkFor ? allGroups?.find((g) => g.nom === bulkFor) ?? null : null;
 
   const scrollTo = (nom: string) => {
@@ -379,6 +382,15 @@ export function StockExterneGroups({
                   <span className={cn("hidden sm:inline-flex rounded-full border px-2.5 py-1 text-[11px] font-semibold", st.badge)}>{st.label}</span>
                   <button
                     type="button"
+                    onClick={() => setRenameFor(g.nom)}
+                    title="Modifier le nom ou l'adresse de la librairie"
+                    aria-label="Modifier la librairie"
+                    className="h-8 w-8 inline-flex items-center justify-center rounded-lg border border-[color:var(--gold)]/30 text-[color:var(--gold)] hover:bg-[color:var(--gold)]/10"
+                  >
+                    <Pencil className="h-4 w-4" />
+                  </button>
+                  <button
+                    type="button"
                     onClick={() => setBulkFor(g.nom)}
                     title="Changer la date du dépôt de plusieurs livres"
                     aria-label="Changer la date du dépôt"
@@ -482,6 +494,19 @@ export function StockExterneGroups({
           </section>
         );
       })}
+
+      {renameGroup && (
+        <RenameLibrairieDialog
+          open={!!renameGroup}
+          onOpenChange={(o) => { if (!o) setRenameFor(null); }}
+          librairieNom={renameGroup.nom}
+          adresse={renameGroup.adresse}
+          onDone={(nouveau) => {
+            if (librairieFilter === renameGroup.nom) onLibrairieFilter(nouveau);
+            onChanged?.();
+          }}
+        />
+      )}
 
       {bulkGroup && (
         <BulkDepotDateDialog
