@@ -1,4 +1,5 @@
 import { createFileRoute } from "@tanstack/react-router";
+import { CommissionFields } from "@/components/commission-fields";
 import { useEffect, useMemo, useState } from "react";
 import { Plus, Search, Package, Loader2, Pencil, Trash2, Calendar as CalendarIcon, Store, BookOpen, TrendingUp, ShoppingBag, Wallet, PenLine, FileSpreadsheet, Zap, BookMarked, MoreHorizontal, ChevronRight, ArrowUpRight, ChevronLeft, X as XIcon } from "lucide-react";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger, DropdownMenuSeparator, DropdownMenuLabel } from "@/components/ui/dropdown-menu";
@@ -953,55 +954,12 @@ function StockForm({
       </div>
 
       {/* Taux commission + droits auteur */}
-      <div className="rounded-xl border border-border bg-background/30 p-4 space-y-4">
-        <div className="space-y-2">
-          <div className="flex items-center justify-between">
-            <Label className="flex items-center gap-2 text-sm">
-              <Store className="h-4 w-4 text-orange-400" />
-              Commission librairie
-            </Label>
-            <Switch
-              checked={tauxComm > 0}
-              onCheckedChange={(v: boolean) => {
-                setTauxTouched(true);
-                setForm((f) => ({ ...f, taux_commission_pct: v ? 20 : 0 }));
-              }}
-            />
-          </div>
-          {tauxComm > 0 && (
-            <div className="flex gap-2 pt-1">
-              {[10, 15, 20].map((p) => (
-                <button
-                  key={p}
-                  type="button"
-                  onClick={() => { setTauxTouched(true); setForm({ ...form, taux_commission_pct: p }); }}
-                  className={cn(
-                    "flex-1 py-2 rounded-lg text-sm font-semibold border transition",
-                    tauxComm === p
-                      ? "bg-orange-400/15 border-orange-400/50 text-orange-300"
-                      : "bg-background border-border text-muted-foreground hover:border-orange-400/30"
-                  )}
-                >
-                  {p} %
-                </button>
-              ))}
-            </div>
-          )}
-          {tauxComm === 0 && (
-            <p className="text-xs text-muted-foreground">Aucune commission ne sera appliquée à la librairie.</p>
-          )}
-        </div>
-        <div className="flex items-center justify-between pt-2 border-t border-border">
-          <Label className="flex items-center gap-2 text-sm">
-            <PenLine className="h-4 w-4 text-[color:var(--gold)]" />
-            Droits d'auteur (10 %)
-          </Label>
-          <Switch
-            checked={form.applique_droits_auteur}
-            onCheckedChange={(v: boolean) => setForm({ ...form, applique_droits_auteur: v })}
-          />
-        </div>
-      </div>
+      <CommissionFields
+        taux={tauxComm}
+        onTauxChange={(t) => { setTauxTouched(true); setForm((f) => ({ ...f, taux_commission_pct: t })); }}
+        droits={form.applique_droits_auteur}
+        onDroitsChange={(v) => setForm((f) => ({ ...f, applique_droits_auteur: v }))}
+      />
 
       {/* Live calculations */}
       <div className="rounded-xl border border-border bg-background/40 p-4 space-y-2 text-sm">

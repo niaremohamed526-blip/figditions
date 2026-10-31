@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from "react";
+import { pl } from "@/lib/plural";
 import { format } from "date-fns";
 import { Loader2, Zap, Trash2, Plus, CheckCircle2, X, Store, Keyboard, AlertTriangle, Save, Warehouse } from "lucide-react";
 import { toast } from "sonner";
@@ -18,6 +19,7 @@ import { fcfa } from "@/lib/format";
 import { UnsavedChangesModal } from "@/components/unsaved-changes-modal";
 import { useUnsavedChanges } from "@/hooks/useUnsavedChanges";
 import { useCloseGuard } from "@/hooks/useCloseGuard";
+import { CommissionFields } from "@/components/commission-fields";
 
 const DRAFT_KEY = "figeditions:pos-draft";
 
@@ -26,6 +28,8 @@ interface Draft {
   librairieAdresse: string;
   dateDepot: string;
   provenance: "interne" | "hors_stock";
+  tauxCommission?: number;
+  appliqueDroits?: boolean;
   lines: Line[];
   savedAt: number;
 }
@@ -54,6 +58,10 @@ export function StockPosDialog({
   const [librairieAdresse, setLibrairieAdresse] = useState("");
   const [dateDepot, setDateDepot] = useState<string>(format(new Date(), "yyyy-MM-dd"));
   const [provenance, setProvenance] = useState<"interne" | "hors_stock">("interne");
+  // One rate for the whole bookshop entry; also applied to books already deposited there.
+  const [tauxCommission, setTauxCommission] = useState(20);
+  const [appliqueDroits, setAppliqueDroits] = useState(true);
+  const [tauxTouched, setTauxTouched] = useState(false);
 
   const [lines, setLines] = useState<Line[]>([]);
   const [titrePickerOpen, setTitrePickerOpen] = useState(false);
@@ -78,6 +86,9 @@ export function StockPosDialog({
     setLibrairieAdresse("");
     setDateDepot(format(new Date(), "yyyy-MM-dd"));
     setProvenance("interne");
+    setTauxCommission(20);
+    setAppliqueDroits(true);
+    setTauxTouched(false);
     setLines([]);
     setCurrentManuscrit(null);
     setCurrentQte("1");
@@ -116,13 +127,13 @@ export function StockPosDialog({
     if (!open || !isDirty) return;
     const save = () => {
       const draft: Draft = {
-        librairieNom, librairieAdresse, dateDepot, provenance, lines, savedAt: Date.now(),
+        librairieNom, librairieAdresse, dateDepot, provenance, tauxCommission, appliqueDroits, lines, savedAt: Date.now(),
       };
       try { localStorage.setItem(DRAFT_KEY, JSON.stringify(draft)); setLastSavedAt(draft.savedAt); } catch {}
     };
     const t = setInterval(save, 30_000);
     return () => clearInterval(t);
-  }, [open, isDirty, librairieNom, librairieAdresse, dateDepot, provenance, lines]);
+  }, [open, isDirty, librairieNom, librairieAdresse, dateDepot, provenance, tauxCommission, appliqueDroits, lines]);
 
   const restoreDraft = () => {
     if (!draftFound) return;
@@ -130,6 +141,8 @@ export function StockPosDialog({
     setLibrairieAdresse(draftFound.librairieAdresse);
     setDateDepot(draftFound.dateDepot);
     setProvenance(draftFound.provenance ?? "interne");
+    if (draftFound.tauxCommission != null) { setTauxCommission(draftFound.tauxCommission); setTauxTouched(true); }
+    if (draftFound.appliqueDroits != null) setAppliqueDroits(draftFound.appliqueDroits);
     setLines(draftFound.lines);
     if (draftFound.lines.length > 0) setStep(2);
     setDraftFound(null);
@@ -139,6 +152,28 @@ export function StockPosDialog({
     try { localStorage.removeItem(DRAFT_KEY); } catch {}
     setDraftFound(null);
   };
+
+  // Pre-fill rate + author rights from this bookshop's last deposit, like the single deposit form.
+  useEffect(() => {
+    if (!open || tauxTouched || !entrepriseId) return;
+    const nom = librairieNom.trim();
+    if (!nom) return;
+    const handler = setTimeout(async () => {
+      const { data } = await (supabase as any)
+        .from("stocks")
+        .select("taux_commission_pct, applique_droits_auteur, librairie_adresse")
+        .eq("entreprise_id", entrepriseId)
+        .ilike("librairie_nom", nom)
+        .order("created_at", { ascending: false })
+        .limit(1);
+      const prev = data?.[0];
+      if (!prev) return;
+      if (prev.taux_commission_pct != null) setTauxCommission(Number(prev.taux_commission_pct));
+      if (prev.applique_droits_auteur != null) setAppliqueDroits(!!prev.applique_droits_auteur);
+      if (prev.librairie_adresse) setLibrairieAdresse((a) => a || prev.librairie_adresse);
+    }, 350);
+    return () => clearTimeout(handler);
+  }, [open, librairieNom, entrepriseId, tauxTouched]);
 
   // Partial-row warning: manuscrit picked but qté/prix incomplete
   const partialRow = !!currentManuscrit && (!currentQte || Number(currentQte) <= 0 || !currentPrix || Number(currentPrix) < 0);
@@ -195,6 +230,8 @@ export function StockPosDialog({
         p_librairie_adresse: librairieAdresse.trim() || null,
         p_date: dateDepot || null,
         p_provenance: provenance,
+        p_taux_commission: tauxCommission,
+        p_applique_droits: appliqueDroits,
         p_notes: "Saisie rapide",
       });
       if (rpcErr) { warnings.push(`${l.titre} : ${rpcErr.message}`); continue; }
@@ -207,8 +244,8 @@ export function StockPosDialog({
     if (done === 0) return toast.error("Aucun dépôt enregistré");
     try { localStorage.removeItem(DRAFT_KEY); } catch {}
     toast.success(
-      `${done} dépôt(s) enregistré(s) chez « ${librairieNom} »` +
-      (merged > 0 ? ` : ${merged} fusionné(s) avec un dépôt existant` : "") +
+      `${pl(done, "dépôt enregistré", "dépôts enregistrés")} chez « ${librairieNom} »` +
+      (merged > 0 ? ` : ${pl(merged, "fusionné", "fusionnés")} avec un dépôt existant` : "") +
       (provenance === "hors_stock" ? " : sans déduction de l'entrepôt" : ""),
     );
     onImported();
@@ -286,7 +323,7 @@ export function StockPosDialog({
         {step === 2 && (lines.length > 0 || isDirty) && (
           <div className="flex flex-wrap items-center justify-between gap-2 text-xs">
             <span className="text-[color:var(--gold)] font-semibold">
-              📝 {lines.length} ligne(s) saisie(s) : Non sauvegardé
+              📝 {pl(lines.length, "ligne saisie", "lignes saisies")} : non sauvegardé
             </span>
             {lastSavedAt && (
               <span className="text-muted-foreground">
@@ -349,6 +386,14 @@ export function StockPosDialog({
               </div>
             </div>
 
+            {/* Commission librairie + droits d'auteur (appliqués à tous les livres de cette saisie) */}
+            <CommissionFields
+              taux={tauxCommission}
+              onTauxChange={(t) => { setTauxTouched(true); setTauxCommission(t); }}
+              droits={appliqueDroits}
+              onDroitsChange={(v) => { setTauxTouched(true); setAppliqueDroits(v); }}
+            />
+
             <DialogFooter>
               <Button variant="outline" onClick={guard.requestClose}>Annuler</Button>
               <Button onClick={startSession} className="bg-primary text-primary-foreground hover:bg-primary/90">
@@ -369,6 +414,9 @@ export function StockPosDialog({
                     📤 Hors stock interne
                   </span>
                 )}
+                <span className="flex-shrink-0 rounded-full border border-orange-400/40 bg-orange-400/10 px-2 py-0.5 text-[10px] font-semibold text-orange-300">
+                  {tauxCommission > 0 ? `Commission ${tauxCommission} %` : "Sans commission"}{appliqueDroits ? " · droits 10 %" : ""}
+                </span>
               </div>
               <Button variant="ghost" size="sm" onClick={() => setStep(1)} className="h-7">Changer</Button>
             </div>
