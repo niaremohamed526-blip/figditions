@@ -25,7 +25,7 @@ import { UnsavedChangesModal } from "@/components/unsaved-changes-modal";
 import { BookCombobox } from "@/components/book-combobox";
 
 
-export const Route = createFileRoute("/_authenticated/contrats")({
+export const Route = createFileRoute("/_authenticated/contrats/")({
   component: ContratsPage,
   head: () => ({ meta: [{ title: "Contrats et droits | FIGDITIONS" }] }),
 });

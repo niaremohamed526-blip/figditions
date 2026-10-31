@@ -21,7 +21,7 @@ import { toast } from "sonner";
 import { AnalyticsSection, defaultRange, inRange, EmptyChart, type DateRange } from "@/components/analytics-section";
 import { fcfa } from "@/lib/format";
 
-export const Route = createFileRoute("/_authenticated/auteurs")({
+export const Route = createFileRoute("/_authenticated/auteurs/")({
   component: AuteursPage,
   head: () => ({ meta: [{ title: "Auteurs | FIGDITIONS" }] }),
 });

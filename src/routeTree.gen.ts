@@ -20,8 +20,6 @@ import { Route as PolitiqueDeConfidentialiteRouteImport } from './routes/politiq
 import { Route as ReinitialiserMotDePasseRouteImport } from './routes/reinitialiser-mot-de-passe'
 import { Route as SignupRouteImport } from './routes/signup'
 import { Route as SitemapDotxmlRouteImport } from './routes/sitemap[.]xml'
-import { Route as AuthenticatedAuteursRouteImport } from './routes/_authenticated/auteurs'
-import { Route as AuthenticatedContratsRouteImport } from './routes/_authenticated/contrats'
 import { Route as AuthenticatedConversionsRouteImport } from './routes/_authenticated/conversions'
 import { Route as AuthenticatedDashboardRouteImport } from './routes/_authenticated/dashboard'
 import { Route as AuthenticatedEstimateurRouteImport } from './routes/_authenticated/estimateur'
@@ -35,7 +33,9 @@ import { Route as ApiMedmoVentesRouteImport } from './routes/api/medmo-ventes'
 import { Route as LectureTokenRouteImport } from './routes/lecture.$token'
 import { Route as RejoindreTokenRouteImport } from './routes/rejoindre.$token'
 import { Route as AuthenticatedAdminPaiementsRouteImport } from './routes/_authenticated/admin.paiements'
+import { Route as AuthenticatedAuteursIndexRouteImport } from './routes/_authenticated/auteurs.index'
 import { Route as AuthenticatedAuteursAuteurIdRouteImport } from './routes/_authenticated/auteurs.$auteurId'
+import { Route as AuthenticatedContratsIndexRouteImport } from './routes/_authenticated/contrats.index'
 import { Route as AuthenticatedContratsContratIdRouteImport } from './routes/_authenticated/contrats.$contratId'
 import { Route as AuthenticatedManuscritsIndexRouteImport } from './routes/_authenticated/manuscrits.index'
 import { Route as AuthenticatedManuscritsManuscritIdRouteImport } from './routes/_authenticated/manuscrits.$manuscritId'
@@ -100,16 +100,6 @@ const SitemapDotxmlRoute = SitemapDotxmlRouteImport.update({
   id: '/sitemap.xml',
   path: '/sitemap.xml',
   getParentRoute: () => rootRouteImport,
-} as any)
-const AuthenticatedAuteursRoute = AuthenticatedAuteursRouteImport.update({
-  id: '/auteurs',
-  path: '/auteurs',
-  getParentRoute: () => AuthenticatedRoute,
-} as any)
-const AuthenticatedContratsRoute = AuthenticatedContratsRouteImport.update({
-  id: '/contrats',
-  path: '/contrats',
-  getParentRoute: () => AuthenticatedRoute,
 } as any)
 const AuthenticatedConversionsRoute =
   AuthenticatedConversionsRouteImport.update({
@@ -179,17 +169,29 @@ const AuthenticatedAdminPaiementsRoute =
     path: '/admin/paiements',
     getParentRoute: () => AuthenticatedRoute,
   } as any)
+const AuthenticatedAuteursIndexRoute =
+  AuthenticatedAuteursIndexRouteImport.update({
+    id: '/auteurs/',
+    path: '/auteurs/',
+    getParentRoute: () => AuthenticatedRoute,
+  } as any)
 const AuthenticatedAuteursAuteurIdRoute =
   AuthenticatedAuteursAuteurIdRouteImport.update({
-    id: '/$auteurId',
-    path: '/$auteurId',
-    getParentRoute: () => AuthenticatedAuteursRoute,
+    id: '/auteurs/$auteurId',
+    path: '/auteurs/$auteurId',
+    getParentRoute: () => AuthenticatedRoute,
+  } as any)
+const AuthenticatedContratsIndexRoute =
+  AuthenticatedContratsIndexRouteImport.update({
+    id: '/contrats/',
+    path: '/contrats/',
+    getParentRoute: () => AuthenticatedRoute,
   } as any)
 const AuthenticatedContratsContratIdRoute =
   AuthenticatedContratsContratIdRouteImport.update({
-    id: '/$contratId',
-    path: '/$contratId',
-    getParentRoute: () => AuthenticatedContratsRoute,
+    id: '/contrats/$contratId',
+    path: '/contrats/$contratId',
+    getParentRoute: () => AuthenticatedRoute,
   } as any)
 const AuthenticatedManuscritsIndexRoute =
   AuthenticatedManuscritsIndexRouteImport.update({
@@ -249,8 +251,6 @@ export interface FileRoutesByFullPath {
   '/reinitialiser-mot-de-passe': typeof ReinitialiserMotDePasseRoute
   '/signup': typeof SignupRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
-  '/auteurs': typeof AuthenticatedAuteursRouteWithChildren
-  '/contrats': typeof AuthenticatedContratsRouteWithChildren
   '/conversions': typeof AuthenticatedConversionsRoute
   '/dashboard': typeof AuthenticatedDashboardRoute
   '/estimateur': typeof AuthenticatedEstimateurRoute
@@ -269,6 +269,8 @@ export interface FileRoutesByFullPath {
   '/manuscrits/$manuscritId': typeof AuthenticatedManuscritsManuscritIdRoute
   '/medmo/$threadId': typeof AuthenticatedMedmoThreadIdRoute
   '/api/public/flutterwave-webhook': typeof ApiPublicFlutterwaveWebhookRoute
+  '/auteurs/': typeof AuthenticatedAuteursIndexRoute
+  '/contrats/': typeof AuthenticatedContratsIndexRoute
   '/manuscrits/': typeof AuthenticatedManuscritsIndexRoute
   '/medmo/': typeof AuthenticatedMedmoIndexRoute
   '/api/public/hooks/check-reminders': typeof ApiPublicHooksCheckRemindersRoute
@@ -286,8 +288,6 @@ export interface FileRoutesByTo {
   '/reinitialiser-mot-de-passe': typeof ReinitialiserMotDePasseRoute
   '/signup': typeof SignupRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
-  '/auteurs': typeof AuthenticatedAuteursRouteWithChildren
-  '/contrats': typeof AuthenticatedContratsRouteWithChildren
   '/conversions': typeof AuthenticatedConversionsRoute
   '/dashboard': typeof AuthenticatedDashboardRoute
   '/estimateur': typeof AuthenticatedEstimateurRoute
@@ -305,6 +305,8 @@ export interface FileRoutesByTo {
   '/manuscrits/$manuscritId': typeof AuthenticatedManuscritsManuscritIdRoute
   '/medmo/$threadId': typeof AuthenticatedMedmoThreadIdRoute
   '/api/public/flutterwave-webhook': typeof ApiPublicFlutterwaveWebhookRoute
+  '/auteurs': typeof AuthenticatedAuteursIndexRoute
+  '/contrats': typeof AuthenticatedContratsIndexRoute
   '/manuscrits': typeof AuthenticatedManuscritsIndexRoute
   '/medmo': typeof AuthenticatedMedmoIndexRoute
   '/api/public/hooks/check-reminders': typeof ApiPublicHooksCheckRemindersRoute
@@ -324,8 +326,6 @@ export interface FileRoutesById {
   '/reinitialiser-mot-de-passe': typeof ReinitialiserMotDePasseRoute
   '/signup': typeof SignupRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
-  '/_authenticated/auteurs': typeof AuthenticatedAuteursRouteWithChildren
-  '/_authenticated/contrats': typeof AuthenticatedContratsRouteWithChildren
   '/_authenticated/conversions': typeof AuthenticatedConversionsRoute
   '/_authenticated/dashboard': typeof AuthenticatedDashboardRoute
   '/_authenticated/estimateur': typeof AuthenticatedEstimateurRoute
@@ -344,6 +344,8 @@ export interface FileRoutesById {
   '/_authenticated/manuscrits/$manuscritId': typeof AuthenticatedManuscritsManuscritIdRoute
   '/_authenticated/medmo/$threadId': typeof AuthenticatedMedmoThreadIdRoute
   '/api/public/flutterwave-webhook': typeof ApiPublicFlutterwaveWebhookRoute
+  '/_authenticated/auteurs/': typeof AuthenticatedAuteursIndexRoute
+  '/_authenticated/contrats/': typeof AuthenticatedContratsIndexRoute
   '/_authenticated/manuscrits/': typeof AuthenticatedManuscritsIndexRoute
   '/_authenticated/medmo/': typeof AuthenticatedMedmoIndexRoute
   '/api/public/hooks/check-reminders': typeof ApiPublicHooksCheckRemindersRoute
@@ -363,8 +365,6 @@ export interface FileRouteTypes {
     | '/reinitialiser-mot-de-passe'
     | '/signup'
     | '/sitemap.xml'
-    | '/auteurs'
-    | '/contrats'
     | '/conversions'
     | '/dashboard'
     | '/estimateur'
@@ -383,6 +383,8 @@ export interface FileRouteTypes {
     | '/manuscrits/$manuscritId'
     | '/medmo/$threadId'
     | '/api/public/flutterwave-webhook'
+    | '/auteurs/'
+    | '/contrats/'
     | '/manuscrits/'
     | '/medmo/'
     | '/api/public/hooks/check-reminders'
@@ -400,8 +402,6 @@ export interface FileRouteTypes {
     | '/reinitialiser-mot-de-passe'
     | '/signup'
     | '/sitemap.xml'
-    | '/auteurs'
-    | '/contrats'
     | '/conversions'
     | '/dashboard'
     | '/estimateur'
@@ -419,6 +419,8 @@ export interface FileRouteTypes {
     | '/manuscrits/$manuscritId'
     | '/medmo/$threadId'
     | '/api/public/flutterwave-webhook'
+    | '/auteurs'
+    | '/contrats'
     | '/manuscrits'
     | '/medmo'
     | '/api/public/hooks/check-reminders'
@@ -437,8 +439,6 @@ export interface FileRouteTypes {
     | '/reinitialiser-mot-de-passe'
     | '/signup'
     | '/sitemap.xml'
-    | '/_authenticated/auteurs'
-    | '/_authenticated/contrats'
     | '/_authenticated/conversions'
     | '/_authenticated/dashboard'
     | '/_authenticated/estimateur'
@@ -457,6 +457,8 @@ export interface FileRouteTypes {
     | '/_authenticated/manuscrits/$manuscritId'
     | '/_authenticated/medmo/$threadId'
     | '/api/public/flutterwave-webhook'
+    | '/_authenticated/auteurs/'
+    | '/_authenticated/contrats/'
     | '/_authenticated/manuscrits/'
     | '/_authenticated/medmo/'
     | '/api/public/hooks/check-reminders'
@@ -565,20 +567,6 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof SitemapDotxmlRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/_authenticated/auteurs': {
-      id: '/_authenticated/auteurs'
-      path: '/auteurs'
-      fullPath: '/auteurs'
-      preLoaderRoute: typeof AuthenticatedAuteursRouteImport
-      parentRoute: typeof AuthenticatedRoute
-    }
-    '/_authenticated/contrats': {
-      id: '/_authenticated/contrats'
-      path: '/contrats'
-      fullPath: '/contrats'
-      preLoaderRoute: typeof AuthenticatedContratsRouteImport
-      parentRoute: typeof AuthenticatedRoute
-    }
     '/_authenticated/conversions': {
       id: '/_authenticated/conversions'
       path: '/conversions'
@@ -670,19 +658,33 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedAdminPaiementsRouteImport
       parentRoute: typeof AuthenticatedRoute
     }
+    '/_authenticated/auteurs/': {
+      id: '/_authenticated/auteurs/'
+      path: '/auteurs'
+      fullPath: '/auteurs/'
+      preLoaderRoute: typeof AuthenticatedAuteursIndexRouteImport
+      parentRoute: typeof AuthenticatedRoute
+    }
     '/_authenticated/auteurs/$auteurId': {
       id: '/_authenticated/auteurs/$auteurId'
-      path: '/$auteurId'
+      path: '/auteurs/$auteurId'
       fullPath: '/auteurs/$auteurId'
       preLoaderRoute: typeof AuthenticatedAuteursAuteurIdRouteImport
-      parentRoute: typeof AuthenticatedAuteursRoute
+      parentRoute: typeof AuthenticatedRoute
+    }
+    '/_authenticated/contrats/': {
+      id: '/_authenticated/contrats/'
+      path: '/contrats'
+      fullPath: '/contrats/'
+      preLoaderRoute: typeof AuthenticatedContratsIndexRouteImport
+      parentRoute: typeof AuthenticatedRoute
     }
     '/_authenticated/contrats/$contratId': {
       id: '/_authenticated/contrats/$contratId'
-      path: '/$contratId'
+      path: '/contrats/$contratId'
       fullPath: '/contrats/$contratId'
       preLoaderRoute: typeof AuthenticatedContratsContratIdRouteImport
-      parentRoute: typeof AuthenticatedContratsRoute
+      parentRoute: typeof AuthenticatedRoute
     }
     '/_authenticated/manuscrits/': {
       id: '/_authenticated/manuscrits/'
@@ -743,30 +745,6 @@ declare module '@tanstack/react-router' {
   }
 }
 
-interface AuthenticatedAuteursRouteChildren {
-  AuthenticatedAuteursAuteurIdRoute: typeof AuthenticatedAuteursAuteurIdRoute
-}
-
-const AuthenticatedAuteursRouteChildren: AuthenticatedAuteursRouteChildren = {
-  AuthenticatedAuteursAuteurIdRoute: AuthenticatedAuteursAuteurIdRoute,
-}
-
-const AuthenticatedAuteursRouteWithChildren =
-  AuthenticatedAuteursRoute._addFileChildren(AuthenticatedAuteursRouteChildren)
-
-interface AuthenticatedContratsRouteChildren {
-  AuthenticatedContratsContratIdRoute: typeof AuthenticatedContratsContratIdRoute
-}
-
-const AuthenticatedContratsRouteChildren: AuthenticatedContratsRouteChildren = {
-  AuthenticatedContratsContratIdRoute: AuthenticatedContratsContratIdRoute,
-}
-
-const AuthenticatedContratsRouteWithChildren =
-  AuthenticatedContratsRoute._addFileChildren(
-    AuthenticatedContratsRouteChildren,
-  )
-
 interface AuthenticatedMedmoRouteChildren {
   AuthenticatedMedmoThreadIdRoute: typeof AuthenticatedMedmoThreadIdRoute
   AuthenticatedMedmoIndexRoute: typeof AuthenticatedMedmoIndexRoute
@@ -781,8 +759,6 @@ const AuthenticatedMedmoRouteWithChildren =
   AuthenticatedMedmoRoute._addFileChildren(AuthenticatedMedmoRouteChildren)
 
 interface AuthenticatedRouteChildren {
-  AuthenticatedAuteursRoute: typeof AuthenticatedAuteursRouteWithChildren
-  AuthenticatedContratsRoute: typeof AuthenticatedContratsRouteWithChildren
   AuthenticatedConversionsRoute: typeof AuthenticatedConversionsRoute
   AuthenticatedDashboardRoute: typeof AuthenticatedDashboardRoute
   AuthenticatedEstimateurRoute: typeof AuthenticatedEstimateurRoute
@@ -792,13 +768,15 @@ interface AuthenticatedRouteChildren {
   AuthenticatedParametresRoute: typeof AuthenticatedParametresRoute
   AuthenticatedStocksRoute: typeof AuthenticatedStocksRoute
   AuthenticatedAdminPaiementsRoute: typeof AuthenticatedAdminPaiementsRoute
+  AuthenticatedAuteursAuteurIdRoute: typeof AuthenticatedAuteursAuteurIdRoute
+  AuthenticatedContratsContratIdRoute: typeof AuthenticatedContratsContratIdRoute
   AuthenticatedManuscritsManuscritIdRoute: typeof AuthenticatedManuscritsManuscritIdRoute
+  AuthenticatedAuteursIndexRoute: typeof AuthenticatedAuteursIndexRoute
+  AuthenticatedContratsIndexRoute: typeof AuthenticatedContratsIndexRoute
   AuthenticatedManuscritsIndexRoute: typeof AuthenticatedManuscritsIndexRoute
 }
 
 const AuthenticatedRouteChildren: AuthenticatedRouteChildren = {
-  AuthenticatedAuteursRoute: AuthenticatedAuteursRouteWithChildren,
-  AuthenticatedContratsRoute: AuthenticatedContratsRouteWithChildren,
   AuthenticatedConversionsRoute: AuthenticatedConversionsRoute,
   AuthenticatedDashboardRoute: AuthenticatedDashboardRoute,
   AuthenticatedEstimateurRoute: AuthenticatedEstimateurRoute,
@@ -808,8 +786,12 @@ const AuthenticatedRouteChildren: AuthenticatedRouteChildren = {
   AuthenticatedParametresRoute: AuthenticatedParametresRoute,
   AuthenticatedStocksRoute: AuthenticatedStocksRoute,
   AuthenticatedAdminPaiementsRoute: AuthenticatedAdminPaiementsRoute,
+  AuthenticatedAuteursAuteurIdRoute: AuthenticatedAuteursAuteurIdRoute,
+  AuthenticatedContratsContratIdRoute: AuthenticatedContratsContratIdRoute,
   AuthenticatedManuscritsManuscritIdRoute:
     AuthenticatedManuscritsManuscritIdRoute,
+  AuthenticatedAuteursIndexRoute: AuthenticatedAuteursIndexRoute,
+  AuthenticatedContratsIndexRoute: AuthenticatedContratsIndexRoute,
   AuthenticatedManuscritsIndexRoute: AuthenticatedManuscritsIndexRoute,
 }
 
