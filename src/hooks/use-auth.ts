@@ -68,7 +68,22 @@ export function useProfile(userId: string | undefined) {
 
   const load = useCallback(async () => {
     if (!userId) { setLoading(false); return; }
-    const { data: p } = await supabase.from("profiles").select("*").eq("id", userId).maybeSingle();
+    // A failed or empty read (slow network, token being refreshed) must not
+    // look like "no permissions": retry, and keep the profile we already have.
+    let p: unknown = null;
+    let failed = false;
+    for (let attempt = 0; attempt < 3; attempt++) {
+      const { data, error } = await supabase.from("profiles").select("*").eq("id", userId).maybeSingle();
+      p = data;
+      failed = !!error;
+      if (data) break;
+      await new Promise((r) => setTimeout(r, 700 * (attempt + 1)));
+    }
+    if (failed && !p) {
+      setLoading(false);
+      setLoadedFor(userId);
+      return;
+    }
     const raw = p as (Profile & { permissions: unknown }) | null;
     const normalized: Profile | null = raw
       ? {
