@@ -29,6 +29,7 @@ import { Route as AuthenticatedMedmoRouteImport } from './routes/_authenticated/
 import { Route as AuthenticatedParametresRouteImport } from './routes/_authenticated/parametres'
 import { Route as AuthenticatedStocksRouteImport } from './routes/_authenticated/stocks'
 import { Route as ApiChatRouteImport } from './routes/api/chat'
+import { Route as ApiContratImportRouteImport } from './routes/api/contrat-import'
 import { Route as ApiMedmoVentesRouteImport } from './routes/api/medmo-ventes'
 import { Route as LectureTokenRouteImport } from './routes/lecture.$token'
 import { Route as RejoindreTokenRouteImport } from './routes/rejoindre.$token'
@@ -37,6 +38,7 @@ import { Route as AuthenticatedAuteursIndexRouteImport } from './routes/_authent
 import { Route as AuthenticatedAuteursAuteurIdRouteImport } from './routes/_authenticated/auteurs.$auteurId'
 import { Route as AuthenticatedContratsIndexRouteImport } from './routes/_authenticated/contrats.index'
 import { Route as AuthenticatedContratsContratIdRouteImport } from './routes/_authenticated/contrats.$contratId'
+import { Route as AuthenticatedContratsModelesRouteImport } from './routes/_authenticated/contrats.modeles'
 import { Route as AuthenticatedManuscritsIndexRouteImport } from './routes/_authenticated/manuscrits.index'
 import { Route as AuthenticatedManuscritsManuscritIdRouteImport } from './routes/_authenticated/manuscrits.$manuscritId'
 import { Route as AuthenticatedMedmoIndexRouteImport } from './routes/_authenticated/medmo.index'
@@ -148,6 +150,11 @@ const ApiChatRoute = ApiChatRouteImport.update({
   path: '/api/chat',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ApiContratImportRoute = ApiContratImportRouteImport.update({
+  id: '/api/contrat-import',
+  path: '/api/contrat-import',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ApiMedmoVentesRoute = ApiMedmoVentesRouteImport.update({
   id: '/api/medmo-ventes',
   path: '/api/medmo-ventes',
@@ -191,6 +198,12 @@ const AuthenticatedContratsContratIdRoute =
   AuthenticatedContratsContratIdRouteImport.update({
     id: '/contrats/$contratId',
     path: '/contrats/$contratId',
+    getParentRoute: () => AuthenticatedRoute,
+  } as any)
+const AuthenticatedContratsModelesRoute =
+  AuthenticatedContratsModelesRouteImport.update({
+    id: '/contrats/modeles',
+    path: '/contrats/modeles',
     getParentRoute: () => AuthenticatedRoute,
   } as any)
 const AuthenticatedManuscritsIndexRoute =
@@ -260,12 +273,14 @@ export interface FileRoutesByFullPath {
   '/parametres': typeof AuthenticatedParametresRoute
   '/stocks': typeof AuthenticatedStocksRoute
   '/api/chat': typeof ApiChatRoute
+  '/api/contrat-import': typeof ApiContratImportRoute
   '/api/medmo-ventes': typeof ApiMedmoVentesRoute
   '/lecture/$token': typeof LectureTokenRoute
   '/rejoindre/$token': typeof RejoindreTokenRoute
   '/admin/paiements': typeof AuthenticatedAdminPaiementsRoute
   '/auteurs/$auteurId': typeof AuthenticatedAuteursAuteurIdRoute
   '/contrats/$contratId': typeof AuthenticatedContratsContratIdRoute
+  '/contrats/modeles': typeof AuthenticatedContratsModelesRoute
   '/manuscrits/$manuscritId': typeof AuthenticatedManuscritsManuscritIdRoute
   '/medmo/$threadId': typeof AuthenticatedMedmoThreadIdRoute
   '/api/public/flutterwave-webhook': typeof ApiPublicFlutterwaveWebhookRoute
@@ -296,12 +311,14 @@ export interface FileRoutesByTo {
   '/parametres': typeof AuthenticatedParametresRoute
   '/stocks': typeof AuthenticatedStocksRoute
   '/api/chat': typeof ApiChatRoute
+  '/api/contrat-import': typeof ApiContratImportRoute
   '/api/medmo-ventes': typeof ApiMedmoVentesRoute
   '/lecture/$token': typeof LectureTokenRoute
   '/rejoindre/$token': typeof RejoindreTokenRoute
   '/admin/paiements': typeof AuthenticatedAdminPaiementsRoute
   '/auteurs/$auteurId': typeof AuthenticatedAuteursAuteurIdRoute
   '/contrats/$contratId': typeof AuthenticatedContratsContratIdRoute
+  '/contrats/modeles': typeof AuthenticatedContratsModelesRoute
   '/manuscrits/$manuscritId': typeof AuthenticatedManuscritsManuscritIdRoute
   '/medmo/$threadId': typeof AuthenticatedMedmoThreadIdRoute
   '/api/public/flutterwave-webhook': typeof ApiPublicFlutterwaveWebhookRoute
@@ -335,12 +352,14 @@ export interface FileRoutesById {
   '/_authenticated/parametres': typeof AuthenticatedParametresRoute
   '/_authenticated/stocks': typeof AuthenticatedStocksRoute
   '/api/chat': typeof ApiChatRoute
+  '/api/contrat-import': typeof ApiContratImportRoute
   '/api/medmo-ventes': typeof ApiMedmoVentesRoute
   '/lecture/$token': typeof LectureTokenRoute
   '/rejoindre/$token': typeof RejoindreTokenRoute
   '/_authenticated/admin/paiements': typeof AuthenticatedAdminPaiementsRoute
   '/_authenticated/auteurs/$auteurId': typeof AuthenticatedAuteursAuteurIdRoute
   '/_authenticated/contrats/$contratId': typeof AuthenticatedContratsContratIdRoute
+  '/_authenticated/contrats/modeles': typeof AuthenticatedContratsModelesRoute
   '/_authenticated/manuscrits/$manuscritId': typeof AuthenticatedManuscritsManuscritIdRoute
   '/_authenticated/medmo/$threadId': typeof AuthenticatedMedmoThreadIdRoute
   '/api/public/flutterwave-webhook': typeof ApiPublicFlutterwaveWebhookRoute
@@ -374,12 +393,14 @@ export interface FileRouteTypes {
     | '/parametres'
     | '/stocks'
     | '/api/chat'
+    | '/api/contrat-import'
     | '/api/medmo-ventes'
     | '/lecture/$token'
     | '/rejoindre/$token'
     | '/admin/paiements'
     | '/auteurs/$auteurId'
     | '/contrats/$contratId'
+    | '/contrats/modeles'
     | '/manuscrits/$manuscritId'
     | '/medmo/$threadId'
     | '/api/public/flutterwave-webhook'
@@ -410,12 +431,14 @@ export interface FileRouteTypes {
     | '/parametres'
     | '/stocks'
     | '/api/chat'
+    | '/api/contrat-import'
     | '/api/medmo-ventes'
     | '/lecture/$token'
     | '/rejoindre/$token'
     | '/admin/paiements'
     | '/auteurs/$auteurId'
     | '/contrats/$contratId'
+    | '/contrats/modeles'
     | '/manuscrits/$manuscritId'
     | '/medmo/$threadId'
     | '/api/public/flutterwave-webhook'
@@ -448,12 +471,14 @@ export interface FileRouteTypes {
     | '/_authenticated/parametres'
     | '/_authenticated/stocks'
     | '/api/chat'
+    | '/api/contrat-import'
     | '/api/medmo-ventes'
     | '/lecture/$token'
     | '/rejoindre/$token'
     | '/_authenticated/admin/paiements'
     | '/_authenticated/auteurs/$auteurId'
     | '/_authenticated/contrats/$contratId'
+    | '/_authenticated/contrats/modeles'
     | '/_authenticated/manuscrits/$manuscritId'
     | '/_authenticated/medmo/$threadId'
     | '/api/public/flutterwave-webhook'
@@ -479,6 +504,7 @@ export interface RootRouteChildren {
   SignupRoute: typeof SignupRoute
   SitemapDotxmlRoute: typeof SitemapDotxmlRoute
   ApiChatRoute: typeof ApiChatRoute
+  ApiContratImportRoute: typeof ApiContratImportRoute
   ApiMedmoVentesRoute: typeof ApiMedmoVentesRoute
   LectureTokenRoute: typeof LectureTokenRoute
   RejoindreTokenRoute: typeof RejoindreTokenRoute
@@ -630,6 +656,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiChatRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/contrat-import': {
+      id: '/api/contrat-import'
+      path: '/api/contrat-import'
+      fullPath: '/api/contrat-import'
+      preLoaderRoute: typeof ApiContratImportRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/api/medmo-ventes': {
       id: '/api/medmo-ventes'
       path: '/api/medmo-ventes'
@@ -684,6 +717,13 @@ declare module '@tanstack/react-router' {
       path: '/contrats/$contratId'
       fullPath: '/contrats/$contratId'
       preLoaderRoute: typeof AuthenticatedContratsContratIdRouteImport
+      parentRoute: typeof AuthenticatedRoute
+    }
+    '/_authenticated/contrats/modeles': {
+      id: '/_authenticated/contrats/modeles'
+      path: '/contrats/modeles'
+      fullPath: '/contrats/modeles'
+      preLoaderRoute: typeof AuthenticatedContratsModelesRouteImport
       parentRoute: typeof AuthenticatedRoute
     }
     '/_authenticated/manuscrits/': {
@@ -770,6 +810,7 @@ interface AuthenticatedRouteChildren {
   AuthenticatedAdminPaiementsRoute: typeof AuthenticatedAdminPaiementsRoute
   AuthenticatedAuteursAuteurIdRoute: typeof AuthenticatedAuteursAuteurIdRoute
   AuthenticatedContratsContratIdRoute: typeof AuthenticatedContratsContratIdRoute
+  AuthenticatedContratsModelesRoute: typeof AuthenticatedContratsModelesRoute
   AuthenticatedManuscritsManuscritIdRoute: typeof AuthenticatedManuscritsManuscritIdRoute
   AuthenticatedAuteursIndexRoute: typeof AuthenticatedAuteursIndexRoute
   AuthenticatedContratsIndexRoute: typeof AuthenticatedContratsIndexRoute
@@ -788,6 +829,7 @@ const AuthenticatedRouteChildren: AuthenticatedRouteChildren = {
   AuthenticatedAdminPaiementsRoute: AuthenticatedAdminPaiementsRoute,
   AuthenticatedAuteursAuteurIdRoute: AuthenticatedAuteursAuteurIdRoute,
   AuthenticatedContratsContratIdRoute: AuthenticatedContratsContratIdRoute,
+  AuthenticatedContratsModelesRoute: AuthenticatedContratsModelesRoute,
   AuthenticatedManuscritsManuscritIdRoute:
     AuthenticatedManuscritsManuscritIdRoute,
   AuthenticatedAuteursIndexRoute: AuthenticatedAuteursIndexRoute,
@@ -812,6 +854,7 @@ const rootRouteChildren: RootRouteChildren = {
   SignupRoute: SignupRoute,
   SitemapDotxmlRoute: SitemapDotxmlRoute,
   ApiChatRoute: ApiChatRoute,
+  ApiContratImportRoute: ApiContratImportRoute,
   ApiMedmoVentesRoute: ApiMedmoVentesRoute,
   LectureTokenRoute: LectureTokenRoute,
   RejoindreTokenRoute: RejoindreTokenRoute,
