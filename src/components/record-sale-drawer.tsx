@@ -122,6 +122,7 @@ export function RecordSaleDrawer({
   entrepriseAdresse = null,
   entrepriseTelephone = null,
   entrepriseEmail = null,
+  preset = null,
 }: {
   open: boolean;
   onOpenChange: (o: boolean) => void;
@@ -132,6 +133,8 @@ export function RecordSaleDrawer({
   entrepriseAdresse?: string | null;
   entrepriseTelephone?: string | null;
   entrepriseEmail?: string | null;
+  /** Opened from a book in a bookshop: start on that bookshop sale. */
+  preset?: { manuscritId: string; stockId: string } | null;
 }) {
   const [loading, setLoading] = useState(true);
   const [manuscrits, setManuscrits] = useState<Manuscrit[]>([]);
@@ -227,6 +230,14 @@ export function RecordSaleDrawer({
     } catch { /* stockage indisponible */ }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [cart, remisePct, clientNom, dateVente, open]);
+
+  useEffect(() => {
+    if (!open || loading || !preset) return;
+    setSaleType("librairie");
+    setManuscritId(preset.manuscritId);
+    setStockId(preset.stockId);
+    setLibrairieQuery("");
+  }, [open, loading, preset]);
 
   // Focus automatique sur la quantité du livre venant d'être ajouté.
   useEffect(() => {
