@@ -1002,7 +1002,11 @@ export const Route = createFileRoute("/api/chat")({
               tools: buildTools(supabase, userId, entrepriseId),
               stopWhen: stepCountIs(50),
               abortSignal: request.signal,
-              maxOutputTokens: 4096,
+              // Thinking tokens count against this cap on Gemini 3+.
+              maxOutputTokens: 8192,
+              // Gemini 3+ thinks at "high" by default, which leaves users
+              // waiting a minute or more before the first word.
+              providerOptions: { google: { thinkingConfig: { thinkingLevel: "low" } } },
             });
             writer.merge(result.toUIMessageStream({ originalMessages: uiMessages }));
           },
