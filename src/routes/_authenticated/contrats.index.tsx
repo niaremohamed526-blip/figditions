@@ -1,6 +1,6 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useEffect, useMemo, useRef, useState } from "react";
-import { Plus, Search, FileText, Loader2, Pencil, Trash2, Eye, FileDown, X, BookOpen, AlertTriangle } from "lucide-react";
+import { Plus, Search, FileText, Loader2, Pencil, Trash2, Eye, FileDown, X, BookOpen, AlertTriangle, Lock, LayoutTemplate } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { fetchAllRows } from "@/lib/fetch-all";
 import { useAuth, useProfile } from "@/hooks/use-auth";
@@ -19,7 +19,9 @@ import { toast } from "sonner";
 import { cn } from "@/lib/utils";
 import { planFor } from "@/lib/plans";
 import { LockedPage } from "@/components/locked-page";
-import { generateContratProPdf, type Livre } from "@/lib/pdf-contrat-pro";
+import type { ContratProPdfData, Livre } from "@/lib/pdf-contrat-pro";
+import { figerContrat, genererPdfContrat, pdfDataFromContrat } from "@/lib/contrat-pdf";
+import type { ContratModele, TexteFige } from "@/lib/contrat-template";
 import { useCloseGuard } from "@/hooks/useCloseGuard";
 import { UnsavedChangesModal } from "@/components/unsaved-changes-modal";
 import { BookCombobox } from "@/components/book-combobox";
@@ -47,6 +49,8 @@ interface Contrat {
   territoire_ci?: number;
   territoire_senegal?: number;
   territoire_france?: number;
+  modele_id?: string | null;
+  texte_fige?: TexteFige | null;
 }
 interface Manuscrit { id: string; titre: string; auteur: string; auteur_id?: string | null }
 interface Auteur { id: string; nom_complet: string; email?: string | null; telephone?: string | null; numero_mobile_money?: string | null }
@@ -98,6 +102,7 @@ function ContratsInner({ entrepriseId, entreprise }: { entrepriseId: string | nu
   const [items, setItems] = useState<Contrat[] | null>(null);
   const [manuscrits, setManuscrits] = useState<Manuscrit[]>([]);
   const [auteurs, setAuteurs] = useState<Auteur[]>([]);
+  const [modeles, setModeles] = useState<ContratModele[]>([]);
   const [q, setQ] = useState("");
   const [sheetOpen, setSheetOpen] = useState(false);
   const [editing, setEditing] = useState<Contrat | null>(null);
@@ -118,6 +123,8 @@ function ContratsInner({ entrepriseId, entreprise }: { entrepriseId: string | nu
       setItems(c);
       setManuscrits(ms);
       setAuteurs(as);
+      const { data: mods } = await (supabase as any).from("contrat_modeles").select("*").order("nom");
+      setModeles((mods ?? []) as ContratModele[]);
     } catch (e: any) {
       toast.error(e?.message ?? "Erreur de chargement");
       setItems([]);
@@ -160,47 +167,15 @@ function ContratsInner({ entrepriseId, entreprise }: { entrepriseId: string | nu
   };
 
   const downloadPdf = async (c: Contrat) => {
-    const livres: Livre[] = Array.isArray(c.livres) && c.livres.length > 0
-      ? c.livres
-      : [{ titre: mMap[c.manuscrit_id]?.titre ?? "—", manuscrit_id: c.manuscrit_id }];
     const a = c.auteur_id ? aMap[c.auteur_id] : null;
     try {
-      await generateContratProPdf({
-        maison: entreprise?.nom ?? "FIGDITIONS",
-        adresse_editeur: entreprise?.adresse,
-        telephone_editeur: entreprise?.telephone,
-        email_editeur: entreprise?.email ?? entreprise?.email_contact,
-        website_editeur: entreprise?.website,
-        nif: entreprise?.nif,
-        rccm: entreprise?.rccm,
-        nina: entreprise?.nina,
-        banque: entreprise?.banque,
-        compte_bancaire: entreprise?.compte_bancaire,
-        nom_representant: entreprise?.nom_representant,
-        qualite_representant: entreprise?.qualite_representant,
-        logo_url: entreprise?.logo_url,
-        cachet_url: entreprise?.cachet_url,
-        auteur: a?.nom_complet ?? authorName(c),
-        adresse_auteur: (c as any).adresse_auteur,
-        telephone_auteur: (c as any).telephone_auteur ?? a?.telephone,
-        profession_auteur: (c as any).profession_auteur,
-        collection: c.collection,
-        livres,
-        duree_annees: c.duree_annees ?? 10,
-        pourcentage: Number(c.pourcentage_droits ?? 10),
-        tirage_minimum: (c as any).tirage_minimum ?? 100,
-        contribution_auteur: (c as any).contribution_auteur,
-        format: (c as any).format,
-        type_couverture: (c as any).type_couverture,
-        reliure: (c as any).reliure,
-        exemplaires_auteur: (c as any).exemplaires_auteur ?? 10,
-        frequence_paiement: (c as any).frequence_paiement ?? "annuel",
-        territoire_mali: c.territoire_mali ?? 20,
-        territoire_ci: c.territoire_ci ?? 30,
-        territoire_senegal: c.territoire_senegal ?? 30,
-        territoire_france: c.territoire_france ?? 40,
-        lieu_signature: (c as any).lieu_signature ?? entreprise?.ville ?? "Bamako",
-        date_signature: c.date_signature ?? new Date().toISOString().slice(0, 10),
+      await genererPdfContrat({
+        data: pdfDataFromContrat(c, entreprise, { nom_complet: a?.nom_complet ?? authorName(c), telephone: a?.telephone },
+          [{ titre: mMap[c.manuscrit_id]?.titre ?? "—", manuscrit_id: c.manuscrit_id }]),
+        contratId: c.id,
+        texteFige: c.texte_fige,
+        modele: modeles.find((m) => m.id === c.modele_id) ?? null,
+        notes: c.notes,
       });
       toast.success("PDF généré");
     } catch (e: any) {
@@ -215,9 +190,14 @@ function ContratsInner({ entrepriseId, entreprise }: { entrepriseId: string | nu
           <h1 className="text-3xl font-bold tracking-tight">Contrats & Droits</h1>
           <p className="text-muted-foreground mt-1">Gérez vos contrats d'édition et droits d'auteur.</p>
         </div>
+        <div className="flex flex-wrap gap-2">
+        <Link to="/contrats/modeles">
+          <Button variant="outline"><LayoutTemplate className="h-4 w-4" /> Mes modèles</Button>
+        </Link>
         <Button onClick={openCreate} className="bg-primary text-primary-foreground hover:bg-primary/90">
           <Plus className="h-4 w-4" /> Nouveau contrat
         </Button>
+        </div>
       </header>
 
       <div className="relative max-w-md">
@@ -312,6 +292,7 @@ function ContratsInner({ entrepriseId, entreprise }: { entrepriseId: string | nu
         editing={editing}
         manuscrits={manuscrits}
         auteurs={auteurs}
+        modeles={modeles}
         onSaved={load}
       />
 
@@ -356,6 +337,7 @@ function EmptyState({ onCreate, hasAny }: { onCreate: () => void; hasAny: boolea
 // ============================================================================
 
 interface FormState {
+  modele_id: string; // "" = texte standard FIGDITIONS
   auteur_id: string;
   adresse_auteur: string;
   telephone_auteur: string;
@@ -381,7 +363,8 @@ interface FormState {
   notes: string;
 }
 
-const defaultForm = (entreprise: any): FormState => ({
+const defaultForm = (entreprise: any, modeles: ContratModele[] = []): FormState => ({
+  modele_id: modeles.find((m) => m.par_defaut)?.id ?? "",
   auteur_id: "",
   adresse_auteur: "",
   telephone_auteur: "",
@@ -410,7 +393,7 @@ const defaultForm = (entreprise: any): FormState => ({
 const DRAFT_KEY = "figditions:contrat:draft";
 
 function ContratSheet({
-  open, onOpenChange, entrepriseId, entreprise, editing, manuscrits, auteurs, onSaved,
+  open, onOpenChange, entrepriseId, entreprise, editing, manuscrits, auteurs, modeles, onSaved,
 }: {
   open: boolean; onOpenChange: (o: boolean) => void;
   entrepriseId: string | null;
@@ -418,9 +401,10 @@ function ContratSheet({
   editing: Contrat | null;
   manuscrits: Manuscrit[];
   auteurs: Auteur[];
+  modeles: ContratModele[];
   onSaved: () => void;
 }) {
-  const [form, setForm] = useState<FormState>(defaultForm(entreprise));
+  const [form, setForm] = useState<FormState>(defaultForm(entreprise, modeles));
   const [saving, setSaving] = useState(false);
   const [previewing, setPreviewing] = useState(false);
   const [dirty, setDirty] = useState(false);
@@ -436,6 +420,7 @@ function ContratSheet({
     let next: FormState;
     if (editing) {
       next = {
+        modele_id: editing.modele_id ?? "",
         auteur_id: editing.auteur_id ?? "",
         adresse_auteur: (editing as any).adresse_auteur ?? "",
         telephone_auteur: (editing as any).telephone_auteur ?? "",
@@ -466,16 +451,16 @@ function ContratSheet({
       // Try to load draft
       const raw = typeof window !== "undefined" ? localStorage.getItem(DRAFT_KEY) : null;
       if (raw) {
-        try { next = { ...defaultForm(entreprise), ...JSON.parse(raw) }; }
-        catch { next = defaultForm(entreprise); }
+        try { next = { ...defaultForm(entreprise, modeles), ...JSON.parse(raw) }; }
+        catch { next = defaultForm(entreprise, modeles); }
       } else {
-        next = defaultForm(entreprise);
+        next = defaultForm(entreprise, modeles);
       }
     }
     setForm(next);
     initialRef.current = JSON.stringify(next);
     setDirty(false);
-  }, [open, editing, entreprise, manuscrits]);
+  }, [open, editing, entreprise, manuscrits, modeles]);
 
   // Track dirty
   useEffect(() => {
@@ -503,10 +488,16 @@ function ContratSheet({
   const closeSheet = () => onOpenChange(false);
   const { showModal, cancelClose, confirmDiscard, handleOpenChange } = useCloseGuard(dirty, closeSheet);
 
-  const buildPdfPayload = () => {
+  // A signed contract keeps the text and terms it was signed with.
+  const fige = editing?.statut === "signe" && editing.texte_fige ? editing.texte_fige : null;
+  const resteFige = !!fige && form.statut === "signe";
+  const modeleChoisi = modeles.find((m) => m.id === form.modele_id) ?? null;
+
+  const buildPdfPayload = (): ContratProPdfData => {
     const a = auteurs.find((x) => x.id === form.auteur_id);
     return {
-      maison: entreprise?.nom ?? "FIGDITIONS",
+      maison: entreprise?.nom ?? "Maison d'édition",
+      ville_maison: entreprise?.ville,
       adresse_editeur: entreprise?.adresse,
       telephone_editeur: entreprise?.telephone,
       email_editeur: entreprise?.email ?? entreprise?.email_contact,
@@ -549,7 +540,16 @@ function ContratSheet({
     if (validLivres.length === 0) return toast.error("Ajoutez au moins un livre");
     if (!form.auteur_id) return toast.error("Sélectionnez un auteur");
     setPreviewing(true);
-    try { await generateContratProPdf(buildPdfPayload()); toast.success("Aperçu généré"); }
+    try {
+      await genererPdfContrat({
+        data: buildPdfPayload(),
+        contratId: editing?.id,
+        texteFige: resteFige ? fige : null,
+        modele: modeleChoisi,
+        notes: form.notes,
+      });
+      toast.success("Aperçu généré");
+    }
     catch (e: any) { toast.error(e?.message ?? "Erreur"); }
     finally { setPreviewing(false); }
   };
@@ -574,6 +574,7 @@ function ContratSheet({
     setSaving(true);
     const payload: any = {
       entreprise_id: entrepriseId,
+      modele_id: form.modele_id || null,
       manuscrit_id: manuscritId,
       auteur_id: form.auteur_id || null,
       pourcentage_droits: form.pourcentage_droits,
@@ -609,6 +610,10 @@ function ContratSheet({
       qualite_representant: entreprise?.qualite_representant ?? null,
       cachet_url: entreprise?.cachet_url ?? null,
     };
+    // Signing freezes the text; leaving "Signé" lets it follow the template again.
+    if (!resteFige) {
+      payload.texte_fige = form.statut === "signe" ? figerContrat(buildPdfPayload(), modeleChoisi) : null;
+    }
     const { error } = editing
       ? await (supabase as any).from("contrats").update(payload).eq("id", editing.id)
       : await (supabase as any).from("contrats").insert(payload);
@@ -641,6 +646,34 @@ function ContratSheet({
             <SheetTitle>{editing ? "Modifier le contrat" : "Nouveau contrat d'édition"}</SheetTitle>
           </SheetHeader>
           <form onSubmit={submit} className="space-y-8 mt-6 px-4 pb-6">
+            {fige && (
+              <div className={cn("rounded-lg border p-3 text-sm flex gap-2", resteFige ? "border-emerald-500/40 bg-emerald-500/10" : "border-orange-500/40 bg-orange-500/10")}>
+                <Lock className={cn("h-4 w-4 shrink-0 mt-0.5", resteFige ? "text-emerald-500" : "text-orange-500")} />
+                <p>
+                  {resteFige
+                    ? <>Contrat signé : le texte et les conditions sont figés depuis le {new Date(fige.fige_le).toLocaleDateString("fr-FR")}{fige.modele_nom ? ` (modèle « ${fige.modele_nom} »)` : ""}. Vos modifications ici ne changent pas le PDF signé. Pour le refaire, repassez-le en Brouillon.</>
+                    : <>En quittant le statut « Signé », le texte figé sera remplacé par le modèle choisi ci-dessous à l'enregistrement.</>}
+                </p>
+              </div>
+            )}
+
+            <Section title="Modèle de contrat" subtitle="Le texte, la couleur et le style du document.">
+              <div className="flex flex-wrap items-end gap-2">
+                <div className="flex-1 min-w-[220px] space-y-2">
+                  <Select value={form.modele_id || "_standard"} onValueChange={(v) => upd("modele_id", v === "_standard" ? "" : v)} disabled={resteFige}>
+                    <SelectTrigger><SelectValue /></SelectTrigger>
+                    <SelectContent className="z-[400]">
+                      <SelectItem value="_standard">Texte standard FIGDITIONS</SelectItem>
+                      {modeles.map((m) => (
+                        <SelectItem key={m.id} value={m.id}>{m.nom}{m.par_defaut ? " · par défaut" : ""}</SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+                <Link to="/contrats/modeles" className="text-xs text-primary hover:underline pb-2.5">Gérer mes modèles →</Link>
+              </div>
+            </Section>
+
             {/* SECTION 1: PARTIES */}
             <Section title="1. Parties du contrat" subtitle="L'éditeur est repris depuis vos paramètres.">
               <div className="rounded-lg border border-primary/20 bg-primary/5 p-4 space-y-1 text-sm">
