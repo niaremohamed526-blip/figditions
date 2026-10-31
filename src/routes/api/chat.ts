@@ -987,6 +987,27 @@ export const Route = createFileRoute("/api/chat")({
 
         const modelMessages = await convertToModelMessages(uiMessages);
 
+        const chatError = (error: unknown) => {
+          console.error("[chat] stream error:", error);
+          const message = error instanceof Error ? error.message : String(error);
+          const lower = message.toLowerCase();
+          if (message.includes("402") || lower.includes("credits")) {
+            return "PR MEDMO est momentanément indisponible : les crédits IA de l'espace de travail sont épuisés. Rechargez-les dans les paramètres de facturation Lovable.";
+          }
+          if (message.includes("429") || lower.includes("quota") || lower.includes("rate limit")) {
+            return "PR MEDMO reçoit trop de demandes en ce moment (limite du fournisseur IA atteinte). Patientez une minute puis réessayez.";
+          }
+          if (message.includes("401") || message.includes("403") || lower.includes("api key") || lower.includes("api_key") || lower.includes("permission denied")) {
+            return "La clé du service IA (GEMINI_API_KEY) est invalide ou expirée. Vérifiez-la dans les réglages de votre hébergeur puis redéployez.";
+          }
+          if (lower.includes("timeout") || lower.includes("timed out") || lower.includes("deadline")) {
+            return "La réponse de PR MEDMO a pris trop de temps. Réessayez avec une demande plus courte.";
+          }
+          // Keep a short provider detail so the cause can be reported back.
+          const detail = message.replace(/key=[^&\s]+/gi, "key=…").slice(0, 200);
+          return `Une erreur est survenue pendant la réponse de PR MEDMO. Réessayez. (Détail : ${detail})`;
+        };
+
         const stream = createUIMessageStream({
           originalMessages: uiMessages,
           execute: ({ writer }) => {
@@ -1008,7 +1029,9 @@ export const Route = createFileRoute("/api/chat")({
               // so minimal thinking keeps answers fast.
               providerOptions: { google: { thinkingConfig: { thinkingLevel: "minimal" } } },
             });
-            writer.merge(result.toUIMessageStream({ originalMessages: uiMessages }));
+            // Without its own onError the inner stream masks the provider error as
+            // "An error occurred." before the outer handler sees it.
+            writer.merge(result.toUIMessageStream({ originalMessages: uiMessages, onError: chatError }));
           },
           onEnd: async ({ messages: finalMessages, isAborted }) => {
             if (isAborted) return;
@@ -1058,26 +1081,7 @@ export const Route = createFileRoute("/api/chat")({
               console.error("[chat] onEnd persistence error:", e);
             }
           },
-          onError: (error) => {
-            console.error("[chat] stream error:", error);
-            const message = error instanceof Error ? error.message : String(error);
-            const lower = message.toLowerCase();
-            if (message.includes("402") || lower.includes("credits")) {
-              return "PR MEDMO est momentanément indisponible : les crédits IA de l'espace de travail sont épuisés. Rechargez-les dans les paramètres de facturation Lovable.";
-            }
-            if (message.includes("429") || lower.includes("quota") || lower.includes("rate limit")) {
-              return "PR MEDMO reçoit trop de demandes en ce moment (limite du fournisseur IA atteinte). Patientez une minute puis réessayez.";
-            }
-            if (message.includes("401") || message.includes("403") || lower.includes("api key") || lower.includes("api_key") || lower.includes("permission denied")) {
-              return "La clé du service IA (GEMINI_API_KEY) est invalide ou expirée. Vérifiez-la dans les réglages de votre hébergeur puis redéployez.";
-            }
-            if (lower.includes("timeout") || lower.includes("timed out") || lower.includes("deadline")) {
-              return "La réponse de PR MEDMO a pris trop de temps. Réessayez avec une demande plus courte.";
-            }
-            // Keep a short provider detail so the cause can be reported back.
-            const detail = message.replace(/key=[^&\s]+/gi, "key=…").slice(0, 200);
-            return `Une erreur est survenue pendant la réponse de PR MEDMO. Réessayez. (Détail : ${detail})`;
-          },
+          onError: chatError,
         });
 
         return createUIMessageStreamResponse({ stream });
