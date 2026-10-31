@@ -83,6 +83,7 @@ function StocksPage() {
   const [posOpen, setPosOpen] = useState(false);
   const [tab, setTab] = useState<string>("externe");
   const [saleOpen, setSaleOpen] = useState(false);
+  const [salePreset, setSalePreset] = useState<{ manuscritId: string; stockId: string } | null>(null);
   const [auteurs, setAuteurs] = useState<Array<{ id: string; nom_complet: string }>>([]);
 
   // Global desktop filters
@@ -514,7 +515,7 @@ function StocksPage() {
             onAdd={openNew}
             onEdit={(s: any) => openEdit(s)}
             onDelete={(s: any) => setToDelete(s)}
-            onSale={() => setSaleOpen(true)}
+            onSale={(r) => { setSalePreset(r ? { manuscritId: r.manuscrit_id, stockId: r.id } : null); setSaleOpen(true); }}
             librairieFilter={librairieFilter === "all" ? null : librairieFilter}
             onLibrairieFilter={(v) => setLibrairieFilter(v ?? "all")}
             onChanged={load}
@@ -602,7 +603,8 @@ function StocksPage() {
 
       <RecordSaleDrawer
         open={saleOpen}
-        onOpenChange={setSaleOpen}
+        onOpenChange={(o) => { setSaleOpen(o); if (!o) setSalePreset(null); }}
+        preset={salePreset}
         entrepriseId={profile?.entreprise_id ?? null}
         onSaved={load}
         entrepriseNom={(entreprise as any)?.nom ?? "Maison d'édition"}

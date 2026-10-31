@@ -203,7 +203,7 @@ export function StockExterneGroups({
   onAdd: () => void;
   onEdit: (s: ExterneStockRow) => void;
   onDelete: (s: ExterneStockRow) => void;
-  onSale: () => void;
+  onSale: (r?: ExterneStockRow) => void;
   librairieFilter: string | null;
   onLibrairieFilter: (v: string | null) => void;
   onChanged?: () => void;
@@ -463,7 +463,7 @@ export function StockExterneGroups({
                                 <button onClick={() => onEdit(r)} title="Modifier" aria-label="Modifier" className="h-8 w-8 inline-flex items-center justify-center rounded-md text-muted-foreground hover:bg-primary/10 hover:text-primary">
                                   <Pencil className="h-4 w-4" />
                                 </button>
-                                <button onClick={onSale} title="Enregistrer une vente" aria-label="Vente" className="h-8 w-8 inline-flex items-center justify-center rounded-md text-muted-foreground hover:bg-[color:var(--gold)]/10 hover:text-[color:var(--gold)]">
+                                <button onClick={() => onSale(r)} title="Enregistrer une vente" aria-label="Vente" className="h-8 w-8 inline-flex items-center justify-center rounded-md text-muted-foreground hover:bg-[color:var(--gold)]/10 hover:text-[color:var(--gold)]">
                                   <Wallet className="h-4 w-4" />
                                 </button>
                                 <button onClick={() => onDelete(r)} title="Supprimer" aria-label="Supprimer" className="h-8 w-8 inline-flex items-center justify-center rounded-md text-muted-foreground hover:bg-destructive/10 hover:text-destructive">
