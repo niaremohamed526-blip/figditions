@@ -1026,8 +1026,8 @@ export const Route = createFileRoute("/api/chat")({
               // Thinking tokens count against this cap on Gemini 3+.
               maxOutputTokens: 8192,
               // Gemini 3+ thinks at "high" by default; Medmo runs several tool steps,
-              // so minimal thinking keeps answers fast.
-              providerOptions: { google: { thinkingConfig: { thinkingLevel: "minimal" } } },
+              // so low thinking keeps answers fast ("minimal" is no longer accepted by gemini-3.8-flash).
+              providerOptions: { google: { thinkingConfig: { thinkingLevel: "low" } } },
             });
             // Without its own onError the inner stream masks the provider error as
             // "An error occurred." before the outer handler sees it.
