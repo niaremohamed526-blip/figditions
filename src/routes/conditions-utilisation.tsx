@@ -1,6 +1,7 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { LegalShell, Section } from "@/components/legal-shell";
 import { PLANS } from "@/config/plans";
+import { PLANS as LIMITES } from "@/lib/plans";
 import { fcfa } from "@/lib/format";
 
 export const Route = createFileRoute("/conditions-utilisation")({
@@ -96,7 +97,7 @@ function TermsPage() {
           </tbody>
         </table>
         <p>
-          Le plan Pro inclut la conversion ePub &amp; MOBI et le partage de lecture sécurisé dans la limite de 10 liens actifs par mois. Le plan Business lève ces limites et ajoute les bordereaux avancés, le branding personnalisé et le support prioritaire 24/7.
+          Les plans payants incluent des quotas mensuels, remis à zéro le 1er de chaque mois. Plan Pro : {LIMITES.pro.conversionsParMois} conversions ePub &amp; MOBI, {LIMITES.pro.partagesParMois} liens de lecture sécurisés et {LIMITES.pro.medmoParMois} questions à Pr. MEDMO par mois. Plan Business : {LIMITES.business.conversionsParMois} conversions par mois, liens de lecture et questions à Pr. MEDMO illimités dans le cadre d'un usage raisonnable, modèles de contrat personnalisés et support prioritaire. Le plan Starter inclut {LIMITES.starter.medmoParMois} questions à Pr. MEDMO par mois.
         </p>
         <p>
           Des codes promotionnels peuvent être proposés ponctuellement. Ils sont soumis à

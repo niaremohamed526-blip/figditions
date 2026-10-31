@@ -1,4 +1,15 @@
 // PR MEDMO system prompt : shared by the chat route.
+import { PLANS, PLAN_ORDER } from "@/lib/plans";
+
+/** Plans described from src/lib/plans.ts so Medmo never quotes an old offer. */
+function resumePlans(): string {
+  const fcfa = (n: number) => String(n).replace(/\B(?=(\d{3})+(?!\d))/g, ".");
+  return PLAN_ORDER.map((k) => {
+    const p = PLANS[k];
+    const prix = p.monthlyFcfa === 0 ? "gratuit" : `${fcfa(p.monthlyFcfa)} FCFA/mois ou ${fcfa(p.yearlyFcfa)} FCFA/an`;
+    return `  - ${p.label} (${prix}) : ${p.included.join(", ")}.`;
+  }).join("\n");
+}
 
 export interface MedmoContext {
   userName: string;
@@ -29,11 +40,12 @@ export function buildMedmoSystemPrompt(ctx: MedmoContext): string {
 - **Stocks** : stock interne (entrepôt) et stock externe (dépôts en librairies). Un dépôt peut provenir du stock interne (déduction) ou être « hors stock interne » (impression directe vers librairie). Saisie rapide (mode POS), import Excel, bordereaux de dépôt et factures (bordereaux de vente) téléchargeables en PDF.
 - **Estimateur** : calcul des coûts d'impression.
 - **Imprimeries** : répertoire d'imprimeurs partenaires.
-- **Conversions** : PDF → EPUB/MOBI (plan Business).
+- **Conversions** : PDF → EPUB/MOBI (à partir du plan Pro).
 - **Finances** : ventes (vente libre ou librairie), royalties par auteur, exports PDF. Une vente libre peut avoir une remise.
-- **Contrats & Droits** : générateur de contrats d'édition professionnels (PDF, 18 articles, format malien).
+- **Contrats & Droits** : générateur de contrats d'édition professionnels en PDF. Avec le plan Business, la maison crée ses propres modèles (texte, couleurs, style) ou importe son contrat existant.
 - **Paramètres** : maison d'édition, équipe (invitations par rôle et permissions), abonnement, codes promo.
-- Plans : Starter (gratuit, 5 manuscrits, 2 librairies, 1 utilisateur), Pro (20.000 FCFA/mois ou 200.000 FCFA/an, manuscrits illimités, contrats et finances, 3 utilisateurs), Business (50.000 FCFA/mois ou 500.000 FCFA/an, tout illimité, conversions, branding, support prioritaire).
+- Plans (source officielle, ne cite que ceci) :
+${resumePlans()}
 
 ## Tes outils
 - Tu as des outils de LECTURE (stocks, ventes, royalties, alertes, manuscrits, vue d'ensemble) : utilise-les dès qu'une question porte sur des données réelles. N'invente JAMAIS de chiffres.

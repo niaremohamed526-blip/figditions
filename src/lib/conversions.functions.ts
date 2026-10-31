@@ -1,6 +1,8 @@
 import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
+import { debutDuMois, planFor } from "./plans";
+import type { AppPlan } from "@/hooks/use-auth";
 import { createJob, getJob, exportedFileFor, type CCFormat } from "./cloudconvert.server";
 
 // NOTE: This module intentionally does NOT use supabaseAdmin (service role).
@@ -32,9 +34,28 @@ async function getEntrepriseInfo(
   return { entId: data.entreprise_id as string, plan };
 }
 
-function assertBusiness(plan: string | null) {
-  if (plan !== "business") {
-    throw new Error("Cette fonctionnalité est réservée au plan Business");
+function assertConversions(plan: string | null) {
+  if (!planFor(plan as AppPlan).conversions) {
+    throw new Error("La conversion ePub & MOBI est disponible à partir du plan Pro");
+  }
+}
+
+/** Monthly quota: CloudConvert bills every job, so each plan has a ceiling. */
+async function assertQuotaConversions(
+  supabase: { from: (...args: unknown[]) => any },
+  entId: string,
+  plan: string | null,
+) {
+  const max = planFor(plan as AppPlan).conversionsParMois;
+  if (max === Infinity) return;
+  const { count, error } = await supabase
+    .from("conversions")
+    .select("id", { count: "exact", head: true })
+    .eq("entreprise_id", entId)
+    .gte("created_at", debutDuMois());
+  if (error) throw new Error(error.message);
+  if ((count ?? 0) >= max) {
+    throw new Error(`Vous avez utilisé vos ${max} conversions de ce mois. Passez au plan supérieur ou attendez le mois prochain.`);
   }
 }
 
@@ -46,7 +67,7 @@ export const getSourceUploadUrl = createServerFn({ method: "POST" })
   )
   .handler(async ({ data, context }) => {
     const { entId, plan } = await getEntrepriseInfo(context.supabase, context.userId);
-    assertBusiness(plan);
+    assertConversions(plan);
     const path = `${entId}/sources/${crypto.randomUUID()}.${data.extension}`;
     const { data: signed, error } = await context.supabase.storage
       .from("conversions")
@@ -73,7 +94,8 @@ export const createAndStartConversion = createServerFn({ method: "POST" })
   )
   .handler(async ({ data, context }) => {
     const { entId, plan } = await getEntrepriseInfo(context.supabase, context.userId);
-    assertBusiness(plan);
+    assertConversions(plan);
+    await assertQuotaConversions(context.supabase, entId, plan);
 
     // SECURITY: prevent cross-tenant path injection.
     if (!data.fichier_source_path.startsWith(`${entId}/`)) {

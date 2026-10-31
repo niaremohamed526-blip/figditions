@@ -32,7 +32,7 @@ export function LockedPage({ feature, requiredPlan = "pro" }: { feature: string;
             <tbody>
               {plans.map((p) => {
                 const pl = PLANS[p];
-                const hasFeature = feature.toLowerCase().includes("contrat") ? pl.contrats : pl.finances;
+                const hasFeature = plans.indexOf(p) >= plans.indexOf(requiredPlan);
                 return (
                   <tr key={p} className="border-t border-border">
                     <td className="py-3 px-3 text-left font-medium">{pl.label}</td>

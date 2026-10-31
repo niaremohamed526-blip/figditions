@@ -64,7 +64,7 @@ function ModelesPage() {
   const { profile, entreprise: entrepriseRaw, loading } = useProfile(user?.id);
   const entreprise = entrepriseRaw as any;
   if (loading) return <div className="space-y-4"><Skeleton className="h-12 w-64" /><Skeleton className="h-96 w-full" /></div>;
-  if (!planFor(entreprise?.plan).contrats) return <LockedPage feature="Contrats & Droits" requiredPlan="pro" />;
+  if (!planFor(entreprise?.plan).modelesContrat) return <LockedPage feature="Modèles de contrat personnalisés" requiredPlan="business" />;
   return <ModelesInner entrepriseId={profile?.entreprise_id ?? null} entreprise={entreprise} userId={user?.id ?? null} />;
 }
 

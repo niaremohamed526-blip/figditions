@@ -40,8 +40,8 @@ function ConversionsPage() {
   const { entreprise } = useProfile(user?.id);
   const plan = planFor(entreprise?.plan);
 
-  if (plan.key !== "business") {
-    return <LockedPage feature="Conversion ePub & MOBI" requiredPlan="business" />;
+  if (!plan.conversions) {
+    return <LockedPage feature="Conversion ePub & MOBI" requiredPlan="pro" />;
   }
 
   return <ConversionsInner />;

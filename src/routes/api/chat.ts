@@ -14,6 +14,7 @@ import { z } from "zod";
 import { createClient, type SupabaseClient } from "@supabase/supabase-js";
 import { createGeminiProvider, createLovableAiGatewayProvider } from "@/lib/ai-gateway.server";
 import { buildMedmoSystemPrompt } from "@/lib/medmo-prompt";
+import { consommerQuestionMedmo } from "@/lib/medmo-quota.server";
 import { normalizeMatchKey, normalizeName } from "@/lib/normalizeText";
 import {
   besoinConfirmation,
@@ -983,6 +984,13 @@ export const Route = createFileRoute("/api/chat")({
         if (entrepriseId) {
           const { data: e } = await supabase.from("entreprises").select("nom, ville, plan").eq("id", entrepriseId).maybeSingle();
           if (e) entreprise = { nom: e.nom, ville: e.ville ?? "", plan: e.plan ?? "starter" };
+        }
+
+        // Monthly quota per plan. Only a new question counts: tool approvals and
+        // other follow-ups end with an assistant message, not a user one.
+        if (rawMessages[rawMessages.length - 1]?.role === "user") {
+          const quota = await consommerQuestionMedmo(supabase, entrepriseId, userId, entreprise.plan, "chat");
+          if (!quota.ok) return new Response(quota.message, { status: 402 });
         }
 
         const modelMessages = await convertToModelMessages(uiMessages);

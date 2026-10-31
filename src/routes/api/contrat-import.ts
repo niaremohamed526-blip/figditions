@@ -5,6 +5,7 @@ import { inflateRawSync } from "node:zlib";
 import { z } from "zod";
 import { createGeminiProvider, createLovableAiGatewayProvider } from "@/lib/ai-gateway.server";
 import { CHAMPS, TYPES_CONTRAT } from "@/lib/contrat-template";
+import { planFor } from "@/lib/plans";
 
 // Medmo turns a house's own contract (PDF, photo or Word) into a template:
 // its articles, with the party-specific values replaced by {champs}.
@@ -98,6 +99,16 @@ export const Route = createFileRoute("/api/contrat-import")({
         const { data: claimsData, error: claimsError } = await supabase.auth.getClaims(token);
         if (claimsError || !claimsData?.claims?.sub) {
           return Response.json({ erreur: "Session invalide" }, { status: 401 });
+        }
+
+        // Importing an existing contract is a Business feature (it runs the AI model).
+        const { data: profil } = await supabase
+          .from("profiles")
+          .select("entreprises:entreprise_id(plan)")
+          .eq("id", claimsData.claims.sub)
+          .maybeSingle();
+        if (!planFor((profil as any)?.entreprises?.plan).modelesContrat) {
+          return Response.json({ erreur: "L'import de votre contrat est disponible avec le plan Business." }, { status: 403 });
         }
 
         const geminiKey = process.env["GEMINI_API_KEY"];

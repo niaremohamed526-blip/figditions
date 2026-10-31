@@ -6,7 +6,7 @@ import {
 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth, useProfile } from "@/hooks/use-auth";
-import { planFor } from "@/lib/plans";
+import { debutDuMois, planFor } from "@/lib/plans";
 import { UpgradeModal } from "@/components/upgrade-modal";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -53,6 +53,7 @@ function ManuscritDetailPage() {
   const { user } = useAuth();
   const { profile, entreprise } = useProfile(user?.id);
   const plan = planFor(entreprise?.plan);
+  const [shareUpgradeOpen, setShareUpgradeOpen] = useState(false);
   const [upgradeOpen, setUpgradeOpen] = useState(false);
   const [m, setM] = useState<Manuscrit | null>(null);
   const [loading, setLoading] = useState(true);
@@ -229,7 +230,7 @@ function ManuscritDetailPage() {
                     border: "1px solid rgba(232,184,75,0.35)",
                   }}
                 >
-                  Business
+                  Pro
                 </span>
               </h2>
               <p className="text-sm text-muted-foreground mt-1 max-w-xl">
@@ -347,7 +348,7 @@ function ManuscritDetailPage() {
           </div>
           <Button
             disabled={!m.pdf_path}
-            onClick={() => setSheetOpen(true)}
+            onClick={() => (plan.partagesParMois > 0 ? setSheetOpen(true) : setShareUpgradeOpen(true))}
             className="bg-primary text-primary-foreground hover:bg-primary/90"
           >
             <Plus className="h-4 w-4" /> Créer un lien sécurisé
@@ -448,6 +449,7 @@ function ManuscritDetailPage() {
         <SheetContent side="right" className="bg-card border-border w-full sm:max-w-md">
           <SheetHeader><SheetTitle>Créer un lien sécurisé</SheetTitle></SheetHeader>
           <CreatePartageForm
+            maxParMois={plan.partagesParMois}
             manuscritId={manuscritId}
             entrepriseId={profile?.entreprise_id ?? null}
             userId={user?.id ?? null}
@@ -476,8 +478,14 @@ function ManuscritDetailPage() {
       <UpgradeModal
         open={upgradeOpen}
         onOpenChange={setUpgradeOpen}
-        title="Conversion ebook réservée au plan Business"
-        description="Convertissez vos manuscrits en ePub et MOBI prêts pour Amazon Kindle, Apple Books et Google Play Books. Passez au plan Business pour débloquer."
+        title="Conversion ebook disponible à partir du plan Pro"
+        description="Convertissez vos manuscrits en ePub et MOBI prêts pour Amazon Kindle, Apple Books et Google Play Books. Passez au plan Pro pour débloquer."
+      />
+      <UpgradeModal
+        open={shareUpgradeOpen}
+        onOpenChange={setShareUpgradeOpen}
+        title="Partage sécurisé disponible à partir du plan Pro"
+        description="Envoyez votre manuscrit à un lecteur, un jury ou un imprimeur avec un lien protégé : nombre de vues limité, pas de téléchargement. Passez au plan Pro pour débloquer."
       />
     </div>
   );
@@ -493,8 +501,8 @@ function StatCard({ label, value, small }: { label: string; value: string | numb
 }
 
 function CreatePartageForm({
-  manuscritId, entrepriseId, userId, onCreated,
-}: { manuscritId: string; entrepriseId: string | null; userId: string | null; onCreated: () => void }) {
+  manuscritId, entrepriseId, userId, onCreated, maxParMois,
+}: { manuscritId: string; entrepriseId: string | null; userId: string | null; onCreated: () => void; maxParMois: number }) {
   const [form, setForm] = useState({
     nom_lecteur: "", email_lecteur: "", entreprise_lecteur: "", nombre_vues_max: "3",
   });
@@ -505,6 +513,17 @@ function CreatePartageForm({
     e.preventDefault();
     if (!entrepriseId) return;
     setLoading(true);
+    if (maxParMois !== Infinity) {
+      const { count } = await supabase
+        .from("pdf_partages")
+        .select("id", { count: "exact", head: true })
+        .eq("entreprise_id", entrepriseId)
+        .gte("created_at", debutDuMois());
+      if ((count ?? 0) >= maxParMois) {
+        setLoading(false);
+        return toast.error(`Vous avez créé vos ${maxParMois} liens sécurisés de ce mois. Passez au plan Business pour un partage illimité.`);
+      }
+    }
     const { data, error } = await supabase.from("pdf_partages").insert({
       entreprise_id: entrepriseId,
       manuscrit_id: manuscritId,

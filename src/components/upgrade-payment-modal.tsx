@@ -27,11 +27,6 @@ interface Props {
   defaultPeriode?: Periode;
 }
 
-const FEATURES: Record<Plan, string[]> = {
-  pro: ["Manuscrits illimités", "Contrats & Droits & Finances", "Jusqu'à 3 utilisateurs"],
-  business: ["Tout du plan Pro", "Utilisateurs illimités", "Export ePub + support prioritaire"],
-};
-
 export function UpgradePaymentModal({ open, onOpenChange, plan, defaultPeriode = "mensuel" }: Props) {
   const planDef = PLANS[plan];
   const { user } = useAuth();
@@ -171,7 +166,7 @@ export function UpgradePaymentModal({ open, onOpenChange, plan, defaultPeriode =
                 </div>
 
                 <ul className="space-y-1.5 text-sm">
-                  {FEATURES[plan].map((f) => (
+                  {PLANS[plan].included.map((f) => (
                     <li key={f} className="flex items-center gap-2">
                       <span className="h-1.5 w-1.5 rounded-full bg-primary" /> {f}
                     </li>
