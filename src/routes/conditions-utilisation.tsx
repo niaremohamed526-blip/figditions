@@ -106,10 +106,9 @@ function TermsPage() {
 
       <Section id="paiement" title="5. Paiement">
         <ul>
-          <li>Les moyens de paiement acceptés sont : Orange Money Mali, Wave Mali et la carte bancaire via Flutterwave.</li>
-          <li>Les paiements automatiques par carte bancaire sont opérés par Flutterwave.</li>
+          <li>Les moyens de paiement acceptés sont : Orange Money Mali et Wave Mali.</li>
           <li>Les paiements manuels par QR code se font via Orange Money Mali ou Wave Mali. Vous scannez le QR affiché, effectuez le transfert, puis transmettez la référence à FIGDITIONS par WhatsApp ou email. L'activation de l'abonnement est validée manuellement par FIGDITIONS dans les meilleurs délais.</li>
-          <li>Les abonnements sont facturés d'avance et se renouvellent automatiquement selon la périodicité choisie (pour les paiements automatiques) ou doivent être renouvelés manuellement (pour les paiements par QR code).</li>
+          <li>Les abonnements sont facturés d'avance et doivent être renouvelés manuellement à la fin de la période choisie.</li>
           <li>Vous pouvez annuler le renouvellement à tout moment depuis vos paramètres. L'accès reste ouvert jusqu'à la fin de la période payée.</li>
           <li>Sauf disposition légale contraire, les périodes entamées ne sont pas remboursables.</li>
         </ul>
@@ -172,7 +171,7 @@ function TermsPage() {
       <Section id="disponibilite" title="11. Disponibilité et prestataires">
         <p>
           Le service repose sur des prestataires tiers (Lovable Cloud / Supabase, Vercel,
-          Flutterwave, CloudConvert, Google Gemini) et sur des services validés manuellement par
+          CloudConvert, Google Gemini) et sur des services validés manuellement par
           FIGDITIONS (paiements Orange Money / Wave). Les notifications push installées
           dépendent du navigateur et du système de l'utilisateur. Une interruption de la part
           de ces fournisseurs peut entraîner une indisponibilité temporaire du service. Nous

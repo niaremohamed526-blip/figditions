@@ -35,8 +35,8 @@ const FAQS = [
     answer: "Oui. FIGDITIONS s'installe comme une application sur votre téléphone ou votre ordinateur et fonctionne en mode sans connexion. Vous pouvez consulter et modifier vos données pendant une coupure ; tout se synchronise automatiquement au retour de la connexion.",
   },
   {
-    question: "Comment payer si je n'ai pas de carte bancaire ?",
-    answer: "Vous pouvez payer par Orange Money ou Wave en scannant un QR code depuis votre espace. Vous nous transmettez ensuite la référence de la transaction et nous activons votre abonnement. La carte bancaire reste disponible pour ceux qui la préfèrent.",
+    question: "Comment payer mon abonnement ?",
+    answer: "Vous payez par Orange Money ou Wave en scannant un QR code depuis votre espace. Vous nous transmettez ensuite la référence de la transaction et nous activons votre abonnement.",
   },
   {
     question: "Puis-je récupérer mes données si j'arrête ?",
@@ -811,7 +811,7 @@ function Pricing() {
         </div>
 
         <p className="mt-8 text-center text-sm text-muted-foreground">
-          Pas de carte bancaire requise · Annulez à tout moment · Paiement par Orange Money, Wave ou carte bancaire
+          Pas de carte bancaire requise · Annulez à tout moment · Paiement par Orange Money ou Wave
         </p>
 
         <div className="mt-6 text-center">

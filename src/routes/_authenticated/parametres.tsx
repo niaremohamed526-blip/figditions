@@ -1245,7 +1245,7 @@ function PlansComparison({ currentPlan, canChange, entrepriseId, onChoose }: {
 
   const switchPlan = async (plan: AppPlan) => {
     if (!entrepriseId || plan === currentPlan) return;
-    // Paid plans go through Flutterwave checkout
+    // Paid plans go through the Orange Money / Wave QR payment modal
     if (plan === "pro" || plan === "business") {
       onChoose(plan);
       return;

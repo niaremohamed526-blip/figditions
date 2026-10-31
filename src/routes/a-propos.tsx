@@ -202,7 +202,7 @@ function TechStack() {
           ))}
         </div>
         <p className="mt-8 text-center text-sm text-muted-foreground max-w-2xl mx-auto leading-relaxed">
-          Les paiements automatiques par carte bancaire sont opérés par Flutterwave. Les paiements par Orange Money et Wave sont validés manuellement par notre équipe.
+          Les paiements se font par Orange Money et Wave, et sont validés par notre équipe.
         </p>
       </div>
     </section>
