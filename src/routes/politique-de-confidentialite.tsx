@@ -49,7 +49,7 @@ function PrivacyPage() {
       <Section id="qui" title="1. Qui sommes-nous ?">
         <p>
           FIGDITIONS est une plateforme SaaS de gestion éditoriale éditée et exploitée
-          par FIGDITIONS, dont le siège est situé à Bamako, Mali. Le présent document
+          par FIGDITIONS (entreprise en cours d'immatriculation). Le présent document
           décrit les pratiques réellement en vigueur sur la plateforme et est maintenu
           par l'éditeur du service.
         </p>

@@ -33,11 +33,10 @@ const toc = [
 
 const rows: { label: string; value: string }[] = [
   { label: "Éditeur du site", value: "FIGDITIONS" },
-  { label: "Forme juridique", value: "[À COMPLÉTER]" },
-  { label: "Numéro RCCM", value: "[À COMPLÉTER]" },
-  { label: "Numéro d'Identification Fiscale (NIF)", value: "[À COMPLÉTER]" },
-  { label: "Siège social", value: "Bamako, Mali" },
-  { label: "Responsable de la publication", value: "[À COMPLÉTER]" },
+  // Not registered yet: update these rows once the company exists.
+  { label: "Statut", value: "Entreprise en cours d'immatriculation" },
+  { label: "Numéro d'immatriculation", value: "Communiqué dès l'immatriculation" },
+  { label: "Responsable de la publication", value: "La direction de FIGDITIONS" },
 ];
 
 function LegalNoticePage() {
@@ -64,7 +63,7 @@ function LegalNoticePage() {
 
       <Section id="publication" title="2. Publication">
         <p>
-          Responsable de la publication : [À COMPLÉTER]. Pour toute question relative au contenu de
+          Responsable de la publication : la direction de FIGDITIONS. Pour toute question relative au contenu de
           ce site, écrivez à{" "}
           <a href="mailto:figditions@gmail.com" className="text-primary hover:underline">
             figditions@gmail.com
