@@ -994,6 +994,10 @@ export const Route = createFileRoute("/api/chat")({
           if (message.includes("402") || lower.includes("credits")) {
             return "PR MEDMO est momentanément indisponible : les crédits IA de l'espace de travail sont épuisés. Rechargez-les dans les paramètres de facturation Lovable.";
           }
+          // Google's free tier stops after a daily request count, not a per-minute burst.
+          if (lower.includes("free_tier") || lower.includes("per day")) {
+            return "PR MEDMO a atteint la limite quotidienne gratuite de Google Gemini. Il reviendra demain, ou dès que la facturation est activée sur Google AI Studio.";
+          }
           if (message.includes("429") || lower.includes("quota") || lower.includes("rate limit")) {
             return "PR MEDMO reçoit trop de demandes en ce moment (limite du fournisseur IA atteinte). Patientez une minute puis réessayez.";
           }
