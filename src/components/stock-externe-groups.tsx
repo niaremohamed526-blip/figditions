@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { pl } from "@/lib/plural";
-import { Store, ChevronDown, Plus, BookOpen, Pencil, Trash2, Wallet, Package, XCircle } from "lucide-react";
+import { Store, ChevronDown, Plus, BookOpen, Pencil, Trash2, Wallet, Package, XCircle, CalendarDays } from "lucide-react";
 import { format } from "date-fns";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Button } from "@/components/ui/button";
@@ -11,6 +11,7 @@ import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { CancelReasonDialog } from "@/components/cancel-reason-dialog";
+import { BulkDepotDateDialog } from "@/components/bulk-depot-date-dialog";
 
 
 interface DepotBatch {
@@ -248,6 +249,31 @@ export function StockExterneGroups({
     };
   }, [groups]);
 
+  // Latest active deposit date per book + bookshop, for the « Dépôt du » headings.
+  const [depotDates, setDepotDates] = useState<Record<string, string>>({});
+  const [bulkFor, setBulkFor] = useState<string | null>(null);
+  useEffect(() => {
+    if (!stocks) return;
+    let alive = true;
+    (async () => {
+      const { data } = await supabase
+        .from("depot_batches")
+        .select("manuscrit_id, librairie_nom, date_depot, statut_annulation");
+      if (!alive) return;
+      const map: Record<string, string> = {};
+      for (const b of data ?? []) {
+        if (b.statut_annulation === "annulee" || !b.date_depot) continue;
+        const k = `${b.manuscrit_id}|${b.librairie_nom.trim().toLowerCase()}`;
+        if (!map[k] || b.date_depot > map[k]) map[k] = b.date_depot;
+      }
+      setDepotDates(map);
+    })();
+    return () => { alive = false; };
+  }, [stocks]);
+  const depotDate = (r: ExterneStockRow, nom: string) =>
+    depotDates[`${r.manuscrit_id}|${nom.trim().toLowerCase()}`] ?? ((r.created_at ?? "").split("T")[0] || "—");
+  const bulkGroup = bulkFor ? allGroups?.find((g) => g.nom === bulkFor) ?? null : null;
+
   const scrollTo = (nom: string) => {
     const el = refs.current[nom];
     if (el) el.scrollIntoView({ behavior: "smooth", block: "start" });
@@ -318,9 +344,9 @@ export function StockExterneGroups({
         const isCollapsed = !!collapsed[g.nom];
         const byDate = new Map<string, ExterneStockRow[]>();
         [...g.rows]
-          .sort((a, b) => (a.created_at ?? "").localeCompare(b.created_at ?? ""))
+          .sort((a, b) => depotDate(a, g.nom).localeCompare(depotDate(b, g.nom)))
           .forEach((r) => {
-            const d = (r.created_at ?? "").split("T")[0] || "—";
+            const d = depotDate(r, g.nom);
             byDate.set(d, [...(byDate.get(d) ?? []), r]);
           });
 
@@ -351,6 +377,15 @@ export function StockExterneGroups({
                 </button>
                 <div className="flex shrink-0 items-center gap-1.5">
                   <span className={cn("hidden sm:inline-flex rounded-full border px-2.5 py-1 text-[11px] font-semibold", st.badge)}>{st.label}</span>
+                  <button
+                    type="button"
+                    onClick={() => setBulkFor(g.nom)}
+                    title="Changer la date du dépôt de plusieurs livres"
+                    aria-label="Changer la date du dépôt"
+                    className="h-8 w-8 inline-flex items-center justify-center rounded-lg border border-[color:var(--gold)]/30 text-[color:var(--gold)] hover:bg-[color:var(--gold)]/10"
+                  >
+                    <CalendarDays className="h-4 w-4" />
+                  </button>
                   <button
                     type="button"
                     onClick={onAdd}
@@ -405,7 +440,7 @@ export function StockExterneGroups({
                                   )}
                                 </p>
                                 <div className="mt-1 flex items-center gap-1.5">
-                                  <BatchHistoryBadge manuscritId={r.manuscrit_id} librairieNom={g.nom} onChanged={onChanged} />
+                                  <BatchHistoryBadge key={depotDate(r, g.nom)} manuscritId={r.manuscrit_id} librairieNom={g.nom} onChanged={onChanged} />
                                 </div>
                                 {authorMap[r.manuscrit_id] && (
                                   <p className="truncate text-[11px] text-muted-foreground">{authorMap[r.manuscrit_id]}</p>
@@ -447,6 +482,17 @@ export function StockExterneGroups({
           </section>
         );
       })}
+
+      {bulkGroup && (
+        <BulkDepotDateDialog
+          open={!!bulkGroup}
+          onOpenChange={(o) => { if (!o) setBulkFor(null); }}
+          librairieNom={bulkGroup.nom}
+          rows={bulkGroup.rows}
+          titreMap={titreMap}
+          onDone={() => onChanged?.()}
+        />
+      )}
     </div>
   );
 }
