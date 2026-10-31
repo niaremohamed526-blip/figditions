@@ -1,4 +1,5 @@
 import { createFileRoute } from "@tanstack/react-router";
+import { isCronAuthorized } from "@/lib/cron-auth.server";
 
 // Daily cron: scans contrats / ventes / abonnements and inserts notifications
 // for expiring contracts, overdue royalties, and ending subscriptions.
@@ -17,15 +18,7 @@ export const Route = createFileRoute("/api/public/hooks/check-reminders")({
   server: {
     handlers: {
       POST: async ({ request }) => {
-        // Auth: require CRON_SECRET only. Do NOT accept the Supabase anon/
-        // publishable key because those are shipped in client bundles and
-        // any visitor could invoke this endpoint otherwise.
-        const apikey = request.headers.get("apikey") ?? request.headers.get("authorization")?.replace(/^Bearer\s+/i, "");
-        const cronSecret = process.env.CRON_SECRET;
-        if (!cronSecret) {
-          return new Response("Unauthorized", { status: 401 });
-        }
-        if (!apikey || apikey !== cronSecret) {
+        if (!isCronAuthorized(request)) {
           return new Response("Unauthorized", { status: 401 });
         }
 

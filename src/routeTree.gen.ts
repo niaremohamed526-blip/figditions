@@ -43,6 +43,7 @@ import { Route as AuthenticatedMedmoIndexRouteImport } from './routes/_authentic
 import { Route as AuthenticatedMedmoThreadIdRouteImport } from './routes/_authenticated/medmo.$threadId'
 import { Route as ApiPublicFlutterwaveWebhookRouteImport } from './routes/api/public/flutterwave-webhook'
 import { Route as ApiPublicHooksCheckRemindersRouteImport } from './routes/api/public/hooks/check-reminders'
+import { Route as ApiPublicHooksMorningBriefRouteImport } from './routes/api/public/hooks/morning-brief'
 import { Route as ApiPublicHooksSendPushRouteImport } from './routes/api/public/hooks/send-push'
 
 const IndexRoute = IndexRouteImport.update({
@@ -225,6 +226,12 @@ const ApiPublicHooksCheckRemindersRoute =
     path: '/api/public/hooks/check-reminders',
     getParentRoute: () => rootRouteImport,
   } as any)
+const ApiPublicHooksMorningBriefRoute =
+  ApiPublicHooksMorningBriefRouteImport.update({
+    id: '/api/public/hooks/morning-brief',
+    path: '/api/public/hooks/morning-brief',
+    getParentRoute: () => rootRouteImport,
+  } as any)
 const ApiPublicHooksSendPushRoute = ApiPublicHooksSendPushRouteImport.update({
   id: '/api/public/hooks/send-push',
   path: '/api/public/hooks/send-push',
@@ -265,6 +272,7 @@ export interface FileRoutesByFullPath {
   '/manuscrits/': typeof AuthenticatedManuscritsIndexRoute
   '/medmo/': typeof AuthenticatedMedmoIndexRoute
   '/api/public/hooks/check-reminders': typeof ApiPublicHooksCheckRemindersRoute
+  '/api/public/hooks/morning-brief': typeof ApiPublicHooksMorningBriefRoute
   '/api/public/hooks/send-push': typeof ApiPublicHooksSendPushRoute
 }
 export interface FileRoutesByTo {
@@ -300,6 +308,7 @@ export interface FileRoutesByTo {
   '/manuscrits': typeof AuthenticatedManuscritsIndexRoute
   '/medmo': typeof AuthenticatedMedmoIndexRoute
   '/api/public/hooks/check-reminders': typeof ApiPublicHooksCheckRemindersRoute
+  '/api/public/hooks/morning-brief': typeof ApiPublicHooksMorningBriefRoute
   '/api/public/hooks/send-push': typeof ApiPublicHooksSendPushRoute
 }
 export interface FileRoutesById {
@@ -338,6 +347,7 @@ export interface FileRoutesById {
   '/_authenticated/manuscrits/': typeof AuthenticatedManuscritsIndexRoute
   '/_authenticated/medmo/': typeof AuthenticatedMedmoIndexRoute
   '/api/public/hooks/check-reminders': typeof ApiPublicHooksCheckRemindersRoute
+  '/api/public/hooks/morning-brief': typeof ApiPublicHooksMorningBriefRoute
   '/api/public/hooks/send-push': typeof ApiPublicHooksSendPushRoute
 }
 export interface FileRouteTypes {
@@ -376,6 +386,7 @@ export interface FileRouteTypes {
     | '/manuscrits/'
     | '/medmo/'
     | '/api/public/hooks/check-reminders'
+    | '/api/public/hooks/morning-brief'
     | '/api/public/hooks/send-push'
   fileRoutesByTo: FileRoutesByTo
   to:
@@ -411,6 +422,7 @@ export interface FileRouteTypes {
     | '/manuscrits'
     | '/medmo'
     | '/api/public/hooks/check-reminders'
+    | '/api/public/hooks/morning-brief'
     | '/api/public/hooks/send-push'
   id:
     | '__root__'
@@ -448,6 +460,7 @@ export interface FileRouteTypes {
     | '/_authenticated/manuscrits/'
     | '/_authenticated/medmo/'
     | '/api/public/hooks/check-reminders'
+    | '/api/public/hooks/morning-brief'
     | '/api/public/hooks/send-push'
   fileRoutesById: FileRoutesById
 }
@@ -469,6 +482,7 @@ export interface RootRouteChildren {
   RejoindreTokenRoute: typeof RejoindreTokenRoute
   ApiPublicFlutterwaveWebhookRoute: typeof ApiPublicFlutterwaveWebhookRoute
   ApiPublicHooksCheckRemindersRoute: typeof ApiPublicHooksCheckRemindersRoute
+  ApiPublicHooksMorningBriefRoute: typeof ApiPublicHooksMorningBriefRoute
   ApiPublicHooksSendPushRoute: typeof ApiPublicHooksSendPushRoute
 }
 
@@ -712,6 +726,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiPublicHooksCheckRemindersRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/public/hooks/morning-brief': {
+      id: '/api/public/hooks/morning-brief'
+      path: '/api/public/hooks/morning-brief'
+      fullPath: '/api/public/hooks/morning-brief'
+      preLoaderRoute: typeof ApiPublicHooksMorningBriefRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/api/public/hooks/send-push': {
       id: '/api/public/hooks/send-push'
       path: '/api/public/hooks/send-push'
@@ -814,6 +835,7 @@ const rootRouteChildren: RootRouteChildren = {
   RejoindreTokenRoute: RejoindreTokenRoute,
   ApiPublicFlutterwaveWebhookRoute: ApiPublicFlutterwaveWebhookRoute,
   ApiPublicHooksCheckRemindersRoute: ApiPublicHooksCheckRemindersRoute,
+  ApiPublicHooksMorningBriefRoute: ApiPublicHooksMorningBriefRoute,
   ApiPublicHooksSendPushRoute: ApiPublicHooksSendPushRoute,
 }
 export const routeTree = rootRouteImport
