@@ -703,11 +703,16 @@ function PaymentsHistory({ entrepriseId }: { entrepriseId: string | null }) {
     (async () => {
       const { data } = await supabase
         .from("paiements")
-        .select("id, created_at, montant_fcfa, methode, statut, abonnement_id, abonnements(plan, periode)")
+        .select("id, created_at, montant_fcfa, methode, methode_paiement, statut, provider, plan_demande, periode, raison_rejet, abonnements(plan, periode)")
         .eq("entreprise_id", entrepriseId)
         .order("created_at", { ascending: false })
         .limit(50);
-      setRows((data as any[]) ?? []);
+      // Abandoned card checkouts from the retired Flutterwave flow never
+      // completed; hide them so only real QR payments show.
+      const visibles = ((data as any[]) ?? []).filter(
+        (r) => !(r.provider === "flutterwave" && r.statut === "en_attente"),
+      );
+      setRows(visibles);
     })();
   }, [entrepriseId]);
 
@@ -719,12 +724,23 @@ function PaymentsHistory({ entrepriseId }: { entrepriseId: string | null }) {
       </div>
     );
   }
-  const statutClass = (s: string) =>
-    s === "succes" ? "bg-emerald-500/15 text-emerald-400 border-emerald-500/30"
-    : s === "echec" ? "bg-destructive/15 text-destructive border-destructive/30"
-    : "bg-orange-500/15 text-orange-400 border-orange-500/30";
-  const methodeLabel = (m: string) =>
-    m === "orange_money" ? "Orange Money" : m === "carte_bancaire" ? "Carte Bancaire" : (m || "—");
+  // Manual QR payments use confirme / rejete / en_attente_confirmation;
+  // older card payments used succes / echec / en_attente.
+  const statutInfo = (s: string): { label: string; cls: string } =>
+    s === "succes" || s === "confirme"
+      ? { label: "Confirmé", cls: "bg-emerald-500/15 text-emerald-400 border-emerald-500/30" }
+      : s === "echec" || s === "rejete"
+        ? { label: "Rejeté", cls: "bg-destructive/15 text-destructive border-destructive/30" }
+        : s === "rembourse"
+          ? { label: "Remboursé", cls: "bg-muted text-muted-foreground border-border" }
+          : { label: "En vérification", cls: "bg-orange-500/15 text-orange-400 border-orange-500/30" };
+  const methodeLabel = (m: string | null | undefined) => {
+    const v = (m ?? "").toLowerCase();
+    if (v.startsWith("orange")) return "Orange Money";
+    if (v.startsWith("wave")) return "Wave";
+    if (v === "carte_bancaire") return "Carte bancaire";
+    return m || "—";
+  };
 
   return (
     <div className="rounded-xl border border-border bg-card overflow-x-auto">
@@ -743,13 +759,16 @@ function PaymentsHistory({ entrepriseId }: { entrepriseId: string | null }) {
           {rows.map((r) => (
             <tr key={r.id} className="border-t border-border">
               <td className="p-3">{new Date(r.created_at).toLocaleDateString("fr-FR")}</td>
-              <td className="p-3 capitalize">{r.abonnements?.plan ?? "—"}</td>
-              <td className="p-3 capitalize">{r.abonnements?.periode ?? "—"}</td>
+              <td className="p-3 capitalize">{r.plan_demande ?? r.abonnements?.plan ?? "—"}</td>
+              <td className="p-3 capitalize">{r.periode ?? r.abonnements?.periode ?? "—"}</td>
               <td className="p-3 text-right font-medium">{fcfa(r.montant_fcfa)}</td>
-              <td className="p-3">{methodeLabel(r.methode)}</td>
+              <td className="p-3">{methodeLabel(r.methode_paiement ?? r.methode)}</td>
               <td className="p-3">
-                <span className={cn("text-xs font-semibold border rounded-full px-2 py-0.5", statutClass(r.statut))}>
-                  {r.statut === "succes" ? "Succès" : r.statut === "echec" ? "Échec" : "En attente"}
+                <span
+                  className={cn("text-xs font-semibold border rounded-full px-2 py-0.5", statutInfo(r.statut).cls)}
+                  title={r.raison_rejet ?? undefined}
+                >
+                  {statutInfo(r.statut).label}
                 </span>
               </td>
             </tr>
@@ -1250,14 +1269,13 @@ function PlansComparison({ currentPlan, canChange, entrepriseId, onChoose }: {
       onChoose(plan);
       return;
     }
-    // Downgrade to starter: direct update
-    setUpdating(plan);
-    const max = PLANS[plan].maxUsers === Infinity ? 999 : PLANS[plan].maxUsers;
-    const { error } = await supabase.from("entreprises").update({ plan, max_utilisateurs: max }).eq("id", entrepriseId);
-    setUpdating(null);
-    if (error) return toast.error(error.message);
-    toast.success(`Plan ${PLANS[plan].label} activé`);
-    setTimeout(() => window.location.reload(), 600);
+    // Downgrade to Starter: plan fields can only change server-side, and a paid
+    // plan already reverts to Starter automatically when it expires
+    // (expire_subscriptions). Explain instead of attempting the update.
+    toast.info(
+      "Rien à faire : votre plan payé reste actif jusqu'à sa date de renouvellement (indiquée en haut de cette page), puis repasse automatiquement au plan Starter gratuit. Aucun prélèvement automatique.",
+      { duration: 9000 },
+    );
   };
 
   const features = useMemo(() => ([

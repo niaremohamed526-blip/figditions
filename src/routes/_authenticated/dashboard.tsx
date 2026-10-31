@@ -139,6 +139,23 @@ function DashboardPage() {
     };
   }, [manuscrits, totals, ventes, periodVentes]);
 
+  // Revenue and best title follow the same period filter as "Vendus".
+  const periodRevenue = useMemo(
+    () => periodVentes.reduce((s, v) => s + Number(v.montant_total_fcfa || 0), 0),
+    [periodVentes],
+  );
+  const periodBest = useMemo(() => {
+    const byBook = new Map<string, { copies: number; revenue: number }>();
+    for (const v of periodVentes) {
+      const b = byBook.get(v.manuscrit_id) ?? { copies: 0, revenue: 0 };
+      b.copies += Number(v.quantite_vendue || 0);
+      b.revenue += Number(v.montant_total_fcfa || 0);
+      byBook.set(v.manuscrit_id, b);
+    }
+    const top = [...byBook.entries()].sort((a, b) => b[1].copies - a[1].copies)[0];
+    return top ? { titre: mMap[top[0]]?.titre ?? "—", ...top[1] } : null;
+  }, [periodVentes, mMap]);
+
   const vendusTrend = useMemo(() => {
     if (!prevPeriodVentes) return null;
     const prev = prevPeriodVentes.reduce((s, v) => s + Number(v.quantite_vendue || 0), 0);
@@ -343,15 +360,15 @@ function DashboardPage() {
           </StatCard>
 
           <StatCard label="Chiffre d'affaires" icon={<Activity className="h-5 w-5" />} to="/finances" delay={160}>
-            <p className="dash-num text-[color:var(--gold)]">{fcfa(totalRevenue)}</p>
-            <BreakdownLine tone="gold">6 derniers mois</BreakdownLine>
+            <p className="dash-num text-[color:var(--gold)]">{fcfa(periodRevenue)}</p>
+            <BreakdownLine tone="gold">{PERIODS.find((p) => p.key === period)!.label}</BreakdownLine>
             <MiniBar segments={[{ value: 1, tone: "gold" }]} />
           </StatCard>
 
           <StatCard label="Meilleur titre" icon={<CheckCircle2 className="h-5 w-5" />} to="/finances" delay={240}>
-            <p className="mt-1 truncate text-lg font-bold">{bestBook?.titre ?? "—"}</p>
-            <BreakdownLine tone="green">{bestBook ? `${nf(bestBook.copies)} ex. vendus` : "Aucune vente"}</BreakdownLine>
-            {bestBook && <BreakdownLine tone="gold">{fcfa(bestBook.revenue)}</BreakdownLine>}
+            <p className="mt-1 truncate text-lg font-bold">{periodBest?.titre ?? "—"}</p>
+            <BreakdownLine tone="green">{periodBest ? `${nf(periodBest.copies)} ex. vendus` : "Aucune vente"}</BreakdownLine>
+            {periodBest && <BreakdownLine tone="gold">{fcfa(periodBest.revenue)}</BreakdownLine>}
           </StatCard>
         </div>
       </section>

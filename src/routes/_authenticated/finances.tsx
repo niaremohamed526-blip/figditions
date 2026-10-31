@@ -150,9 +150,20 @@ function FinancesInner({
     const paid = vp.filter((x) => x.statut_paiement === "paye").reduce((a, x) => a + Number(x.droits_auteur_fcfa || 0), 0);
     const encaisse = v.reduce((a, x) => a + Number(x.montant_encaisse_fcfa || 0), 0);
     const totalDepenses = depenses.reduce((a, d) => a + Number(d.montant_fcfa || 0), 0);
-    const coutProduction = stockInterne.reduce(
-      (a, s) => a + Number(s.cout_unitaire_impression_fcfa || 0) * Number(s.quantite_imprimee || 0), 0,
-    );
+    // Coût de production des exemplaires VENDUS seulement : les invendus restent
+    // du stock (un actif), pas une perte. Coût unitaire moyen pondéré par tirage.
+    const tirages = new Map<string, { qte: number; cout: number }>();
+    for (const s of stockInterne) {
+      const t = tirages.get(s.manuscrit_id) ?? { qte: 0, cout: 0 };
+      const qte = Number(s.quantite_imprimee || 0);
+      t.qte += qte;
+      t.cout += Number(s.cout_unitaire_impression_fcfa || 0) * qte;
+      tirages.set(s.manuscrit_id, t);
+    }
+    const coutProduction = vp.reduce((a, x) => {
+      const t = tirages.get(x.manuscrit_id);
+      return t && t.qte > 0 ? a + (t.cout / t.qte) * Number(x.quantite_vendue || 0) : a;
+    }, 0);
     return {
       revenue,
       commission,

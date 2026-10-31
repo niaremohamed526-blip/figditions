@@ -64,6 +64,7 @@ export function useProfile(userId: string | undefined) {
   const [profile, setProfile] = useState<Profile | null>(null);
   const [entreprise, setEntreprise] = useState<Entreprise | null>(null);
   const [loading, setLoading] = useState(true);
+  const [loadedFor, setLoadedFor] = useState<string | null>(null);
 
   const load = useCallback(async () => {
     if (!userId) { setLoading(false); return; }
@@ -86,6 +87,7 @@ export function useProfile(userId: string | undefined) {
       setEntreprise(e as Entreprise | null);
     }
     setLoading(false);
+    setLoadedFor(userId);
   }, [userId]);
 
   useEffect(() => { load(); }, [load]);
@@ -112,5 +114,7 @@ export function useProfile(userId: string | undefined) {
     return () => { supabase.removeChannel(ch); };
   }, [userId, load]);
 
-  return { profile, entreprise, loading, refresh: load };
+  // Not done until THIS user's profile has loaded: on first render userId is
+  // still undefined, which used to report "done" early and flash AccessDenied.
+  return { profile, entreprise, loading: userId ? loadedFor !== userId : loading, refresh: load };
 }
