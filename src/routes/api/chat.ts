@@ -1004,9 +1004,9 @@ export const Route = createFileRoute("/api/chat")({
               abortSignal: request.signal,
               // Thinking tokens count against this cap on Gemini 3+.
               maxOutputTokens: 8192,
-              // Gemini 3+ thinks at "high" by default, which leaves users
-              // waiting a minute or more before the first word.
-              providerOptions: { google: { thinkingConfig: { thinkingLevel: "low" } } },
+              // Gemini 3+ thinks at "high" by default; Medmo runs several tool steps,
+              // so minimal thinking keeps answers fast.
+              providerOptions: { google: { thinkingConfig: { thinkingLevel: "minimal" } } },
             });
             writer.merge(result.toUIMessageStream({ originalMessages: uiMessages }));
           },
