@@ -231,7 +231,7 @@ function Partnership() {
 
         <div className="mt-12 text-center">
           <p className="text-muted-foreground">Vous voulez devenir partenaire ?</p>
-          <a href="mailto:contact@figditions.xyz">
+          <a href="mailto:figditions@gmail.com">
             <Button className="mt-3 bg-primary text-primary-foreground hover:bg-primary/90">
               <Mail className="h-4 w-4 mr-2" /> Nous contacter
             </Button>
@@ -248,7 +248,7 @@ function Contact() {
     e.preventDefault();
     const subject = encodeURIComponent(`Contact FIGDITIONS : ${form.name}`);
     const body = encodeURIComponent(`Nom: ${form.name}\nEmail: ${form.email}\n\n${form.message}`);
-    window.location.href = `mailto:contact@figditions.xyz?subject=${subject}&body=${body}`;
+    window.location.href = `mailto:figditions@gmail.com?subject=${subject}&body=${body}`;
   };
   return (
     <section id="contact" className="py-20 px-4">
@@ -263,7 +263,7 @@ function Contact() {
               </div>
               <div>
                 <p className="text-xs uppercase tracking-wider text-muted-foreground">Email</p>
-                <a href="mailto:contact@figditions.xyz" className="font-semibold hover:text-primary">contact@figditions.xyz</a>
+                <a href="mailto:figditions@gmail.com" className="font-semibold hover:text-primary">figditions@gmail.com</a>
               </div>
             </div>
           </div>

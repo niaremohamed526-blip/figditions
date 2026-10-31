@@ -478,7 +478,7 @@ export async function generateManuelStocksPdf(opts: { maison?: string | null } =
   // ─── 8. Support ────────────────────────────────────────
   h1("8. Support");
   p("Une question, un bug, une suggestion ? L'équipe FIGDITIONS est joignable :");
-  bullet("Email : contact@figditions.xyz");
+  bullet("Email : figditions@gmail.com");
   bullet("Depuis l'application : Paramètres → Support");
   p("Nous répondons en général sous 24 heures ouvrées.");
 

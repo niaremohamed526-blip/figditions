@@ -54,8 +54,8 @@ function LegalNoticePage() {
           <div className="flex flex-col sm:flex-row sm:gap-3">
             <dt className="font-semibold text-foreground sm:min-w-[280px]">Contact :</dt>
             <dd className="text-muted-foreground">
-              <a href="mailto:contact@figditions.xyz" className="text-primary hover:underline">
-                contact@figditions.xyz
+              <a href="mailto:figditions@gmail.com" className="text-primary hover:underline">
+                figditions@gmail.com
               </a>
             </dd>
           </div>
@@ -66,8 +66,8 @@ function LegalNoticePage() {
         <p>
           Responsable de la publication : [À COMPLÉTER]. Pour toute question relative au contenu de
           ce site, écrivez à{" "}
-          <a href="mailto:contact@figditions.xyz" className="text-primary hover:underline">
-            contact@figditions.xyz
+          <a href="mailto:figditions@gmail.com" className="text-primary hover:underline">
+            figditions@gmail.com
           </a>
           .
         </p>

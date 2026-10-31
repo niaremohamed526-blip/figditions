@@ -145,7 +145,7 @@ export const Route = createFileRoute("/api/public/hooks/send-push")({
 
         const vapidPub = process.env.VAPID_PUBLIC_KEY;
         const vapidPriv = process.env.VAPID_PRIVATE_KEY;
-        const vapidSub = process.env.VAPID_SUBJECT ?? "mailto:contact@figditions.xyz";
+        const vapidSub = process.env.VAPID_SUBJECT ?? "mailto:figditions@gmail.com";
         if (!vapidPub || !vapidPriv) {
           return new Response("VAPID not configured", { status: 500 });
         }

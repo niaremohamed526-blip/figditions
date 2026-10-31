@@ -53,7 +53,7 @@ function PrivacyPage() {
           décrit les pratiques réellement en vigueur sur la plateforme et est maintenu
           par l'éditeur du service.
         </p>
-        <p>Contact : <a href="mailto:contact@figditions.xyz">contact@figditions.xyz</a></p>
+        <p>Contact : <a href="mailto:figditions@gmail.com">figditions@gmail.com</a></p>
       </Section>
 
       <Section id="donnees" title="2. Données collectées">
@@ -191,7 +191,7 @@ function PrivacyPage() {
           <li><strong>Retrait du consentement</strong> à tout moment</li>
         </ul>
         <p>
-          Pour exercer ces droits : <a href="mailto:contact@figditions.xyz">contact@figditions.xyz</a>.
+          Pour exercer ces droits : <a href="mailto:figditions@gmail.com">figditions@gmail.com</a>.
           Délai de réponse : 30 jours maximum.
         </p>
       </Section>
@@ -239,7 +239,7 @@ function PrivacyPage() {
       <Section id="contact" title="14. Contact et réclamations">
         <p>Pour toute question relative à cette politique :</p>
         <ul>
-          <li>Email : <a href="mailto:contact@figditions.xyz">contact@figditions.xyz</a></li>
+          <li>Email : <a href="mailto:figditions@gmail.com">figditions@gmail.com</a></li>
           <li>Adresse : Bamako, Mali</li>
         </ul>
         <p>
