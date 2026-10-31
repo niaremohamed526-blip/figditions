@@ -1,13 +1,15 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { useEffect, useState } from "react";
-import { ArrowLeft, FileDown, Loader2 } from "lucide-react";
+import { useEffect, useRef, useState } from "react";
+import { ArrowLeft, FileDown, Loader2, Lock, Upload, FileCheck2, ExternalLink } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth, useProfile } from "@/hooks/use-auth";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
-import { generateContratProPdf, type Livre } from "@/lib/pdf-contrat-pro";
+import type { Livre } from "@/lib/pdf-contrat-pro";
+import { genererPdfContrat, pdfDataFromContrat, referenceContrat } from "@/lib/contrat-pdf";
+import type { ContratModele } from "@/lib/contrat-template";
 import { planFor } from "@/lib/plans";
 import { LockedPage } from "@/components/locked-page";
 
@@ -16,9 +18,10 @@ export const Route = createFileRoute("/_authenticated/contrats/$contratId")({
   head: () => ({ meta: [{ title: "Contrat | FIGDITIONS" }] }),
 });
 
-const STATUT_LABELS: Record<string, string> = { brouillon: "Brouillon", signe: "Signé", expire: "Expiré", resilie: "Résilié" };
+const STATUT_LABELS: Record<string, string> = { brouillon: "Brouillon", en_attente_signature: "En attente", signe: "Signé", expire: "Expiré", resilie: "Résilié" };
 const STATUT_CLS: Record<string, string> = {
   brouillon: "bg-muted/60 text-muted-foreground border-border",
+  en_attente_signature: "bg-blue-500/15 text-blue-400 border-blue-500/30",
   signe: "bg-emerald-500/15 text-emerald-500 border-emerald-500/40",
   expire: "bg-destructive/15 text-destructive border-destructive/40",
   resilie: "bg-orange-500/15 text-orange-500 border-orange-500/40",
@@ -32,6 +35,7 @@ function ContratDetailPage() {
   const [contrat, setContrat] = useState<any>(null);
   const [manuscrit, setManuscrit] = useState<any>(null);
   const [auteur, setAuteur] = useState<any>(null);
+  const [modele, setModele] = useState<ContratModele | null>(null);
   const [loading, setLoading] = useState(true);
   const [generating, setGenerating] = useState(false);
 
@@ -45,6 +49,10 @@ function ContratDetailPage() {
       if (c) {
         const { data: m } = await (supabase as any).from("manuscrits").select("*").eq("id", c.manuscrit_id).maybeSingle();
         setManuscrit(m);
+        if (c.modele_id) {
+          const { data: mod } = await (supabase as any).from("contrat_modeles").select("*").eq("id", c.modele_id).maybeSingle();
+          setModele(mod ?? null);
+        }
         const auteurId = c.auteur_id ?? m?.auteur_id;
         if (auteurId) {
           const { data: a } = await supabase.from("auteurs").select("*").eq("id", auteurId).maybeSingle();
@@ -70,42 +78,12 @@ function ContratDetailPage() {
   const onPdf = async () => {
     setGenerating(true);
     try {
-      await generateContratProPdf({
-        maison: entreprise?.nom ?? "FIGDITIONS",
-        adresse_editeur: entreprise?.adresse,
-        telephone_editeur: entreprise?.telephone,
-        email_editeur: entreprise?.email ?? entreprise?.email_contact,
-        website_editeur: entreprise?.website,
-        nif: entreprise?.nif,
-        rccm: entreprise?.rccm,
-        nina: entreprise?.nina,
-        banque: entreprise?.banque,
-        compte_bancaire: entreprise?.compte_bancaire,
-        nom_representant: entreprise?.nom_representant,
-        qualite_representant: entreprise?.qualite_representant,
-        logo_url: entreprise?.logo_url,
-        cachet_url: entreprise?.cachet_url,
-        auteur: auteurName,
-        adresse_auteur: contrat.adresse_auteur,
-        telephone_auteur: contrat.telephone_auteur ?? auteur?.telephone,
-        profession_auteur: contrat.profession_auteur,
-        collection: contrat.collection,
-        livres,
-        duree_annees: contrat.duree_annees ?? 10,
-        pourcentage: Number(contrat.pourcentage_droits ?? 10),
-        tirage_minimum: contrat.tirage_minimum ?? 100,
-        contribution_auteur: contrat.contribution_auteur,
-        format: contrat.format,
-        type_couverture: contrat.type_couverture,
-        reliure: contrat.reliure,
-        exemplaires_auteur: contrat.exemplaires_auteur ?? 10,
-        frequence_paiement: contrat.frequence_paiement ?? "annuel",
-        territoire_mali: contrat.territoire_mali ?? 20,
-        territoire_ci: contrat.territoire_ci ?? 30,
-        territoire_senegal: contrat.territoire_senegal ?? 30,
-        territoire_france: contrat.territoire_france ?? 40,
-        lieu_signature: contrat.lieu_signature ?? entreprise?.ville ?? "Bamako",
-        date_signature: contrat.date_signature ?? new Date().toISOString().slice(0, 10),
+      await genererPdfContrat({
+        data: pdfDataFromContrat(contrat, entreprise, { nom_complet: auteurName, telephone: auteur?.telephone }, livres),
+        contratId: contrat.id,
+        texteFige: contrat.texte_fige,
+        modele,
+        notes: contrat.notes,
       });
       toast.success("PDF généré");
     } catch (e: any) {
@@ -138,8 +116,17 @@ function ContratDetailPage() {
             {STATUT_LABELS[contrat.statut]}
           </span>
         </div>
-        <p className="text-muted-foreground mt-1">Contrat d'édition · {auteurName}</p>
+        <p className="text-muted-foreground mt-1">
+          {contrat.texte_fige?.titre_document ?? modele?.titre_document ?? "Contrat d'édition"} · {auteurName} · {referenceContrat(contrat.id)}
+        </p>
+        <p className="text-xs text-muted-foreground mt-2 inline-flex items-center gap-1.5">
+          {contrat.texte_fige
+            ? <><Lock className="h-3.5 w-3.5 text-emerald-500" /> Texte figé à la signature le {new Date(contrat.texte_fige.fige_le).toLocaleDateString("fr-FR")}{contrat.texte_fige.modele_nom ? ` · modèle « ${contrat.texte_fige.modele_nom} »` : ""}</>
+            : <>Modèle : {modele?.nom ?? "Texte standard FIGDITIONS"}</>}
+        </p>
       </header>
+
+      <SignedCopy contrat={contrat} entrepriseId={profile?.entreprise_id ?? null} onChange={(patch) => setContrat((c: any) => ({ ...c, ...patch }))} />
 
       {livres.length > 1 && (
         <div className="rounded-xl border border-border bg-card p-6">
@@ -188,6 +175,78 @@ function Field({ label, value, gold }: { label: string; value: string; gold?: bo
     <div className="rounded-xl border border-border bg-card p-4">
       <p className="text-xs uppercase tracking-wider text-muted-foreground">{label}</p>
       <p className={cn("mt-1 text-lg font-semibold", gold && "text-[color:var(--gold)]")}>{value}</p>
+    </div>
+  );
+}
+
+const SIGNED_TYPES = ["application/pdf", "image/jpeg", "image/png", "image/webp"];
+
+/** The scanned, signed contract (private bucket, opened through a short-lived link). */
+function SignedCopy({ contrat, entrepriseId, onChange }: {
+  contrat: any;
+  entrepriseId: string | null;
+  onChange: (patch: { fichier_signe_path: string; fichier_signe_nom: string }) => void;
+}) {
+  const inputRef = useRef<HTMLInputElement>(null);
+  const [uploading, setUploading] = useState(false);
+  const [opening, setOpening] = useState(false);
+
+  const onFile = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    e.target.value = "";
+    if (!file || !entrepriseId) return;
+    if (!SIGNED_TYPES.includes(file.type)) return toast.error("Format accepté : PDF, JPG, PNG ou WebP");
+    if (file.size > 15 * 1024 * 1024) return toast.error("Fichier trop lourd (15 Mo maximum)");
+    setUploading(true);
+    try {
+      const safe = file.name.normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/[^a-zA-Z0-9._-]+/g, "-");
+      // A replaced copy stays in storage: nothing signed is ever lost.
+      const path = `${entrepriseId}/${contrat.id}/${Date.now()}-${safe}`;
+      const { error: upErr } = await supabase.storage.from("contrats").upload(path, file, { contentType: file.type });
+      if (upErr) throw upErr;
+      const patch = { fichier_signe_path: path, fichier_signe_nom: file.name };
+      const { error } = await (supabase as any).from("contrats").update(patch).eq("id", contrat.id);
+      if (error) throw error;
+      onChange(patch);
+      toast.success("Exemplaire signé enregistré");
+    } catch (err: any) {
+      toast.error(err?.message ?? "Échec de l'envoi");
+    } finally {
+      setUploading(false);
+    }
+  };
+
+  const open = async () => {
+    setOpening(true);
+    const { data, error } = await supabase.storage.from("contrats").createSignedUrl(contrat.fichier_signe_path, 300);
+    setOpening(false);
+    if (error || !data?.signedUrl) return toast.error(error?.message ?? "Lien indisponible");
+    window.open(data.signedUrl, "_blank", "noopener");
+  };
+
+  const has = !!contrat.fichier_signe_path;
+  return (
+    <div className={cn("rounded-xl border p-5 flex flex-wrap items-center gap-4", has ? "border-emerald-500/40 bg-emerald-500/5" : "border-dashed border-border bg-card")}>
+      <div className={cn("h-11 w-11 rounded-xl flex items-center justify-center", has ? "bg-emerald-500/15 text-emerald-500" : "bg-muted text-muted-foreground")}>
+        {has ? <FileCheck2 className="h-5 w-5" /> : <Upload className="h-5 w-5" />}
+      </div>
+      <div className="flex-1 min-w-[200px]">
+        <p className="font-semibold">Exemplaire signé</p>
+        <p className="text-sm text-muted-foreground truncate">
+          {has ? contrat.fichier_signe_nom : "Scannez ou photographiez le contrat signé par les deux parties et gardez-le ici."}
+        </p>
+      </div>
+      <input ref={inputRef} type="file" accept={SIGNED_TYPES.join(",")} className="hidden" onChange={onFile} />
+      <div className="flex gap-2">
+        {has && (
+          <Button variant="outline" onClick={open} disabled={opening}>
+            {opening ? <Loader2 className="h-4 w-4 animate-spin" /> : <><ExternalLink className="h-4 w-4" /> Ouvrir</>}
+          </Button>
+        )}
+        <Button variant={has ? "ghost" : "default"} onClick={() => inputRef.current?.click()} disabled={uploading || !entrepriseId}>
+          {uploading ? <Loader2 className="h-4 w-4 animate-spin" /> : <><Upload className="h-4 w-4" /> {has ? "Remplacer" : "Importer le scan"}</>}
+        </Button>
+      </div>
     </div>
   );
 }
