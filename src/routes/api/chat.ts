@@ -1074,7 +1074,9 @@ export const Route = createFileRoute("/api/chat")({
             if (lower.includes("timeout") || lower.includes("timed out") || lower.includes("deadline")) {
               return "La réponse de PR MEDMO a pris trop de temps. Réessayez avec une demande plus courte.";
             }
-            return "Une erreur est survenue pendant la réponse de PR MEDMO. Réessayez.";
+            // Keep a short provider detail so the cause can be reported back.
+            const detail = message.replace(/key=[^&\s]+/gi, "key=…").slice(0, 200);
+            return `Une erreur est survenue pendant la réponse de PR MEDMO. Réessayez. (Détail : ${detail})`;
           },
         });
 

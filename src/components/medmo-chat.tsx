@@ -128,8 +128,9 @@ function friendlyChatError(raw: string | undefined): string {
   if (lower.includes("failed to fetch") || lower.includes("network") || lower.includes("load failed"))
     return "Connexion interrompue. Vérifiez votre réseau puis réessayez.";
   // Message serveur lisible (nos réponses texte) : on l'affiche tel quel s'il est court.
-  if (m.length <= 220 && !m.includes("<")) return m;
-  return "Une erreur est survenue. Vérifiez votre connexion puis réessayez.";
+  if (m.length <= 420 && !m.includes("<")) return m;
+  const detail = m.replace(/<[^>]*>/g, " ").replace(/\s+/g, " ").trim().slice(0, 160);
+  return `Une erreur est survenue. Vérifiez votre connexion puis réessayez. (Détail : ${detail})`;
 }
 
 /** Compresse une image côté navigateur (max 1600px, JPEG) pour rester sous la limite d'envoi. */

@@ -4,7 +4,6 @@ import { AppShell } from "@/components/app-shell";
 import { CommandPalette } from "@/components/command-palette";
 import { AccessDenied } from "@/components/access-denied";
 import { MedmoFab } from "@/components/medmo-fab";
-import { MaintenanceBanner } from "@/components/maintenance-banner";
 import { canAccessPath } from "@/lib/permissions";
 
 export const Route = createFileRoute("/_authenticated")({
@@ -43,7 +42,6 @@ function AuthLayout() {
         entrepriseId={profile?.entreprise_id ?? null}
         allowed={medmoAllowed}
       />
-      <MaintenanceBanner />
     </AppShell>
   );
 }

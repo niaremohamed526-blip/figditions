@@ -17,6 +17,7 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import { supabase } from "@/integrations/supabase/client";
 import { RouteProgress } from "@/components/route-progress";
 import { OfflineBanner } from "@/components/offline-banner";
+import { MaintenanceBanner } from "@/components/maintenance-banner";
 
 import { registerPwa } from "@/lib/pwa-register";
 import { FIGDITIONS_APP_ICON_VERSION, FIGDITIONS_SITE_LOGO_ABSOLUTE_URL, FIGDITIONS_SITE_LOGO_URL } from "@/lib/brand-assets";
@@ -206,6 +207,7 @@ function RootComponent() {
       <TooltipProvider delayDuration={300}>
         <RouteProgress />
         <OfflineBanner />
+        <MaintenanceBanner />
         <Outlet />
         <Toaster richColors theme="dark" position="top-right" />
       </TooltipProvider>
