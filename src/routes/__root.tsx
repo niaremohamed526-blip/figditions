@@ -72,11 +72,11 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
       { charSet: "utf-8" },
       { name: "viewport", content: "width=device-width, initial-scale=1" },
       { title: "FIGDITIONS Plateforme éditoriale" },
-      { name: "description", content: "FIGDITIONS, La plateforme éditoriale de l'Afrique de l'Ouest. Gérez vos manuscrits, stocks et finances." },
+      { name: "description", content: "FIGDITIONS, la plateforme de gestion des maisons d'édition. Gérez vos manuscrits, stocks et finances, où que vous soyez." },
       { property: "og:title", content: "FIGDITIONS Plateforme éditoriale" },
       { name: "twitter:title", content: "FIGDITIONS Plateforme éditoriale" },
-      { property: "og:description", content: "FIGDITIONS, La plateforme éditoriale de l'Afrique de l'Ouest. Gérez vos manuscrits, stocks et finances." },
-      { name: "twitter:description", content: "FIGDITIONS, La plateforme éditoriale de l'Afrique de l'Ouest. Gérez vos manuscrits, stocks et finances." },
+      { property: "og:description", content: "FIGDITIONS, la plateforme de gestion des maisons d'édition. Gérez vos manuscrits, stocks et finances, où que vous soyez." },
+      { name: "twitter:description", content: "FIGDITIONS, la plateforme de gestion des maisons d'édition. Gérez vos manuscrits, stocks et finances, où que vous soyez." },
       { name: "twitter:card", content: "summary_large_image" },
       { property: "og:type", content: "website" },
     ],
@@ -103,7 +103,7 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
               name: "FIGDITIONS",
               url: "https://figditions.xyz",
               logo: FIGDITIONS_SITE_LOGO_ABSOLUTE_URL,
-              description: "Plateforme éditoriale tout-en-un pour les maisons d'édition d'Afrique de l'Ouest.",
+              description: "Plateforme éditoriale tout-en-un pour les maisons d'édition, partout dans le monde.",
             },
             {
               "@type": "WebSite",
@@ -150,7 +150,7 @@ function RootShell({ children }: { children: React.ReactNode }) {
         <div id="figditions-splash" aria-hidden="true" suppressHydrationWarning>
           <img className="splash-logo" src={FIGDITIONS_SITE_LOGO_URL} alt="" />
           <div className="splash-name">FIGDITIONS</div>
-          <div className="splash-tagline">Plateforme éditoriale · Afrique de l'Ouest</div>
+          <div className="splash-tagline">Plateforme éditoriale</div>
           <div className="splash-dots">
             <span className="splash-dot" />
             <span className="splash-dot" />

@@ -43,8 +43,8 @@ const FAQS = [
     answer: "Oui, à tout moment. Vous pouvez exporter l'ensemble de vos données dans un format lisible depuis vos paramètres, et demander leur suppression complète à la fermeture de votre compte.",
   },
   {
-    question: "Les contrats générés sont-ils valables au Mali ?",
-    answer: "Nos modèles de contrats d'édition, bordereaux et factures sont conçus pour le contexte malien et la zone OHADA. Ils constituent une aide à la rédaction et non un conseil juridique : nous vous recommandons de les faire relire avant signature.",
+    question: "Les contrats générés sont-ils valables dans mon pays ?",
+    answer: "Nos modèles de contrats d'édition, bordereaux et factures partent du droit de la zone OHADA, et vous adaptez les territoires, commissions et conditions à votre pays (modèles entièrement personnalisables avec le plan Business). Ils constituent une aide à la rédaction et non un conseil juridique : nous vous recommandons de les faire relire avant signature.",
   },
   {
     question: "J'ai déjà tout dans des cahiers. Comment je migre ?",
@@ -68,7 +68,7 @@ const FAQS = [
   },
   {
     question: "Puis-je essayer avant de payer ?",
-    answer: "Oui. Le plan Starter est gratuit et sans limite de durée : vous pouvez gérer jusqu'à 5 manuscrits, vos auteurs et votre stock interne sans jamais payer. Vous passez à un plan supérieur uniquement quand vous en avez besoin.",
+    answer: "Oui. Le plan Starter est gratuit et sans limite de durée : vous pouvez gérer jusqu'à 5 manuscrits, vos auteurs, votre stock interne et 2 librairies, et poser 20 questions par mois à Pr. MEDMO, sans jamais payer. Vous passez à un plan supérieur uniquement quand vous en avez besoin.",
   },
 ];
 
@@ -79,12 +79,12 @@ export const Route = createFileRoute("/")({
   component: Landing,
   head: () => ({
     meta: [
-      { title: "FIGDITIONS | Plateforme éditoriale africaine" },
-      { name: "description", content: "Manuscrits, stocks, dépôts en librairie, contrats et finances en un seul endroit, avec l'assistant Pr. MEDMO. Conçu pour les maisons d'édition d'Afrique de l'Ouest." },
-      { property: "og:title", content: "FIGDITIONS | Plateforme éditoriale africaine" },
-      { property: "og:description", content: "Manuscrits, stocks, dépôts en librairie, contrats et finances en un seul endroit, avec l'assistant Pr. MEDMO. Conçu pour les maisons d'édition d'Afrique de l'Ouest." },
-      { name: "twitter:title", content: "FIGDITIONS | Plateforme éditoriale africaine" },
-      { name: "twitter:description", content: "Manuscrits, stocks, dépôts en librairie, contrats et finances en un seul endroit, avec l'assistant Pr. MEDMO. Conçu pour les maisons d'édition d'Afrique de l'Ouest." },
+      { title: "FIGDITIONS | La plateforme des maisons d'édition" },
+      { name: "description", content: "Manuscrits, stocks, dépôts en librairie, contrats et finances en un seul endroit, avec l'assistant Pr. MEDMO. Pour les maisons d'édition indépendantes, partout dans le monde." },
+      { property: "og:title", content: "FIGDITIONS | La plateforme des maisons d'édition" },
+      { property: "og:description", content: "Manuscrits, stocks, dépôts en librairie, contrats et finances en un seul endroit, avec l'assistant Pr. MEDMO. Pour les maisons d'édition indépendantes, partout dans le monde." },
+      { name: "twitter:title", content: "FIGDITIONS | La plateforme des maisons d'édition" },
+      { name: "twitter:description", content: "Manuscrits, stocks, dépôts en librairie, contrats et finances en un seul endroit, avec l'assistant Pr. MEDMO. Pour les maisons d'édition indépendantes, partout dans le monde." },
       { property: "og:image", content: OG_IMAGE },
       { name: "twitter:image", content: OG_IMAGE },
       { property: "og:url", content: "https://figditions.xyz/" },
@@ -99,7 +99,7 @@ export const Route = createFileRoute("/")({
           "@type": "SoftwareApplication",
           name: "FIGDITIONS",
           description:
-            "Plateforme éditoriale tout-en-un pour les maisons d'édition d'Afrique de l'Ouest : manuscrits, auteurs, contrats, stocks, dépôts et finances.",
+            "Plateforme éditoriale tout-en-un pour les maisons d'édition, partout dans le monde : manuscrits, auteurs, contrats, stocks, dépôts et finances.",
           applicationCategory: "BusinessApplication",
           operatingSystem: "Web",
           inLanguage: "fr",
@@ -199,7 +199,7 @@ function Navbar() {
             to="/signup"
             className="group inline-flex items-center gap-2 rounded-full border border-[#C8922A] text-[#C8922A] px-6 py-2.5 text-sm font-medium hover:bg-[#C8922A] hover:text-white transition-colors"
           >
-            {t("Démarrer l'Essai", "Start trial")}
+            {t("Commencer gratuitement", "Get started free")}
             <span className="h-6 w-6 rounded-full bg-[#C8922A] text-white flex items-center justify-center group-hover:bg-white group-hover:text-[#C8922A] transition-colors">
               <ArrowRight className="h-3.5 w-3.5" />
             </span>
@@ -222,7 +222,7 @@ function Navbar() {
             <Button variant="outline" className="w-full">{t("Se connecter", "Sign in")}</Button>
           </Link>
           <Link to="/signup" onClick={() => setOpen(false)} className="block">
-            <Button className="w-full bg-primary text-primary-foreground">{t("Démarrer l'Essai", "Start trial")}</Button>
+            <Button className="w-full bg-primary text-primary-foreground">{t("Commencer gratuitement", "Get started free")}</Button>
           </Link>
         </div>
       )}
@@ -248,7 +248,7 @@ function Hero() {
       {/* Hero image : right side */}
       <img
         src={heroAsset.url}
-        alt="FIGDITIONS, plateforme éditoriale africaine"
+        alt="FIGDITIONS, la plateforme des maisons d'édition"
         className="absolute inset-y-0 right-0 h-full w-full md:w-[70%] object-cover object-center pointer-events-none select-none"
         style={{
           WebkitMaskImage:
@@ -269,7 +269,7 @@ function Hero() {
           </h1>
           <p className="mt-4 text-[18px] leading-[1.5] max-w-[380px]" style={{ color: "rgba(184,168,152,0.9)" }}>
             {t(
-              "La plateforme centrale des éditeurs ouest-africains : manuscrits, stocks, librairies, finances : et un assistant qui travaille avec vous.",
+              "La plateforme centrale des maisons d'édition : manuscrits, stocks, librairies, finances : et un assistant qui travaille avec vous.",
               "The central platform for West African publishers: manuscripts, stock, bookstores, finances : and an assistant that works with you."
             )}
           </p>
@@ -401,7 +401,7 @@ function Hero() {
 const SCREENS = [
   { id: "manuscrits", label: "Manuscrits", src: "/assets/screens/manuscrits.png", caption: "Suivez chaque titre à travers les 10 étapes éditoriales, de la réception au dépôt légal." },
   { id: "stock", label: "Stock", src: "/assets/screens/stock.png", caption: "Entrepôt interne et dépôts en librairie, avec alertes automatiques de stock bas." },
-  { id: "contrats", label: "Contrats", src: "/assets/screens/contrats.png", caption: "Générez un contrat d'édition conforme au droit malien et à l'OHADA en quelques clics." },
+  { id: "contrats", label: "Contrats", src: "/assets/screens/contrats.png", caption: "Générez un contrat d'édition professionnel en quelques clics, adapté à votre pays." },
   { id: "royalties", label: "Royalties", src: "/assets/screens/royalties.png", caption: "Calcul automatique des droits d'auteur en FCFA, prêts à être versés." },
 ];
 
@@ -453,7 +453,7 @@ function Features() {
   const { t } = useI18n();
   const offlineFr = "Continuez à travailler pendant les délestages et les coupures de réseau. Vos données se synchronisent automatiquement dès le retour de la connexion.";
   const bordereauxFr = "Générez vos bordereaux de dépôt et de vente en quelques clics, prêts à signer avec vos libraires.";
-  const imprimeriesFr = "Accédez aux tarifs et contacts des imprimeries de Bamako et de la sous-région pour comparer avant d'imprimer.";
+  const imprimeriesFr = "Accédez aux tarifs et contacts des imprimeries partenaires pour comparer avant d'imprimer.";
   const items = [
     { icon: MessageSquare, fr: "Assistant Pr. MEDMO", en: "Pr. MEDMO assistant", dfr: "Posez vos questions en français, envoyez une photo ou un document : l'assistant analyse vos données et prépare les actions que vous validez.", den: "Ask in plain French, send a photo or a document: the assistant reads your data and prepares actions you approve." },
     { icon: Camera, fr: "Photo de cahier → ventes", en: "Notebook photo → sales", dfr: "Photographiez une page de cahier de ventes : les titres, quantités et prix sont reconnus puis proposés à l'enregistrement.", den: "Photograph a sales notebook page: titles, quantities and prices are recognized then proposed for logging." },
@@ -462,12 +462,12 @@ function Features() {
     { icon: Globe2, fr: "Livres étrangers", en: "Foreign books", dfr: "Séparez clairement vos propres productions des ouvrages d'autres éditeurs que vous distribuez, au catalogue comme en stock.", den: "Clearly separate your own titles from other publishers' books you distribute, in catalogue and stock." },
     { icon: Users, fr: "Gestion des auteurs", en: "Author management", dfr: "Centralisez les informations, contrats et droits de vos auteurs en un seul endroit", den: "Centralize information, contracts and royalties of your authors in one place" },
     { icon: Factory, fr: "Stock interne", en: "Internal stock", dfr: "Gérez votre entrepôt, suivez chaque exemplaire imprimé et automatisez les mouvements de stock", den: "Manage your warehouse, track every printed copy and automate stock movements" },
-    { icon: Store, fr: "Stock externe", en: "External stock", dfr: "Suivez vos dépôts dans toutes les librairies de Bamako avec alertes de stock bas", den: "Track your deposits across all Bamako bookstores with alerts when stock is low" },
+    { icon: Store, fr: "Stock externe", en: "External stock", dfr: "Suivez vos dépôts dans toutes vos librairies partenaires avec alertes de stock bas", den: "Track your deposits across all your partner bookstores with alerts when stock is low" },
     { icon: Layers, fr: "Dépôts multiples par librairie", en: "Multiple deposits", dfr: "Ajoutez un nouveau dépôt sans écraser l'ancien : chaque lot garde sa date, sa quantité et son historique.", den: "Add a new deposit without erasing the previous one: each batch keeps its date, quantity and history." },
     { icon: Gift, fr: "Dons et exemplaires offerts", en: "Donations", dfr: "Enregistrez les livres offerts aux écoles, ONG ou bibliothèques : le stock est déduit, sans revenu ni droits d'auteur.", den: "Log books given to schools, NGOs or libraries: stock is deducted, with no revenue or royalties." },
     { icon: History, fr: "Annulation traçable", en: "Traceable cancellation", dfr: "Annulez une vente, un mouvement ou un dépôt avec motif obligatoire : tout est rétabli et conservé dans l'historique.", den: "Cancel a sale, movement or deposit with a mandatory reason: everything is reversed and kept in the log." },
     { icon: Wallet, fr: "Finances détaillées & Royalties", en: "Detailed finances & royalties", dfr: "Journal, rentabilité par titre, ventes, dépenses et droits d'auteur en FCFA, avec reçus imprimables.", den: "Ledger, per-title profitability, sales, expenses and royalties in FCFA, with printable receipts." },
-    { icon: FileText, fr: "Contrats & Droits", en: "Contracts & Rights", dfr: "Générez des contrats d'édition professionnels conformes au droit malien en quelques clics", den: "Generate professional publishing contracts compliant with Malian law in a few clicks" },
+    { icon: FileText, fr: "Contrats & Droits", en: "Contracts & Rights", dfr: "Générez des contrats d'édition professionnels en quelques clics, adaptés à votre pays", den: "Generate professional publishing contracts in a few clicks, adapted to your country" },
     { icon: Calculator, fr: "Estimateur de coûts", en: "Cost estimator", dfr: "Calculez le coût d'impression exact en FCFA avec recommandation offset vs numérique", den: "Calculate exact printing costs in FCFA with offset vs digital recommendation" },
     { icon: Shield, fr: "Partage PDF sécurisé", en: "Secure PDF sharing", dfr: "Partagez vos manuscrits avec des filigranes personnalisés et un nombre de vues limité", den: "Share manuscripts with custom watermarks and limited view counts" },
     { icon: Sparkles, fr: "Conversion ePub & MOBI", en: "ePub & MOBI conversion", dfr: "Convertissez vos manuscrits en ebooks prêts pour Amazon Kindle, Apple Books et Google Play Books", den: "Convert your manuscripts into ebooks ready for Amazon Kindle, Apple Books and Google Play Books" },
@@ -648,7 +648,7 @@ function HowItWorks() {
   const steps = [
     { emoji: "🏢", fr: "Créez votre compte", en: "Create your account", dfr: "Inscrivez votre maison d'édition en 2 minutes et invitez votre équipe", den: "Register your publishing house in 2 minutes and invite your team" },
     { emoji: "📥", fr: "Gérez vos manuscrits", en: "Manage your manuscripts", dfr: "Suivez chaque livre à travers les 10 étapes éditoriales avec votre équipe", den: "Track every book through the 10 editorial stages with your team" },
-    { emoji: "📦", fr: "Contrôlez vos stocks", en: "Control your stocks", dfr: "Gérez votre entrepôt interne et vos dépôts dans les librairies de Bamako", den: "Manage your internal warehouse and your deposits in Bamako bookstores" },
+    { emoji: "📦", fr: "Contrôlez vos stocks", en: "Control your stocks", dfr: "Gérez votre entrepôt interne et vos dépôts dans vos librairies partenaires", den: "Manage your internal warehouse and your deposits in partner bookstores" },
     { emoji: "💸", fr: "Pilotez vos finances", en: "Pilot your finances", dfr: "Suivez vos ventes, calculez les droits d'auteur et analysez vos performances", den: "Track your sales, calculate royalties and analyze your performance" },
   ];
   return (
@@ -693,6 +693,8 @@ function Pricing() {
   };
 
   const fmt = (n: number) => n.toLocaleString("fr-FR");
+  // FCFA is pegged to the euro (1 € = 655,957 FCFA), so this is exact, not a live rate.
+  const eur = (fcfaAmount: number) => Math.round(fcfaAmount / 655.957).toLocaleString("fr-FR");
 
   return (
     <section id="pricing" className="py-24 px-4 bg-background">
@@ -752,13 +754,16 @@ function Pricing() {
                   ) : yearly ? (
                     <>
                       <p className="text-4xl font-bold">{fmt(plan.priceYearly)} <span className="text-sm font-normal text-muted-foreground">FCFA / an</span></p>
-                      <p className="mt-1 text-xs text-muted-foreground">soit {fmt(monthlyFromYearly)} FCFA / mois</p>
+                      <p className="mt-1 text-xs text-muted-foreground">soit {fmt(monthlyFromYearly)} FCFA / mois · ≈ {eur(plan.priceYearly)} € / an</p>
                       <span className="mt-2 inline-block text-xs font-semibold px-2.5 py-1 rounded-full bg-emerald-500/15 text-emerald-400 border border-emerald-500/30">
                         Économisez 2 mois
                       </span>
                     </>
                   ) : (
-                    <p className="text-4xl font-bold">{fmt(plan.priceMonthly)} <span className="text-sm font-normal text-muted-foreground">FCFA / {t("mois", "month")}</span></p>
+                    <>
+                      <p className="text-4xl font-bold">{fmt(plan.priceMonthly)} <span className="text-sm font-normal text-muted-foreground">FCFA / {t("mois", "month")}</span></p>
+                      <p className="mt-1 text-xs text-muted-foreground">≈ {eur(plan.priceMonthly)} € / {t("mois", "month")}</p>
+                    </>
                   )}
                   <p className="mt-3 text-sm font-semibold text-foreground">{plan.seatsLabel}</p>
                 </div>
@@ -890,7 +895,7 @@ function Footer() {
             FIGDITIONS
           </p>
           <p className="mt-3 text-sm text-muted-foreground max-w-xs">
-            {t("La plateforme éditoriale de l'Afrique de l'Ouest", "The publishing platform of West Africa")}
+            {t("La plateforme des maisons d'édition", "The platform for publishing houses")}
           </p>
         </div>
 
@@ -942,7 +947,7 @@ function Footer() {
       </div>
       <div className="max-w-7xl mx-auto mt-8 pt-6 border-t border-border text-center text-xs text-muted-foreground space-y-1">
         <p>© {new Date().getFullYear()} FIGDITIONS. {t("Tous droits réservés.", "All rights reserved.")}</p>
-        <p>{t("Conçu pour l'Afrique de l'Ouest 🌍", "Designed for West Africa 🌍")}</p>
+        <p>{t("Né en Afrique, ouvert au monde 🌍", "Born in Africa, open to the world 🌍")}</p>
       </div>
     </footer>
   );

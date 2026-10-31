@@ -119,7 +119,7 @@ export async function generateFactureVentePdf(
   doc.setFont("times", "italic");
   doc.setFontSize(7.5);
   doc.setTextColor(...MUTED);
-  doc.text("Plateforme éditoriale, Bamako", W / 2, y + 11, { align: "center" });
+  doc.text("Plateforme éditoriale · figditions.xyz", W / 2, y + 11, { align: "center" });
 
   // Titre
   y += 34;

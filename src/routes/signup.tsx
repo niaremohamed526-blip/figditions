@@ -39,9 +39,12 @@ export const Route = createFileRoute("/signup")({
   }),
 });
 
-const MALI_CITIES = [
-  "Bamako", "Sikasso", "Ségou", "Mopti", "Koutiala", "Kayes",
-  "Gao", "Kati", "Tombouctou", "Koulikoro", "San", "Bougouni",
+// Suggestions only: any city can be typed.
+const CITIES = [
+  "Bamako", "Abidjan", "Dakar", "Accra", "Ouagadougou", "Conakry", "Niamey",
+  "Lomé", "Cotonou", "Lagos", "Douala", "Yaoundé", "Libreville", "Kinshasa",
+  "Casablanca", "Tunis", "Nairobi", "Kigali", "Paris", "Bruxelles", "Genève",
+  "Montréal", "Londres", "New York", "Sikasso", "Ségou", "Kayes", "Mopti",
 ] as const;
 
 function normalize(s: string) {
@@ -55,13 +58,13 @@ function CitySelect({
   value: string;
   onChange: (v: string) => void;
 }) {
-  const isKnown = (MALI_CITIES as readonly string[]).includes(value);
+  const isKnown = (CITIES as readonly string[]).includes(value);
   const [other, setOther] = useState(!isKnown && value.length > 0);
   const [query, setQuery] = useState("");
   const [open, setOpen] = useState(false);
 
   const results = useMemo(
-    () => MALI_CITIES.filter((c) => normalize(c).includes(normalize(query))),
+    () => CITIES.filter((c) => normalize(c).includes(normalize(query))),
     [query],
   );
 
@@ -80,7 +83,7 @@ function CitySelect({
           type="button"
           className="text-xs hover:underline"
           style={{ color: "#C8922A" }}
-          onClick={() => { setOther(false); onChange("Bamako"); }}
+          onClick={() => { setOther(false); onChange(""); }}
         >
           ← Choisir dans la liste
         </button>
@@ -122,15 +125,27 @@ function CitySelect({
               {c}
             </button>
           ))}
-          <button
-            type="button"
-            className="w-full text-left px-4 py-2 text-sm hover:bg-[#C8922A]/15"
-            style={{ color: "#C8922A" }}
-            onMouseDown={(e) => e.preventDefault()}
-            onClick={() => { setOther(true); onChange(""); setOpen(false); }}
-          >
-            Autre…
-          </button>
+          {query.trim() && !results.some((c) => normalize(c) === normalize(query.trim())) ? (
+            <button
+              type="button"
+              className="w-full text-left px-4 py-2 text-sm hover:bg-[#C8922A]/15"
+              style={{ color: "#C8922A" }}
+              onMouseDown={(e) => e.preventDefault()}
+              onClick={() => { onChange(query.trim()); setOpen(false); }}
+            >
+              Utiliser « {query.trim()} »
+            </button>
+          ) : (
+            <button
+              type="button"
+              className="w-full text-left px-4 py-2 text-sm hover:bg-[#C8922A]/15"
+              style={{ color: "#C8922A" }}
+              onMouseDown={(e) => e.preventDefault()}
+              onClick={() => { setOther(true); onChange(""); setOpen(false); }}
+            >
+              Autre ville…
+            </button>
+          )}
         </div>
       )}
     </div>
@@ -226,7 +241,7 @@ function SignupPage() {
     email: "",
     password: "",
     confirm: "",
-    ville: "Bamako",
+    ville: "",
   });
   const [showPwd, setShowPwd] = useState(false);
   const [accepted, setAccepted] = useState(false);
@@ -299,7 +314,7 @@ function SignupPage() {
               margin: 0,
             }}
           >
-            La plateforme éditoriale de l'Afrique de l'Ouest
+            La plateforme des maisons d'édition
           </p>
         </div>
 
@@ -322,7 +337,7 @@ function SignupPage() {
             Créer votre compte
           </h1>
           <p style={{ color: "#B8A898", fontSize: 15, marginBottom: 32 }}>
-            Rejoignez les éditeurs africains
+            Rejoignez les maisons d'édition qui gagnent du temps
           </p>
 
           <div

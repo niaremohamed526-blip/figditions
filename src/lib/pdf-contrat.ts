@@ -46,7 +46,7 @@ export function generateContratPdf(d: ContratPdfData) {
   doc.setFont("helvetica", "normal");
   doc.setFontSize(10);
   doc.setTextColor(212, 175, 55);
-  doc.text("Plateforme d'édition au Mali", M, 64);
+  doc.text("Plateforme éditoriale", M, 64);
   doc.setTextColor(255, 255, 255);
   doc.setFontSize(9);
   doc.text(d.maison.toUpperCase(), W - M, 46, { align: "right" });

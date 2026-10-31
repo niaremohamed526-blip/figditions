@@ -154,7 +154,7 @@ function LoginPage() {
               margin: 0,
             }}
           >
-            La plateforme éditoriale de l'Afrique de l'Ouest
+            La plateforme des maisons d'édition
           </p>
         </div>
 

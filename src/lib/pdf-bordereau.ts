@@ -149,7 +149,7 @@ export async function generateBordereauPdf(
   doc.setFont("times", "italic");
   doc.setFontSize(7.5);
   doc.setTextColor(...MUTED);
-  doc.text("Plateforme éditoriale, Bamako", W / 2, y + 11);
+  doc.text("Plateforme éditoriale · figditions.xyz", W / 2, y + 11);
 
   // ─── Title block (asymmetric editorial) ──────────────────────────────
   y += 34;

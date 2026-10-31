@@ -13,11 +13,11 @@ export const Route = createFileRoute("/a-propos")({
   head: () => ({
     meta: [
       { title: "À propos | FIGDITIONS" },
-      { name: "description", content: "FIGDITIONS, la première plateforme éditoriale conçue pour l'Afrique de l'Ouest. Fondée à Bamako en 2026." },
+      { name: "description", content: "FIGDITIONS, la plateforme éditoriale née à Bamako en 2026, pour les maisons d'édition du monde entier." },
       { property: "og:title", content: "À propos de FIGDITIONS" },
-      { property: "og:description", content: "FIGDITIONS, la première plateforme éditoriale conçue pour l'Afrique de l'Ouest. Fondée à Bamako en 2026." },
+      { property: "og:description", content: "FIGDITIONS, la plateforme éditoriale née à Bamako en 2026, pour les maisons d'édition du monde entier." },
       { name: "twitter:title", content: "À propos de FIGDITIONS" },
-      { name: "twitter:description", content: "FIGDITIONS, la première plateforme éditoriale conçue pour l'Afrique de l'Ouest. Fondée à Bamako en 2026." },
+      { name: "twitter:description", content: "FIGDITIONS, la plateforme éditoriale née à Bamako en 2026, pour les maisons d'édition du monde entier." },
       { property: "og:image", content: "https://figditions.xyz/assets/og-figditions.png" },
       { name: "twitter:image", content: "https://figditions.xyz/assets/og-figditions.png" },
       { property: "og:url", content: "https://figditions.xyz/a-propos" },
@@ -70,7 +70,7 @@ function Hero() {
           À Propos de <span className="bg-gradient-to-r from-primary to-[color:var(--gold)] bg-clip-text text-transparent">FIGDITIONS</span>
         </h1>
         <p className="mt-5 text-lg md:text-xl text-muted-foreground">
-          La première plateforme éditoriale conçue pour l'Afrique de l'Ouest
+          Née en Afrique, pour les maisons d'édition du monde entier
         </p>
         <p className="mt-3 text-sm uppercase tracking-widest text-[color:var(--gold)] font-semibold">
           Fondée en 2026 à Bamako, Mali
@@ -86,7 +86,7 @@ function Mission() {
       <h2 className="text-3xl md:text-4xl font-bold tracking-tight">Notre Mission</h2>
       <div className="mt-6 space-y-4 text-muted-foreground leading-relaxed text-[15px]">
         <p>
-          FIGDITIONS est née d'un constat simple : les maisons d'édition africaines méritent
+          FIGDITIONS est née d'un constat simple : les maisons d'édition indépendantes méritent
           des outils numériques à la hauteur de leur talent.
         </p>
         <p>
@@ -96,7 +96,7 @@ function Mission() {
         </p>
         <p>
           Notre mission est de démocratiser l'accès aux outils de gestion professionnels
-          pour toutes les maisons d'édition africaines, quelle que soit leur taille.
+          pour toutes les maisons d'édition, quels que soient leur taille et leur pays.
         </p>
       </div>
     </section>
@@ -116,7 +116,7 @@ function Story() {
             complète et locale.
           </p>
           <p>
-            Développée à Bamako, pour Bamako, FIGDITIONS comprend les réalités du terrain :
+            Développée à Bamako et pensée pour le monde, FIGDITIONS comprend les réalités du terrain :
             les délestages électriques, la connectivité intermittente, les paiements via
             Mobile Money et l'importance des langues nationales.
           </p>
@@ -128,9 +128,9 @@ function Story() {
 
 function Numbers() {
   const stats = [
-    { icon: "🏢", value: "126+", label: "Maisons d'édition recensées au Mali, notre marché" },
+    { icon: "🏢", value: "126+", label: "Maisons d'édition recensées au Mali, notre premier marché" },
     { icon: "📚", value: "10", label: "Étapes de workflow éditorial" },
-    { icon: "🌍", value: "8+", label: "Pays d'Afrique de l'Ouest supportés" },
+    { icon: "🌍", value: "Partout", label: "Utilisable dans tous les pays, en ligne" },
     { icon: "⚡", value: "99,5%", label: "Objectif de disponibilité de la plateforme" },
   ];
   return (
@@ -180,7 +180,7 @@ function Values() {
 function TechStack() {
   const stack = [
     { icon: Database, title: "Lovable Cloud (Supabase)", desc: "Base de données PostgreSQL, authentification et stockage de fichiers, avec sauvegardes automatiques." },
-    { icon: Zap, title: "Vercel", desc: "Hébergement du site et des fonctions serveur, avec un réseau de diffusion mondial pour de bonnes performances au Mali." },
+    { icon: Zap, title: "Vercel", desc: "Hébergement du site et des fonctions serveur, avec un réseau de diffusion mondial pour de bonnes performances partout dans le monde." },
     { icon: Lock, title: "Chiffrement SSL/TLS", desc: "Toutes vos données sont chiffrées en transit, et au repos par notre infrastructure d'hébergement." },
   ];
   return (

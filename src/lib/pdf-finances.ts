@@ -142,7 +142,7 @@ const T = {
       `Durant la période du ${a} au ${b}, ${nom} a enregistré ${nv} vente(s) pour un chiffre d'affaires total de ${ca}. ${na} auteur(s) ont généré des droits s'élevant à ${dr}, dont ${pa} ont été réglés.`,
     footer: (nom: string, d: string) =>
       `Ce rapport a été généré automatiquement par FIGDITIONS le ${d}. Les données présentées sont confidentielles et destinées à l'usage exclusif de ${nom}.`,
-    tagline: "FIGDITIONS - La plateforme editoriale de l'Afrique de l'Ouest",
+    tagline: "FIGDITIONS - La plateforme des maisons d'edition",
     site: "figditions.xyz",
     headerRight: (a: string, b: string) => `Rapport Financier - ${a} au ${b}`,
     page: "Page",
