@@ -3,10 +3,12 @@ import { useSyncExternalStore } from "react";
 export type Lang = "fr" | "en";
 const KEY = "figditions.lang";
 
-let current: Lang = (() => {
-  if (typeof window === "undefined") return "fr";
-  return ((localStorage.getItem(KEY) as Lang | null) ?? "fr");
-})();
+// The FR/EN switch was removed: the app is French-only for now. Clear any old
+// "en" choice so nobody stays stuck in English.
+if (typeof window !== "undefined") {
+  try { localStorage.removeItem(KEY); } catch { /* storage blocked */ }
+}
+let current: Lang = "fr";
 const listeners = new Set<() => void>();
 
 function subscribe(cb: () => void) {

@@ -1,4 +1,5 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
+import { pl } from "@/lib/plural";
 import { useEffect, useMemo, useState } from "react";
 import { BookOpen, Clock, Boxes, Wallet, Trophy, PenLine, Store, Activity, CheckCircle2, Plus, MessageSquare, PackagePlus } from "lucide-react";
 import {
@@ -332,7 +333,7 @@ function DashboardPage() {
             <BreakdownLine tone="green">{nf(totals.externeVendu)} vendus</BreakdownLine>
             <BreakdownLine tone="grey">{nf(totals.externeRestant)} en rayon</BreakdownLine>
             <MiniBar segments={[{ value: totals.externeVendu, tone: "green" }, { value: totals.externeRestant, tone: "grey" }]} />
-            <p className="mt-2 text-[11px] text-muted-foreground">{nf(totals.externeLibrairies)} point(s) de vente</p>
+            <p className="mt-2 text-[11px] text-muted-foreground">{pl(totals.externeLibrairies, "point de vente", "points de vente")}</p>
           </StatCard>
         </div>
       </section>
@@ -477,7 +478,7 @@ function DashboardPage() {
             icon={<PenLine className="h-5 w-5" />}
             title="✍️ Auteur le plus actif"
             primary={topAuthor?.name ?? "—"}
-            line1={topAuthor ? `${topAuthor.manuscripts} manuscrit(s)` : "—"}
+            line1={topAuthor ? `${pl(topAuthor.manuscripts, "manuscrit")}` : "—"}
             line2={topAuthor ? `${fcfa(topAuthor.royalties)} de royalties` : ""}
           />
           <MetricCard

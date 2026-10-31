@@ -111,14 +111,14 @@ function ManuscritDetailPage() {
     const { error: upErr } = await supabase.storage
       .from("manuscrits").upload(path, file, { upsert: true, contentType: "application/pdf" });
     clearInterval(tick);
-    if (upErr) { setUploading(false); setProgress(0); toast.error("Échec de l'upload. Veuillez réessayer."); return; }
+    if (upErr) { setUploading(false); setProgress(0); toast.error("L'envoi du PDF a échoué. Veuillez réessayer."); return; }
     setProgress(95);
     const { error: updErr } = await supabase
       .from("manuscrits").update({ pdf_path: path }).eq("id", m.id);
     setProgress(100);
     setTimeout(() => { setUploading(false); setProgress(0); }, 400);
     if (updErr) return toast.error(updErr.message);
-    toast.success("✅ PDF uploadé avec succès");
+    toast.success("✅ PDF enregistré");
     loadManuscrit();
   };
 
@@ -288,7 +288,7 @@ function ManuscritDetailPage() {
               <p className="font-medium truncate">{pdfMeta.name}</p>
               <p className="text-xs text-muted-foreground mt-0.5">
                 {fmtSize(pdfMeta.size)}
-                {pdfMeta.updated_at && ` · Uploadé le ${new Date(pdfMeta.updated_at).toLocaleDateString("fr-FR")}`}
+                {pdfMeta.updated_at && ` · Ajouté le ${new Date(pdfMeta.updated_at).toLocaleDateString("fr-FR")}`}
               </p>
             </div>
             <div className="flex gap-2">
@@ -323,7 +323,7 @@ function ManuscritDetailPage() {
 
         {m.pdf_path && pdfMeta && !uploading && (
           <p className="mt-3 text-xs flex items-center gap-1.5" style={{ color: "#C8922A" }}>
-            <CheckCircle2 className="h-3.5 w-3.5" /> PDF uploadé avec succès
+            <CheckCircle2 className="h-3.5 w-3.5" /> PDF prêt à être partagé
           </p>
         )}
       </section>

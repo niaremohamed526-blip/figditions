@@ -157,7 +157,7 @@ function Landing() {
 
 
 function Navbar() {
-  const { t, lang, setLang } = useI18n();
+  const { t } = useI18n();
   const [scrolled, setScrolled] = useState(false);
   const [open, setOpen] = useState(false);
 
@@ -195,7 +195,6 @@ function Navbar() {
         </div>
 
         <div className="hidden md:flex items-center gap-3 ml-auto">
-          <LangToggle lang={lang} setLang={setLang} />
           <Link
             to="/signup"
             className="group inline-flex items-center gap-2 rounded-full border border-[#C8922A] text-[#C8922A] px-6 py-2.5 text-sm font-medium hover:bg-[#C8922A] hover:text-white transition-colors"
@@ -219,7 +218,6 @@ function Navbar() {
               {l.label}
             </a>
           ))}
-          <LangToggle lang={lang} setLang={setLang} />
           <Link to="/login" onClick={() => setOpen(false)} className="block">
             <Button variant="outline" className="w-full">{t("Se connecter", "Sign in")}</Button>
           </Link>
@@ -233,18 +231,6 @@ function Navbar() {
 }
 
 
-function LangToggle({ lang, setLang }: { lang: "fr" | "en"; setLang: (l: "fr" | "en") => void }) {
-  return (
-    <div className="inline-flex items-center rounded-full border border-[rgba(200,146,42,0.3)] bg-[rgba(26,18,8,0.6)] p-0.5 text-xs font-semibold">
-      {(["fr", "en"] as const).map((l) => (
-        <button key={l} onClick={() => setLang(l)} className={cn(
-          "px-3 py-1.5 rounded-full transition-colors uppercase",
-          lang === l ? "bg-[#C8922A] text-white" : "text-white/70 hover:text-white"
-        )}>{l}</button>
-      ))}
-    </div>
-  );
-}
 
 function Hero() {
   const { t } = useI18n();

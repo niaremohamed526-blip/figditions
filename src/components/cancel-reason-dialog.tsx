@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { pl } from "@/lib/plural";
 import { Loader2, Ban } from "lucide-react";
 import {
   Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle,
@@ -74,7 +75,7 @@ export function CancelReasonDialog({
           />
           <p className="text-xs text-muted-foreground">
             {tooShort
-              ? `Encore ${MIN - raison.trim().length} caractère(s) minimum.`
+              ? `Encore ${pl(MIN - raison.trim().length, "caractère")} minimum.`
               : "Motif enregistré avec votre nom et la date."}
           </p>
         </div>

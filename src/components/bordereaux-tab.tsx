@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
+import { pl } from "@/lib/plural";
 import { format } from "date-fns";
 import { fr } from "date-fns/locale";
 import { FileText, Loader2, Download, Trash2, Sparkles, ImagePlus, X } from "lucide-react";
@@ -551,7 +552,7 @@ function GenerateDialog({
 
           {selected && type === "depot" && (
             <p className="text-xs text-muted-foreground">
-              {selected.rows.length} ligne(s) de dépôt seront listées.
+              {pl(selected.rows.length, "ligne de dépôt sera listée", "lignes de dépôt seront listées")}.
             </p>
           )}
         </div>

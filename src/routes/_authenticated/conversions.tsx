@@ -174,7 +174,7 @@ function NewConversionForm({ onCreated }: { onCreated: () => void }) {
       setSourcePath(path);
       if (!titre) setTitre(f.name.replace(/\.[^.]+$/, ""));
     } catch (e) {
-      toast.error(e instanceof Error ? e.message : "Upload échoué");
+      toast.error(e instanceof Error ? e.message : "L'envoi du fichier a échoué");
     } finally {
       setUploading(false);
     }
@@ -268,7 +268,7 @@ function NewConversionForm({ onCreated }: { onCreated: () => void }) {
             <h3 className="text-sm font-semibold mb-2">📁 Fichier source</h3>
             <Tabs value={tab} onValueChange={(v) => setTab(v as "manuscrit" | "upload")}>
               <TabsList className="grid grid-cols-2 w-full">
-                <TabsTrigger value="upload">Uploader un fichier</TabsTrigger>
+                <TabsTrigger value="upload">Importer un fichier</TabsTrigger>
                 <TabsTrigger value="manuscrit">Depuis un manuscrit</TabsTrigger>
               </TabsList>
               <TabsContent value="upload" className="mt-3">

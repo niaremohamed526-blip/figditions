@@ -370,7 +370,7 @@ function StocksPage() {
               <div className="flex items-center justify-between gap-6 flex-wrap">
                 <div className="min-w-0">
                   <div className="flex items-center gap-2 text-xs uppercase tracking-widest text-muted-foreground">
-                    <Wallet className="h-4 w-4 text-[color:var(--gold)]" /> Chiffre d'affaires total
+                    <Wallet className="h-4 w-4 text-[color:var(--gold)]" /> Ventes en librairie (prix catalogue)
                   </div>
                   <div className="mt-2 flex items-baseline gap-3">
                     <span className="text-[48px] leading-none font-bold text-[color:var(--gold)] tabular-nums drop-shadow-[0_0_18px_rgba(200,146,42,0.25)]">
@@ -378,6 +378,7 @@ function StocksPage() {
                     </span>
                     <span className="text-lg font-semibold text-muted-foreground">FCFA</span>
                   </div>
+                  <p className="mt-1.5 text-xs text-muted-foreground">Livres vendus via vos dépôts en librairie. Le chiffre d'affaires complet (ventes directes et remises comprises) est dans Finances.</p>
                 </div>
                 <div className="flex items-center gap-2 text-xs">
                   <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">

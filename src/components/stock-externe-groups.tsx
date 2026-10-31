@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from "react";
+import { pl } from "@/lib/plural";
 import { Store, ChevronDown, Plus, BookOpen, Pencil, Trash2, Wallet, Package, XCircle } from "lucide-react";
 import { format } from "date-fns";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -345,7 +346,7 @@ export function StockExterneGroups({
                     <span className="text-[color:var(--gold)]">Dernière visite : {fdate(g.derniereVisite)}</span>
                   </p>
                   <p className="mt-1 text-xs text-muted-foreground tabular-nums">
-                    {g.titres} titres <span className="opacity-50">·</span> {g.deposes} déposés <span className="opacity-50">·</span> {g.restants} restants
+                    {pl(g.titres, "titre")} <span className="opacity-50">·</span> {pl(g.deposes, "déposé")} <span className="opacity-50">·</span> {pl(g.restants, "restant")}
                   </p>
                 </button>
                 <div className="flex shrink-0 items-center gap-1.5">

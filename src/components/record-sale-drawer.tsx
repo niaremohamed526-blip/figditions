@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from "react";
+import { pl } from "@/lib/plural";
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetDescription } from "@/components/ui/sheet";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -328,7 +329,7 @@ export function RecordSaleDrawer({
   const cartErrors = cart
     .filter((l) => l.quantite <= 0 || l.prix_unitaire <= 0 || l.quantite > l.disponible)
     .map((l) => l.quantite > l.disponible
-      ? `« ${l.titre} » : ${l.disponible} disponible(s)`
+      ? `« ${l.titre} » : ${pl(l.disponible, "disponible")}`
       : `« ${l.titre} » : quantité et prix requis`);
 
   /** Top 4 livres les plus vendus en vente libre : ajout en un clic. */
@@ -358,7 +359,7 @@ export function RecordSaleDrawer({
 
       const restant = Math.max(0, (currentStock.exemplaires_restants ?? 0) - qtyN);
       if (restant <= 5) {
-        toast.warning(`⚠️ Stock bas à ${currentStock.librairie_nom ?? "librairie"} : seulement ${restant} exemplaire(s) restant(s)`);
+        toast.warning(`⚠️ Stock bas à ${currentStock.librairie_nom ?? "librairie"} : seulement ${pl(restant, "exemplaire restant", "exemplaires restants")}`);
       }
 
       setSuccess({
@@ -406,7 +407,7 @@ export function RecordSaleDrawer({
         const si = interne.find((s) => s.manuscrit_id === l.manuscrit_id);
         const restant = Math.max(0, l.disponible - l.quantite);
         if (si && restant <= si.seuil_alerte) {
-          toast.warning(`⚠️ Stock interne bas pour « ${l.titre} » : ${restant} exemplaire(s) restant(s)`);
+          toast.warning(`⚠️ Stock interne bas pour « ${l.titre} » : ${pl(restant, "exemplaire restant", "exemplaires restants")}`);
         }
       });
 
@@ -424,7 +425,7 @@ export function RecordSaleDrawer({
       });
       setCart([]);
       try { localStorage.removeItem(draftKey); } catch { /* stockage indisponible */ }
-      toast.success(`Vente enregistrée : ${lignesSnapshot.length} livre(s)`);
+      toast.success(`Vente enregistrée : ${pl(lignesSnapshot.length, "livre")}`);
       onSaved?.();
     } catch (err: any) {
       toast.error(err?.message ?? "Erreur lors de l'enregistrement");
@@ -529,7 +530,7 @@ export function RecordSaleDrawer({
                 <div className="rounded-xl border border-border overflow-hidden">
                   <div className="flex items-center justify-between px-3 py-2 bg-muted/30 border-b border-border">
                     <span className="text-sm font-semibold">📚 Livres vendus</span>
-                    <span className="text-xs text-muted-foreground">{cart.length} article(s)</span>
+                    <span className="text-xs text-muted-foreground">{pl(cart.length, "article")}</span>
                   </div>
 
                   {cart.length === 0 ? (
@@ -581,8 +582,8 @@ export function RecordSaleDrawer({
                             <div className="flex items-center justify-between text-xs">
                               <span className={cn(over ? "text-red-400" : "text-muted-foreground")}>
                                 {over
-                                  ? `Stock insuffisant : ${l.disponible} disponible(s)`
-                                  : `${l.disponible} disponible(s) en stock interne`}
+                                  ? `Stock insuffisant : ${pl(l.disponible, "disponible")}`
+                                  : `${pl(l.disponible, "disponible")} en stock interne`}
                               </span>
                               <span className="font-mono tabular-nums text-[color:var(--gold)]">
                                 {fcfa(Math.round(l.quantite * l.prix_unitaire))}
@@ -926,7 +927,7 @@ export function RecordSaleDrawer({
 
                     <div className="rounded-xl border border-[color:var(--gold)]/30 bg-[color:var(--gold)]/5 p-4 space-y-2">
                       <div className="flex items-center gap-2 text-sm font-semibold">📊 Récapitulatif</div>
-                      <Row label="Quantité" value={`${qtyN} exemplaire(s)`} />
+                      <Row label="Quantité" value={`${pl(qtyN, "exemplaire")}`} />
                       <Row label="Prix unitaire" value={fcfa(prixN)} mono />
                       <div className="border-t border-border my-1" />
                       <div className="flex items-center justify-between">
@@ -1080,7 +1081,7 @@ function SuccessView({
         <div className="border-t border-border my-2" />
         <Row label="Type" value={result.type === "librairie" ? "Vente en librairie" : "Vente libre"} />
         {result.librairie && <Row label="Librairie" value={result.librairie} />}
-        <Row label="Quantité" value={`${result.quantite} exemplaire(s)`} />
+        <Row label="Quantité" value={`${pl(result.quantite, "exemplaire")}`} />
         <Row label={result.remise ? "Prix final unitaire" : "Prix unitaire"} value={fcfa(result.prixUnit)} mono />
         {result.remise ? (
           <>

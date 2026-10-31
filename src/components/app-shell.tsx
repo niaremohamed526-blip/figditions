@@ -5,7 +5,7 @@ import {
 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth, useProfile } from "@/hooks/use-auth";
-import { useI18n, type Lang } from "@/hooks/use-i18n";
+import { useI18n } from "@/hooks/use-i18n";
 import { cn } from "@/lib/utils";
 import { Logo } from "@/components/logo";
 import { planFor } from "@/lib/plans";
@@ -40,29 +40,11 @@ const NAV: NavItem[] = [
 ];
 
 
-function LangToggle({ lang, setLang }: { lang: Lang; setLang: (l: Lang) => void }) {
-  return (
-    <div className="inline-flex rounded-md border border-border bg-background/50 p-0.5 text-xs">
-      {(["fr", "en"] as Lang[]).map((l) => (
-        <button
-          key={l}
-          onClick={() => setLang(l)}
-          className={cn(
-            "px-2 py-1 rounded-[5px] font-semibold uppercase transition-colors",
-            lang === l ? "bg-primary text-primary-foreground" : "text-muted-foreground hover:text-foreground",
-          )}
-        >
-          {l}
-        </button>
-      ))}
-    </div>
-  );
-}
 
 export function AppShell({ children }: { children: ReactNode }) {
   const { user } = useAuth();
   const { profile, entreprise } = useProfile(user?.id);
-  const { t, lang, setLang } = useI18n();
+  const { t, lang } = useI18n();
   const path = useRouterState({ select: (s) => s.location.pathname });
   const navigate = useNavigate();
   const [mobileOpen, setMobileOpen] = useState(false);
@@ -159,7 +141,6 @@ export function AppShell({ children }: { children: ReactNode }) {
             <Logo className="h-16 w-auto" />
           </Link>
           <NotificationBell entrepriseId={entreprise?.id} hasUnseenChangelog={changelog.hasUnseen} onOpenChangelog={changelog.openHistory} />
-          <LangToggle lang={lang} setLang={setLang} />
         </div>
         <nav className="flex-1 px-3 py-6 space-y-1 overflow-y-auto">
           {items.map((n) => renderLink(n))}
@@ -190,7 +171,6 @@ export function AppShell({ children }: { children: ReactNode }) {
           <Logo className="h-10 w-auto" />
         </Link>
         <NotificationBell entrepriseId={entreprise?.id} hasUnseenChangelog={changelog.hasUnseen} onOpenChangelog={changelog.openHistory} />
-        <LangToggle lang={lang} setLang={setLang} />
       </div>
 
       <div

@@ -161,7 +161,7 @@ function TermsPage() {
         </ul>
         <h3>L'utilisateur s'engage à :</h3>
         <ul>
-          <li>Ne pas uploader de contenu illégal, contrefait ou pour lequel il ne détient pas les droits</li>
+          <li>Ne pas mettre en ligne de contenu illégal, contrefait ou pour lequel il ne détient pas les droits</li>
           <li>Ne pas tenter d'accéder à des données d'autres tenants, de contourner l'authentification, de scraper ou de surcharger la plateforme</li>
           <li>Maintenir la confidentialité de ses identifiants et de ceux de son équipe</li>
           <li>Utiliser la plateforme conformément aux lois maliennes, OHADA et internationales applicables</li>

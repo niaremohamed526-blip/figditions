@@ -317,7 +317,7 @@ export async function generateManuelStocksPdf(opts: { maison?: string | null } =
   step(2, "Téléchargez le modèle Excel (il contient déjà votre catalogue de titres publiés).");
   step(3, "Ouvrez le fichier dans Excel ou Google Sheets. Une ligne = un livre déposé.");
   step(4, "Remplissez les colonnes : titre, librairie, adresse, quantité, prix.");
-  step(5, "Enregistrez le fichier, puis dans FIGDITIONS cliquez sur « Uploader le fichier ».");
+  step(5, "Enregistrez le fichier, puis dans FIGDITIONS cliquez sur « Importer le fichier ».");
   step(6, "L'écran affiche un aperçu ligne par ligne : vérifiez, puis validez. Les 55 livres sont créés en quelques secondes.");
   callout("Attention", "Ne modifiez pas les intitulés des colonnes du modèle : le système les utilise pour retrouver chaque titre.", "warn");
 

@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
+import { pl } from "@/lib/plural";
 import { motion } from "motion/react";
 import {
   BookOpenCheck,
@@ -176,11 +177,11 @@ export function MedmoPhotoVentesCard({
         }
       }
       if ((json.succes ?? 0) > 0) {
-        toast.success(`${json.succes} vente(s) enregistrée(s) dans FIGDITIONS.`);
+        toast.success(`${pl(json.succes, "vente enregistrée", "ventes enregistrées")} dans FIGDITIONS.`);
         window.dispatchEvent(new CustomEvent("medmo:threads-changed"));
       }
       if ((json.echecs ?? 0) > 0) {
-        toast.warning(`${json.echecs} ligne(s) n'ont pas pu être enregistrées. Consultez le détail.`);
+        toast.warning(`${pl(json.echecs, "ligne n'a pas pu être enregistrée", "lignes n'ont pas pu être enregistrées")}. Consultez le détail.`);
       }
     } catch (e) {
       toast.error(e instanceof Error ? e.message : "Erreur lors de l'enregistrement.");
@@ -200,7 +201,7 @@ export function MedmoPhotoVentesCard({
       >
         <div className="flex items-center gap-2 text-sm font-semibold text-[color:var(--gold)]">
           <BookOpenCheck className="h-4 w-4" />
-          Enregistrement terminé : {okCount}/{resultats.length} vente(s) réussie(s)
+          Enregistrement terminé : {pl(okCount, "vente réussie", "ventes réussies")} sur {resultats.length}
         </div>
         <div className="space-y-1.5 text-xs">
           {resultats.map((r) => (
@@ -221,7 +222,7 @@ export function MedmoPhotoVentesCard({
         {correctionsApprises > 0 && (
           <p className="flex items-center gap-1.5 text-[11px] text-muted-foreground">
             <Sparkles className="h-3 w-3 text-[color:var(--gold)]" />
-            PR MEDMO a mémorisé {correctionsApprises} correction(s). Il reconnaîtra mieux ces
+            PR MEDMO a mémorisé {pl(correctionsApprises, "correction")}. Il reconnaîtra mieux ces
             titres et librairies la prochaine fois.
           </p>
         )}
@@ -239,11 +240,11 @@ export function MedmoPhotoVentesCard({
       <div className="flex items-center justify-between gap-2">
         <div className="flex items-center gap-2 text-sm font-semibold text-[color:var(--gold)]">
           <BookOpenCheck className="h-4 w-4" />
-          Ventes détectées sur {output.nombre_photos} photo(s)
+          Ventes détectées sur {pl(output.nombre_photos, "photo")}
         </div>
         {(output.doublons_fusionnes ?? 0) > 0 && (
           <span className="text-[10px] text-muted-foreground">
-            {output.doublons_fusionnes} doublon(s) fusionné(s)
+            {pl(output.doublons_fusionnes, "doublon fusionné", "doublons fusionnés")}
           </span>
         )}
       </div>
@@ -408,7 +409,7 @@ export function MedmoPhotoVentesCard({
       <div className="flex items-center justify-between gap-2 border-t border-[color:var(--gold)]/25 pt-2.5">
         <div className="text-xs">
           <span className="font-semibold">{selection.length}</span>
-          <span className="text-muted-foreground"> vente(s) : </span>
+          <span className="text-muted-foreground"> {selection.length < 2 ? "vente" : "ventes"} : </span>
           <span className="font-semibold text-[color:var(--gold)]">{fcfa(totalEstime)}</span>
         </div>
         <div className="flex gap-2">
@@ -430,7 +431,7 @@ export function MedmoPhotoVentesCard({
             className="inline-flex items-center gap-1.5 rounded-lg bg-[linear-gradient(135deg,#C8922A,#A67420)] px-3.5 py-1.5 text-[11px] font-semibold text-white hover:brightness-110 disabled:opacity-50"
           >
             {envoi ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Check className="h-3.5 w-3.5" />}
-            {envoi ? "Enregistrement…" : `Valider ${selection.length} vente(s)`}
+            {envoi ? "Enregistrement…" : `Valider ${pl(selection.length, "vente")}`}
           </motion.button>
         </div>
       </div>
