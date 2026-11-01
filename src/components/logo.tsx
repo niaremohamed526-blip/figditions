@@ -1,4 +1,4 @@
-import { FIGDITIONS_SITE_LOGO_URL } from "@/lib/brand-assets";
+import { FIGDITIONS_SITE_LOGO_GOLD_URL, FIGDITIONS_SITE_LOGO_URL } from "@/lib/brand-assets";
 import { cn } from "@/lib/utils";
 
 export function Logo({
@@ -24,11 +24,11 @@ export function Logo({
         ? "invert(65%) sepia(50%) saturate(500%) hue-rotate(5deg) brightness(0.9)"
         : undefined;
 
-  return (
+  const img = (
     <img
       src={FIGDITIONS_SITE_LOGO_URL}
       alt={alt}
-      className={cn("object-contain logo select-none", variant === "glow" && "logo-glow", className)}
+      className={cn("object-contain logo select-none", variant === "glow" && "logo-on-dark", className)}
       draggable={false}
       style={{
         background: "transparent",
@@ -38,5 +38,20 @@ export function Logo({
         ...style,
       }}
     />
+  );
+  if (variant !== "glow") return img;
+
+  // The glowing white logo only works on dark; the light theme swaps in the gold file.
+  return (
+    <>
+      {img}
+      <img
+        src={FIGDITIONS_SITE_LOGO_GOLD_URL}
+        alt={alt}
+        className={cn("object-contain logo select-none logo-on-light", className)}
+        draggable={false}
+        style={style}
+      />
+    </>
   );
 }

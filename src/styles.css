@@ -839,8 +839,7 @@ input[type="number"] {
   .brand-loader-logo, .brand-loader-halo, .brand-loader-orbit, .brand-loader-bar { animation: none; }
 }
 
-/* The white logo glows on dark; on the light theme it becomes solid gold. */
-html.light img.logo-glow {
-  mix-blend-mode: normal !important;
-  filter: invert(65%) sepia(50%) saturate(500%) hue-rotate(5deg) brightness(0.8) !important;
-}
+/* Logo: glowing white on dark, the gold file on the light theme (see Logo). */
+.logo-on-light { display: none !important; }
+html.light .logo-on-light { display: block !important; }
+html.light .logo-on-dark { display: none !important; }
