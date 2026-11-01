@@ -109,6 +109,7 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
               url: "https://figditions.xyz",
               logo: FIGDITIONS_SITE_LOGO_ABSOLUTE_URL,
               description: "Plateforme éditoriale tout-en-un pour les maisons d'édition, partout dans le monde.",
+              sameAs: ["https://www.instagram.com/figditions"],
             },
             {
               "@type": "WebSite",

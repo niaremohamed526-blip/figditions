@@ -852,7 +852,7 @@ function Footer() {
         <div className="lg:col-span-3">
           <h4 className="text-[12px] uppercase tracking-[0.2em] text-[#C8922A] mb-4">{t("Suivez-nous", "Follow us")}</h4>
           <ul className="space-y-2.5 text-sm">
-            <li><a href="https://www.instagram.com/[À COMPLÉTER : compte de marque]" target="_blank" rel="noopener noreferrer" className={link}>Instagram</a></li>
+            <li><a href="https://www.instagram.com/figditions" target="_blank" rel="noopener noreferrer" className={link}>Instagram</a></li>
             <li><a href="https://www.linkedin.com/in/figuira-éditions-113118301/" target="_blank" rel="noopener noreferrer" className={link}>LinkedIn</a></li>
           </ul>
         </div>
