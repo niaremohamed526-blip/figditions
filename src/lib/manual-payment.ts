@@ -38,6 +38,8 @@ export const PAYMENT_METHODS: Record<PaymentMethod, PaymentMethodDef> = {
 
 /** Numéro WhatsApp FIGDITIONS (Ghana) : références de paiement et support prioritaire. */
 export const FIGDITIONS_WHATSAPP = "233535264616";
+/** WhatsApp green with WhatsApp's dark text: readable, and recognisable at a glance. */
+export const WHATSAPP_BUTTON_CLASS = "bg-[#25D366] text-[#0B141A] font-medium hover:bg-[#1EBE5B]";
 export const FIGDITIONS_EMAIL = "figditions@gmail.com";
 
 const ALPHABET = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";

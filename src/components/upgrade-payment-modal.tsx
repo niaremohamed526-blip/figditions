@@ -13,7 +13,7 @@ import { PromoCodeCard } from "@/components/promo-code-card";
 import { useAuth, useProfile } from "@/hooks/use-auth";
 import {
   PAYMENT_METHODS, createQrPaymentRequest, generatePaymentReference,
-  mailtoLink, paymentMessage, whatsappLink, type PaymentMethod,
+  mailtoLink, paymentMessage, whatsappLink, WHATSAPP_BUTTON_CLASS, type PaymentMethod,
 } from "@/lib/manual-payment";
 
 type Plan = "pro" | "business";
@@ -307,7 +307,7 @@ export function UpgradePaymentModal({ open, onOpenChange, plan, defaultPeriode =
               </div>
 
               <div className="grid gap-2 sm:grid-cols-2">
-                <Button asChild className="h-11 bg-emerald-600 text-white hover:bg-emerald-600/90">
+                <Button asChild className={`h-11 ${WHATSAPP_BUTTON_CLASS}`}>
                   <a href={whatsappLink(message)} target="_blank" rel="noreferrer">
                     <MessageCircle className="h-4 w-4" /> Envoyer sur WhatsApp
                   </a>
