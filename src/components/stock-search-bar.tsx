@@ -33,7 +33,7 @@ export function Highlight({ text, term }: { text: string; term: string }) {
     <>
       {parts.map((p, k) =>
         p.hit ? (
-          <mark key={k} className="rounded bg-primary/25 px-0.5 font-semibold text-[#C8922A]">{p.s}</mark>
+          <mark key={k} className="rounded bg-primary/25 px-0.5 font-semibold text-primary">{p.s}</mark>
         ) : (
           <span key={k}>{p.s}</span>
         ),
@@ -53,7 +53,7 @@ export function useDebounced<T>(value: T, delay = 200) {
 }
 
 const LEVELS: Array<{ key: StockLevelFilter; label: string; active: string }> = [
-  { key: "tous", label: "Tous", active: "border-[#C8922A] bg-primary/15 text-[#C8922A]" },
+  { key: "tous", label: "Tous", active: "border-primary bg-primary/15 text-primary" },
   { key: "bon", label: "Bon stock", active: "border-green-500 bg-green-500/15 text-green-400" },
   { key: "bas", label: "Stock bas", active: "border-orange-500 bg-orange-500/15 text-orange-400" },
   { key: "epuise", label: "Épuisé", active: "border-red-500 bg-red-500/15 text-red-400" },
@@ -118,7 +118,7 @@ export function StockSearchBar({
           className={cn(
             "h-12 w-full rounded-xl border border-primary/15 bg-primary/[0.05] pl-11 pr-28 text-sm text-foreground",
             "placeholder:text-muted-foreground/60 outline-none transition-all",
-            "focus:border-[#C8922A] focus:ring-[3px] focus:ring-primary/20",
+            "focus:border-primary focus:ring-[3px] focus:ring-primary/20",
           )}
         />
         <div className="absolute right-3 top-1/2 flex -translate-y-1/2 items-center gap-2">
@@ -161,7 +161,7 @@ export function StockSearchBar({
           value={sort}
           onChange={(e) => onSort(e.target.value as StockSort)}
           aria-label="Trier par"
-          className="h-9 shrink-0 rounded-full border border-primary/15 bg-primary/[0.05] px-4 text-[13px] text-muted-foreground outline-none transition-colors hover:text-foreground focus:border-[#C8922A]"
+          className="h-9 shrink-0 rounded-full border border-primary/15 bg-primary/[0.05] px-4 text-[13px] text-muted-foreground outline-none transition-colors hover:text-foreground focus:border-primary"
         >
           {SORTS.map((s) => (
             <option key={s.key} value={s.key}>{s.label}</option>
@@ -173,7 +173,7 @@ export function StockSearchBar({
       {activeTerm.trim() ? (
         <div className="flex flex-wrap items-center justify-between gap-2 rounded-xl border border-primary/15 bg-primary/[0.05] px-4 py-2.5 text-sm">
           <p className="text-muted-foreground">
-            Recherche : <span className="font-semibold text-[#C8922A]">« {activeTerm.trim()} »</span> : {resultCount} livre(s) trouvé(s) sur {totalCount} au total
+            Recherche : <span className="font-semibold text-primary">« {activeTerm.trim()} »</span> : {resultCount} livre(s) trouvé(s) sur {totalCount} au total
           </p>
           <button
             type="button"

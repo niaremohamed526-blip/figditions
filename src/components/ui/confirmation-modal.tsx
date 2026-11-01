@@ -101,7 +101,7 @@ export function ConfirmationModal({
           boxShadow: "0 4px 16px rgba(200,146,42,0.25)",
           border: 0,
         }
-      : { background: "rgba(255,255,255,0.06)", color: "white", border: "1px solid rgba(255,255,255,0.1)" };
+      : { background: "var(--muted)", color: "var(--foreground)", border: "1px solid var(--border)" };
 
   const cancelStyle: React.CSSProperties =
     cancelVariant === "danger"
@@ -112,8 +112,8 @@ export function ConfirmationModal({
         }
       : {
           background: "transparent",
-          border: "1px solid rgba(255,255,255,0.08)",
-          color: "#B8A898",
+          border: "1px solid var(--border)",
+          color: "var(--muted-foreground)",
         };
 
   // Radix drawers/dialogs listen on document for "interact outside" events and
@@ -159,7 +159,7 @@ export function ConfirmationModal({
       >
         <div
           style={{
-            background: "rgba(26,18,8,0.97)",
+            background: "var(--popover)",
             border: "1px solid rgba(200,146,42,0.25)",
             borderRadius: 20,
             padding: "28px 24px",
@@ -187,7 +187,7 @@ export function ConfirmationModal({
             style={{
               fontSize: 16,
               fontWeight: 700,
-              color: "white",
+              color: "var(--foreground)",
               textAlign: "center",
               marginBottom: 8,
               lineHeight: 1.3,
@@ -198,7 +198,7 @@ export function ConfirmationModal({
           <p
             style={{
               fontSize: 13,
-              color: "#B8A898",
+              color: "var(--muted-foreground)",
               textAlign: "center",
               lineHeight: 1.5,
               margin: "0 0 24px 0",

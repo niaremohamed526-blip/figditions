@@ -16,8 +16,8 @@ export function StatusStepper({ statut }: { statut: string }) {
           const isPublish = i === lastIdx;
           const doneColor = isPublish ? "#22C55E" : "#C8922A";
           const currentColor = isPublish ? "#4ADE80" : "#E8B84B";
-          const textDone = isPublish ? "text-green-500" : "text-[#C8922A]";
-          const textCurrent = isPublish ? "text-green-400" : "text-[#E8B84B]";
+          const textDone = isPublish ? "text-green-500" : "text-primary";
+          const textCurrent = isPublish ? "text-green-400" : "text-[color:var(--gold)]";
           return (
             <li key={s} className="flex-1 flex flex-col items-center min-w-[64px]">
               <div className="flex items-center w-full">
@@ -61,8 +61,8 @@ export function StatusStepper({ statut }: { statut: string }) {
           const isPublish = i === lastIdx;
           const doneColor = isPublish ? "#22C55E" : "#C8922A";
           const currentColor = isPublish ? "#4ADE80" : "#E8B84B";
-          const textDone = isPublish ? "text-green-500" : "text-[#C8922A]";
-          const textCurrent = isPublish ? "text-green-400" : "text-[#E8B84B]";
+          const textDone = isPublish ? "text-green-500" : "text-primary";
+          const textCurrent = isPublish ? "text-green-400" : "text-[color:var(--gold)]";
           return (
             <li key={s} className="flex gap-3 items-start">
               <div className="flex flex-col items-center">
@@ -92,7 +92,7 @@ export function StatusStepper({ statut }: { statut: string }) {
       </ol>
 
       <p className="text-xs text-center text-muted-foreground">
-        Étape <span className="text-[#E8B84B] font-semibold">{currentIdx + 1}</span> sur {total}
+        Étape <span className="text-[color:var(--gold)] font-semibold">{currentIdx + 1}</span> sur {total}
       </p>
     </div>
   );

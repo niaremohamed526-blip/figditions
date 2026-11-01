@@ -15,6 +15,7 @@ import { notifyEntrepriseUpdated } from "@/hooks/use-auth";
 import type { PermissionKey } from "@/lib/permissions";
 import { useChangelog } from "@/hooks/use-changelog";
 import { ChangelogPanel } from "@/components/changelog-panel";
+import { ThemeToggle, useAppTheme } from "@/components/theme-toggle";
 
 type NavItem = {
   to: string;
@@ -48,6 +49,7 @@ export function AppShell({ children }: { children: ReactNode }) {
   const path = useRouterState({ select: (s) => s.location.pathname });
   const navigate = useNavigate();
   const [mobileOpen, setMobileOpen] = useState(false);
+  const themePref = useAppTheme();
 
   useRealtimeTable("entreprises", entreprise?.id ?? null, () => {
     notifyEntrepriseUpdated();
@@ -152,6 +154,7 @@ export function AppShell({ children }: { children: ReactNode }) {
               <p className="text-sm font-medium truncate">{companyName || t("Maison d'édition", "Publisher")}</p>
               <p className="text-xs text-muted-foreground truncate">{profile?.full_name ?? user?.email}</p>
             </div>
+            <ThemeToggle pref={themePref} />
             <button onClick={handleLogout} className="text-muted-foreground hover:text-foreground" title={t("Déconnexion", "Logout")}>
               <LogOut className="h-4 w-4" />
             </button>
@@ -206,6 +209,7 @@ export function AppShell({ children }: { children: ReactNode }) {
                 <p className="text-sm font-medium truncate">{companyName || t("Maison d'édition", "Publisher")}</p>
                 <p className="text-xs text-muted-foreground truncate">{profile?.full_name ?? user?.email}</p>
               </div>
+              <ThemeToggle pref={themePref} />
               <button onClick={handleLogout} className="text-muted-foreground hover:text-foreground" title={t("Déconnexion", "Logout")}>
                 <LogOut className="h-4 w-4" />
               </button>

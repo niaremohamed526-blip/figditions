@@ -21,6 +21,8 @@ import { MaintenanceBanner } from "@/components/maintenance-banner";
 
 import { registerPwa } from "@/lib/pwa-register";
 import { FIGDITIONS_APP_ICON_VERSION, FIGDITIONS_SITE_LOGO_ABSOLUTE_URL, FIGDITIONS_SITE_LOGO_URL } from "@/lib/brand-assets";
+import { THEME_BOOT_JS } from "@/lib/theme";
+import { useHtmlTheme } from "@/components/theme-toggle";
 
 import appCss from "../styles.css?url";
 
@@ -141,10 +143,11 @@ const SPLASH_JS = `(function(){try{var s=document.getElementById('figditions-spl
 
 function RootShell({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="fr">
+    <html lang="fr" suppressHydrationWarning>
       <head>
         <HeadContent />
         <style dangerouslySetInnerHTML={{ __html: SPLASH_CSS }} />
+        <script dangerouslySetInnerHTML={{ __html: THEME_BOOT_JS }} />
       </head>
       <body>
         <div id="figditions-splash" aria-hidden="true" suppressHydrationWarning>
@@ -163,6 +166,11 @@ function RootShell({ children }: { children: React.ReactNode }) {
       </body>
     </html>
   );
+}
+
+function ThemedToaster() {
+  const theme = useHtmlTheme();
+  return <Toaster richColors theme={theme} position="top-right" />;
 }
 
 function RootComponent() {
@@ -209,7 +217,7 @@ function RootComponent() {
         <OfflineBanner />
         <MaintenanceBanner />
         <Outlet />
-        <Toaster richColors theme="dark" position="top-right" />
+        <ThemedToaster />
       </TooltipProvider>
     </QueryClientProvider>
   );

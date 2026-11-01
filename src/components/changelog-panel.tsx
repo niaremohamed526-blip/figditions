@@ -90,7 +90,7 @@ export function ChangelogPanel({ entries, blocking = false, onClose }: Props) {
             >
               <Gift className="h-5 w-5" style={{ color: "var(--gold, #C8922A)" }} />
             </span>
-            <span className="text-[11px] font-semibold uppercase tracking-widest" style={{ color: "#C8922A" }}>
+            <span className="text-[11px] font-semibold uppercase tracking-widest" style={{ color: "var(--primary)" }}>
               Quoi de neuf
             </span>
           </div>
@@ -104,7 +104,7 @@ export function ChangelogPanel({ entries, blocking = false, onClose }: Props) {
           {list.map((entry, idx) => (
             <section key={entry.id} className={cn(idx > 0 && "mt-10 pt-8 border-t border-[rgba(200,146,42,0.15)]")}>
               <h2 className="text-[22px] font-bold leading-[1.3] text-foreground">{entry.hook}</h2>
-              <p className="mt-2 text-[15px] font-semibold" style={{ color: "#C8922A" }}>
+              <p className="mt-2 text-[15px] font-semibold" style={{ color: "var(--primary)" }}>
                 {entry.titre}
               </p>
               <p className="mt-1 text-[11px] text-muted-foreground">

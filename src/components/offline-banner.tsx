@@ -34,7 +34,7 @@ export function OfflineBanner() {
   return (
     <div
       role="status"
-      className="fixed inset-x-0 top-0 z-[9998] bg-[#1A1208] border-b border-[color:var(--gold)]/40 text-white text-xs md:text-sm px-4 py-2 flex items-center justify-center gap-2 shadow-lg"
+      className="fixed inset-x-0 top-0 z-[9998] bg-card border-b border-[color:var(--gold)]/40 text-foreground text-xs md:text-sm px-4 py-2 flex items-center justify-center gap-2 shadow-lg"
     >
       <WifiOff className="h-4 w-4 text-[color:var(--gold)]" />
       <span>

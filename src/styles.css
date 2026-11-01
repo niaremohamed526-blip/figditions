@@ -142,6 +142,68 @@
   --space-5xl: 120px;
 }
 
+/* Light theme (logged-in app only, see src/lib/theme.ts): warm paper and
+   ink, with a deeper gold so gold text stays readable on white. */
+html.light {
+  --background: oklch(0.975 0.01 80);          /* cream paper */
+  --foreground: oklch(0.24 0.025 60);          /* dark brown ink */
+  --card: oklch(1 0 0);
+  --card-foreground: oklch(0.24 0.025 60);
+  --popover: oklch(1 0 0);
+  --popover-foreground: oklch(0.24 0.025 60);
+  --primary: oklch(0.6 0.13 70);
+  --primary-foreground: oklch(1 0 0);
+  --secondary: oklch(0.945 0.02 80);
+  --secondary-foreground: oklch(0.24 0.025 60);
+  --muted: oklch(0.95 0.015 80);
+  --muted-foreground: oklch(0.47 0.03 60);
+  --accent: oklch(0.94 0.025 80);
+  --accent-foreground: oklch(0.24 0.025 60);
+  --destructive: oklch(0.56 0.22 27);
+  --destructive-foreground: oklch(1 0 0);
+  --border: oklch(0.55 0.07 70 / 0.22);
+  --input: oklch(0.55 0.07 70 / 0.3);
+  --ring: oklch(0.6 0.13 70);
+  --gold: oklch(0.58 0.13 72);
+
+  --sidebar: oklch(0.96 0.015 80);
+  --sidebar-foreground: oklch(0.24 0.025 60);
+  --sidebar-primary: oklch(0.6 0.13 70);
+  --sidebar-primary-foreground: oklch(1 0 0);
+  --sidebar-accent: oklch(0.93 0.025 80);
+  --sidebar-accent-foreground: oklch(0.24 0.025 60);
+  --sidebar-border: oklch(0.55 0.07 70 / 0.18);
+  --sidebar-ring: oklch(0.6 0.13 70);
+}
+html.light * { scrollbar-color: rgba(60,40,10,0.18) transparent; }
+html.light *::-webkit-scrollbar-thumb { background: rgba(60,40,10,0.18); }
+html.light table thead th { color: var(--color-muted-foreground); background: rgba(60,40,10,0.03); }
+html.light table tbody tr:hover { background: rgba(60,40,10,0.035); }
+html.light table tbody tr:nth-child(even) { background: rgba(60,40,10,0.015); }
+html.light .glass,
+html.light .btn-glass { background: rgba(255,255,255,0.7); border-color: var(--color-border); }
+html.light .btn-glass:hover { background: #fff; }
+html.light .glass-card,
+html.light .stat-card { background: var(--color-card); border-color: var(--color-border); box-shadow: 0 1px 3px rgba(60,40,10,0.06); }
+html.light .gradient-border { background: linear-gradient(#fff, #fff) padding-box, linear-gradient(135deg, #E8B84B, #C8922A) border-box; }
+html.light .skeleton-shimmer { background-image: linear-gradient(90deg, rgba(60,40,10,0.04) 0%, rgba(60,40,10,0.09) 50%, rgba(60,40,10,0.04) 100%); }
+html.light .text-gradient { background-image: linear-gradient(135deg, #2b1f10, #6b5a48); }
+html.light .dash-card {
+  background: var(--color-card);
+  box-shadow: 0 1px 3px rgba(60,40,10,0.06);
+}
+html.light .dash-card:hover { box-shadow: 0 12px 32px rgba(60,40,10,0.12); }
+html.light select:not([data-radix-select-trigger]) { color: var(--color-foreground); color-scheme: light; background-color: #fff; }
+html.light select:not([data-radix-select-trigger]) option { background-color: #fff; color: var(--color-foreground); }
+html.light input[type="date"],
+html.light input[type="datetime-local"],
+html.light input[type="time"] { color-scheme: light; }
+html.light [data-sonner-toaster] [data-sonner-toast] {
+  background: rgba(255,255,255,0.97) !important;
+  border-color: var(--color-border) !important;
+  box-shadow: 0 8px 32px rgba(60,40,10,0.12) !important;
+}
+
 @layer base {
   * { border-color: var(--color-border); }
   html, body {

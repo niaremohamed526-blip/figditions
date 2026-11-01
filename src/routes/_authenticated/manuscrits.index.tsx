@@ -1,3 +1,4 @@
+import { CHART_TOOLTIP_STYLE } from "@/lib/chart-style";
 import { createFileRoute } from "@tanstack/react-router";
 import { useEffect, useMemo, useState } from "react";
 import { Plus, Search, BookOpen, Loader2, Pencil, Trash2, FileSpreadsheet } from "lucide-react";
@@ -545,7 +546,7 @@ function EditorialAnalytics({ items }: { items: Manuscrit[] | null }) {
                   <CartesianGrid strokeDasharray="3 3" stroke="#1E3A5F" />
                   <XAxis type="number" stroke="#94A3B8" fontSize={12} />
                   <YAxis type="category" dataKey="stage" stroke="#94A3B8" fontSize={12} width={90} />
-                  <Tooltip contentStyle={{ background: "#1A1208", border: "1px solid #1E3A5F", borderRadius: 8 }} formatter={(v: number) => `${v} jours`} />
+                  <Tooltip contentStyle={CHART_TOOLTIP_STYLE} formatter={(v: number) => `${v} jours`} />
                   <Bar dataKey="days" fill="url(#stageGrad)" radius={[0, 6, 6, 0]} />
                 </BarChart>
               </ResponsiveContainer>
@@ -561,7 +562,7 @@ function EditorialAnalytics({ items }: { items: Manuscrit[] | null }) {
                   <CartesianGrid strokeDasharray="3 3" stroke="#1E3A5F" />
                   <XAxis dataKey="label" stroke="#94A3B8" fontSize={12} />
                   <YAxis stroke="#94A3B8" fontSize={12} allowDecimals={false} />
-                  <Tooltip contentStyle={{ background: "#1A1208", border: "1px solid #1E3A5F", borderRadius: 8 }} />
+                  <Tooltip contentStyle={CHART_TOOLTIP_STYLE} />
                   <Bar dataKey="count" fill="#C8922A" radius={[6, 6, 0, 0]} />
                 </BarChart>
               </ResponsiveContainer>

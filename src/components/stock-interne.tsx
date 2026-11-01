@@ -1,3 +1,4 @@
+import { CHART_TOOLTIP_STYLE } from "@/lib/chart-style";
 import { useEffect, useMemo, useState } from "react";
 import {
   Warehouse, Truck, ShoppingBag, BellRing, Plus, ArrowUpDown, History, Pencil,
@@ -82,11 +83,11 @@ interface Mouvement {
 
 
 const MOUVEMENT_LABEL: Record<string, { icon: string; label: string; sign: "+" | "-" | "~"; color: string }> = {
-  impression:          { icon: "📥", label: "Nouveau stock reçu",       sign: "+", color: "text-[#C8922A]" },
+  impression:          { icon: "📥", label: "Nouveau stock reçu",       sign: "+", color: "text-primary" },
   transfert_librairie: { icon: "📤", label: "Transfert vers librairie", sign: "-", color: "text-blue-400" },
   vente_directe:       { icon: "🛍️", label: "Vente libre",              sign: "-", color: "text-blue-400" },
   evenement:           { icon: "📚", label: "Événement / Exposition",   sign: "-", color: "text-blue-400" },
-  retour_librairie:    { icon: "🔄", label: "Retour de dépôt",          sign: "+", color: "text-[#C8922A]" },
+  retour_librairie:    { icon: "🔄", label: "Retour de dépôt",          sign: "+", color: "text-primary" },
   perte:               { icon: "❌", label: "Perte / Dommage",          sign: "-", color: "text-red-400" },
   don:                 { icon: "🎁", label: "Don / Donation",           sign: "-", color: "text-sky-400" },
   ajustement:          { icon: "🔧", label: "Ajustement manuel",        sign: "~", color: "text-yellow-400" },
@@ -233,7 +234,7 @@ export function StockInterneTab({ entrepriseId, userId }: { entrepriseId: string
                   ? "text-red-400 bg-red-500/15 border-red-500/30"
                   : r.quantite_disponible <= r.seuil_alerte
                   ? "text-orange-400 bg-orange-500/15 border-orange-500/30"
-                  : "text-[#C8922A] bg-primary/15 border-primary/30";
+                  : "text-primary bg-primary/15 border-primary/30";
               const valeur = r.quantite_disponible * Number(r.cout_unitaire_impression_fcfa || 0);
               return (
                 <tr key={r.manuscrit_id} className="group border-t border-border hover:bg-primary/5 transition-colors">
@@ -242,7 +243,7 @@ export function StockInterneTab({ entrepriseId, userId }: { entrepriseId: string
                       <span className="text-lg">{foreign ? "🌍" : "📚"}</span>
                       <div className="min-w-0">
                         <p className="font-medium"><Highlight text={r.titre} term={term} /></p>
-                        <p className="text-xs text-[#C8922A]"><Highlight text={r.auteur} term={term} /></p>
+                        <p className="text-xs text-primary"><Highlight text={r.auteur} term={term} /></p>
                         {r.emplacement && (
                           <span className="mt-1 inline-flex rounded-full bg-muted px-2 py-0.5 text-[10px] text-muted-foreground">
                             <Highlight text={r.emplacement} term={term} />
@@ -460,7 +461,7 @@ export function StockInterneTab({ entrepriseId, userId }: { entrepriseId: string
         </div>
       ) : visibleRows.length === 0 ? (
         <div className="rounded-xl border border-border bg-card py-14 text-center px-4 animate-[fade-up_0.3s_ease-out_both]">
-          <Search className="h-10 w-10 mx-auto text-[#C8922A]" />
+          <Search className="h-10 w-10 mx-auto text-primary" />
           <p className="mt-3 font-medium">
             {term.trim() ? `Aucun résultat pour « ${term.trim()} »` : "Aucun livre pour ce filtre"}
           </p>
@@ -997,7 +998,7 @@ function MouvementForm({
           />
 
           {currentStock && (
-            <p className="text-xs text-muted-foreground">Stock disponible: <span className="text-[#C8922A] font-semibold">{currentStock.quantite_disponible}</span></p>
+            <p className="text-xs text-muted-foreground">Stock disponible: <span className="text-primary font-semibold">{currentStock.quantite_disponible}</span></p>
           )}
         </div>
         <div className="space-y-2">
@@ -1045,9 +1046,9 @@ function MouvementForm({
                 )}
                 {selectedLibrairie && (
                   <p className="text-xs text-muted-foreground">
-                    {selectedLibrairie.exemplaires_deposes} ex. envoyés : <span className="text-[#C8922A] font-semibold">Maximum retournable : {maxRetour}</span>
+                    {selectedLibrairie.exemplaires_deposes} ex. envoyés : <span className="text-primary font-semibold">Maximum retournable : {maxRetour}</span>
                     {selectedLibrairie.provenance === "hors_stock" && (
-                      <span className="mt-0.5 block text-[11px] text-[#C8922A]">
+                      <span className="mt-0.5 block text-[11px] text-primary">
                         📤 Dépôt direct : le retour fera entrer ces exemplaires dans l'entrepôt (jamais prélevés du stock interne).
                       </span>
                     )}
@@ -1064,7 +1065,7 @@ function MouvementForm({
                 />
                 {(provenance === "evenement" || provenance === "exposition") && currentStock && (
                   <p className="text-xs text-muted-foreground">
-                    <span className="text-[#C8922A] font-semibold">Maximum retournable : {maxRetour}</span> (exemplaires exposés)
+                    <span className="text-primary font-semibold">Maximum retournable : {maxRetour}</span> (exemplaires exposés)
                   </p>
                 )}
               </div>
@@ -1105,7 +1106,7 @@ function MouvementForm({
         </div>
 
         {isDon && (
-          <p className="rounded-r-lg border-l-[3px] border-[#C8922A] bg-[rgba(200,146,42,0.08)] px-3 py-2 text-xs text-muted-foreground">
+          <p className="rounded-r-lg border-l-[3px] border-primary bg-[rgba(200,146,42,0.08)] px-3 py-2 text-xs text-muted-foreground">
             💡 Ce mouvement ne génère aucun chiffre d'affaires ni droits d'auteur : il s'agit d'un don sans contrepartie financière.
           </p>
         )}
@@ -1494,7 +1495,7 @@ function HistoryView({
                 <CartesianGrid strokeDasharray="3 3" stroke="#1E3A5F" />
                 <XAxis dataKey="date" stroke="#94A3B8" fontSize={11} />
                 <YAxis stroke="#94A3B8" fontSize={11} allowDecimals={false} />
-                <Tooltip contentStyle={{ background: "#1A1208", border: "1px solid #1E3A5F", borderRadius: 8 }} />
+                <Tooltip contentStyle={CHART_TOOLTIP_STYLE} />
                 <ReferenceLine y={stock.seuil_alerte} stroke="#EF4444" strokeDasharray="4 4" label={{ value: "seuil", fill: "#EF4444", fontSize: 10 }} />
                 <Line type="monotone" dataKey="stock" stroke="#C8922A" strokeWidth={2} dot={{ r: 3 }} />
               </LineChart>
@@ -1592,7 +1593,7 @@ function MiniStat({ label, value, highlight }: { label: string; value: number; h
   return (
     <div className="rounded-lg border border-border bg-background/40 p-3">
       <p className="text-[10px] uppercase tracking-wide text-muted-foreground">{label}</p>
-      <p className={cn("mt-0.5 text-lg font-bold tabular-nums", highlight && "text-[#C8922A]")}>{value}</p>
+      <p className={cn("mt-0.5 text-lg font-bold tabular-nums", highlight && "text-primary")}>{value}</p>
     </div>
   );
 }
@@ -1684,7 +1685,7 @@ function DistributionAnalytics({
                   <CartesianGrid strokeDasharray="3 3" stroke="#1E3A5F" />
                   <XAxis type="number" stroke="#94A3B8" fontSize={11} unit="%" />
                   <YAxis type="category" dataKey="name" stroke="#94A3B8" fontSize={11} width={110} />
-                  <Tooltip contentStyle={{ background: "#1A1208", border: "1px solid #1E3A5F", borderRadius: 8 }} formatter={(v: number) => `${v}%`} />
+                  <Tooltip contentStyle={CHART_TOOLTIP_STYLE} formatter={(v: number) => `${v}%`} />
                   <Legend />
                   <Bar dataKey="librairies" name="Librairies" stackId="d" fill="#3B82F6" />
                   <Bar dataKey="direct"     name="Vente libre" stackId="d" fill="#E8B84B" />

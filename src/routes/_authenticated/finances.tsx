@@ -1,3 +1,4 @@
+import { CHART_TOOLTIP_STYLE } from "@/lib/chart-style";
 import { createFileRoute } from "@tanstack/react-router";
 import { useEffect, useMemo, useState } from "react";
 import {
@@ -291,7 +292,7 @@ function FinancesInner({
                       <XAxis dataKey="label" stroke="#94A3B8" fontSize={12} />
                       <YAxis stroke="#94A3B8" fontSize={12} tickFormatter={(v) => `${(v / 1000).toFixed(0)}k`} />
                       <Tooltip
-                        contentStyle={{ background: "#1A1208", border: "1px solid #1E3A5F", borderRadius: 8 }}
+                        contentStyle={CHART_TOOLTIP_STYLE}
                         formatter={(v: number) => fcfa(v)}
                       />
                       <Legend />
@@ -314,7 +315,7 @@ function FinancesInner({
                       <Pie data={pieData} dataKey="value" nameKey="name" outerRadius={80} label={(e) => `${e.name}`}>
                         {pieData.map((_, i) => <Cell key={i} fill={COLORS[i % COLORS.length]} />)}
                       </Pie>
-                      <Tooltip contentStyle={{ background: "#1A1208", border: "1px solid #1E3A5F", borderRadius: 8 }} formatter={(v: number) => fcfa(v)} />
+                      <Tooltip contentStyle={CHART_TOOLTIP_STYLE} formatter={(v: number) => fcfa(v)} />
                     </PieChart>
                   </ResponsiveContainer>
                 )}
@@ -517,7 +518,7 @@ function FinancesAnalytics({ ventes, manuscrits, aMap, mMap }: { ventes: VenteRo
                 <CartesianGrid strokeDasharray="3 3" stroke="#1E3A5F" />
                 <XAxis dataKey="label" stroke="#94A3B8" fontSize={12} />
                 <YAxis stroke="#94A3B8" fontSize={12} tickFormatter={(v) => `${(v / 1000).toFixed(0)}k`} />
-                <Tooltip contentStyle={{ background: "#1A1208", border: "1px solid #1E3A5F", borderRadius: 8 }} formatter={(v: number) => fcfa(v)} />
+                <Tooltip contentStyle={CHART_TOOLTIP_STYLE} formatter={(v: number) => fcfa(v)} />
                 <Legend />
                 <Bar dataKey="revenue" name="Mensuel" fill="#C8922A" radius={[6, 6, 0, 0]} />
                 <Line type="monotone" dataKey="cumul" name="Cumulé" stroke="#E8B84B" strokeWidth={2} />

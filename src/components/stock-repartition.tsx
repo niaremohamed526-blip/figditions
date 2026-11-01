@@ -32,7 +32,7 @@ export function StockRepartition({ entrepriseId }: { entrepriseId: string | null
       </div>
 
       <div className="mt-3 flex h-3 w-full overflow-hidden rounded-full bg-muted">
-        <div className="h-full bg-[#C8922A]" style={{ width: `${t.stockTotal ? pctInt : 0}%` }} />
+        <div className="h-full bg-primary" style={{ width: `${t.stockTotal ? pctInt : 0}%` }} />
         <div className="h-full bg-[#7A4A1E]" style={{ width: `${t.stockTotal ? pctExt : 0}%` }} />
       </div>
 

@@ -1,3 +1,4 @@
+import { CHART_TOOLTIP_STYLE } from "@/lib/chart-style";
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { pl } from "@/lib/plural";
 import { useEffect, useMemo, useState } from "react";
@@ -426,7 +427,7 @@ function DashboardPage() {
                     <CartesianGrid strokeDasharray="3 3" stroke="#1E3A5F" />
                     <XAxis dataKey="label" stroke="#94A3B8" fontSize={12} />
                     <YAxis stroke="#94A3B8" fontSize={12} tickFormatter={(v) => `${(v/1000).toFixed(0)}k`} />
-                    <Tooltip contentStyle={{ background: "#1A1208", border: "1px solid #1E3A5F", borderRadius: 8 }} formatter={(v: number) => fcfa(v)} />
+                    <Tooltip contentStyle={CHART_TOOLTIP_STYLE} formatter={(v: number) => fcfa(v)} />
                     <Area type="monotone" dataKey="revenue" stroke="#C8922A" strokeWidth={2} fill="url(#revGradient)" />
                   </AreaChart>
                 </ResponsiveContainer>
@@ -444,7 +445,7 @@ function DashboardPage() {
                       <Pie data={statusPie.filter((s) => s.value > 0)} dataKey="value" nameKey="name" innerRadius={55} outerRadius={85} paddingAngle={2}>
                         {statusPie.filter((s) => s.value > 0).map((s) => <Cell key={s.name} fill={s.color} />)}
                       </Pie>
-                      <Tooltip contentStyle={{ background: "#1A1208", border: "1px solid #1E3A5F", borderRadius: 8 }} />
+                      <Tooltip contentStyle={CHART_TOOLTIP_STYLE} />
                     </PieChart>
                   </ResponsiveContainer>
                   <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none">

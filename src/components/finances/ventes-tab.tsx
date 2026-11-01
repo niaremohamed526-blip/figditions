@@ -481,7 +481,7 @@ export function VentesTab({
                 return (
                   <div
                     key={g.key}
-                    className="rounded-xl border border-[rgba(200,146,42,0.15)] bg-[rgba(26,18,8,0.85)] transition-colors hover:border-[rgba(200,146,42,0.3)]"
+                    className="rounded-xl border border-[rgba(200,146,42,0.15)] bg-card/85 transition-colors hover:border-[rgba(200,146,42,0.3)]"
                   >
                     {/* En-tête du groupe */}
                     <div
