@@ -38,9 +38,11 @@ const MAX_SIZE_MB = 50;
 
 function ConversionsPage() {
   const { user } = useAuth();
-  const { entreprise } = useProfile(user?.id);
+  const { entreprise, loading } = useProfile(user?.id);
   const plan = planFor(entreprise?.plan);
 
+  // Wait for the plan: a paying house must never see the lock flash.
+  if (loading) return <Skeleton className="h-64 w-full" />;
   if (!plan.conversions) {
     return <LockedPage feature="Conversion ePub & MOBI" requiredPlan="pro" />;
   }

@@ -22,6 +22,8 @@ import {
 import { cn } from "@/lib/utils";
 import { fcfa } from "@/lib/format";
 import { LockedPage } from "@/components/locked-page";
+import { planFor } from "@/lib/plans";
+import type { AppPlan } from "@/hooks/use-auth";
 import { generateBordereauPdf, type BordereauLigne, type BordereauLot } from "@/lib/pdf-bordereau";
 
 interface StockRow {
@@ -78,7 +80,8 @@ export function BordereauxTab({
   stocks: StockRow[];
   titreMap: Record<string, string>;
 }) {
-  const isBusiness = (entreprise?.plan ?? "starter") === "business";
+  // Bordereaux come with Finances (Pro and Business), as the plans promise.
+  const hasBordereaux = planFor(entreprise?.plan as AppPlan).finances;
   const [items, setItems] = useState<Bordereau[] | null>(null);
   const [genOpen, setGenOpen] = useState(false);
   const [toDelete, setToDelete] = useState<Bordereau | null>(null);
@@ -110,10 +113,11 @@ export function BordereauxTab({
     setItems(((data ?? []) as any) as Bordereau[]);
   };
 
-  useEffect(() => { if (isBusiness) load(); }, [isBusiness]);
+  useEffect(() => { if (hasBordereaux) load(); }, [hasBordereaux]);
 
-  if (!isBusiness) {
-    return <LockedPage feature="les bordereaux de dépôt et de vente" requiredPlan="business" />;
+  if (!entreprise) return null;
+  if (!hasBordereaux) {
+    return <LockedPage feature="les bordereaux de dépôt et de vente" requiredPlan="pro" />;
   }
 
   const remove = async () => {

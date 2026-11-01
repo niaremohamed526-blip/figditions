@@ -1,5 +1,6 @@
 import { createFileRoute, useNavigate, useSearch } from "@tanstack/react-router";
 import { useEffect, useMemo, useRef, useState } from "react";
+import { whatsappLink } from "@/lib/manual-payment";
 import { Check, X, Sparkles, UserPlus, Trash2, Loader2, Crown, Lock, Copy, Upload, Save, AlertTriangle, KeyRound, Building2, Settings2, RotateCw } from "lucide-react";
 import { useServerFn } from "@tanstack/react-start";
 import { supabase } from "@/integrations/supabase/client";
@@ -672,6 +673,17 @@ function PlanCard({ plan, entreprise, onUpgrade, isAdmin }: {
                 <Crown className="h-4 w-4" /> Passer au Business
               </Button>
             </>
+          )}
+          {plan === "business" && (
+            <Button asChild variant="outline">
+              <a
+                href={whatsappLink("Bonjour, j'ai besoin d'aide sur FIGDITIONS (plan Business).")}
+                target="_blank"
+                rel="noopener noreferrer"
+              >
+                Support prioritaire WhatsApp
+              </a>
+            </Button>
           )}
           {isAdmin && plan === "pro" && (
             <Button onClick={() => onUpgrade("business")} className="bg-[color:var(--gold)] text-background hover:bg-[color:var(--gold)]/90">

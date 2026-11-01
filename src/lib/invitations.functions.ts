@@ -2,6 +2,8 @@ import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 import { PAGES, type Permissions } from "./permissions";
+import { planFor } from "./plans";
+import type { AppPlan } from "@/hooks/use-auth";
 
 const permissionsSchema = z.record(z.string(), z.boolean());
 
@@ -88,6 +90,22 @@ export const createInvitation = createServerFn({ method: "POST" })
       throw new Error("Action réservée à l'administrateur");
     }
     const perms = sanitizePermissions(data.permissions);
+
+    // Seats per plan (members + pending invitations), same rule as the team page.
+    const [{ data: ent }, { count: membres }, { count: enAttente }] = await Promise.all([
+      context.supabase.from("entreprises").select("plan").eq("id", me.entreprise_id).single(),
+      context.supabase.from("profiles").select("id", { count: "exact", head: true }).eq("entreprise_id", me.entreprise_id),
+      context.supabase.from("invitations").select("id", { count: "exact", head: true })
+        .eq("entreprise_id", me.entreprise_id).eq("statut", "en_attente"),
+    ]);
+    const plan = planFor(ent?.plan as AppPlan);
+    if ((membres ?? 0) + (enAttente ?? 0) >= plan.maxUsers) {
+      throw new Error(
+        plan.key === "starter"
+          ? "Le plan Starter est limité à 1 utilisateur. Passez au plan Pro pour inviter votre équipe."
+          : `Votre plan ${plan.label} est limité à ${plan.maxUsers} utilisateurs. Passez au plan Business pour en ajouter.`,
+      );
+    }
 
     const { data: row, error } = await context.supabase
       .from("invitations")
