@@ -46,7 +46,7 @@ function TermsPage() {
   return (
     <LegalShell
       title="Conditions Générales d'Utilisation"
-      subtitle="Dernière mise à jour : Août 2026"
+      subtitle="Dernière mise à jour : novembre 2026"
       toc={toc}
     >
       <Section id="acceptation" title="1. Acceptation">
@@ -59,8 +59,8 @@ function TermsPage() {
 
       <Section id="description" title="2. Description du service">
         <p>
-          FIGDITIONS est une plateforme SaaS destinée aux maisons d'édition, principalement
-          en zone OHADA, pour gérer manuscrits, auteurs, contrats, stocks, ventes, bordereaux,
+          FIGDITIONS est une plateforme SaaS destinée aux maisons d'édition, utilisable dans
+          tous les pays et conçue d'abord pour l'Afrique de l'Ouest, pour gérer manuscrits, auteurs, contrats, stocks, ventes, bordereaux,
           finances, partage sécurisé de lecture et conversion de fichiers. Elle est accessible
           via le web et installable en tant qu'application (PWA) avec un mode sans connexion et
           des notifications push optionnelles.
@@ -71,7 +71,7 @@ function TermsPage() {
         <ul>
           <li>La création de compte se fait par email et mot de passe.</li>
           <li>Chaque maison d'édition dispose d'un espace isolé par organisation avec ses propres membres et rôles.</li>
-          <li>L'administrateur peut inviter des membres par email et leur attribuer un rôle. Chaque membre est responsable de la confidentialité de ses identifiants.</li>
+          <li>L'administrateur peut inviter des membres et leur attribuer des accès, dans la limite d'utilisateurs de son plan. Chaque membre est responsable de la confidentialité de ses identifiants.</li>
           <li>Toute activité effectuée depuis un compte est réputée réalisée sous la responsabilité de son titulaire.</li>
         </ul>
       </Section>
@@ -100,6 +100,11 @@ function TermsPage() {
           Les plans payants incluent des quotas mensuels, remis à zéro le 1er de chaque mois. Plan Pro : {LIMITES.pro.conversionsParMois} conversions ePub &amp; MOBI, {LIMITES.pro.partagesParMois} liens de lecture sécurisés et {LIMITES.pro.medmoParMois} questions à Pr. MEDMO par mois. Plan Business : {LIMITES.business.conversionsParMois} conversions par mois, liens de lecture et questions à Pr. MEDMO illimités dans le cadre d'un usage raisonnable, modèles de contrat personnalisés et support prioritaire. Le plan Starter inclut {LIMITES.starter.medmoParMois} questions à Pr. MEDMO par mois.
         </p>
         <p>
+          Les limites de chaque plan (manuscrits, librairies, utilisateurs, quotas mensuels et
+          fonctionnalités incluses) sont appliquées automatiquement par la plateforme. Le détail
+          à jour de chaque plan figure sur la page d'accueil et dans vos paramètres.
+        </p>
+        <p>
           Des codes promotionnels peuvent être proposés ponctuellement. Ils sont soumis à
           leurs propres conditions (durée, plan attribué, usage unique par utilisateur).
         </p>
@@ -109,8 +114,8 @@ function TermsPage() {
         <ul>
           <li>Les moyens de paiement acceptés sont : Orange Money Mali et Wave Mali.</li>
           <li>Les paiements manuels par QR code se font via Orange Money Mali ou Wave Mali. Vous scannez le QR affiché, effectuez le transfert, puis transmettez la référence à FIGDITIONS par WhatsApp ou email. L'activation de l'abonnement est validée manuellement par FIGDITIONS dans les meilleurs délais.</li>
-          <li>Les abonnements sont facturés d'avance et doivent être renouvelés manuellement à la fin de la période choisie.</li>
-          <li>Vous pouvez annuler le renouvellement à tout moment depuis vos paramètres. L'accès reste ouvert jusqu'à la fin de la période payée.</li>
+          <li>Les abonnements sont payés d'avance, pour un mois ou un an. Il n'y a aucun renouvellement automatique : rien n'est prélevé sans votre action.</li>
+          <li>Sans nouveau paiement, votre maison repasse au plan Starter à la fin de la période payée. Vos données sont conservées ; seules les fonctionnalités et limites du plan Starter s'appliquent.</li>
           <li>Sauf disposition légale contraire, les périodes entamées ne sont pas remboursables.</li>
         </ul>
       </Section>
@@ -145,8 +150,9 @@ function TermsPage() {
 
       <Section id="ia" title="9. Fonctionnalités IA">
         <p>
-          Certaines fonctionnalités utilisent Google Gemini via le Lovable AI Gateway. Les
-          contenus générés par IA sont fournis « en l'état ». Vous devez les relire et les
+          Pr. MEDMO et l'import de contrats utilisent l'API Gemini de Google. Pr. MEDMO
+          n'enregistre aucune vente ni aucune donnée sans votre confirmation. Les contenus
+          générés par IA sont fournis « en l'état ». Vous devez les relire et les
           valider avant tout usage contractuel, commercial ou éditorial. FIGDITIONS ne
           garantit ni l'exactitude ni l'exhaustivité des sorties générées.
         </p>
@@ -171,8 +177,8 @@ function TermsPage() {
 
       <Section id="disponibilite" title="11. Disponibilité et prestataires">
         <p>
-          Le service repose sur des prestataires tiers (Lovable Cloud / Supabase, Vercel,
-          CloudConvert, Google Gemini) et sur des services validés manuellement par
+          Le service repose sur des prestataires tiers (Supabase, Vercel, CloudConvert,
+          Google pour l'API Gemini) et sur des services validés manuellement par
           FIGDITIONS (paiements Orange Money / Wave). Les notifications push installées
           dépendent du navigateur et du système de l'utilisateur. Une interruption de la part
           de ces fournisseurs peut entraîner une indisponibilité temporaire du service. Nous
@@ -193,7 +199,8 @@ function TermsPage() {
 
       <Section id="resiliation" title="13. Résiliation">
         <ul>
-          <li>Vous pouvez résilier votre abonnement à tout moment depuis vos paramètres. Vos données restent accessibles jusqu'à la fin de la période payée.</li>
+          <li>Vous pouvez arrêter votre abonnement à tout moment en ne le renouvelant pas. L'accès au plan payé reste ouvert jusqu'à la fin de la période réglée, puis le compte repasse au plan Starter.</li>
+          <li>Pour supprimer définitivement votre compte et vos données, écrivez à <a href="mailto:figditions@gmail.com">figditions@gmail.com</a>.</li>
           <li>FIGDITIONS peut suspendre ou fermer un compte en cas de violation grave des présentes conditions (contenu illégal, tentative de piratage, fraude au paiement), après notification lorsque cela est possible.</li>
           <li>À la fermeture du compte, vous pouvez demander l'export ou la suppression de vos données conformément à la Politique de Confidentialité.</li>
         </ul>

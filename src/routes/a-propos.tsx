@@ -178,7 +178,7 @@ function Values() {
 
 function TechStack() {
   const stack = [
-    { icon: Database, title: "Lovable Cloud (Supabase)", desc: "Base de données PostgreSQL, authentification et stockage de fichiers, avec sauvegardes automatiques." },
+    { icon: Database, title: "Supabase", desc: "Base de données PostgreSQL, authentification et stockage de fichiers, avec sauvegardes automatiques." },
     { icon: Zap, title: "Vercel", desc: "Hébergement du site et des fonctions serveur, avec un réseau de diffusion mondial pour de bonnes performances partout dans le monde." },
     { icon: Lock, title: "Chiffrement SSL/TLS", desc: "Toutes vos données sont chiffrées en transit, et au repos par notre infrastructure d'hébergement." },
   ];

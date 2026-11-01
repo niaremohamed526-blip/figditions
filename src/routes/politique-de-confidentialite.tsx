@@ -43,7 +43,7 @@ function PrivacyPage() {
   return (
     <LegalShell
       title="Politique de Confidentialité"
-      subtitle="Dernière mise à jour : Août 2026"
+      subtitle="Dernière mise à jour : novembre 2026"
       toc={toc}
     >
       <Section id="qui" title="1. Qui sommes-nous ?">
@@ -75,6 +75,12 @@ function PrivacyPage() {
           <li>Stocks, ventes, bordereaux, historique financier</li>
           <li>Liens de partage sécurisé et journal d'accès associé</li>
         </ul>
+        <h3>Utilisation de Pr. MEDMO (assistant IA)</h3>
+        <ul>
+          <li>Vos questions, les réponses et l'historique de vos conversations</li>
+          <li>Les photos (par exemple d'un cahier de ventes) et documents que vous joignez</li>
+          <li>Un compteur de questions par mois (date, membre, type d'usage), pour appliquer le quota de votre plan</li>
+        </ul>
         <h3>Données techniques</h3>
         <ul>
           <li>Adresse IP, type d'appareil / navigateur, journaux de connexion et d'activité</li>
@@ -92,7 +98,9 @@ function PrivacyPage() {
           <li>Fournir et exploiter les fonctionnalités de la plateforme (manuscrits, stocks, ventes, contrats, partage, conversions)</li>
           <li>Gérer votre compte, votre abonnement et les membres de votre équipe</li>
           <li>Générer les documents demandés (contrats, bordereaux, factures, exports PDF)</li>
-          <li>Envoyer les emails transactionnels (invitations, notifications importantes, réinitialisation de mot de passe)</li>
+          <li>Envoyer les emails transactionnels (confirmation de compte, réinitialisation de mot de passe)</li>
+          <li>Vous informer dans l'application : brief du jour, alertes de stock, échéances de contrats, nouveautés de la plateforme</li>
+          <li>Appliquer les limites et quotas de votre plan</li>
           <li>Assurer la sécurité, prévenir la fraude et respecter nos obligations légales</li>
         </ul>
         <p>Nous n'utilisons pas vos données à des fins publicitaires et nous ne les vendons pas.</p>
@@ -110,8 +118,8 @@ function PrivacyPage() {
       <Section id="stockage" title="5. Où sont stockées vos données ?">
         <p>
           L'infrastructure applicative (base de données, authentification, stockage de fichiers)
-          est fournie par Lovable Cloud, qui s'appuie sur Supabase. Les serveurs applicatifs
-          (SSR, fonctions serveur) sont hébergés sur Vercel. Les paiements par QR code (Orange Money / Wave) sont
+          est fournie par Supabase. Les serveurs applicatifs (rendu des pages, fonctions serveur)
+          sont hébergés sur Vercel. Les paiements par QR code (Orange Money / Wave) sont
           traités directement par FIGDITIONS, qui valide la transaction avant activation de
           l'abonnement.
         </p>
@@ -120,14 +128,14 @@ function PrivacyPage() {
             <tr><th>Type de données</th><th>Fournisseur</th><th>Rôle</th></tr>
           </thead>
           <tbody>
-            <tr><td>Base de données, comptes, contenu applicatif</td><td>Lovable Cloud (Supabase)</td><td>Hébergement et stockage</td></tr>
-            <tr><td>Manuscrits, couvertures, exports (EPUB/MOBI), logos</td><td>Lovable Cloud Storage (Supabase Storage)</td><td>Stockage de fichiers</td></tr>
+            <tr><td>Base de données, comptes, contenu applicatif</td><td>Supabase</td><td>Hébergement et stockage</td></tr>
+            <tr><td>Manuscrits, couvertures, exports (EPUB/MOBI), logos</td><td>Supabase Storage</td><td>Stockage de fichiers</td></tr>
             <tr><td>Rendu du site et fonctions serveur</td><td>Vercel</td><td>Hébergement front / edge</td></tr>
             <tr><td>Paiements manuels par QR code</td><td>FIGDITIONS (validation manuelle des paiements Orange Money / Wave)</td><td>Validation et activation d'abonnement</td></tr>
             <tr><td>Conversion PDF → EPUB/MOBI</td><td>CloudConvert</td><td>Conversion de fichiers</td></tr>
-            <tr><td>Emails transactionnels</td><td>Service email par défaut de Supabase</td><td>Envoi d'emails</td></tr>
-            <tr><td>Notifications push installées (PWA)</td><td>Navigateur / Service Worker de l'appareil, avec Lovable Cloud pour le routage côté serveur</td><td>Notifications hors application</td></tr>
-            <tr><td>Assistant / génération IA</td><td>Google Gemini via Lovable AI Gateway</td><td>Fonctionnalités IA</td></tr>
+            <tr><td>Emails transactionnels</td><td>Service email de Supabase</td><td>Envoi d'emails</td></tr>
+            <tr><td>Notifications push installées (PWA)</td><td>Service de notification de votre navigateur (Google, Apple, Mozilla ou Microsoft selon l'appareil)</td><td>Notifications hors application</td></tr>
+            <tr><td>Pr. MEDMO et import de contrats par IA</td><td>Google (API Gemini)</td><td>Fonctionnalités IA</td></tr>
           </tbody>
         </table>
       </Section>
@@ -139,11 +147,12 @@ function PrivacyPage() {
           engagements de sécurité et de confidentialité.
         </p>
         <ul>
-          <li><strong>Lovable Cloud / Supabase :</strong> base de données, authentification, stockage, service email et routage des notifications serveur</li>
+          <li><strong>Supabase :</strong> base de données, authentification, stockage de fichiers et service email</li>
           <li><strong>Vercel :</strong> hébergement du site et des fonctions serveur</li>
           <li><strong>Orange Money Mali / Wave Mali :</strong> traitement des paiements manuels par QR code, validés par FIGDITIONS</li>
           <li><strong>CloudConvert :</strong> conversion de manuscrits ; le fichier source est transmis via une URL signée temporaire et supprimé côté CloudConvert selon leur politique de rétention</li>
-          <li><strong>Google Gemini (via Lovable AI Gateway) :</strong> génération assistée par IA lorsque vous utilisez explicitement ces fonctionnalités</li>
+          <li><strong>Google (API Gemini) :</strong> traitement des questions, photos et documents envoyés à Pr. MEDMO, uniquement lorsque vous l'utilisez</li>
+          <li><strong>Services de notification des navigateurs :</strong> acheminement des notifications push si vous les avez activées</li>
           
           <li><strong>Figuira Éditions :</strong> partenaire officiel, uniquement pour les fonctionnalités contractuellement partagées avec votre autorisation</li>
         </ul>
@@ -204,6 +213,7 @@ function PrivacyPage() {
         <ul>
           <li>Cookies / stockage locaux techniques essentiels à l'authentification et à la session</li>
           <li>IndexedDB et cache du Service Worker pour le mode sans connexion de la PWA</li>
+          <li>Préférences enregistrées sur votre appareil : thème clair ou sombre, brief du jour déjà consulté</li>
           <li>Aucun cookie marketing, aucun pixel publicitaire</li>
         </ul>
       </Section>
@@ -220,11 +230,18 @@ function PrivacyPage() {
 
       <Section id="ia" title="12. Intelligence artificielle">
         <p>
-          Certaines fonctionnalités s'appuient sur Google Gemini via le Lovable AI Gateway.
-          Elles ne sont exécutées que lorsque vous les déclenchez explicitement. Les données
-          envoyées se limitent au contenu strictement nécessaire à la requête. Les résultats
-          générés doivent être relus et validés avant toute utilisation contractuelle ou
-          commerciale.
+          Pr. MEDMO et l'import de contrats s'appuient sur l'API Gemini de Google. Ils ne
+          fonctionnent que lorsque vous les utilisez : votre question, les données de votre
+          maison nécessaires pour y répondre, et les photos ou documents que vous joignez sont
+          alors transmis à Google pour produire la réponse. Pr. MEDMO n'enregistre rien dans
+          vos données sans votre confirmation.
+        </p>
+        <p>
+          Lorsque l'offre gratuite de l'API Gemini est utilisée, Google peut se servir des
+          contenus reçus pour améliorer ses services, selon ses propres conditions. Évitez
+          d'envoyer à Pr. MEDMO des informations dont vous ne souhaitez pas la transmission.
+          Les réponses générées doivent être relues et validées avant toute utilisation
+          contractuelle ou commerciale.
         </p>
       </Section>
 

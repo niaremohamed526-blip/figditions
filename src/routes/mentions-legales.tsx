@@ -29,6 +29,7 @@ const toc = [
   { id: "editeur", label: "1. Éditeur du site" },
   { id: "publication", label: "2. Publication" },
   { id: "hebergeurs", label: "3. Hébergeurs" },
+  { id: "reseaux", label: "4. Réseaux" },
 ];
 
 const rows: { label: string; value: string }[] = [
@@ -73,10 +74,25 @@ function LegalNoticePage() {
       </Section>
 
       <Section id="hebergeurs" title="3. Hébergeurs">
-        <ul className="list-disc pl-5 space-y-1">
-          <li>Vercel Inc.</li>
-          <li>Lovable Cloud (Supabase)</li>
+        <ul className="list-disc pl-5 space-y-2">
+          <li>
+            <strong className="text-foreground">Vercel Inc.</strong> : hébergement du site et des fonctions serveur.
+            440 N Barranca Ave #4133, Covina, CA 91723, États-Unis.
+          </li>
+          <li>
+            <strong className="text-foreground">Supabase Inc.</strong> : base de données, authentification et stockage
+            des fichiers. 970 Toa Payoh North #07-04, Singapour 318992.
+          </li>
         </ul>
+      </Section>
+
+      <Section id="reseaux" title="4. Réseaux">
+        <p>
+          Instagram :{" "}
+          <a href="https://www.instagram.com/figditions" target="_blank" rel="noopener noreferrer" className="text-primary hover:underline">
+            @figditions
+          </a>
+        </p>
       </Section>
     </LegalShell>
   );
