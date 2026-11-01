@@ -358,7 +358,7 @@ function EtrangerForm({
           type="number" min={1} required inputMode="numeric"
           value={form.prix}
           onChange={(e) => setForm({ ...form, prix: e.target.value })}
-          className="font-mono"
+          className="tabular-nums"
           placeholder="Ex. 10000"
         />
       </div>

@@ -586,7 +586,7 @@ export function RecordSaleDrawer({
                                 <Input
                                   type="number" min={0} value={String(l.prix_unitaire)}
                                   onChange={(e) => updateLine(l.manuscrit_id, { prix_unitaire: Math.max(0, Number(e.target.value) || 0) })}
-                                  className="h-9 font-mono"
+                                  className="h-9 tabular-nums"
                                 />
                               </div>
                             </div>
@@ -596,7 +596,7 @@ export function RecordSaleDrawer({
                                   ? `Stock insuffisant : ${pl(l.disponible, "disponible")}`
                                   : `${pl(l.disponible, "disponible")} en stock interne`}
                               </span>
-                              <span className="font-mono tabular-nums text-[color:var(--gold)]">
+                              <span className="tabular-nums text-[color:var(--gold)]">
                                 {fcfa(Math.round(l.quantite * l.prix_unitaire))}
                               </span>
                             </div>
@@ -681,7 +681,7 @@ export function RecordSaleDrawer({
                           type="number" min={0} max={100} value={remisePct}
                           onChange={(e) => setRemisePct(e.target.value)}
                           placeholder="0"
-                          className="font-mono pr-8"
+                          className="tabular-nums pr-8"
                         />
                         <span className="absolute right-3 top-1/2 -translate-y-1/2 text-sm text-muted-foreground">%</span>
                       </div>
@@ -736,20 +736,20 @@ export function RecordSaleDrawer({
                       {cartRemise > 0 && (
                         <div className="flex items-center justify-between text-sm">
                           <span className="text-muted-foreground">Remise ({remisePctN}%)</span>
-                          <span className="font-mono tabular-nums text-orange-400">− {fcfa(cartRemise)}</span>
+                          <span className="tabular-nums text-orange-400">− {fcfa(cartRemise)}</span>
                         </div>
                       )}
                       <div className="border-t border-border my-1" />
                       <div className="flex items-center justify-between">
                         <span className="text-sm">💰 TOTAL</span>
-                        <span className="font-mono text-lg font-bold text-[color:var(--gold)] tabular-nums">{fcfa(cartTotal)}</span>
+                        <span className="tabular-nums text-lg font-bold text-[color:var(--gold)] tabular-nums">{fcfa(cartTotal)}</span>
                       </div>
                       <div className="border-t border-border my-1" />
                       <div className="text-xs text-muted-foreground">Droits d'auteur estimés</div>
                       {cart.map((l) => (
                         <div key={l.manuscrit_id} className="flex items-center justify-between text-xs">
                           <span className="truncate mr-2">{l.titre} ({l.royaltyPct}%)</span>
-                          <span className="font-mono tabular-nums">{fcfa(ligneDroits(l))}</span>
+                          <span className="tabular-nums">{fcfa(ligneDroits(l))}</span>
                         </div>
                       ))}
                       <Row label="Total droits" value={fcfa(cartDroits)} mono />
@@ -922,7 +922,7 @@ export function RecordSaleDrawer({
                       </div>
                       <div className="space-y-1.5">
                         <Label className="text-xs">💵 Prix unitaire (FCFA)</Label>
-                        <Input type="number" min={0} value={prix} onChange={(e) => setPrix(e.target.value)} className="font-mono" />
+                        <Input type="number" min={0} value={prix} onChange={(e) => setPrix(e.target.value)} className="tabular-nums" />
                       </div>
                     </div>
 
@@ -943,7 +943,7 @@ export function RecordSaleDrawer({
                       <div className="border-t border-border my-1" />
                       <div className="flex items-center justify-between">
                         <span className="text-sm">💰 Montant total</span>
-                        <span className="font-mono text-lg font-bold text-[color:var(--gold)] tabular-nums">{fcfa(total)}</span>
+                        <span className="tabular-nums text-lg font-bold text-[color:var(--gold)] tabular-nums">{fcfa(total)}</span>
                       </div>
                       <div className="border-t border-border my-1" />
                       {isEtranger ? (
@@ -991,7 +991,7 @@ function Row({ label, value, mono }: { label: string; value: string; mono?: bool
   return (
     <div className="flex items-center justify-between text-sm">
       <span className="text-muted-foreground">{label}</span>
-      <span className={cn("tabular-nums", mono && "font-mono")}>{value}</span>
+      <span className={cn("tabular-nums", mono && "tabular-nums")}>{value}</span>
     </div>
   );
 }
@@ -1040,7 +1040,7 @@ function PanierSuccessView({
               <span className="block font-semibold truncate">{l.titre}</span>
               <span className="block text-xs text-muted-foreground">{l.quantite} × {fcfa(l.prix_unitaire)}</span>
             </span>
-            <span className="font-mono tabular-nums">{fcfa(Math.round(l.quantite * l.prix_unitaire))}</span>
+            <span className="tabular-nums">{fcfa(Math.round(l.quantite * l.prix_unitaire))}</span>
           </div>
         ))}
         <div className="border-t border-border my-2" />
@@ -1048,12 +1048,12 @@ function PanierSuccessView({
         {panier.remiseFcfa > 0 && (
           <div className="flex items-center justify-between text-sm">
             <span className="text-muted-foreground">Remise ({panier.remisePct}%)</span>
-            <span className="font-mono tabular-nums text-orange-400">− {fcfa(panier.remiseFcfa)}</span>
+            <span className="tabular-nums text-orange-400">− {fcfa(panier.remiseFcfa)}</span>
           </div>
         )}
         <div className="flex items-center justify-between pt-1">
           <span>💰 Total</span>
-          <span className="font-mono text-lg font-bold text-[color:var(--gold)] tabular-nums">{fcfa(panier.total)}</span>
+          <span className="tabular-nums text-lg font-bold text-[color:var(--gold)] tabular-nums">{fcfa(panier.total)}</span>
         </div>
         <Row label="✍️ Droits auteur" value={fcfa(panier.droits)} mono />
         <Row label="🙋 Client" value={panier.client ?? "Client comptant"} />
@@ -1099,13 +1099,13 @@ function SuccessView({
             <Row label="Prix catalogue" value={fcfa(result.prixCatalogue ?? result.prixUnit)} mono />
             <div className="flex items-center justify-between text-sm">
               <span className="text-muted-foreground">🏷️ Remise accordée</span>
-              <span className="font-mono tabular-nums text-orange-400">− {fcfa(result.remise)}</span>
+              <span className="tabular-nums text-orange-400">− {fcfa(result.remise)}</span>
             </div>
           </>
         ) : null}
         <div className="flex items-center justify-between pt-1">
           <span>💰 Total</span>
-          <span className="font-mono text-lg font-bold text-[color:var(--gold)] tabular-nums">{fcfa(result.total)}</span>
+          <span className="tabular-nums text-lg font-bold text-[color:var(--gold)] tabular-nums">{fcfa(result.total)}</span>
         </div>
         <Row label="✍️ Droits auteur" value={fcfa(result.royalties)} mono />
         <Row label="📅 Date" value={new Date(result.date).toLocaleDateString("fr-FR")} />

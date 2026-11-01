@@ -242,7 +242,7 @@ export function LibrairiesTab({
 
                   <div className="flex items-baseline justify-between gap-2">
                     <span className="text-xs text-muted-foreground">CA généré</span>
-                    <span className="font-mono font-bold text-[color:var(--gold)] tabular-nums">{fcfa(g.ca)}</span>
+                    <span className="tabular-nums font-bold text-[color:var(--gold)] tabular-nums">{fcfa(g.ca)}</span>
                   </div>
 
                   <div className="space-y-1.5">

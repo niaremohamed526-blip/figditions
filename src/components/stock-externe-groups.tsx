@@ -469,7 +469,7 @@ export function StockExterneGroups({
                               <div className="text-xs tabular-nums">
                                 <span className="text-muted-foreground">Prix : {r.prix_unitaire_fcfa ? fcfa(r.prix_unitaire_fcfa) : "—"}</span>
                                 <span className="mx-1.5 opacity-40">|</span>
-                                <span className="font-mono font-semibold text-[color:var(--gold)]">CA : {fcfa(ca)}</span>
+                                <span className="tabular-nums font-semibold text-[color:var(--gold)]">CA : {fcfa(ca)}</span>
                               </div>
                               <div className="flex items-center gap-1">
                                 <button onClick={() => onEdit(r)} title="Modifier" aria-label="Modifier" className="h-8 w-8 inline-flex items-center justify-center rounded-md text-muted-foreground hover:bg-primary/10 hover:text-primary">

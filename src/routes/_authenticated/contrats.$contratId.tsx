@@ -12,6 +12,7 @@ import { genererPdfContrat, pdfDataFromContrat, referenceContrat } from "@/lib/c
 import type { ContratModele } from "@/lib/contrat-template";
 import { planFor } from "@/lib/plans";
 import { LockedPage } from "@/components/locked-page";
+import { statutReel } from "@/lib/contrat-statut";
 
 export const Route = createFileRoute("/_authenticated/contrats/$contratId")({
   component: ContratDetailPage,
@@ -112,8 +113,8 @@ function ContratDetailPage() {
               +{livres.length - 1} autre{livres.length > 2 ? "s" : ""}
             </span>
           )}
-          <span className={cn("inline-flex items-center rounded-full border px-2.5 py-0.5 text-xs font-medium", STATUT_CLS[contrat.statut])}>
-            {STATUT_LABELS[contrat.statut]}
+          <span className={cn("inline-flex items-center rounded-full border px-2.5 py-0.5 text-xs font-medium", STATUT_CLS[statutReel(contrat)])}>
+            {STATUT_LABELS[statutReel(contrat)]}
           </span>
         </div>
         <p className="text-muted-foreground mt-1">

@@ -19,6 +19,7 @@ import { toast } from "sonner";
 import { cn } from "@/lib/utils";
 import { planFor } from "@/lib/plans";
 import { LockedPage } from "@/components/locked-page";
+import { statutReel } from "@/lib/contrat-statut";
 import type { ContratProPdfData, Livre } from "@/lib/pdf-contrat-pro";
 import { figerContrat, genererPdfContrat, pdfDataFromContrat } from "@/lib/contrat-pdf";
 import type { ContratModele, TexteFige } from "@/lib/contrat-template";
@@ -232,7 +233,7 @@ function ContratsInner({ entrepriseId, entreprise }: { entrepriseId: string | nu
                     ? c.livres
                     : [{ titre: mMap[c.manuscrit_id]?.titre ?? "—" }];
                   const firstTitle = books[0]?.titre ?? "—";
-                  const { daysLeft, expired } = computeExpiry(c);
+                  const { daysLeft } = computeExpiry(c);
                   const warn = daysLeft !== null && daysLeft <= 90 && daysLeft >= 0 && c.statut === "signe";
                   return (
                     <tr key={c.id} className="group border-t border-border hover:bg-muted/20 transition-colors">
@@ -247,12 +248,7 @@ function ContratsInner({ entrepriseId, entreprise }: { entrepriseId: string | nu
                         </Link>
                         {warn && (
                           <div className="mt-1 inline-flex items-center gap-1 text-[11px] text-orange-500">
-                            <AlertTriangle className="h-3 w-3" /> Expire dans {daysLeft} jour(s)
-                          </div>
-                        )}
-                        {expired && c.statut === "signe" && (
-                          <div className="mt-1 inline-flex items-center gap-1 text-[11px] text-destructive">
-                            <AlertTriangle className="h-3 w-3" /> Contrat expiré
+                            <AlertTriangle className="h-3 w-3" /> Expire dans {daysLeft} {daysLeft > 1 ? "jours" : "jour"}
                           </div>
                         )}
                       </td>
@@ -264,7 +260,7 @@ function ContratsInner({ entrepriseId, entreprise }: { entrepriseId: string | nu
                         ML {c.territoire_mali ?? 20}% · CI {c.territoire_ci ?? 30}% · SN {c.territoire_senegal ?? 30}% · FR {c.territoire_france ?? 40}%
                       </td>
                       <td className="px-4 py-3 text-muted-foreground hidden md:table-cell">{c.duree_annees ? `${c.duree_annees} ans` : c.duree}</td>
-                      <td className="px-4 py-3"><StatutBadge s={c.statut} /></td>
+                      <td className="px-4 py-3"><StatutBadge s={statutReel(c)} /></td>
                       <td className="px-4 py-3 text-right">
                         <div className="flex items-center justify-end gap-1">
                           <Button size="icon" variant="ghost" className="h-8 w-8" onClick={() => downloadPdf(c)} title="PDF"><FileDown className="h-4 w-4" /></Button>
@@ -916,7 +912,8 @@ function ContratSheet({
                       <SelectItem value="brouillon">Brouillon</SelectItem>
                       <SelectItem value="en_attente_signature">En attente de signature</SelectItem>
                       <SelectItem value="signe">Signé</SelectItem>
-                      <SelectItem value="expire">Expiré</SelectItem>
+                      {/* Expiry follows the dates; kept only so an old value still displays. */}
+                      {form.statut === "expire" && <SelectItem value="expire">Expiré</SelectItem>}
                       <SelectItem value="resilie">Résilié</SelectItem>
                     </SelectContent>
                   </Select>

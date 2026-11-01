@@ -513,7 +513,7 @@ function EstimateurPage() {
 
               <div className="flex items-center justify-between rounded-lg px-3 py-2 bg-muted/30">
                 <span className="text-sm">💼 Marge imprimeur (30%)</span>
-                <span className="font-mono font-semibold">{fcfa(calc.margeImprimeur)}</span>
+                <span className="tabular-nums font-semibold">{fcfa(calc.margeImprimeur)}</span>
               </div>
 
               <div className="rounded-xl border-2 border-primary/40 bg-primary/10 px-4 py-4 flex items-center justify-between shadow-[0_0_30px_color-mix(in_oklab,var(--color-primary)_30%,transparent)]">
@@ -575,8 +575,8 @@ function EstimateurPage() {
                     </td>
                     <td className="px-4 py-3 text-center">{r.tirage.toLocaleString("fr-FR")}</td>
                     <td className="px-4 py-3 capitalize">{r.methode_impression}</td>
-                    <td className="px-4 py-3 text-right font-mono font-semibold">{fcfa(r.cout_total_fcfa)}</td>
-                    <td className="px-4 py-3 text-right font-mono font-semibold text-[color:var(--gold)]">{fcfa(r.prix_vente_suggere_fcfa)}</td>
+                    <td className="px-4 py-3 text-right tabular-nums font-semibold">{fcfa(r.cout_total_fcfa)}</td>
+                    <td className="px-4 py-3 text-right tabular-nums font-semibold text-[color:var(--gold)]">{fcfa(r.prix_vente_suggere_fcfa)}</td>
                   </tr>
                 ))}
               </tbody>
@@ -626,8 +626,8 @@ function EstimateurPage() {
                         <td className="px-4 py-3 font-medium">{e.nom_estimation}</td>
                         <td className="px-4 py-3 text-center text-muted-foreground">{e.tirage?.toLocaleString("fr-FR")}</td>
                         <td className="px-4 py-3 capitalize text-muted-foreground">{e.methode_impression}</td>
-                        <td className="px-4 py-3 text-right font-mono">{fcfa(e.cout_total_fcfa)}</td>
-                        <td className="px-4 py-3 text-right font-mono font-semibold text-[color:var(--gold)]">{fcfa(e.prix_vente_suggere_fcfa)}</td>
+                        <td className="px-4 py-3 text-right tabular-nums">{fcfa(e.cout_total_fcfa)}</td>
+                        <td className="px-4 py-3 text-right tabular-nums font-semibold text-[color:var(--gold)]">{fcfa(e.prix_vente_suggere_fcfa)}</td>
                         <td className="px-4 py-3 text-muted-foreground hidden sm:table-cell">{new Date(e.created_at).toLocaleDateString("fr-FR")}</td>
                         <td className="px-4 py-3 text-right">
                           <div className="flex items-center justify-end gap-1">
@@ -769,7 +769,7 @@ function CostRow({ label, value, accent }: { label: string; value: number; accen
   return (
     <div className="flex items-center justify-between text-sm py-1">
       <span className={cn("text-muted-foreground", accent && "text-orange-300")}>├── {label}</span>
-      <span className="font-mono tabular-nums">{fcfa(value)}</span>
+      <span className="tabular-nums">{fcfa(value)}</span>
     </div>
   );
 }
@@ -778,7 +778,7 @@ function Subtotal({ label, value }: { label: string; value: number }) {
   return (
     <div className="flex items-center justify-between text-sm pt-1 pl-4 border-t border-border/50 mt-1">
       <span className="font-semibold">{label}</span>
-      <span className="font-mono font-bold">{fcfa(value)}</span>
+      <span className="tabular-nums font-bold">{fcfa(value)}</span>
     </div>
   );
 }
