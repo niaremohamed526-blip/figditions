@@ -36,8 +36,8 @@ export const PAYMENT_METHODS: Record<PaymentMethod, PaymentMethodDef> = {
   },
 };
 
-/** Numéro WhatsApp FIGDITIONS pour les notifications de paiement (Mali). */
-export const FIGDITIONS_WHATSAPP = "22382876546";
+/** Numéro WhatsApp FIGDITIONS (Ghana) : références de paiement et support prioritaire. */
+export const FIGDITIONS_WHATSAPP = "233535264616";
 export const FIGDITIONS_EMAIL = "figditions@gmail.com";
 
 const ALPHABET = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
