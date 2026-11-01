@@ -320,6 +320,7 @@ function Hero() {
 // Real captures of the app; contact details on the authors screen are blurred.
 const SCREENS = [
   { id: "tableau-de-bord", label: "Tableau de bord", caption: "Votre maison en un coup d'œil : manuscrits, stock, ventes et chiffre d'affaires." },
+  { id: "medmo", label: "Pr. MEDMO", caption: "Une question, une photo ou un PDF : Pr. MEDMO consulte vos données et prépare les actions, que vous confirmez." },
   { id: "manuscrits", label: "Manuscrits", caption: "Suivez chaque titre à travers les 10 étapes éditoriales, de la réception à la publication." },
   { id: "stocks", label: "Stocks", caption: "Entrepôt et dépôts en librairie, avec le taux d'écoulement de vos livres." },
   { id: "finances", label: "Finances", caption: "Chiffre d'affaires, encaissements, dépenses et royalties. Chaque opération reste traçable." },
