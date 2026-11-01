@@ -1,50 +1,15 @@
 import { createFileRoute, Outlet, Link, useRouterState } from "@tanstack/react-router";
 import { Plus, Trash2, MessageSquareText } from "lucide-react";
 import { motion } from "motion/react";
-import { Suspense } from "react";
 import { useAuth, useProfile } from "@/hooks/use-auth";
 import { useMedmoThreads } from "@/hooks/use-medmo-threads";
 import { cn } from "@/lib/utils";
-import { lazyWithRetry } from "@/lib/lazy-retry";
 import { MedmoWordmark } from "@/components/medmo-wordmark";
 import medmoMark from "@/assets/medmo-mark.png";
-
-const Ballpit = lazyWithRetry(() => import("@/components/Ballpit"));
-
-const MEDMO_BALL_COLORS = [0xc8922a, 0xa0681e, 0x745757];
 
 export const Route = createFileRoute("/_authenticated/medmo")({
   component: MedmoLayout,
 });
-
-function MedmoBallpitBackground() {
-  return (
-    <>
-      <div className="absolute inset-0 z-0" aria-hidden>
-        <Suspense fallback={null}>
-          <Ballpit
-            count={100}
-            gravity={0.5}
-            friction={0.9975}
-            wallBounce={0.95}
-            followCursor
-            colors={MEDMO_BALL_COLORS}
-            ambientColor={0xc8922a}
-            ambientIntensity={0.5}
-            lightIntensity={150}
-            minSize={0.3}
-            maxSize={0.9}
-          />
-        </Suspense>
-      </div>
-      {/* Readability overlay */}
-      <div
-        className="absolute inset-0 z-[1] pointer-events-none bg-[radial-gradient(ellipse_at_center,rgba(13,10,6,0.25)_0%,rgba(13,10,6,0.6)_100%)]"
-        aria-hidden
-      />
-    </>
-  );
-}
 
 export function MedmoBrandMark({ className }: { className?: string }) {
   return (
@@ -52,7 +17,6 @@ export function MedmoBrandMark({ className }: { className?: string }) {
       className={cn(
         "flex items-center justify-center rounded-xl border border-[color:var(--gold)]/40",
         "bg-[radial-gradient(circle_at_35%_30%,#2b2110,#14100a_75%)]",
-        "shadow-[0_0_20px_rgba(200,146,42,0.3)]",
         className,
       )}
     >
@@ -152,9 +116,8 @@ function MedmoLayout() {
 
   return (
     <div className="relative flex h-[calc(100dvh-13.5rem)] md:h-[calc(100dvh-4rem)] -my-2 md:-my-4 min-h-0 overflow-hidden">
-      <MedmoBallpitBackground />
       {/* Threads sidebar (desktop) */}
-      <aside className="hidden md:flex relative z-10 w-72 shrink-0 flex-col border-r border-border bg-sidebar/40 backdrop-blur-sm min-h-0">
+      <aside className="hidden md:flex relative z-10 w-72 shrink-0 flex-col border-r border-border bg-sidebar/40 min-h-0">
         <div className="px-4 py-4 border-b border-border flex items-center gap-2.5">
           <MedmoBrandMark className="h-9 w-9" />
           <div className="flex-1 min-w-0">
@@ -163,15 +126,13 @@ function MedmoLayout() {
           </div>
         </div>
         <div className="p-3">
-          <motion.button
-            whileHover={{ scale: 1.015 }}
-            whileTap={{ scale: 0.97 }}
+          <button
             onClick={newThread}
             disabled={creating}
-            className="w-full inline-flex items-center justify-center gap-2 rounded-xl bg-[linear-gradient(135deg,#C8922A,#A67420)] text-white text-sm font-semibold px-3 py-2.5 hover:brightness-110 disabled:opacity-50 shadow-lg"
+            className="w-full inline-flex items-center justify-center gap-2 rounded-md bg-[#C8922A] text-white text-sm font-medium px-3 py-2.5 transition-colors hover:bg-[#B5821F] disabled:opacity-50"
           >
             <Plus className="h-4 w-4" /> Nouvelle conversation
-          </motion.button>
+          </button>
         </div>
         <div className="flex-1 overflow-y-auto px-3 pb-3 min-h-0">
           <MedmoThreadList threads={threads} activeId={activeId} onDelete={removeThread} />

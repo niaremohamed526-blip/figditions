@@ -1,10 +1,8 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { Plus } from "lucide-react";
-import { motion } from "motion/react";
 import { useAuth, useProfile } from "@/hooks/use-auth";
 import { useMedmoThreads } from "@/hooks/use-medmo-threads";
-import { MedmoThreadList, MedmoBrandMark } from "./medmo";
-import { MedmoWordmark } from "@/components/medmo-wordmark";
+import { MedmoThreadList } from "./medmo";
 
 export const Route = createFileRoute("/_authenticated/medmo/")({
   component: MedmoIndex,
@@ -12,6 +10,22 @@ export const Route = createFileRoute("/_authenticated/medmo/")({
     meta: [{ title: "PR MEDMO, assistant IA | FIGDITIONS" }],
   }),
 });
+
+// Same three promises as the homepage's Pr. MEDMO section.
+const POINTS = [
+  {
+    title: "Posez vos questions",
+    text: "« Combien d'exemplaires reste-t-il à la Librairie Nouvel Horizon ? » La réponse vient de vos données réelles.",
+  },
+  {
+    title: "Photographiez votre cahier",
+    text: "Une page de cahier de ventes est lue, les titres reconnus dans votre catalogue, et les ventes proposées à l'enregistrement.",
+  },
+  {
+    title: "Vous gardez le dernier mot",
+    text: "Aucune écriture sans votre validation. En cas de doute sur un titre ou une librairie, il vous demande confirmation.",
+  },
+];
 
 function MedmoIndex() {
   const { user } = useAuth();
@@ -22,74 +36,50 @@ function MedmoIndex() {
   );
 
   return (
-    <div className="h-full overflow-y-auto bg-[radial-gradient(1000px_480px_at_50%_-10%,rgba(200,146,42,0.07),transparent)]">
-      <motion.div
-        initial="hidden"
-        animate="show"
-        variants={{ hidden: {}, show: { transition: { staggerChildren: 0.1 } } }}
-        className="max-w-xl mx-auto px-4 py-10 flex flex-col items-center text-center gap-6"
-      >
-        <motion.div
-          variants={{
-            hidden: { opacity: 0, scale: 0.8 },
-            show: { opacity: 1, scale: 1, transition: { type: "spring", stiffness: 240, damping: 18 } },
-          }}
-          className="relative"
-        >
-          <motion.span
-            className="absolute inset-0 -m-5 rounded-full bg-[color:var(--gold)]/25 blur-2xl"
-            animate={{ opacity: [0.4, 0.8, 0.4], scale: [1, 1.12, 1] }}
-            transition={{ duration: 3.2, repeat: Number.POSITIVE_INFINITY, ease: "easeInOut" }}
-          />
-          <motion.div
-            animate={{ y: [0, -8, 0] }}
-            transition={{ duration: 3.8, repeat: Number.POSITIVE_INFINITY, ease: "easeInOut" }}
-          >
-            <MedmoBrandMark className="h-20 w-20 rounded-3xl" />
-          </motion.div>
-        </motion.div>
-        <motion.div
-          variants={{
-            hidden: { opacity: 0, y: 14 },
-            show: { opacity: 1, y: 0, transition: { type: "spring", stiffness: 300, damping: 26 } },
-          }}
-        >
-          <h1 className="text-3xl font-bold">
-            <MedmoWordmark className="text-4xl" />
-          </h1>
-          <p className="text-sm text-muted-foreground mt-2 max-w-md">
-            Votre copilote IA pour FIGDITIONS. Posez une question, demandez une analyse de vos stocks
-            ou ventes, ou laissez le agir pour vous, toujours avec votre confirmation.
-          </p>
-        </motion.div>
-        <motion.button
-          variants={{
-            hidden: { opacity: 0, y: 14 },
-            show: { opacity: 1, y: 0, transition: { type: "spring", stiffness: 300, damping: 26 } },
-          }}
-          whileHover={{ scale: 1.03 }}
-          whileTap={{ scale: 0.97 }}
+    <div className="h-full overflow-y-auto">
+      <div className="max-w-2xl mx-auto px-5 py-10 md:py-16">
+        <p className="flex items-center gap-3 text-[12px] uppercase tracking-[0.2em] text-muted-foreground">
+          <span className="h-px w-8 bg-[color:var(--gold)]" aria-hidden="true" />
+          Votre copilote éditorial
+        </p>
+        <h1 className="mt-5 text-foreground">
+          Pr. MEDMO connaît <em className="italic text-[color:var(--gold)]">vos chiffres.</em>
+        </h1>
+        <p className="mt-4 text-[15px] leading-relaxed text-muted-foreground max-w-lg">
+          Posez une question, demandez une analyse de vos stocks ou de vos ventes, ou laissez-le
+          préparer le travail. Rien n'est enregistré sans votre confirmation.
+        </p>
+
+        <button
           onClick={newThread}
           disabled={creating}
-          className="inline-flex items-center gap-2 rounded-xl bg-[linear-gradient(135deg,#C8922A,#A67420)] text-white text-sm font-semibold px-6 py-3 hover:brightness-110 disabled:opacity-50 shadow-[0_8px_28px_rgba(200,146,42,0.35)]"
+          className="mt-8 inline-flex items-center gap-2 rounded-md bg-[#C8922A] text-white text-[15px] font-medium px-5 h-11 transition-colors hover:bg-[#B5821F] disabled:opacity-50"
         >
           <Plus className="h-4 w-4" /> Démarrer une conversation
-        </motion.button>
+        </button>
+
+        <ol className="mt-12 border-t border-border">
+          {POINTS.map((p, i) => (
+            <li key={p.title} className="grid grid-cols-[2.5rem_1fr] gap-x-3 py-5 border-b border-border">
+              <span className="font-wordmark-serif text-2xl leading-none text-[color:var(--gold)] tabular-nums">
+                {String(i + 1).padStart(2, "0")}
+              </span>
+              <div>
+                <h2 className="text-[15px] font-medium text-foreground">{p.title}</h2>
+                <p className="mt-1 text-sm leading-relaxed text-muted-foreground">{p.text}</p>
+              </div>
+            </li>
+          ))}
+        </ol>
 
         {/* Mobile: thread list lives here (sidebar is desktop-only) */}
-        <motion.div
-          variants={{
-            hidden: { opacity: 0, y: 14 },
-            show: { opacity: 1, y: 0, transition: { type: "spring", stiffness: 300, damping: 26 } },
-          }}
-          className="md:hidden w-full mt-4 text-left"
-        >
-          <h2 className="text-xs font-semibold uppercase tracking-wide text-muted-foreground mb-2 px-1">
+        <div className="md:hidden mt-10">
+          <h2 className="text-[12px] uppercase tracking-[0.2em] text-muted-foreground mb-3">
             Vos conversations
           </h2>
           <MedmoThreadList threads={threads} activeId={null} onDelete={removeThread} />
-        </motion.div>
-      </motion.div>
+        </div>
+      </div>
     </div>
   );
 }
