@@ -28,7 +28,7 @@ export function Logo({
     <img
       src={FIGDITIONS_SITE_LOGO_URL}
       alt={alt}
-      className={cn("object-contain logo select-none", className)}
+      className={cn("object-contain logo select-none", variant === "glow" && "logo-glow", className)}
       draggable={false}
       style={{
         background: "transparent",
