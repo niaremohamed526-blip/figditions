@@ -15,7 +15,7 @@ import { cn } from "@/lib/utils";
 
 export const Route = createFileRoute("/rejoindre/$token")({
   component: JoinPage,
-  head: () => ({ meta: [{ title: "Rejoindre | FIGDITIONS" }] }),
+  head: () => ({ meta: [{ title: "Rejoindre | FIGDITIONS" }, { name: "robots", content: "noindex,nofollow" }] }),
 });
 
 type InviteResult = Awaited<ReturnType<typeof getInvitationByToken>>;

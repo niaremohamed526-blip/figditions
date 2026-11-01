@@ -1,4 +1,20 @@
 User-agent: *
 Allow: /
+Disallow: /api/
+Disallow: /lecture/
+Disallow: /rejoindre/
+Disallow: /reinitialiser-mot-de-passe
+Disallow: /dashboard
+Disallow: /admin
+Disallow: /auteurs
+Disallow: /contrats
+Disallow: /conversions
+Disallow: /estimateur
+Disallow: /finances
+Disallow: /imprimeries
+Disallow: /manuscrits
+Disallow: /medmo
+Disallow: /parametres
+Disallow: /stocks
 
 Sitemap: https://figditions.xyz/sitemap.xml

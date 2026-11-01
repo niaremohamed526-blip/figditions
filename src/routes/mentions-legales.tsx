@@ -1,7 +1,7 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { LegalShell, Section } from "@/components/legal-shell";
 
-const OG_IMAGE = "https://figditions.xyz/assets/og-figditions.png";
+const OG_IMAGE = "https://figditions.xyz/assets/og-figditions.jpg";
 const DESC =
   "Mentions légales de FIGDITIONS : éditeur du site, informations juridiques, responsable de la publication, contact et hébergeurs.";
 

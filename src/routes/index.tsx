@@ -1,13 +1,7 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
-import {
-  Menu, X, BookOpen, Users, Package, Wallet, FileText, Calculator,
-  Linkedin, Instagram, Facebook, Youtube, ArrowRight, Check,
-  Factory, Shield, BarChart3, Store, Sparkles, Boxes, MousePointer2, WifiOff, Receipt, Printer,
-  Camera, Gift, History, Globe2, Layers, MessageSquare,
-} from "lucide-react";
+import { Menu, X, ArrowRight, Check } from "lucide-react";
 import { Logo } from "@/components/logo";
-import { MedmoWordmark } from "@/components/medmo-wordmark";
 import { useI18n } from "@/hooks/use-i18n";
 import { Button } from "@/components/ui/button";
 import {
@@ -21,6 +15,7 @@ import { cn } from "@/lib/utils";
 import { CookieBanner } from "@/components/cookie-banner";
 import { AdminAccessGate } from "@/components/admin-access-gate";
 import { PLANS } from "@/config/plans";
+import { PLANS as LIMITES, PLAN_ORDER, type PlanLimits } from "@/lib/plans";
 const figuiraLogo = "/assets/figuira-logo.png";
 const heroAsset = { url: "/assets/hero-figditions.webp" };
 
@@ -73,17 +68,17 @@ const FAQS = [
 ];
 
 
-const OG_IMAGE = "https://figditions.xyz/assets/og-figditions.png";
+const OG_IMAGE = "https://figditions.xyz/assets/og-figditions.jpg";
 
 export const Route = createFileRoute("/")({
   component: Landing,
   head: () => ({
     meta: [
-      { title: "FIGDITIONS | La plateforme des maisons d'édition" },
+      { title: "FIGDITIONS | Logiciel de gestion pour maisons d'édition" },
       { name: "description", content: "Manuscrits, stocks, dépôts en librairie, contrats et finances en un seul endroit, avec l'assistant Pr. MEDMO. Pour les maisons d'édition indépendantes, partout dans le monde." },
-      { property: "og:title", content: "FIGDITIONS | La plateforme des maisons d'édition" },
+      { property: "og:title", content: "FIGDITIONS | Logiciel de gestion pour maisons d'édition" },
       { property: "og:description", content: "Manuscrits, stocks, dépôts en librairie, contrats et finances en un seul endroit, avec l'assistant Pr. MEDMO. Pour les maisons d'édition indépendantes, partout dans le monde." },
-      { name: "twitter:title", content: "FIGDITIONS | La plateforme des maisons d'édition" },
+      { name: "twitter:title", content: "FIGDITIONS | Logiciel de gestion pour maisons d'édition" },
       { name: "twitter:description", content: "Manuscrits, stocks, dépôts en librairie, contrats et finances en un seul endroit, avec l'assistant Pr. MEDMO. Pour les maisons d'édition indépendantes, partout dans le monde." },
       { property: "og:image", content: OG_IMAGE },
       { name: "twitter:image", content: OG_IMAGE },
@@ -194,15 +189,15 @@ function Navbar() {
           ))}
         </div>
 
-        <div className="hidden md:flex items-center gap-3 ml-auto">
+        <div className="hidden md:flex items-center gap-6 ml-auto">
+          <Link to="/login" className="text-[15px] text-white/80 hover:text-white transition-colors">
+            {t("Se connecter", "Sign in")}
+          </Link>
           <Link
             to="/signup"
-            className="group inline-flex items-center gap-2 rounded-full border border-[#C8922A] text-[#C8922A] px-6 py-2.5 text-sm font-medium hover:bg-[#C8922A] hover:text-white transition-colors"
+            className="inline-flex items-center h-10 px-5 rounded-md border border-[#C8922A] text-[#E8B84B] text-sm font-medium hover:bg-[#C8922A] hover:text-white transition-colors"
           >
             {t("Commencer gratuitement", "Get started free")}
-            <span className="h-6 w-6 rounded-full bg-[#C8922A] text-white flex items-center justify-center group-hover:bg-white group-hover:text-[#C8922A] transition-colors">
-              <ArrowRight className="h-3.5 w-3.5" />
-            </span>
           </Link>
         </div>
 
@@ -232,20 +227,34 @@ function Navbar() {
 
 
 
+// Shared section opener: chapter number, hairline rule, serif title.
+function SectionHead({ num, kicker, title, intro }: {
+  num: string;
+  kicker: string;
+  title: React.ReactNode;
+  intro?: React.ReactNode;
+}) {
+  return (
+    <div className="grid md:grid-cols-12 gap-x-8 gap-y-4 border-t border-white/10 pt-6 mb-12 md:mb-16">
+      <p className="md:col-span-3 text-[12px] uppercase tracking-[0.2em] text-[#8C7B6B]">
+        <span className="text-[#C8922A] tabular-nums">{num}</span>
+        <span className="mx-2" aria-hidden="true">·</span>
+        {kicker}
+      </p>
+      <div className="md:col-span-9">
+        <h2 className="font-wordmark-serif font-normal text-white text-[40px] md:text-[64px] leading-[1.02] tracking-[-0.01em]">
+          {title}
+        </h2>
+        {intro && <p className="mt-5 text-[17px] leading-relaxed text-[#B8A898] max-w-2xl">{intro}</p>}
+      </div>
+    </div>
+  );
+}
+
 function Hero() {
   const { t } = useI18n();
   return (
-    <section id="top" className="relative w-full min-h-screen overflow-hidden bg-[#0A0704]">
-      {/* Warm golden ambient glow */}
-      <div
-        className="absolute inset-0 -z-10"
-        style={{
-          background:
-            "radial-gradient(ellipse 80% 80% at 65% 40%, rgba(180,110,20,0.35) 0%, rgba(140,80,10,0.2) 30%, transparent 70%)",
-        }}
-      />
-
-      {/* Hero image : right side */}
+    <section id="top" className="relative w-full min-h-[100svh] overflow-hidden bg-[#0A0704]">
       <img
         src={heroAsset.url}
         alt="FIGDITIONS, la plateforme des maisons d'édition"
@@ -257,29 +266,35 @@ function Hero() {
             "linear-gradient(to right, transparent 0%, black 20%, black 80%, transparent 100%)",
         }}
       />
+      {/* Keeps the text readable where the image sits behind it on phones */}
+      <div className="absolute inset-0 md:hidden bg-gradient-to-t from-[#0A0704] via-[#0A0704]/80 to-[#0A0704]/30" aria-hidden="true" />
 
-      {/* Hero text : bottom left */}
-      <div className="relative z-10 max-w-7xl mx-auto px-6 lg:px-12 pt-40 md:pt-0 md:absolute md:bottom-[20%] md:left-0 md:right-0">
-        <div className="max-w-xl">
+      <div className="relative z-10 max-w-7xl mx-auto px-6 lg:px-12 pt-36 pb-20 md:pt-0 md:pb-0 md:absolute md:bottom-[16%] md:left-0 md:right-0">
+        <div className="max-w-2xl">
+          <p className="flex items-center gap-3 text-[12px] uppercase tracking-[0.2em] text-[#B8A898]">
+            <span className="h-px w-8 bg-[#C8922A]" aria-hidden="true" />
+            {t("Pour les maisons d'édition indépendantes", "For independent publishing houses")}
+          </p>
           <h1
-            className="font-black text-white leading-[0.9] tracking-tight"
-            style={{ fontSize: "clamp(48px, 8vw, 100px)", letterSpacing: "-3px" }}
+            className="mt-6 font-wordmark-serif font-normal text-white leading-[0.98]"
+            style={{ fontSize: "clamp(48px, 7vw, 96px)", letterSpacing: "-0.015em" }}
           >
-            FIGDITIONS
+            {t("Votre maison d'édition,", "Your publishing house,")}{" "}
+            <em className="italic text-[#E8B84B]">{t("enfin sous contrôle.", "finally under control.")}</em>
           </h1>
-          <p className="mt-4 text-[18px] leading-[1.5] max-w-[380px]" style={{ color: "rgba(184,168,152,0.9)" }}>
+          <p className="mt-6 text-[18px] leading-[1.6] max-w-[500px] text-[#B8A898]">
             {t(
-              "La plateforme centrale des maisons d'édition : manuscrits, stocks, librairies, finances : et un assistant qui travaille avec vous.",
-              "The central platform for West African publishers: manuscripts, stock, bookstores, finances : and an assistant that works with you."
+              "Manuscrits, stocks en librairie, ventes et droits d'auteur au même endroit. Et Pr. MEDMO, un assistant qui connaît vos chiffres.",
+              "Manuscripts, bookstore stock, sales and royalties in one place. And Pr. MEDMO, an assistant that knows your numbers."
             )}
           </p>
 
-          {/* CTA buttons */}
-          <div className="mt-8 flex flex-wrap items-center gap-3">
-            <Link to="/signup">
-              <Button size="lg" className="bg-[#C8922A] text-white hover:bg-[#A67420] h-12 px-7 rounded-full">
-                {t("Commencer gratuitement", "Get started")} <ArrowRight className="ml-2 h-4 w-4" />
-              </Button>
+          <div className="mt-9 flex flex-wrap items-center gap-x-8 gap-y-4">
+            <Link
+              to="/signup"
+              className="inline-flex items-center h-12 px-6 rounded-md bg-[#C8922A] text-white text-[15px] font-medium hover:bg-[#B5821F] transition-colors"
+            >
+              {t("Commencer gratuitement", "Get started for free")} <ArrowRight className="ml-2 h-4 w-4" />
             </Link>
             <a
               href="#demo"
@@ -287,112 +302,16 @@ function Hero() {
                 e.preventDefault();
                 document.getElementById("demo")?.scrollIntoView({ behavior: "smooth" });
               }}
+              className="text-[15px] text-white underline decoration-[#C8922A]/60 underline-offset-[6px] hover:decoration-[#C8922A] transition-colors"
             >
-              <Button size="lg" variant="outline" className="border-[rgba(200,146,42,0.4)] text-white hover:border-[#C8922A] hover:text-[#C8922A] bg-transparent h-12 px-7 rounded-full">
-                Voir la démo
-              </Button>
+              {t("Voir l'interface", "See the interface")}
             </a>
           </div>
-
-          {/* Social icons */}
-          <div className="mt-8 flex items-center gap-5">
-            {[
-              { Icon: Instagram, href: "https://www.instagram.com/[À COMPLÉTER : compte de marque]", label: "FIGDITIONS sur Instagram" },
-            ].map(({ Icon, href, label }) => (
-              <a
-                key={label}
-                href={href}
-                target="_blank"
-                rel="noopener noreferrer"
-                aria-label={label}
-                className="text-[#6B5B4E] hover:text-[#C8922A] transition-colors"
-              >
-                <Icon className="h-5 w-5" />
-              </a>
-            ))}
-          </div>
+          <p className="mt-5 text-[13px] text-[#8C7B6B]">
+            {t("Gratuit pour toujours · Sans carte bancaire · Prêt en 2 minutes", "Free forever · No card needed · Ready in 2 minutes")}
+          </p>
         </div>
       </div>
-
-      {/* Floating Manuscript Management card */}
-      <div
-        className="hidden lg:flex absolute z-10 flex-col gap-2 rounded-2xl border p-5 animate-[float_4s_ease-in-out_infinite]"
-        style={{
-          top: "30%",
-          right: "5%",
-          background: "rgba(26,18,8,0.85)",
-          borderColor: "rgba(200,146,42,0.3)",
-          backdropFilter: "blur(12px)",
-          minWidth: "200px",
-        }}
-      >
-        <div className="text-[10px] uppercase tracking-wider" style={{ color: "rgba(184,168,152,0.7)" }}>
-          Aperçu de l'interface
-        </div>
-        <div className="flex items-center gap-2">
-          <BookOpen className="h-5 w-5 text-[#C8922A]" />
-          <span className="text-[#E8B84B] font-bold tracking-wide text-sm">MANUSCRIT MANAGEMENT</span>
-        </div>
-        <div className="flex items-baseline gap-1 mt-1">
-          <span className="text-white font-bold text-2xl">128</span>
-          <span className="text-xs text-[rgba(184,168,152,0.8)]">manuscrits actifs</span>
-        </div>
-        <div className="space-y-1.5 mt-1">
-          <div className="h-1.5 rounded-full bg-[rgba(200,146,42,0.25)] w-full" />
-          <div className="h-1.5 rounded-full bg-[rgba(200,146,42,0.25)] w-4/5" />
-          <div className="h-1.5 rounded-full bg-[rgba(200,146,42,0.25)] w-3/5" />
-        </div>
-        <div className="mt-2 h-px bg-[rgba(200,146,42,0.4)] w-2/3" />
-      </div>
-
-      {/* Floating Stock card */}
-      <div
-        className="hidden lg:flex absolute z-10 flex-col gap-2 rounded-2xl border p-5 animate-[float_4s_ease-in-out_2s_infinite]"
-        style={{
-          top: "20%",
-          left: "5%",
-          background: "rgba(26,18,8,0.85)",
-          borderColor: "rgba(200,146,42,0.3)",
-          backdropFilter: "blur(12px)",
-          minWidth: "180px",
-        }}
-      >
-        <div className="text-[10px] uppercase tracking-wider" style={{ color: "rgba(184,168,152,0.7)" }}>
-          Aperçu de l'interface
-        </div>
-        <div className="flex items-center gap-2">
-          <Boxes className="h-5 w-5 text-[#C8922A]" />
-          <span className="text-[#E8B84B] font-bold tracking-wide text-sm">STOCK</span>
-        </div>
-        <div className="text-white font-bold text-xl">50 634</div>
-        <div className="flex items-end gap-1 h-8">
-          {[40, 65, 50, 80, 35, 90, 60].map((h, i) => (
-            <div key={i} className="w-2 rounded-sm bg-[#C8922A]" style={{ height: `${h}%` }} />
-          ))}
-        </div>
-      </div>
-
-      {/* Scroll indicator */}
-      <a
-        href="#features"
-        aria-label="Scroll"
-        className="absolute left-1/2 -translate-x-1/2 bottom-8 z-10 animate-[scrollBounce_2s_infinite]"
-        style={{ color: "rgba(200,146,42,0.6)" }}
-      >
-        <MousePointer2 className="h-8 w-8 rotate-180" />
-      </a>
-
-
-      <style>{`
-        @keyframes float {
-          0%, 100% { transform: translateY(0px); }
-          50% { transform: translateY(-12px); }
-        }
-        @keyframes scrollBounce {
-          0%, 100% { transform: translate(-50%, 0); }
-          50% { transform: translate(-50%, 8px); }
-        }
-      `}</style>
     </section>
   );
 }
@@ -402,26 +321,26 @@ const SCREENS = [
   { id: "manuscrits", label: "Manuscrits", src: "/assets/screens/manuscrits.png", caption: "Suivez chaque titre à travers les 10 étapes éditoriales, de la réception au dépôt légal." },
   { id: "stock", label: "Stock", src: "/assets/screens/stock.png", caption: "Entrepôt interne et dépôts en librairie, avec alertes automatiques de stock bas." },
   { id: "contrats", label: "Contrats", src: "/assets/screens/contrats.png", caption: "Générez un contrat d'édition professionnel en quelques clics, adapté à votre pays." },
-  { id: "royalties", label: "Royalties", src: "/assets/screens/royalties.png", caption: "Calcul automatique des droits d'auteur en FCFA, prêts à être versés." },
+  { id: "royalties", label: "Royalties", src: "/assets/screens/royalties.png", caption: "Calcul automatique des droits d'auteur, prêts à être versés." },
 ];
 
 function Screenshots() {
   return (
-    <section id="demo" className="py-24 px-4 bg-[#1A1208]">
+    <section id="demo" className="py-24 md:py-32 px-6 lg:px-12 bg-[#0A0704]">
       <div className="max-w-7xl mx-auto">
-        <div className="text-center mb-12">
-          <h2 className="text-3xl md:text-5xl font-bold tracking-tight">Voyez la plateforme en action</h2>
-          <p className="mt-3 text-muted-foreground max-w-2xl mx-auto">
-            Pas de promesses abstraites. Voici l'interface que vous utiliserez au quotidien.
-          </p>
-        </div>
+        <SectionHead
+          num="01"
+          kicker="L'interface"
+          title="Voyez la plateforme en action."
+          intro="Voici les écrans que vous utiliserez au quotidien, sans maquette ni promesse abstraite."
+        />
         <Tabs defaultValue="manuscrits" className="w-full">
-          <TabsList className="w-full max-w-2xl mx-auto mb-8 h-auto flex flex-wrap justify-center gap-2 bg-transparent p-0">
+          <TabsList className="mb-8 h-auto w-full justify-start gap-8 overflow-x-auto rounded-none border-b border-white/10 bg-transparent p-0">
             {SCREENS.map((s) => (
               <TabsTrigger
                 key={s.id}
                 value={s.id}
-                className="px-4 py-2 rounded-full border border-border bg-[#0D0A06] text-muted-foreground data-[state=active]:bg-[#C8922A] data-[state=active]:text-white data-[state=active]:border-[#C8922A]"
+                className="relative rounded-none bg-transparent px-0 pb-3 pt-0 text-[15px] font-normal text-[#8C7B6B] shadow-none data-[state=active]:bg-transparent data-[state=active]:text-white data-[state=active]:shadow-none after:absolute after:inset-x-0 after:-bottom-px after:h-px data-[state=active]:after:bg-[#C8922A]"
               >
                 {s.label}
               </TabsTrigger>
@@ -429,17 +348,12 @@ function Screenshots() {
           </TabsList>
           {SCREENS.map((s) => (
             <TabsContent key={s.id} value={s.id} className="mt-0">
-              <div className="rounded-2xl border border-border bg-[#0D0A06] overflow-hidden">
-                <img
-                  src={s.src}
-                  alt={s.label}
-                  className="w-full h-auto"
-                  loading="lazy"
-                  width={1280}
-                  height={720}
-                />
-              </div>
-              <p className="mt-4 text-center text-sm text-muted-foreground">{s.caption}</p>
+              <figure>
+                <div className="rounded-lg border border-white/10 bg-[#0D0A06] overflow-hidden">
+                  <img src={s.src} alt={s.label} className="w-full h-auto" loading="lazy" width={1280} height={720} />
+                </div>
+                <figcaption className="mt-4 text-sm text-[#8C7B6B]">{s.caption}</figcaption>
+              </figure>
             </TabsContent>
           ))}
         </Tabs>
@@ -449,107 +363,115 @@ function Screenshots() {
 }
 
 
-function Features() {
-  const { t } = useI18n();
-  const offlineFr = "Continuez à travailler pendant les délestages et les coupures de réseau. Vos données se synchronisent automatiquement dès le retour de la connexion.";
-  const bordereauxFr = "Générez vos bordereaux de dépôt et de vente en quelques clics, prêts à signer avec vos libraires.";
-  const imprimeriesFr = "Accédez aux tarifs et contacts des imprimeries partenaires pour comparer avant d'imprimer.";
-  const items = [
-    { icon: MessageSquare, fr: "Assistant Pr. MEDMO", en: "Pr. MEDMO assistant", dfr: "Posez vos questions en français, envoyez une photo ou un document : l'assistant analyse vos données et prépare les actions que vous validez.", den: "Ask in plain French, send a photo or a document: the assistant reads your data and prepares actions you approve." },
-    { icon: Camera, fr: "Photo de cahier → ventes", en: "Notebook photo → sales", dfr: "Photographiez une page de cahier de ventes : les titres, quantités et prix sont reconnus puis proposés à l'enregistrement.", den: "Photograph a sales notebook page: titles, quantities and prices are recognized then proposed for logging." },
-    { icon: WifiOff, fr: "Fonctionne sans connexion", en: "Works offline", dfr: offlineFr, den: offlineFr },
-    { icon: BookOpen, fr: "Gestion des manuscrits", en: "Manuscript management", dfr: "Suivez chaque livre à travers 10 étapes éditoriales, de la réception à la publication", den: "Track every book through 10 editorial stages, from reception to publication" },
-    { icon: Globe2, fr: "Livres étrangers", en: "Foreign books", dfr: "Séparez clairement vos propres productions des ouvrages d'autres éditeurs que vous distribuez, au catalogue comme en stock.", den: "Clearly separate your own titles from other publishers' books you distribute, in catalogue and stock." },
-    { icon: Users, fr: "Gestion des auteurs", en: "Author management", dfr: "Centralisez les informations, contrats et droits de vos auteurs en un seul endroit", den: "Centralize information, contracts and royalties of your authors in one place" },
-    { icon: Factory, fr: "Stock interne", en: "Internal stock", dfr: "Gérez votre entrepôt, suivez chaque exemplaire imprimé et automatisez les mouvements de stock", den: "Manage your warehouse, track every printed copy and automate stock movements" },
-    { icon: Store, fr: "Stock externe", en: "External stock", dfr: "Suivez vos dépôts dans toutes vos librairies partenaires avec alertes de stock bas", den: "Track your deposits across all your partner bookstores with alerts when stock is low" },
-    { icon: Layers, fr: "Dépôts multiples par librairie", en: "Multiple deposits", dfr: "Ajoutez un nouveau dépôt sans écraser l'ancien : chaque lot garde sa date, sa quantité et son historique.", den: "Add a new deposit without erasing the previous one: each batch keeps its date, quantity and history." },
-    { icon: Gift, fr: "Dons et exemplaires offerts", en: "Donations", dfr: "Enregistrez les livres offerts aux écoles, ONG ou bibliothèques : le stock est déduit, sans revenu ni droits d'auteur.", den: "Log books given to schools, NGOs or libraries: stock is deducted, with no revenue or royalties." },
-    { icon: History, fr: "Annulation traçable", en: "Traceable cancellation", dfr: "Annulez une vente, un mouvement ou un dépôt avec motif obligatoire : tout est rétabli et conservé dans l'historique.", den: "Cancel a sale, movement or deposit with a mandatory reason: everything is reversed and kept in the log." },
-    { icon: Wallet, fr: "Finances détaillées & Royalties", en: "Detailed finances & royalties", dfr: "Journal, rentabilité par titre, ventes, dépenses et droits d'auteur en FCFA, avec reçus imprimables.", den: "Ledger, per-title profitability, sales, expenses and royalties in FCFA, with printable receipts." },
-    { icon: FileText, fr: "Contrats & Droits", en: "Contracts & Rights", dfr: "Générez des contrats d'édition professionnels en quelques clics, adaptés à votre pays", den: "Generate professional publishing contracts in a few clicks, adapted to your country" },
-    { icon: Calculator, fr: "Estimateur de coûts", en: "Cost estimator", dfr: "Calculez le coût d'impression exact en FCFA avec recommandation offset vs numérique", den: "Calculate exact printing costs in FCFA with offset vs digital recommendation" },
-    { icon: Shield, fr: "Partage PDF sécurisé", en: "Secure PDF sharing", dfr: "Partagez vos manuscrits avec des filigranes personnalisés et un nombre de vues limité", den: "Share manuscripts with custom watermarks and limited view counts" },
-    { icon: Sparkles, fr: "Conversion ePub & MOBI", en: "ePub & MOBI conversion", dfr: "Convertissez vos manuscrits en ebooks prêts pour Amazon Kindle, Apple Books et Google Play Books", den: "Convert your manuscripts into ebooks ready for Amazon Kindle, Apple Books and Google Play Books" },
-    { icon: Package, fr: "Import Excel & vente rapide", en: "Excel import & quick sale", dfr: "Importez votre catalogue et vos stocks depuis un fichier Excel, puis enregistrez les ventes en mode caisse rapide.", den: "Import your catalogue and stock from Excel, then log sales in fast checkout mode." },
-    { icon: BarChart3, fr: "Analytiques avancées", en: "Advanced analytics", dfr: "Tableaux de bord complets pour piloter votre maison d'édition avec des données en temps réel", den: "Complete dashboards to manage your publishing house with real-time data" },
-    { icon: Receipt, fr: "Bordereaux de vente", en: "Bordereaux de vente", dfr: bordereauxFr, den: bordereauxFr },
-    { icon: Printer, fr: "Répertoire des imprimeries", en: "Répertoire des imprimeries", dfr: imprimeriesFr, den: imprimeriesFr },
-  ];
-
-  return (
-    <section id="features" className="py-24 px-4 bg-background relative">
-      <div className="max-w-7xl mx-auto">
-        <div className="text-center mb-14">
-          <h2 className="text-3xl md:text-5xl font-bold tracking-tight">{t("Tout ce dont vous avez besoin", "Everything you need")}</h2>
-          <p className="mt-3 text-muted-foreground max-w-2xl mx-auto">
-            {t("Une suite complète pour gérer chaque étape de votre maison d'édition.", "A complete suite to manage every step of your publishing house.")}
-          </p>
-        </div>
-        <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-5">
-          {items.map((f, i) => (
-            <RevealOnScroll key={i} delay={i * 80}>
-              <div className="group h-full rounded-2xl border border-border bg-[#1A1208] p-6 transition-all duration-300 hover:border-[color:var(--gold)] hover:-translate-y-1 hover:shadow-[0_0_24px_-4px_var(--gold)]">
-                <div className="h-12 w-12 rounded-xl bg-primary/15 text-primary flex items-center justify-center group-hover:bg-primary group-hover:text-primary-foreground transition-colors">
-                  <f.icon className="h-6 w-6" />
-                </div>
-                <h3 className="mt-5 font-semibold text-lg">{t(f.fr, f.en)}</h3>
-                <p className="mt-2 text-sm text-muted-foreground leading-relaxed">{t(f.dfr, f.den)}</p>
-              </div>
-            </RevealOnScroll>
-          ))}
-        </div>
-      </div>
-    </section>
-  );
-}
-
 function MedmoSection() {
   const points = [
     {
-      icon: MessageSquare,
       title: "Posez vos questions",
       text: "« Combien d'exemplaires reste-t-il à la Librairie Nouvel Horizon ? » La réponse vient de vos données réelles, en français.",
     },
     {
-      icon: Camera,
       title: "Photographiez votre cahier",
       text: "Une page de cahier de ventes manuscrite est lue, les titres reconnus dans votre catalogue, et les ventes proposées à l'enregistrement.",
     },
     {
-      icon: Check,
       title: "Vous gardez le dernier mot",
       text: "Aucune écriture sans votre validation. En cas de doute sur un titre ou une librairie, l'assistant demande confirmation au lieu de créer un doublon.",
     },
   ];
   return (
-    <section id="medmo" className="py-24 px-4 bg-background">
-      <div className="max-w-6xl mx-auto">
-        <div className="text-center mb-14">
-          <span className="inline-flex items-center gap-2 text-xs font-semibold px-3 py-1 rounded-full bg-primary/15 text-primary border border-primary/30">
-            <Sparkles className="h-3.5 w-3.5" /> Assistant intégré
-          </span>
-          <h2 className="mt-4 text-3xl md:text-5xl font-bold tracking-tight">
-            <MedmoWordmark nameClassName="text-3xl md:text-5xl" prClassName="text-3xl md:text-5xl" />
-            <span className="block mt-2 text-xl md:text-2xl font-semibold text-white/90">
-              votre assistant d'édition, jour et nuit
-            </span>
-          </h2>
-          <p className="mt-4 text-muted-foreground max-w-2xl mx-auto">
-            Il connaît votre catalogue, vos stocks et vos chiffres. Il lit vos photos et vos documents, puis prépare le travail à votre place. Vous validez.
-          </p>
-        </div>
-        <div className="grid md:grid-cols-3 gap-5">
+    <section id="medmo" className="py-24 md:py-32 px-6 lg:px-12 bg-[#0D0A06]">
+      <div className="max-w-7xl mx-auto">
+        <SectionHead
+          num="02"
+          kicker="L'assistant"
+          title={<>Pr. MEDMO connaît <em className="italic text-[#E8B84B]">vos chiffres.</em></>}
+          intro="Il connaît votre catalogue, vos stocks et vos ventes. Il lit vos photos et vos documents, puis prépare le travail à votre place. Vous validez."
+        />
+        <ol className="grid md:grid-cols-3 border-t border-white/10 md:divide-x md:divide-white/10">
           {points.map((p, i) => (
-            <RevealOnScroll key={p.title} delay={i * 100}>
-              <div className="h-full rounded-2xl border border-border bg-[#1A1208] p-6">
-                <div className="h-12 w-12 rounded-xl bg-primary/15 text-primary flex items-center justify-center">
-                  <p.icon className="h-6 w-6" />
-                </div>
-                <h3 className="mt-5 font-semibold text-lg">{p.title}</h3>
-                <p className="mt-2 text-sm text-muted-foreground leading-relaxed">{p.text}</p>
-              </div>
-            </RevealOnScroll>
+            <li key={p.title} className="py-8 md:px-8 md:first:pl-0 md:last:pr-0 border-b md:border-b-0 border-white/10">
+              <span className="font-wordmark-serif text-2xl text-[#C8922A] tabular-nums">{String(i + 1).padStart(2, "0")}</span>
+              <h3 className="mt-3 text-lg font-medium text-white">{p.title}</h3>
+              <p className="mt-2 text-[15px] leading-relaxed text-[#B8A898]">{p.text}</p>
+            </li>
+          ))}
+        </ol>
+      </div>
+    </section>
+  );
+}
+
+
+function Features() {
+  const { t } = useI18n();
+  const offlineFr = "Continuez à travailler pendant les délestages et les coupures de réseau. Vos données se synchronisent dès le retour de la connexion.";
+  const bordereauxFr = "Générez vos bordereaux de dépôt et de vente en quelques clics, prêts à signer avec vos libraires.";
+  const imprimeriesFr = "Accédez aux tarifs et contacts des imprimeries partenaires pour comparer avant d'imprimer.";
+  const groups = [
+    {
+      fr: "Catalogue et auteurs", en: "Catalogue and authors",
+      items: [
+        { fr: "Gestion des manuscrits", en: "Manuscript management", dfr: "Suivez chaque livre à travers 10 étapes éditoriales, de la réception à la publication.", den: "Track every book through 10 editorial stages, from reception to publication." },
+        { fr: "Gestion des auteurs", en: "Author management", dfr: "Informations, contrats et droits de vos auteurs au même endroit.", den: "Your authors' details, contracts and royalties in one place." },
+        { fr: "Contrats et droits", en: "Contracts and rights", dfr: "Des contrats d'édition professionnels en quelques clics, adaptés à votre pays.", den: "Professional publishing contracts in a few clicks, adapted to your country." },
+        { fr: "Livres étrangers", en: "Foreign books", dfr: "Vos productions séparées des ouvrages d'autres éditeurs que vous distribuez.", den: "Your own titles kept apart from other publishers' books you distribute." },
+        { fr: "Partage PDF sécurisé", en: "Secure PDF sharing", dfr: "Filigrane à votre nom et nombre de lectures limité.", den: "Watermarked with your name, with a limited number of views." },
+        { fr: "Conversion ePub et MOBI", en: "ePub and MOBI conversion", dfr: "Des ebooks prêts pour Kindle, Apple Books et Google Play Books.", den: "Ebooks ready for Kindle, Apple Books and Google Play Books." },
+      ],
+    },
+    {
+      fr: "Stock et librairies", en: "Stock and bookstores",
+      items: [
+        { fr: "Stock interne", en: "Internal stock", dfr: "Chaque exemplaire imprimé suivi, chaque mouvement enregistré.", den: "Every printed copy tracked, every movement logged." },
+        { fr: "Dépôts en librairie", en: "Bookstore deposits", dfr: "Vos stocks chez chaque libraire, avec alerte quand ils baissent.", den: "Your stock at each bookstore, with an alert when it runs low." },
+        { fr: "Dépôts multiples", en: "Multiple deposits", dfr: "Chaque lot garde sa date, sa quantité et son historique.", den: "Each batch keeps its date, quantity and history." },
+        { fr: "Dons et exemplaires offerts", en: "Donations", dfr: "Le stock est déduit, sans revenu ni droits d'auteur.", den: "Stock is deducted, with no revenue or royalties." },
+        { fr: "Bordereaux de vente", en: "Sales slips", dfr: bordereauxFr, den: "Deposit and sales slips in a few clicks, ready to sign with your bookstores." },
+        { fr: "Import Excel et vente rapide", en: "Excel import and quick sale", dfr: "Catalogue et stocks importés depuis Excel, ventes saisies en mode caisse.", den: "Catalogue and stock imported from Excel, sales logged in checkout mode." },
+      ],
+    },
+    {
+      fr: "Finances", en: "Finances",
+      items: [
+        { fr: "Journal et royalties", en: "Ledger and royalties", dfr: "Ventes, dépenses, rentabilité par titre et droits d'auteur, avec reçus imprimables.", den: "Sales, expenses, per-title profitability and royalties, with printable receipts." },
+        { fr: "Estimateur de coûts", en: "Cost estimator", dfr: "Le coût d'impression exact, et le conseil offset ou numérique.", den: "The exact printing cost, and whether to go offset or digital." },
+        { fr: "Tableaux de bord", en: "Dashboards", dfr: "Vos chiffres du jour pour piloter la maison.", den: "Today's numbers to run the house." },
+        { fr: "Annulation traçable", en: "Traceable cancellation", dfr: "Une erreur s'annule avec un motif, et reste visible dans l'historique.", den: "A mistake is cancelled with a reason, and stays visible in the log." },
+        { fr: "Répertoire des imprimeries", en: "Printer directory", dfr: imprimeriesFr, den: "Prices and contacts of partner printers, to compare before printing." },
+      ],
+    },
+    {
+      fr: "Sur le terrain", en: "In the field",
+      items: [
+        { fr: "Assistant Pr. MEDMO", en: "Pr. MEDMO assistant", dfr: "Une question, une photo ou un document : il prépare, vous validez.", den: "A question, a photo or a document: it prepares, you approve." },
+        { fr: "Photo de cahier en ventes", en: "Notebook photo to sales", dfr: "Titres, quantités et prix reconnus sur une page de cahier.", den: "Titles, quantities and prices read from a notebook page." },
+        { fr: "Fonctionne sans connexion", en: "Works offline", dfr: offlineFr, den: "Keep working through power and network cuts. Everything syncs when you're back online." },
+      ],
+    },
+  ];
+
+  return (
+    <section id="features" className="py-24 md:py-32 px-6 lg:px-12 bg-[#0A0704]">
+      <div className="max-w-7xl mx-auto">
+        <SectionHead
+          num="03"
+          kicker={t("Fonctionnalités", "Features")}
+          title={t("Tout le métier d'éditeur, au même endroit.", "The whole publishing trade, in one place.")}
+          intro={t("Du manuscrit reçu au chèque versé à l'auteur.", "From the manuscript you receive to the royalty you pay.")}
+        />
+        <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-x-10 gap-y-14">
+          {groups.map((g) => (
+            <div key={g.fr}>
+              <h3 className="pb-4 border-b border-white/10 text-[12px] uppercase tracking-[0.2em] text-[#C8922A]">{t(g.fr, g.en)}</h3>
+              <dl className="divide-y divide-white/[0.06]">
+                {g.items.map((f) => (
+                  <div key={f.fr} className="py-4">
+                    <dt className="text-[15px] font-medium text-white">{t(f.fr, f.en)}</dt>
+                    <dd className="mt-1 text-sm leading-relaxed text-[#8C7B6B]">{t(f.dfr, f.den)}</dd>
+                  </div>
+                ))}
+              </dl>
+            </div>
           ))}
         </div>
       </div>
@@ -557,123 +479,137 @@ function MedmoSection() {
   );
 }
 
-function Partners() {
 
+function Partners() {
   const { t } = useI18n();
-  const socials = [
-    { Icon: Facebook, href: "https://www.facebook.com/figuira", label: "Facebook" },
-    { Icon: Linkedin, href: "https://www.linkedin.com/in/figuira-éditions-113118301/", label: "LinkedIn" },
-    { Icon: Instagram, href: "https://www.instagram.com/figuiraeditions2", label: "Instagram" },
-    { Icon: Youtube, href: "https://www.youtube.com/@figuira-editions9737", label: "YouTube" },
+  const links = [
+    { label: t("Site web", "Website"), href: "https://figuiraeditions.org" },
+    { label: "Facebook", href: "https://www.facebook.com/figuira" },
+    { label: "LinkedIn", href: "https://www.linkedin.com/in/figuira-éditions-113118301/" },
+    { label: "Instagram", href: "https://www.instagram.com/figuiraeditions2" },
+    { label: "YouTube", href: "https://www.youtube.com/@figuira-editions9737" },
   ];
   return (
-    <section id="partners" className="py-[60px] px-4 bg-[#1A1208]">
+    <section id="partners" className="py-24 md:py-32 px-6 lg:px-12 bg-[#0D0A06]">
       <div className="max-w-7xl mx-auto">
-        <div className="text-center mb-12">
-          <h2 className="text-3xl md:text-5xl font-bold tracking-tight">
-            Notre premier partenaire officiel
-          </h2>
-          <p className="mt-3 text-muted-foreground max-w-2xl mx-auto">
-            FIGDITIONS est développé main dans la main avec une maison d'édition malienne, sur des cas d'usage réels.
-          </p>
-        </div>
-
-        <RevealOnScroll>
-          <div className="max-w-2xl mx-auto rounded-2xl border-2 border-[color:var(--gold)] bg-[#0D0A06] p-8 md:p-10 text-center relative shadow-[0_0_40px_-10px_var(--gold)]">
-            <div className="absolute -top-3 left-1/2 -translate-x-1/2">
-              <span className="text-xs font-bold px-3 py-1 rounded-full bg-[color:var(--gold)] text-background shadow-glow">
-                {t("Partenaire officiel ⭐", "Official partner ⭐")}
-              </span>
-            </div>
-
-            <a
-              href="https://figuiraeditions.org"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="inline-block mt-4 transition-transform duration-300 hover:scale-105 hover:drop-shadow-[0_0_24px_rgba(232,184,75,0.6)]"
-            >
-              <img src={figuiraLogo} alt="Figuira Editions" style={{ height: "80px", width: "auto" }} className="mx-auto" />
-            </a>
-
-            <h3 className="mt-5 text-xl font-bold text-white tracking-wide">FIGUIRA ÉDITIONS</h3>
-            <p className="mt-1 text-sm font-semibold text-primary">
-              {t("En collaboration avec FIGDITIONS", "In collaboration with FIGDITIONS")}
-            </p>
-            <p className="mt-4 text-sm text-muted-foreground leading-relaxed max-w-lg mx-auto">
+        <SectionHead
+          num="04"
+          kicker={t("Partenaire", "Partner")}
+          title={<>{t("Construit avec une ", "Built with a ")}<em className="italic text-[#E8B84B]">{t("vraie", "real")}</em>{t(" maison d'édition.", " publishing house.")}</>}
+          intro={t(
+            "FIGDITIONS est développé main dans la main avec une maison d'édition malienne, sur des cas d'usage réels.",
+            "FIGDITIONS is built hand in hand with a Malian publishing house, on real day-to-day work."
+          )}
+        />
+        <div className="grid md:grid-cols-12 gap-8 items-start">
+          <a href="https://figuiraeditions.org" target="_blank" rel="noopener noreferrer" className="md:col-span-3 inline-block">
+            <img src={figuiraLogo} alt="Figuira Éditions" style={{ height: "88px", width: "auto" }} />
+          </a>
+          <div className="md:col-span-9 max-w-2xl">
+            <h3 className="font-wordmark-serif font-normal text-white text-3xl md:text-4xl">Figuira Éditions</h3>
+            <p className="mt-4 text-[17px] leading-relaxed text-[#B8A898]">
               {t(
                 "Maison d'édition malienne fondée en 2019 par Fatoumata Keïta. Spécialisée dans la littérature générale et la jeunesse bilingue (français-langues nationales). Plus de 25 titres publiés par an.",
-                "Malian publishing house founded in 2019 by Fatoumata Keïta. Specialized in general literature and bilingual youth (French-national languages). Over 25 titles published per year."
+                "Malian publishing house founded in 2019 by Fatoumata Keïta. Specialized in general literature and bilingual youth books (French and national languages). Over 25 titles published per year."
               )}
             </p>
-
-            <div className="mt-5 flex items-center justify-center gap-3">
-              {socials.map(({ Icon, href, label }) => (
-                <a
-                  key={label}
-                  href={href}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  aria-label={label}
-                  className="h-10 w-10 rounded-full border border-border flex items-center justify-center text-muted-foreground hover:text-[color:var(--gold)] hover:border-[color:var(--gold)] transition-colors"
-                >
-                  <Icon className="h-4 w-4" />
-                </a>
+            <ul className="mt-6 flex flex-wrap gap-x-6 gap-y-2 text-sm">
+              {links.map((l) => (
+                <li key={l.label}>
+                  <a href={l.href} target="_blank" rel="noopener noreferrer" className="text-white underline decoration-white/20 underline-offset-4 hover:decoration-[#C8922A] transition-colors">
+                    {l.label}
+                  </a>
+                </li>
               ))}
-            </div>
-
-            <a href="https://figuiraeditions.org" target="_blank" rel="noopener noreferrer" className="inline-block mt-6">
-              <Button
-                variant="outline"
-                className="border-[color:var(--gold)] text-[color:var(--gold)] hover:bg-[color:var(--gold)] hover:text-background"
-              >
-                {t("Visiter le site", "Visit the site")} <ArrowRight className="ml-2 h-4 w-4" />
-              </Button>
-            </a>
+            </ul>
+            <p className="mt-10 pt-6 border-t border-white/10 text-sm text-[#8C7B6B]">
+              {t("Vous êtes une maison d'édition ? Rejoignez nos partenaires.", "Are you a publishing house? Join our partners.")}{" "}
+              <a href="mailto:figditions@gmail.com" className="text-[#E8B84B] underline underline-offset-4 decoration-[#E8B84B]/40 hover:decoration-[#E8B84B]">
+                {t("Nous contacter", "Contact us")}
+              </a>
+            </p>
           </div>
-        </RevealOnScroll>
-
-        <p className="mt-8 text-center text-sm text-muted-foreground">
-          {t("Vous êtes une maison d'édition ? Rejoignez nos partenaires.", "Are you a publishing house? Join our partners.")}{" "}
-          <a href="mailto:figditions@gmail.com" className="text-[color:var(--gold)] hover:underline font-semibold">
-            {t("Nous contacter", "Contact us")}
-          </a>
-        </p>
+        </div>
       </div>
     </section>
   );
 }
+
 
 function HowItWorks() {
   const { t } = useI18n();
   const steps = [
-    { emoji: "🏢", fr: "Créez votre compte", en: "Create your account", dfr: "Inscrivez votre maison d'édition en 2 minutes et invitez votre équipe", den: "Register your publishing house in 2 minutes and invite your team" },
-    { emoji: "📥", fr: "Gérez vos manuscrits", en: "Manage your manuscripts", dfr: "Suivez chaque livre à travers les 10 étapes éditoriales avec votre équipe", den: "Track every book through the 10 editorial stages with your team" },
-    { emoji: "📦", fr: "Contrôlez vos stocks", en: "Control your stocks", dfr: "Gérez votre entrepôt interne et vos dépôts dans vos librairies partenaires", den: "Manage your internal warehouse and your deposits in partner bookstores" },
-    { emoji: "💸", fr: "Pilotez vos finances", en: "Pilot your finances", dfr: "Suivez vos ventes, calculez les droits d'auteur et analysez vos performances", den: "Track your sales, calculate royalties and analyze your performance" },
+    { fr: "Créez votre compte", en: "Create your account", dfr: "Inscrivez votre maison d'édition en 2 minutes et invitez votre équipe.", den: "Register your publishing house in 2 minutes and invite your team." },
+    { fr: "Ajoutez vos manuscrits", en: "Add your manuscripts", dfr: "Suivez chaque livre à travers les 10 étapes éditoriales avec votre équipe.", den: "Track every book through the 10 editorial stages with your team." },
+    { fr: "Déposez en librairie", en: "Stock the bookstores", dfr: "Votre entrepôt et vos dépôts en librairie, à jour en permanence.", den: "Your warehouse and bookstore deposits, always up to date." },
+    { fr: "Versez les droits", en: "Pay the royalties", dfr: "Les ventes calculent les droits d'auteur. Vous n'avez plus qu'à payer.", den: "Sales calculate the royalties. All that's left is to pay them." },
   ];
   return (
-    <section className="py-24 px-4 bg-gradient-to-b from-[#1A1208] to-background">
+    <section className="py-24 md:py-32 px-6 lg:px-12 bg-[#0A0704]">
       <div className="max-w-7xl mx-auto">
-        <div className="text-center mb-16">
-          <h2 className="text-3xl md:text-5xl font-bold tracking-tight">{t("Comment ça marche ?", "How it works?")}</h2>
-        </div>
-        <div className="relative grid md:grid-cols-4 gap-8 md:gap-4">
-          <div className="hidden md:block absolute top-7 left-[12.5%] right-[12.5%] h-0.5 bg-gradient-to-r from-primary/0 via-primary/40 to-primary/0" />
+        <SectionHead num="05" kicker={t("Mise en route", "Getting started")} title={t("Prêt en quatre étapes.", "Ready in four steps.")} />
+        <ol className="grid sm:grid-cols-2 lg:grid-cols-4 gap-x-10 gap-y-12">
           {steps.map((s, i) => (
-            <RevealOnScroll key={i} delay={i * 120}>
-              <div className="relative text-center">
-                <div className="mx-auto h-14 w-14 rounded-full bg-primary text-primary-foreground font-bold text-lg flex items-center justify-center shadow-glow relative z-10">
-                  {i + 1}
-                </div>
-                <div className="text-3xl mt-4">{s.emoji}</div>
-                <h3 className="mt-2 font-semibold">{t(s.fr, s.en)}</h3>
-                <p className="mt-2 text-sm text-muted-foreground">{t(s.dfr, s.den)}</p>
-              </div>
-            </RevealOnScroll>
+            <li key={s.fr} className="border-t border-white/10 pt-6">
+              <span className="font-wordmark-serif text-5xl leading-none text-[#E8B84B] tabular-nums">{i + 1}</span>
+              <h3 className="mt-5 text-lg font-medium text-white">{t(s.fr, s.en)}</h3>
+              <p className="mt-2 text-[15px] leading-relaxed text-[#8C7B6B]">{t(s.dfr, s.den)}</p>
+            </li>
           ))}
-        </div>
+        </ol>
       </div>
     </section>
+  );
+}
+
+// Side-by-side table built from src/lib/plans.ts, so it always matches the app.
+function PlanComparison() {
+  const { t } = useI18n();
+  const n = (v: number) => (v === Infinity ? t("Illimité", "Unlimited") : v === 0 ? false : String(v));
+  const rows: { label: string; value: (p: PlanLimits) => string | boolean }[] = [
+    { label: t("Utilisateurs", "Users"), value: (p) => n(p.maxUsers) },
+    { label: t("Manuscrits", "Manuscripts"), value: (p) => n(p.maxManuscrits) },
+    { label: t("Librairies partenaires", "Partner bookstores"), value: (p) => n(p.maxBookstores) },
+    { label: t("Questions à Pr. MEDMO / mois", "Pr. MEDMO questions / month"), value: (p) => n(p.medmoParMois) },
+    { label: t("Finances, royalties et bordereaux", "Finances, royalties and slips"), value: (p) => p.finances },
+    { label: t("Contrats d'édition", "Publishing contracts"), value: (p) => (p.modelesContrat ? t("Vos propres modèles", "Your own templates") : p.contrats ? t("Modèle standard", "Standard template") : false) },
+    { label: t("Liens de lecture PDF / mois", "PDF reading links / month"), value: (p) => n(p.partagesParMois) },
+    { label: t("Conversions ePub & MOBI / mois", "ePub & MOBI conversions / month"), value: (p) => n(p.conversionsParMois) },
+    { label: t("Support", "Support"), value: (p) => (p.prioritySupport ? t("Prioritaire WhatsApp", "Priority WhatsApp") : "Email") },
+  ];
+  return (
+    <div className="mt-20">
+      <h3 className="font-wordmark-serif font-normal text-white text-3xl md:text-4xl">{t("Comparez les plans en détail.", "Compare plans in detail.")}</h3>
+      <div className="mt-6 overflow-x-auto border-t border-white/10">
+        <table className="w-full min-w-[560px] text-sm">
+          <thead>
+            <tr>
+              <th className="text-left px-4 pl-0 py-4 font-medium !normal-case !tracking-normal !text-[13px] !bg-transparent !text-[#8C7B6B]">{t("Fonctionnalité", "Feature")}</th>
+              {PLAN_ORDER.map((k) => (
+                <th key={k} className={cn("px-4 py-4 text-center font-medium !normal-case !tracking-normal !text-[13px] !bg-transparent", k === "pro" ? "!text-[#E8B84B]" : "!text-white")}>{LIMITES[k].label}</th>
+              ))}
+            </tr>
+          </thead>
+          <tbody>
+            {rows.map((r) => (
+              <tr key={r.label} className="border-t border-white/[0.06]">
+                <td className="px-4 pl-0 py-3.5 text-[#B8A898]">{r.label}</td>
+                {PLAN_ORDER.map((k) => {
+                  const v = r.value(LIMITES[k]);
+                  return (
+                    <td key={k} className="px-4 py-3.5 text-center tabular-nums">
+                      {v === true ? <Check className="h-4 w-4 text-[#C8922A] mx-auto" aria-label={t("Inclus", "Included")} />
+                        : v === false ? <span className="text-white/25" aria-label={t("Non inclus", "Not included")}>—</span>
+                        : <span className="text-white">{v}</span>}
+                    </td>
+                  );
+                })}
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+    </div>
   );
 }
 
@@ -681,47 +617,38 @@ function Pricing() {
   const { t } = useI18n();
   const [yearly, setYearly] = useState(false);
 
-  const cardClass: Record<string, string> = {
-    starter: "border-border bg-card",
-    pro: "border-primary shadow-glow bg-gradient-to-b from-[#1A1208] to-[#0D0A06] lg:scale-105 lg:-my-2 relative",
-    business: "border-[color:var(--gold)]/60 shadow-[0_0_30px_-10px_var(--gold)] bg-card",
-  };
-  const btnClass: Record<string, string> = {
-    starter: "border-primary text-primary hover:bg-primary hover:text-primary-foreground",
-    pro: "bg-primary text-primary-foreground hover:bg-primary/90",
-    business: "bg-[color:var(--gold)] text-background hover:bg-[color:var(--gold)]/90",
-  };
-
   const fmt = (n: number) => n.toLocaleString("fr-FR");
   // FCFA is pegged to the euro (1 € = 655,957 FCFA), so this is exact, not a live rate.
   const eur = (fcfaAmount: number) => Math.round(fcfaAmount / 655.957).toLocaleString("fr-FR");
 
   return (
-    <section id="pricing" className="py-24 px-4 bg-background">
+    <section id="pricing" className="py-24 md:py-32 px-6 lg:px-12 bg-[#0D0A06]">
       <div className="max-w-7xl mx-auto">
-        <div className="text-center mb-10">
-          <h2 className="text-3xl md:text-5xl font-bold tracking-tight">{t("Des tarifs adaptés à votre maison", "Pricing for every publishing house")}</h2>
-          <p className="mt-3 text-muted-foreground max-w-2xl mx-auto">
-            {t("Commencez gratuitement, évoluez quand vous êtes prêt.", "Start for free, upgrade when you're ready.")}
-          </p>
+        <SectionHead
+          num="06"
+          kicker={t("Tarifs", "Pricing")}
+          title={t("Des tarifs à la taille de votre maison.", "Pricing sized to your house.")}
+          intro={t("Commencez gratuitement, évoluez quand vous êtes prêt.", "Start for free, upgrade when you're ready.")}
+        />
 
-          <div className="mt-8 inline-flex items-center gap-3">
-            <div className="inline-flex items-center rounded-full border border-border bg-card p-1">
-              <button onClick={() => setYearly(false)} className={cn(
-                "px-4 py-1.5 rounded-full text-sm font-semibold transition-colors",
-                !yearly ? "bg-primary text-primary-foreground" : "text-muted-foreground"
-              )}>{t("Mensuel", "Monthly")}</button>
-              <button onClick={() => setYearly(true)} className={cn(
-                "px-4 py-1.5 rounded-full text-sm font-semibold transition-colors",
-                yearly ? "bg-primary text-primary-foreground" : "text-muted-foreground"
-              )}>{t("Annuel", "Yearly")}</button>
-            </div>
-            {yearly && (
-              <span className="inline-flex items-center gap-1 text-xs font-semibold px-2.5 py-1 rounded-full bg-primary/15 text-primary border border-primary/30 animate-fade-in">
-                {t("2 mois offerts 🎉", "2 months free 🎉")}
-              </span>
-            )}
+        <div className="mb-8 flex flex-wrap items-center gap-4">
+          <div className="inline-flex rounded-md border border-white/15 p-0.5" role="group" aria-label={t("Période de facturation", "Billing period")}>
+            {[false, true].map((y) => (
+              <button
+                key={String(y)}
+                type="button"
+                aria-pressed={yearly === y}
+                onClick={() => setYearly(y)}
+                className={cn(
+                  "px-4 py-1.5 rounded-[5px] text-sm transition-colors",
+                  yearly === y ? "bg-white text-[#0A0704] font-medium" : "text-[#B8A898] hover:text-white",
+                )}
+              >
+                {y ? t("Annuel", "Yearly") : t("Mensuel", "Monthly")}
+              </button>
+            ))}
           </div>
+          <span className="text-sm text-[#E8B84B]">{t("2 mois offerts en annuel", "2 months free on yearly")}</span>
         </div>
 
         <div className="grid md:grid-cols-3 gap-6 items-stretch">
@@ -731,85 +658,82 @@ function Pricing() {
             const badge = plan.badge ?? t("Gratuit", "Free");
             const monthlyFromYearly = Math.round(plan.priceYearly / 12);
             return (
-              <div key={plan.id} className={cn("rounded-2xl border p-7 flex flex-col transition-all duration-300", cardClass[plan.id])}>
-                {highlighted ? (
-                  <div className="absolute -top-3 left-1/2 -translate-x-1/2">
-                    <span className="text-xs font-bold px-3 py-1 rounded-full bg-[color:var(--gold)] text-background shadow-glow">
-                      {badge}
-                    </span>
-                  </div>
-                ) : (
-                  <span className={cn(
-                    "self-start text-xs font-semibold border rounded-full px-2.5 py-0.5 mb-3",
-                    plan.id === "business" ? "bg-[color:var(--gold)]/15 text-[color:var(--gold)] border-[color:var(--gold)]/30"
-                      : "bg-muted text-muted-foreground border-border",
-                  )}>{badge}</span>
+              <div
+                key={plan.id}
+                className={cn(
+                  "rounded-lg border p-7 flex flex-col bg-[#0A0704]",
+                  highlighted ? "border-[#C8922A]" : "border-white/10",
                 )}
-                <h3 className="text-2xl font-bold">{plan.name}</h3>
-                <p className="text-sm text-muted-foreground mt-1">{plan.tagline}</p>
+              >
+                <div className="flex items-baseline justify-between gap-3">
+                  <h3 className="font-wordmark-serif font-normal text-white text-3xl">{plan.name}</h3>
+                  <span className={cn("text-[11px] uppercase tracking-[0.18em]", highlighted ? "text-[#E8B84B]" : "text-[#8C7B6B]")}>{badge}</span>
+                </div>
+                <p className="mt-1 text-sm text-[#8C7B6B]">{plan.tagline}</p>
 
-                <div className="mt-5">
+                <div className="mt-6 pt-6 border-t border-white/10">
                   {isFree ? (
-                    <p className="text-4xl font-bold">0 FCFA<span className="text-sm font-normal text-muted-foreground"> / {t("mois", "month")}</span></p>
+                    <p className="text-4xl font-semibold text-white tabular-nums">0 FCFA<span className="text-sm font-normal text-[#8C7B6B]"> / {t("mois", "month")}</span></p>
                   ) : yearly ? (
                     <>
-                      <p className="text-4xl font-bold">{fmt(plan.priceYearly)} <span className="text-sm font-normal text-muted-foreground">FCFA / an</span></p>
-                      <p className="mt-1 text-xs text-muted-foreground">soit {fmt(monthlyFromYearly)} FCFA / mois · ≈ {eur(plan.priceYearly)} € / an</p>
-                      <span className="mt-2 inline-block text-xs font-semibold px-2.5 py-1 rounded-full bg-emerald-500/15 text-emerald-400 border border-emerald-500/30">
-                        Économisez 2 mois
-                      </span>
+                      <p className="text-4xl font-semibold text-white tabular-nums">{fmt(plan.priceYearly)} <span className="text-sm font-normal text-[#8C7B6B]">FCFA / an</span></p>
+                      <p className="mt-1 text-xs text-[#8C7B6B]">soit {fmt(monthlyFromYearly)} FCFA / mois · ≈ {eur(plan.priceYearly)} € / an</p>
+                      <p className="mt-2 text-xs text-[#E8B84B]">Économisez 2 mois</p>
                     </>
                   ) : (
                     <>
-                      <p className="text-4xl font-bold">{fmt(plan.priceMonthly)} <span className="text-sm font-normal text-muted-foreground">FCFA / {t("mois", "month")}</span></p>
-                      <p className="mt-1 text-xs text-muted-foreground">≈ {eur(plan.priceMonthly)} € / {t("mois", "month")}</p>
+                      <p className="text-4xl font-semibold text-white tabular-nums">{fmt(plan.priceMonthly)} <span className="text-sm font-normal text-[#8C7B6B]">FCFA / {t("mois", "month")}</span></p>
+                      <p className="mt-1 text-xs text-[#8C7B6B]">≈ {eur(plan.priceMonthly)} € / {t("mois", "month")}</p>
                     </>
                   )}
-                  <p className="mt-3 text-sm font-semibold text-foreground">{plan.seatsLabel}</p>
+                  <p className="mt-3 text-sm font-medium text-white">{plan.seatsLabel}</p>
                 </div>
 
                 <ul className="mt-6 space-y-2.5 text-sm flex-1">
                   {plan.included.map((f) => (
-                    <li key={f} className="flex items-start gap-2">
-                      <Check className="h-4 w-4 text-primary shrink-0 mt-0.5" />
+                    <li key={f} className="flex items-start gap-2.5 text-[#D9CCBE]">
+                      <Check className="h-4 w-4 text-[#C8922A] shrink-0 mt-0.5" aria-hidden="true" />
                       <span>{f}</span>
                     </li>
                   ))}
                   {plan.excluded.map((f) => (
-                    <li key={f} className="flex items-start gap-2">
-                      <X className="h-4 w-4 text-muted-foreground shrink-0 mt-0.5" />
-                      <span className="text-muted-foreground line-through" aria-label={`Non inclus dans ce plan : ${f}`}>{f}</span>
+                    <li key={f} className="flex items-start gap-2.5">
+                      <X className="h-4 w-4 text-white/25 shrink-0 mt-0.5" aria-hidden="true" />
+                      <span className="text-[#6B5B4E] line-through" aria-label={`Non inclus dans ce plan : ${f}`}>{f}</span>
                     </li>
                   ))}
                   {(plan.comingSoon ?? []).map((f) => (
-                    <li key={f} className="flex items-start gap-2">
-                      <span className="text-muted-foreground">{f}</span>
-                      <span className="text-[10px] font-semibold px-2 py-0.5 rounded-full bg-muted text-muted-foreground border border-border">
-                        Bientôt
-                      </span>
+                    <li key={f} className="flex items-start gap-2.5 pl-[26px] text-[#8C7B6B]">
+                      <span>{f}</span>
+                      <span className="text-[11px] uppercase tracking-[0.14em] text-[#6B5B4E]">Bientôt</span>
                     </li>
                   ))}
                 </ul>
 
-                <Link to="/signup" search={{ plan: plan.id }} className="mt-7 block">
-                  <Button className={cn("w-full h-11", btnClass[plan.id])} variant={plan.id === "starter" ? "outline" : "default"}>
-                    {isFree ? t("Commencer gratuitement", "Get started for free") : `${t("Choisir", "Choose")} ${plan.name}`}
-                  </Button>
+                <Link
+                  to="/signup"
+                  search={{ plan: plan.id }}
+                  className={cn(
+                    "mt-8 inline-flex h-11 w-full items-center justify-center rounded-md text-[15px] font-medium transition-colors",
+                    highlighted
+                      ? "bg-[#C8922A] text-white hover:bg-[#B5821F]"
+                      : "border border-white/20 text-white hover:border-white/50",
+                  )}
+                >
+                  {isFree ? t("Commencer gratuitement", "Get started for free") : `${t("Choisir", "Choose")} ${plan.name}`}
                 </Link>
               </div>
             );
           })}
         </div>
 
-        <p className="mt-8 text-center text-sm text-muted-foreground">
+        <p className="mt-8 text-sm text-[#8C7B6B]">
           Pas de carte bancaire requise · Annulez à tout moment · Paiement par Orange Money ou Wave
+          <br />
+          Vous avez un code promotionnel ? Vous pourrez l'activer depuis vos paramètres après inscription.
         </p>
 
-        <div className="mt-6 text-center">
-          <p className="text-sm" style={{ color: "#B8A898" }}>
-            Vous avez un code promotionnel ? Vous pourrez l'activer depuis vos paramètres après inscription.
-          </p>
-        </div>
+        <PlanComparison />
       </div>
     </section>
   );
@@ -818,23 +742,23 @@ function Pricing() {
 
 function Faq() {
   return (
-    <section id="faq" className="py-24 px-4 bg-background">
-      <div className="max-w-3xl mx-auto">
-        <div className="text-center mb-12">
-          <h2 className="text-3xl md:text-5xl font-bold tracking-tight">Questions fréquentes</h2>
+    <section id="faq" className="py-24 md:py-32 px-6 lg:px-12 bg-[#0A0704]">
+      <div className="max-w-7xl mx-auto">
+        <SectionHead num="07" kicker="Questions" title="Questions fréquentes." />
+        <div className="md:grid md:grid-cols-12 md:gap-8">
+          <Accordion type="single" collapsible className="md:col-start-4 md:col-span-9 border-t border-white/10">
+            {FAQS.map((f, i) => (
+              <AccordionItem key={i} value={`item-${i}`} className="border-white/10">
+                <AccordionTrigger className="py-5 text-left text-[17px] font-medium text-white hover:text-[#E8B84B] hover:no-underline">
+                  {f.question}
+                </AccordionTrigger>
+                <AccordionContent className="text-[15px] text-[#B8A898] leading-relaxed max-w-2xl">
+                  {f.answer}
+                </AccordionContent>
+              </AccordionItem>
+            ))}
+          </Accordion>
         </div>
-        <Accordion type="single" collapsible className="rounded-2xl border border-border bg-[#1A1208] px-4 md:px-6">
-          {FAQS.map((f, i) => (
-            <AccordionItem key={i} value={`item-${i}`} className="border-border">
-              <AccordionTrigger className="text-base font-semibold text-white hover:text-[#C8922A] hover:no-underline">
-                {f.question}
-              </AccordionTrigger>
-              <AccordionContent className="text-muted-foreground leading-relaxed">
-                {f.answer}
-              </AccordionContent>
-            </AccordionItem>
-          ))}
-        </Accordion>
       </div>
     </section>
   );
@@ -843,21 +767,21 @@ function Faq() {
 function CtaBanner() {
   const { t } = useI18n();
   return (
-    <section className="py-20 px-4">
-      <div className="max-w-6xl mx-auto rounded-3xl bg-[#1A1208] border border-border p-10 md:p-16 text-center relative overflow-hidden">
-        <div className="absolute inset-0 opacity-30"
-             style={{ backgroundImage: "radial-gradient(circle at 20% 50%, oklch(0.72 0.14 75 / 0.3), transparent 50%), radial-gradient(circle at 80% 50%, oklch(0.82 0.16 80 / 0.2), transparent 50%)" }} />
-        <div className="relative">
-          <h2 className="text-3xl md:text-5xl font-bold tracking-tight">
-            {t("Prêt à moderniser votre maison d'édition ?", "Ready to modernize your publishing house?")}
-          </h2>
-          <p className="mt-4 text-muted-foreground max-w-2xl mx-auto">
-            Créez votre compte gratuitement. Sans carte bancaire, sans engagement.
+    <section className="px-6 lg:px-12 pb-24 md:pb-32 bg-[#0A0704]">
+      <div className="max-w-7xl mx-auto border-t border-white/10 pt-14 grid md:grid-cols-12 gap-8 items-end">
+        <h2 className="md:col-span-8 font-wordmark-serif font-normal text-white text-[44px] md:text-[76px] leading-[1]">
+          {t("Votre catalogue mérite ", "Your catalogue deserves ")}
+          <em className="italic text-[#E8B84B]">{t("mieux qu'un cahier.", "better than a notebook.")}</em>
+        </h2>
+        <div className="md:col-span-4 md:text-right">
+          <p className="text-[15px] text-[#B8A898]">
+            {t("Créez votre compte gratuitement. Sans carte bancaire, sans engagement.", "Create your free account. No card, no commitment.")}
           </p>
-          <Link to="/signup" className="inline-block mt-8">
-            <Button size="lg" className="bg-primary text-primary-foreground hover:bg-primary/90 shadow-glow text-base px-8 h-12">
-              {t("Commencer gratuitement", "Get started for free")} <ArrowRight className="ml-2 h-4 w-4" />
-            </Button>
+          <Link
+            to="/signup"
+            className="mt-6 inline-flex items-center h-12 px-6 rounded-md bg-[#C8922A] text-white text-[15px] font-medium hover:bg-[#B5821F] transition-colors"
+          >
+            {t("Commencer gratuitement", "Get started for free")} <ArrowRight className="ml-2 h-4 w-4" />
           </Link>
         </div>
       </div>
@@ -872,102 +796,57 @@ function Footer() {
     e.preventDefault();
     document.getElementById(id)?.scrollIntoView({ behavior: "smooth" });
   };
+  const link = "text-[#8C7B6B] hover:text-white transition-colors";
   return (
-    <footer className="border-t border-border bg-card/40 py-12 px-4">
+    <footer className="border-t border-white/10 bg-[#0A0704] pt-14 pb-10 px-6 lg:px-12">
       <AdminAccessGate open={adminOpen} onOpenChange={setAdminOpen} />
-      <div className="max-w-7xl mx-auto grid sm:grid-cols-2 lg:grid-cols-5 gap-8 items-start">
-        <div>
+      <div className="max-w-7xl mx-auto grid sm:grid-cols-2 lg:grid-cols-12 gap-10 items-start">
+        <div className="lg:col-span-4">
           <button
             type="button"
             onClick={() => setAdminOpen(true)}
             aria-label="FIGDITIONS"
             className="block cursor-pointer bg-transparent border-0 p-0"
           >
-            <Logo
-              className="h-[60px] w-auto"
-              style={{ filter: "brightness(1.5) drop-shadow(0px 0px 12px rgba(232,184,75,0.5))" }}
-            />
+            <Logo className="h-[52px] w-auto" />
           </button>
-          <p
-            className="mt-2 font-bold"
-            style={{ color: "#E8B84B", fontSize: "20px", letterSpacing: "3px" }}
-          >
-            FIGDITIONS
-          </p>
-          <p className="mt-3 text-sm text-muted-foreground max-w-xs">
+          <p className="mt-4 text-sm text-[#8C7B6B] max-w-xs">
             {t("La plateforme des maisons d'édition", "The platform for publishing houses")}
           </p>
         </div>
 
-
-
-        <div>
-          <h4 className="text-sm font-semibold mb-3">{t("Navigation", "Navigation")}</h4>
-          <ul className="space-y-2 text-sm">
-            <li><a href="#features" onClick={scrollTo("features")} className="text-muted-foreground hover:text-primary">{t("Fonctionnalités", "Features")}</a></li>
-            <li><a href="#pricing" onClick={scrollTo("pricing")} className="text-muted-foreground hover:text-primary">{t("Tarifs", "Pricing")}</a></li>
-            <li><a href="#partners" onClick={scrollTo("partners")} className="text-muted-foreground hover:text-primary">{t("Partenaires", "Partners")}</a></li>
-            <li><Link to="/a-propos" className="text-muted-foreground hover:text-primary">{t("À propos", "About")}</Link></li>
-            <li><a href="mailto:figditions@gmail.com" className="text-muted-foreground hover:text-primary">Contact</a></li>
+        <div className="lg:col-span-2">
+          <h4 className="text-[12px] uppercase tracking-[0.2em] text-[#C8922A] mb-4">{t("Navigation", "Navigation")}</h4>
+          <ul className="space-y-2.5 text-sm">
+            <li><a href="#features" onClick={scrollTo("features")} className={link}>{t("Fonctionnalités", "Features")}</a></li>
+            <li><a href="#pricing" onClick={scrollTo("pricing")} className={link}>{t("Tarifs", "Pricing")}</a></li>
+            <li><a href="#partners" onClick={scrollTo("partners")} className={link}>{t("Partenaires", "Partners")}</a></li>
+            <li><Link to="/a-propos" className={link}>{t("À propos", "About")}</Link></li>
+            <li><a href="mailto:figditions@gmail.com" className={link}>Contact</a></li>
           </ul>
         </div>
 
-        <div>
-          <h4 className="text-sm font-semibold mb-3">{t("Légal", "Legal")}</h4>
-          <ul className="space-y-2 text-sm">
-            <li><Link to="/politique-de-confidentialite" className="text-muted-foreground hover:text-primary">{t("Politique de confidentialité", "Privacy Policy")}</Link></li>
-            <li><Link to="/conditions-utilisation" className="text-muted-foreground hover:text-primary">{t("Conditions d'utilisation", "Terms of Service")}</Link></li>
-            <li><Link to="/mentions-legales" className="text-muted-foreground hover:text-primary">Mentions légales</Link></li>
+        <div className="lg:col-span-3">
+          <h4 className="text-[12px] uppercase tracking-[0.2em] text-[#C8922A] mb-4">{t("Légal", "Legal")}</h4>
+          <ul className="space-y-2.5 text-sm">
+            <li><Link to="/politique-de-confidentialite" className={link}>{t("Politique de confidentialité", "Privacy Policy")}</Link></li>
+            <li><Link to="/conditions-utilisation" className={link}>{t("Conditions d'utilisation", "Terms of Service")}</Link></li>
+            <li><Link to="/mentions-legales" className={link}>Mentions légales</Link></li>
           </ul>
         </div>
 
-        <div>
-          <h4 className="text-sm font-semibold mb-3">{t("Partenaires", "Partners")}</h4>
-          <a
-            href="https://figuiraeditions.org"
-            target="_blank"
-            rel="noopener noreferrer"
-            className="inline-flex items-center gap-2 hover:opacity-80 transition-opacity"
-          >
-            <img src={figuiraLogo} alt="Figuira Editions" style={{ height: "40px", width: "auto" }} />
-            <span className="text-sm text-muted-foreground">Figuira Editions</span>
-          </a>
-        </div>
-
-        <div className="flex md:justify-end gap-3">
-          {[
-            { Icon: Linkedin, href: "https://www.linkedin.com/in/figuira-éditions-113118301/", label: "FIGDITIONS sur LinkedIn" },
-            { Icon: Instagram, href: "https://www.instagram.com/[À COMPLÉTER : compte de marque]", label: "FIGDITIONS sur Instagram" },
-          ].map(({ Icon, href, label }) => (
-            <a key={label} href={href} target="_blank" rel="noopener noreferrer" aria-label={label} className="h-10 w-10 rounded-full border border-border flex items-center justify-center text-muted-foreground hover:text-primary hover:border-primary transition-colors">
-              <Icon className="h-4 w-4" aria-hidden="true" />
-            </a>
-          ))}
+        <div className="lg:col-span-3">
+          <h4 className="text-[12px] uppercase tracking-[0.2em] text-[#C8922A] mb-4">{t("Suivez-nous", "Follow us")}</h4>
+          <ul className="space-y-2.5 text-sm">
+            <li><a href="https://www.instagram.com/[À COMPLÉTER : compte de marque]" target="_blank" rel="noopener noreferrer" className={link}>Instagram</a></li>
+            <li><a href="https://www.linkedin.com/in/figuira-éditions-113118301/" target="_blank" rel="noopener noreferrer" className={link}>LinkedIn</a></li>
+          </ul>
         </div>
       </div>
-      <div className="max-w-7xl mx-auto mt-8 pt-6 border-t border-border text-center text-xs text-muted-foreground space-y-1">
+      <div className="max-w-7xl mx-auto mt-12 pt-6 border-t border-white/10 flex flex-col sm:flex-row gap-2 justify-between text-xs text-[#6B5B4E]">
         <p>© {new Date().getFullYear()} FIGDITIONS. {t("Tous droits réservés.", "All rights reserved.")}</p>
-        <p>{t("Né en Afrique, ouvert au monde 🌍", "Born in Africa, open to the world 🌍")}</p>
+        <p>{t("Né en Afrique, ouvert au monde.", "Born in Africa, open to the world.")}</p>
       </div>
     </footer>
-  );
-}
-
-function RevealOnScroll({ children, delay = 0 }: { children: React.ReactNode; delay?: number }) {
-  const [visible, setVisible] = useState(false);
-  const [ref, setRef] = useState<HTMLDivElement | null>(null);
-  useEffect(() => {
-    if (!ref) return;
-    const io = new IntersectionObserver(([e]) => {
-      if (e.isIntersecting) { setVisible(true); io.disconnect(); }
-    }, { threshold: 0.15 });
-    io.observe(ref);
-    return () => io.disconnect();
-  }, [ref]);
-  return (
-    <div ref={setRef} style={{ transitionDelay: `${delay}ms` }}
-      className={cn("transition-all duration-700", visible ? "opacity-100 translate-y-0" : "opacity-0 translate-y-6")}>
-      {children}
-    </div>
   );
 }

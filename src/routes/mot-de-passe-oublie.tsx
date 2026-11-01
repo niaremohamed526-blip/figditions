@@ -13,6 +13,7 @@ export const Route = createFileRoute("/mot-de-passe-oublie")({
     meta: [
       { title: "Mot de passe oublié | FIGDITIONS" },
       { name: "description", content: "Réinitialisez votre mot de passe FIGDITIONS." },
+      { name: "robots", content: "noindex,follow" },
     ],
     links: [{ rel: "canonical", href: "https://figditions.xyz/mot-de-passe-oublie" }],
   }),

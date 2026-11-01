@@ -1,12 +1,34 @@
 # FIGDITIONS
 
-> Plateforme éditoriale tout-en-un pour les maisons d'édition d'Afrique de l'Ouest : gestion de manuscrits, contrats, stocks, ventes et finances.
+> Logiciel de gestion en ligne pour les maisons d'édition indépendantes, partout dans le monde : manuscrits, auteurs, contrats, stocks, dépôts en librairie, ventes, finances et droits d'auteur, avec un assistant intelligent intégré (Pr. MEDMO). Interface en français.
 
-FIGDITIONS aide les éditeurs africains à digitaliser leur chaîne éditoriale, du dépôt du manuscrit jusqu'au suivi des ventes et des royalties.
+FIGDITIONS remplace les cahiers et les tableurs d'une maison d'édition par un seul espace de travail, du manuscrit reçu jusqu'au versement des droits d'auteur. L'application fonctionne aussi sans connexion internet et s'installe sur téléphone ou ordinateur.
+
+## Ce que fait la plateforme
+
+- Manuscrits : suivi de chaque titre à travers 10 étapes éditoriales, de la réception à la publication.
+- Auteurs et contrats : fiches auteurs, contrats d'édition générés en quelques clics (base droit OHADA, adaptable au pays).
+- Stocks : entrepôt interne, dépôts en librairie avec historique par lot, alertes de stock bas, dons.
+- Ventes et finances : journal, rentabilité par titre, calcul automatique des droits d'auteur, bordereaux et reçus imprimables, import Excel.
+- Pr. MEDMO : assistant qui répond aux questions sur les données de la maison, lit une photo de cahier de ventes et prépare les écritures, toujours validées par l'utilisateur.
+- Outils : estimateur de coûts d'impression, partage PDF sécurisé avec filigrane, conversion ePub et MOBI.
+
+## Tarifs
+
+- Starter : gratuit, sans limite de durée. 1 utilisateur, 5 manuscrits, 2 librairies, 20 questions Pr. MEDMO par mois.
+- Pro : 20 000 FCFA par mois (environ 30 €), 3 utilisateurs, finances et contrats inclus.
+- Business : 50 000 FCFA par mois (environ 76 €), utilisateurs illimités, modèles de contrats personnalisés, support prioritaire.
+- Paiement annuel : 2 mois offerts.
 
 ## Pages
 
-- [Accueil](/): Présentation de la plateforme, fonctionnalités et tarifs.
-- [À propos](/a-propos): L'équipe et la mission de FIGDITIONS.
-- [Conditions d'utilisation](/conditions-utilisation): Conditions générales d'utilisation.
-- [Politique de confidentialité](/politique-de-confidentialite): Traitement des données personnelles.
+- [Accueil](https://figditions.xyz/): présentation, fonctionnalités, tarifs et questions fréquentes.
+- [À propos](https://figditions.xyz/a-propos): l'équipe et la mission de FIGDITIONS.
+- [Inscription](https://figditions.xyz/signup): créer un compte gratuit.
+- [Conditions d'utilisation](https://figditions.xyz/conditions-utilisation)
+- [Politique de confidentialité](https://figditions.xyz/politique-de-confidentialite)
+- [Mentions légales](https://figditions.xyz/mentions-legales)
+
+## Contact
+
+figditions@gmail.com

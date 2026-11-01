@@ -81,6 +81,9 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
       { name: "twitter:description", content: "FIGDITIONS, la plateforme de gestion des maisons d'édition. Gérez vos manuscrits, stocks et finances, où que vous soyez." },
       { name: "twitter:card", content: "summary_large_image" },
       { property: "og:type", content: "website" },
+      { property: "og:site_name", content: "FIGDITIONS" },
+      { property: "og:locale", content: "fr_FR" },
+      { name: "theme-color", content: "#0A0704" },
     ],
     links: [
       { rel: "stylesheet", href: appCss },

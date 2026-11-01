@@ -27,11 +27,11 @@ export function CookieBanner() {
     <div className="fixed inset-x-0 bottom-0 px-4 pb-4 print:hidden" style={{ zIndex: 9999, animation: "cookie-slide-up 0.4s ease-out" }}>
       <style>{`@keyframes cookie-slide-up { from { transform: translateY(120%); opacity: 0; } to { transform: translateY(0); opacity: 1; } }`}</style>
 
-      <div className="max-w-4xl mx-auto rounded-2xl bg-card border-t-2 border-[color:var(--gold)] shadow-2xl p-5 md:p-6 flex flex-col md:flex-row items-start md:items-center gap-4">
-        <div className="h-10 w-10 rounded-xl bg-[color:var(--gold)]/15 text-[color:var(--gold)] flex items-center justify-center shrink-0">
-          <Cookie className="h-5 w-5" />
+      <div className="max-w-3xl mx-auto rounded-xl bg-card/95 backdrop-blur border border-border shadow-xl px-4 py-3 flex flex-col sm:flex-row items-start sm:items-center gap-3">
+        <div className="hidden sm:flex h-8 w-8 rounded-lg bg-[color:var(--gold)]/15 text-[color:var(--gold)] items-center justify-center shrink-0">
+          <Cookie className="h-4 w-4" />
         </div>
-        <p className="text-sm text-muted-foreground flex-1 leading-relaxed">
+        <p className="text-xs text-muted-foreground flex-1 leading-relaxed">
           FIGDITIONS utilise uniquement des cookies essentiels au fonctionnement du site.
           Aucun cookie publicitaire.
         </p>
