@@ -5,9 +5,8 @@ export type ThemePref = "system" | "light" | "dark";
 export type ResolvedTheme = "light" | "dark";
 
 const KEY = "figditions-theme";
-// Until the light theme has been reviewed on every page, nobody is switched
-// without choosing it. Change to "system" to follow the device by default.
-export const DEFAULT_THEME: ThemePref = "dark";
+// Follows the phone or computer setting until the user picks one.
+export const DEFAULT_THEME: ThemePref = "system";
 
 export function readThemePref(): ThemePref {
   try {
