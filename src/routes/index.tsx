@@ -317,11 +317,17 @@ function Hero() {
 }
 
 
+// Real captures of the app; contact details on the authors screen are blurred.
 const SCREENS = [
-  { id: "manuscrits", label: "Manuscrits", src: "/assets/screens/manuscrits.png", caption: "Suivez chaque titre à travers les 10 étapes éditoriales, de la réception au dépôt légal." },
-  { id: "stock", label: "Stock", src: "/assets/screens/stock.png", caption: "Entrepôt interne et dépôts en librairie, avec alertes automatiques de stock bas." },
-  { id: "contrats", label: "Contrats", src: "/assets/screens/contrats.png", caption: "Générez un contrat d'édition professionnel en quelques clics, adapté à votre pays." },
-  { id: "royalties", label: "Royalties", src: "/assets/screens/royalties.png", caption: "Calcul automatique des droits d'auteur, prêts à être versés." },
+  { id: "tableau-de-bord", label: "Tableau de bord", caption: "Votre maison en un coup d'œil : manuscrits, stock, ventes et chiffre d'affaires." },
+  { id: "manuscrits", label: "Manuscrits", caption: "Suivez chaque titre à travers les 10 étapes éditoriales, de la réception à la publication." },
+  { id: "stocks", label: "Stocks", caption: "Entrepôt et dépôts en librairie, avec le taux d'écoulement de vos livres." },
+  { id: "finances", label: "Finances", caption: "Chiffre d'affaires, encaissements, dépenses et royalties. Chaque opération reste traçable." },
+  { id: "auteurs", label: "Auteurs", caption: "Vos auteurs, leurs manuscrits et leurs coordonnées de paiement Mobile Money." },
+  { id: "contrats", label: "Contrats", caption: "Droits, territoires et durée de chaque contrat d'édition, avec son statut." },
+  { id: "estimateur", label: "Estimateur", caption: "Le coût exact d'un tirage, et la méthode d'impression la plus avantageuse." },
+  { id: "imprimeries", label: "Imprimeries", caption: "Les imprimeries partenaires, leurs services et leurs contacts." },
+  { id: "conversions", label: "Conversions", caption: "Vos manuscrits en ebooks ePub et MOBI, prêts pour Kindle, Apple Books et Kobo." },
 ];
 
 function Screenshots() {
@@ -334,8 +340,8 @@ function Screenshots() {
           title="Voyez la plateforme en action."
           intro="Voici les écrans que vous utiliserez au quotidien, sans maquette ni promesse abstraite."
         />
-        <Tabs defaultValue="manuscrits" className="w-full">
-          <TabsList className="mb-8 h-auto w-full justify-start gap-8 overflow-x-auto rounded-none border-b border-white/10 bg-transparent p-0">
+        <Tabs defaultValue="tableau-de-bord" className="w-full">
+          <TabsList className="mb-8 h-auto w-full justify-start gap-8 overflow-x-auto overflow-y-hidden whitespace-nowrap rounded-none border-b border-white/10 bg-transparent p-0 [scrollbar-width:none]">
             {SCREENS.map((s) => (
               <TabsTrigger
                 key={s.id}
@@ -350,7 +356,14 @@ function Screenshots() {
             <TabsContent key={s.id} value={s.id} className="mt-0">
               <figure>
                 <div className="rounded-lg border border-white/10 bg-[#0D0A06] overflow-hidden">
-                  <img src={s.src} alt={s.label} className="w-full h-auto" loading="lazy" width={1280} height={720} />
+                  <img
+                    src={`/assets/screens/${s.id}.webp`}
+                    alt={`Écran ${s.label} de FIGDITIONS`}
+                    className="w-full h-auto"
+                    loading="lazy"
+                    width={1360}
+                    height={640}
+                  />
                 </div>
                 <figcaption className="mt-4 text-sm text-[#8C7B6B]">{s.caption}</figcaption>
               </figure>
