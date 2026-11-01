@@ -895,6 +895,7 @@ export const Route = createFileRoute("/api/chat")({
   server: {
     handlers: {
       POST: async ({ request }) => {
+        const t0 = Date.now();
         // --- Auth: bearer token, same pattern as the Supabase function middleware ---
         const authHeader = request.headers.get("authorization");
         if (!authHeader?.startsWith("Bearer ")) {
@@ -915,11 +916,15 @@ export const Route = createFileRoute("/api/chat")({
         }
 
         // --- Thread ownership (RLS-scoped client: no row = not the user's thread) ---
-        const { data: thread } = await supabase
-          .from("chat_threads")
-          .select("id, title, user_id, entreprise_id")
-          .eq("id", body.threadId)
-          .maybeSingle();
+        // The profile is needed later; fetching both at once saves a round trip.
+        const [{ data: thread }, { data: profile }] = await Promise.all([
+          supabase
+            .from("chat_threads")
+            .select("id, title, user_id, entreprise_id")
+            .eq("id", body.threadId)
+            .maybeSingle(),
+          supabase.from("profiles").select("full_name, entreprise_id").eq("id", userId).maybeSingle(),
+        ]);
         if (!thread) return new Response("Conversation introuvable", { status: 404 });
         const threadRow = thread as ThreadRow;
 
@@ -978,7 +983,6 @@ export const Route = createFileRoute("/api/chat")({
         const modelId = geminiKey ? GEMINI_MODEL_ID : LOVABLE_MODEL_ID;
 
         // --- User context for the persona ---
-        const { data: profile } = await supabase.from("profiles").select("full_name, entreprise_id").eq("id", userId).maybeSingle();
         const entrepriseId = threadRow.entreprise_id ?? profile?.entreprise_id ?? null;
         let entreprise = { nom: "votre maison d'édition", ville: "", plan: "starter" };
         if (entrepriseId) {
@@ -1023,6 +1027,10 @@ export const Route = createFileRoute("/api/chat")({
         const stream = createUIMessageStream({
           originalMessages: uiMessages,
           execute: ({ writer }) => {
+            // Timing breakdown in the Vercel logs, to see where a slow answer spends its time.
+            const tModel = Date.now();
+            let firstTextAt = 0;
+            const stepEnds: number[] = [];
             const result = streamText({
               model: gateway(modelId),
               system: buildMedmoSystemPrompt({
@@ -1040,6 +1048,21 @@ export const Route = createFileRoute("/api/chat")({
               // Gemini 3+ thinks at "high" by default; Medmo runs several tool steps,
               // so low thinking keeps answers fast ("minimal" is no longer accepted by gemini-3.8-flash).
               providerOptions: { google: { thinkingConfig: { thinkingLevel: "low" } } },
+              onChunk: ({ chunk }) => {
+                if (!firstTextAt && chunk.type === "text-delta") firstTextAt = Date.now();
+              },
+              onStepFinish: () => {
+                stepEnds.push(Date.now());
+              },
+              onFinish: ({ steps, totalUsage }) => {
+                const tools = steps.flatMap((s) => s.toolCalls.map((c) => c.toolName));
+                const stepMs = stepEnds.map((t, i) => t - (i ? stepEnds[i - 1] : tModel));
+                console.log(
+                  `[chat] timing prep=${tModel - t0}ms firstText=${firstTextAt ? firstTextAt - tModel : -1}ms ` +
+                    `total=${Date.now() - t0}ms steps=[${stepMs.join(",")}]ms tools=[${tools.join(",")}] ` +
+                    `inTokens=${totalUsage?.inputTokens ?? "?"} outTokens=${totalUsage?.outputTokens ?? "?"} history=${modelMessages.length}`,
+                );
+              },
             });
             // Without its own onError the inner stream masks the provider error as
             // "An error occurred." before the outer handler sees it.

@@ -44,9 +44,13 @@ export async function consommerQuestionMedmo(
     }
   }
 
-  const { error: insErr } = await supabase
+  // Not awaited: the answer doesn't need to wait for the usage row, and the
+  // request stays open while the answer streams, so the insert still lands.
+  void supabase
     .from("medmo_usage")
-    .insert({ entreprise_id: entrepriseId, user_id: userId, source });
-  if (insErr) console.error("[medmo-quota] usage insert failed:", insErr.message);
+    .insert({ entreprise_id: entrepriseId, user_id: userId, source })
+    .then(({ error: insErr }) => {
+      if (insErr) console.error("[medmo-quota] usage insert failed:", insErr.message);
+    });
   return { ok: true };
 }
