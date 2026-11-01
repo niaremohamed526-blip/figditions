@@ -15,6 +15,7 @@ import { notifyEntrepriseUpdated } from "@/hooks/use-auth";
 import type { PermissionKey } from "@/lib/permissions";
 import { useChangelog } from "@/hooks/use-changelog";
 import { ChangelogPanel } from "@/components/changelog-panel";
+import { DailyBriefScreen, useDailyBrief } from "@/components/daily-brief";
 import { ThemeToggle, useAppTheme } from "@/components/theme-toggle";
 
 type NavItem = {
@@ -70,6 +71,7 @@ export function AppShell({ children }: { children: ReactNode }) {
     isAdmin,
     ready: !!profile,
   });
+  const dailyBrief = useDailyBrief({ userId: user?.id, entrepriseId: profile?.entreprise_id });
 
   const hasPermission = (n: NavItem) => {
     if (isAdmin) return true;
@@ -253,6 +255,17 @@ export function AppShell({ children }: { children: ReactNode }) {
 
       {changelog.showBlocking && (
         <ChangelogPanel entries={changelog.unseen} blocking onClose={changelog.dismissBlocking} />
+      )}
+      {/* The update note always comes first; the brief waits until it is closed. */}
+      {dailyBrief.brief && changelog.checked && !changelog.showBlocking && (
+        <DailyBriefScreen
+          message={dailyBrief.brief.message}
+          onClose={dailyBrief.dismiss}
+          onOpen={(to) => {
+            dailyBrief.dismiss();
+            navigate({ to });
+          }}
+        />
       )}
       {changelog.showHistory && (
         <ChangelogPanel entries={changelog.history} onClose={changelog.closeHistory} />

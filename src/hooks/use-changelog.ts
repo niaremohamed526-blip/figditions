@@ -38,6 +38,8 @@ export function useChangelog({ userId, permissions, isAdmin, ready = true }: Opt
   const [showBlocking, setShowBlocking] = useState(false);
   const [history, setHistory] = useState<ChangelogEntry[] | null>(null);
   const [showHistory, setShowHistory] = useState(false);
+  // True once detection is over, so other full-screen notices can wait their turn.
+  const [checked, setChecked] = useState(false);
 
   // Detect unseen entries once per session start.
   useEffect(() => {
@@ -52,14 +54,20 @@ export function useChangelog({ userId, permissions, isAdmin, ready = true }: Opt
           permissions,
           isAdmin,
         );
-        if (fresh.length === 0) return;
+        if (fresh.length === 0) {
+          setChecked(true);
+          return;
+        }
         setUnseen(fresh);
         // Let the page finish rendering before interrupting.
         setTimeout(() => {
-          if (!cancelled) setShowBlocking(true);
+          if (cancelled) return;
+          setShowBlocking(true);
+          setChecked(true);
         }, 500);
       } catch (err) {
         console.warn("[changelog] detection failed", err);
+        if (!cancelled) setChecked(true);
       }
     };
     run();
@@ -116,6 +124,7 @@ export function useChangelog({ userId, permissions, isAdmin, ready = true }: Opt
     unseen,
     hasUnseen: unseen.length > 0,
     showBlocking,
+    checked,
     dismissBlocking,
     history,
     showHistory,

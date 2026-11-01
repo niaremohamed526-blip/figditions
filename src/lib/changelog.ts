@@ -17,10 +17,10 @@ export interface ChangelogEntry {
   items: ChangelogItem[];
 }
 
-export const TYPE_META: Record<ChangelogItemType, { emoji: string; label: string; color: string }> = {
-  nouveaute: { emoji: "✨", label: "Nouveautés", color: "#C8922A" },
-  amelioration: { emoji: "🎨", label: "Améliorations", color: "#6B9BD1" },
-  correction: { emoji: "🐛", label: "Corrections", color: "#4CAF7D" },
+export const TYPE_META: Record<ChangelogItemType, { label: string }> = {
+  nouveaute: { label: "Nouveautés" },
+  amelioration: { label: "Améliorations" },
+  correction: { label: "Corrections" },
 };
 
 export const TYPE_ORDER: ChangelogItemType[] = ["nouveaute", "amelioration", "correction"];
