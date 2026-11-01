@@ -245,7 +245,7 @@ export function AppShell({ children }: { children: ReactNode }) {
         </button>
       </nav>
 
-      <main className="flex-1 min-w-0 pt-14 md:pt-0 pb-20 md:pb-0">
+      <main className="app-content flex-1 min-w-0 pt-14 md:pt-0 pb-20 md:pb-0">
         <div className="px-4 md:px-8 py-6 md:py-8 max-w-7xl mx-auto animate-fade-in">
           {children}
         </div>

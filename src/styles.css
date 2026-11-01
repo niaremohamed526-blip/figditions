@@ -843,3 +843,12 @@ input[type="number"] {
 .logo-on-light { display: none !important; }
 html.light .logo-on-light { display: block !important; }
 html.light .logo-on-dark { display: none !important; }
+
+/* App page titles use the homepage's serif, so the site and the app read as one product. */
+.app-content h1 {
+  font-family: "Instrument Serif", Georgia, "Times New Roman", serif !important;
+  font-weight: 400 !important;
+  letter-spacing: -0.01em !important;
+  font-size: clamp(32px, 3.6vw, 42px) !important;
+  line-height: 1.05 !important;
+}

@@ -29,6 +29,7 @@ import {
 
 export const Route = createFileRoute("/_authenticated/conversions")({
   component: ConversionsPage,
+  head: () => ({ meta: [{ title: "Conversions ePub & MOBI | FIGDITIONS" }] }),
 });
 
 type Conversion = Awaited<ReturnType<typeof listConversions>>[number];

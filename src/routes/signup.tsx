@@ -1,17 +1,15 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
-import { useState, Suspense, useMemo, useEffect, type FormEvent } from "react";
-import { lazyWithRetry } from "@/lib/lazy-retry";
+import { useState, useMemo, type FormEvent } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { Label } from "@/components/ui/label";
 import { toast } from "sonner";
 import { Loader2, Eye, EyeOff, Check, X } from "lucide-react";
-import { Logo } from "@/components/logo";
 import { authErrorFr } from "@/lib/auth-errors";
 import { PLANS } from "@/config/plans";
 import { fcfa } from "@/lib/format";
+import { AuthShell, AuthInput, authButtonClass, authLinkClass } from "@/components/auth-shell";
 
 
-const Ballpit = lazyWithRetry(() => import("@/components/Ballpit"));
 
 export const Route = createFileRoute("/signup")({
   component: SignupPage,
@@ -71,7 +69,7 @@ function CitySelect({
   if (other) {
     return (
       <div className="space-y-2">
-        <GoldInput
+        <AuthInput
           id="ville"
           name="ville"
           required
@@ -93,7 +91,7 @@ function CitySelect({
 
   return (
     <div className="relative">
-      <GoldInput
+      <AuthInput
         id="ville"
         name="ville"
         autoComplete="off"
@@ -106,13 +104,7 @@ function CitySelect({
       />
       {open && (
         <div
-          className="absolute left-0 right-0 mt-1 rounded-lg overflow-hidden max-h-56 overflow-y-auto"
-          style={{
-            zIndex: 30,
-            background: "rgba(13,10,6,0.97)",
-            border: "1px solid rgba(200,146,42,0.25)",
-            boxShadow: "0 12px 40px rgba(0,0,0,0.6)",
-          }}
+          className="absolute left-0 right-0 z-30 mt-1 max-h-56 overflow-y-auto rounded-md border border-white/15 bg-[#0D0A06] shadow-[0_12px_40px_rgba(0,0,0,0.6)]"
         >
           {results.map((c) => (
             <button
@@ -153,71 +145,6 @@ function CitySelect({
 }
 
 
-const BALL_COLORS = [0xc8922a, 0xe8b84b, 0xa67420, 0xf5d07a, 0x8b6914];
-
-function useIsMobile() {
-  const [m, setM] = useState(false);
-  useEffect(() => {
-    const mq = window.matchMedia("(max-width: 767px)");
-    const on = () => setM(mq.matches);
-    on();
-    mq.addEventListener("change", on);
-    return () => mq.removeEventListener("change", on);
-  }, []);
-  return m;
-}
-
-function BallpitBackground() {
-  const isMobile = useIsMobile();
-  return (
-    <>
-      <div style={{ position: "fixed", inset: 0, zIndex: 0, background: "#0D0A06" }}>
-        <Suspense fallback={null}>
-          <Ballpit
-            count={isMobile ? 80 : 150}
-            gravity={0.5}
-            friction={0.9975}
-            wallBounce={0.95}
-            followCursor
-            colors={BALL_COLORS}
-            ambientColor={0xc8922a}
-            ambientIntensity={0.5}
-            lightIntensity={150}
-            minSize={0.3}
-            maxSize={0.9}
-          />
-        </Suspense>
-      </div>
-      <div
-        style={{
-          position: "fixed",
-          inset: 0,
-          zIndex: 1,
-          background: "radial-gradient(ellipse at center, rgba(13,10,6,0.3) 0%, rgba(13,10,6,0.7) 100%)",
-          pointerEvents: "none",
-        }}
-      />
-    </>
-  );
-}
-
-function GoldInput(props: React.InputHTMLAttributes<HTMLInputElement>) {
-  return (
-    <input
-      {...props}
-      className={
-        "w-full h-11 px-4 rounded-lg outline-none transition-all text-white placeholder:text-[#6b5a48] " +
-        "focus:ring-2 focus:ring-[#C8922A]/40 " +
-        (props.className ?? "")
-      }
-      style={{
-        background: "rgba(13,10,6,0.6)",
-        border: "1px solid rgba(200,146,42,0.25)",
-        ...props.style,
-      }}
-    />
-  );
-}
 
 function scorePassword(pwd: string) {
   let s = 0;
@@ -231,7 +158,6 @@ function scorePassword(pwd: string) {
 
 function SignupPage() {
   const navigate = useNavigate();
-  const isMobile = useIsMobile();
   const { plan: planParam } = Route.useSearch();
   const selectedPlan = PLANS.find((p) => p.id === (planParam ?? "starter")) ?? PLANS[0];
 
@@ -279,99 +205,40 @@ function SignupPage() {
   };
 
   return (
-    <div style={{ minHeight: "100vh", position: "relative", background: "#0D0A06" }}>
-      <BallpitBackground />
-
-      <div
-        style={{
-          position: "relative",
-          zIndex: 2,
-          display: "flex",
-          flexDirection: "column",
-          alignItems: "center",
-          justifyContent: "center",
-          minHeight: "100vh",
-          padding: 24,
-          pointerEvents: "none",
-        }}
-      >
-        <div style={{ textAlign: "center", marginBottom: 32, pointerEvents: "auto" }}>
-          <Logo
-            style={{
-              height: isMobile ? 55 : 70,
-              width: "auto",
-              filter: "drop-shadow(0 0 24px rgba(200,146,42,0.8))",
-              display: "block",
-              margin: "0 auto 12px auto",
-            }}
-          />
-          <p
-            style={{
-              color: "#C8922A",
-              fontSize: 11,
-              letterSpacing: 3,
-              textTransform: "uppercase",
-              margin: 0,
-            }}
-          >
-            La plateforme des maisons d'édition
-          </p>
-        </div>
-
-        <div
-          style={{
-            background: "rgba(13,10,6,0.85)",
-            border: "1px solid rgba(200,146,42,0.25)",
-            borderRadius: 24,
-            padding: isMobile ? 32 : 48,
-            width: isMobile ? "calc(100% - 32px)" : "100%",
-            margin: isMobile ? 16 : 0,
-            maxWidth: 440,
-            backdropFilter: "blur(24px)",
-            WebkitBackdropFilter: "blur(24px)",
-            boxShadow: "0 25px 80px rgba(0,0,0,0.6), 0 0 0 1px rgba(200,146,42,0.1)",
-            pointerEvents: "auto",
-          }}
-        >
-          <h1 style={{ color: "white", fontSize: 32, fontWeight: 700, marginBottom: 8 }}>
-            Créer votre compte
-          </h1>
-          <p style={{ color: "#B8A898", fontSize: 15, marginBottom: 32 }}>
-            Rejoignez les maisons d'édition qui gagnent du temps
-          </p>
-
-          <div
-            className="mb-6 flex items-center justify-between gap-3 rounded-xl px-4 py-3"
-            style={{ background: "rgba(200,146,42,0.08)", border: "1px solid rgba(200,146,42,0.25)" }}
-          >
-            <p className="text-sm" style={{ color: "#E8D9C5", margin: 0 }}>
-              Plan sélectionné : <strong style={{ color: "#C8922A" }}>{selectedPlan.name}</strong>
-              {" | "}
+    <AuthShell
+      kicker="Inscription"
+      title={<>Créez votre <em className="italic text-[#E8B84B]">maison.</em></>}
+      intro="Deux minutes, sans carte bancaire. Vos manuscrits restent votre propriété exclusive."
+    >
+          <div className="mb-8 flex items-baseline justify-between gap-3 border-y border-white/10 py-4">
+            <p className="text-sm text-[#B8A898] m-0">
+              Plan <span className="font-wordmark-serif text-xl text-white">{selectedPlan.name}</span>
+              <span className="mx-2 text-white/25">·</span>
               {selectedPlan.priceMonthly === 0 ? "Gratuit" : `${fcfa(selectedPlan.priceMonthly)} / mois`}
             </p>
-            <a href="/#pricing" className="text-xs font-medium hover:underline shrink-0" style={{ color: "#C8922A" }}>
+            <a href="/#pricing" className="text-[13px] text-[#8C7B6B] hover:text-white transition-colors shrink-0">
               Modifier
             </a>
           </div>
 
-          <form onSubmit={onSubmit} className="space-y-4">
+          <form onSubmit={onSubmit} className="space-y-5">
             <div className="space-y-2">
               <Label htmlFor="full_name" className="text-white/90">Nom complet</Label>
-              <GoldInput id="full_name" name="full_name" required value={form.full_name} placeholder="Votre nom complet" onChange={onChange("full_name")} />
+              <AuthInput id="full_name" name="full_name" required value={form.full_name} placeholder="Votre nom complet" onChange={onChange("full_name")} />
             </div>
             <div className="space-y-2">
               <Label htmlFor="entreprise_nom" className="text-white/90">Nom de la maison d'édition</Label>
-              <GoldInput id="entreprise_nom" name="entreprise_nom" required value={form.entreprise_nom} placeholder="ex: Éditions Jamana" onChange={onChange("entreprise_nom")} />
+              <AuthInput id="entreprise_nom" name="entreprise_nom" required value={form.entreprise_nom} placeholder="ex: Éditions Jamana" onChange={onChange("entreprise_nom")} />
             </div>
             <div className="space-y-2">
               <Label htmlFor="email" className="text-white/90">Email</Label>
-              <GoldInput id="email" name="email" type="email" required value={form.email} placeholder="votre@email.com" onChange={onChange("email")} />
+              <AuthInput id="email" name="email" type="email" required value={form.email} placeholder="votre@email.com" onChange={onChange("email")} />
             </div>
 
             <div className="space-y-2">
               <Label htmlFor="password" className="text-white/90">Mot de passe</Label>
               <div className="relative">
-                <GoldInput
+                <AuthInput
                   id="password"
                   name="password"
                   type={showPwd ? "text" : "password"}
@@ -380,19 +247,20 @@ function SignupPage() {
                   value={form.password}
                   placeholder="••••••••"
                   onChange={onChange("password")}
-                  style={{ paddingRight: 44 }}
+                  className="pr-11"
                 />
                 <button
                   type="button"
                   onClick={() => setShowPwd((v) => !v)}
-                  className="absolute right-3 top-1/2 -translate-y-1/2 text-[#B8A898] hover:text-[#C8922A]"
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-[#8C7B6B] hover:text-white"
+                  aria-label={showPwd ? "Masquer" : "Afficher"}
                 >
                   {showPwd ? <EyeOff size={18} /> : <Eye size={18} />}
                 </button>
               </div>
               {form.password.length > 0 && (
                 <div className="flex items-center gap-2">
-                  <div className="flex-1 h-1.5 rounded-full overflow-hidden" style={{ background: "rgba(200,146,42,0.15)" }}>
+                  <div className="flex-1 h-1 rounded-full overflow-hidden bg-white/10">
                     <div
                       className="h-full transition-all"
                       style={{ width: `${((strength + 1) / 4) * 100}%`, background: strengthColor }}
@@ -406,7 +274,7 @@ function SignupPage() {
             <div className="space-y-2">
               <Label htmlFor="confirm" className="text-white/90">Confirmer le mot de passe</Label>
               <div className="relative">
-                <GoldInput
+                <AuthInput
                   id="confirm"
                   name="confirm"
                   type={showPwd ? "text" : "password"}
@@ -414,7 +282,7 @@ function SignupPage() {
                   value={form.confirm}
                   placeholder="••••••••"
                   onChange={onChange("confirm")}
-                  style={{ paddingRight: 44 }}
+                  className="pr-11"
                 />
                 {form.confirm.length > 0 && (
                   <span className="absolute right-3 top-1/2 -translate-y-1/2">
@@ -440,44 +308,27 @@ function SignupPage() {
               />
               <span>
                 J'accepte les{" "}
-                <Link to="/conditions-utilisation" target="_blank" rel="noopener noreferrer" className="hover:underline" style={{ color: "#C8922A" }}>
+                <Link to="/conditions-utilisation" target="_blank" rel="noopener noreferrer" className={authLinkClass}>
                   Conditions d'Utilisation
                 </Link>{" "}
                 et la{" "}
-                <Link to="/politique-de-confidentialite" target="_blank" rel="noopener noreferrer" className="hover:underline" style={{ color: "#C8922A" }}>
+                <Link to="/politique-de-confidentialite" target="_blank" rel="noopener noreferrer" className={authLinkClass}>
                   Politique de Confidentialité
                 </Link>
               </span>
             </label>
 
-            <button
-              type="submit"
-              disabled={loading || !accepted}
-              className="w-full inline-flex items-center justify-center font-semibold text-white transition-all hover:brightness-110 hover:-translate-y-px disabled:opacity-60"
-              style={{
-                height: 48,
-                borderRadius: 12,
-                fontSize: 15,
-                background: "linear-gradient(135deg, #C8922A, #A67420)",
-                boxShadow: "0 4px 20px rgba(200,146,42,0.3)",
-              }}
-            >
+            <button type="submit" disabled={loading || !accepted} className={authButtonClass + " mt-2"}>
               {loading ? <Loader2 className="h-4 w-4 animate-spin" /> : "Créer mon compte"}
             </button>
 
-            <p className="text-center text-xs" style={{ color: "#B8A898" }}>
-              Aucune carte bancaire requise. Vos manuscrits restent votre propriété exclusive.
-            </p>
-
-            <p className="text-center text-sm pt-2" style={{ color: "#B8A898" }}>
+            <p className="pt-6 border-t border-white/10 text-sm text-[#8C7B6B]">
               Déjà un compte ?{" "}
-              <Link to="/login" className="font-medium hover:underline" style={{ color: "#C8922A" }}>
+              <Link to="/login" className={authLinkClass}>
                 Se connecter
               </Link>
             </p>
           </form>
-        </div>
-      </div>
-    </div>
+    </AuthShell>
   );
 }
