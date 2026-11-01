@@ -1,4 +1,5 @@
 import { useMemo } from "react";
+import { pl } from "@/lib/plural";
 import { Globe, Coins, Store, Wallet } from "lucide-react";
 import { VentesTab } from "@/components/finances/ventes-tab";
 import { fmtFCFA, type VenteRow } from "@/lib/finance-types";
@@ -42,7 +43,7 @@ export function EtrangersFinancesTab({
       </div>
 
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-        <Card icon={Coins} label="CA total" value={fmtFCFA(totaux.ca)} sub={`${totaux.count} vente(s)`} />
+        <Card icon={Coins} label="CA total" value={fmtFCFA(totaux.ca)} sub={`${pl(totaux.count, "vente", "ventes")}`} />
         <Card icon={Store} label="Commission librairie" value={fmtFCFA(totaux.commission)} />
         <Card icon={Wallet} label="Net à reverser" value={fmtFCFA(totaux.net)} sub="CA − commission" />
       </div>

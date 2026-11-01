@@ -128,10 +128,10 @@ function Story() {
 
 function Numbers() {
   const stats = [
-    { icon: "🏢", value: "126+", label: "Maisons d'édition recensées au Mali, notre premier marché" },
-    { icon: "📚", value: "10", label: "Étapes de workflow éditorial" },
-    { icon: "🌍", value: "Partout", label: "Utilisable dans tous les pays, en ligne" },
-    { icon: "⚡", value: "99,5%", label: "Objectif de disponibilité de la plateforme" },
+    { value: "126+", label: "Maisons d'édition recensées au Mali, notre premier marché" },
+    { value: "10", label: "Étapes de workflow éditorial" },
+    { value: "Partout", label: "Utilisable dans tous les pays, en ligne" },
+    { value: "99,5%", label: "Objectif de disponibilité de la plateforme" },
   ];
   return (
     <section className="py-20 px-4">
@@ -140,7 +140,6 @@ function Numbers() {
         <div className="mt-12 grid sm:grid-cols-2 lg:grid-cols-4 gap-5">
           {stats.map((s, i) => (
             <div key={i} className="rounded-2xl border border-border bg-[#1A1208] p-6 text-center transition-all hover:border-[color:var(--gold)] hover:-translate-y-1">
-              <div className="text-4xl mb-3">{s.icon}</div>
               <div className="text-4xl font-bold bg-gradient-to-r from-primary to-[color:var(--gold)] bg-clip-text text-transparent">
                 {s.value}
               </div>
@@ -155,9 +154,9 @@ function Numbers() {
 
 function Values() {
   const values = [
-    { icon: Globe, emoji: "🌍", title: "Local First", desc: "Conçu pour la réalité africaine, pas adapté de solutions occidentales" },
-    { icon: Shield, emoji: "🔒", title: "Confiance", desc: "Vos données sont sécurisées, sauvegardées et vous appartiennent" },
-    { icon: Rocket, emoji: "🚀", title: "Innovation", desc: "Nous améliorons constamment la plateforme grâce aux retours de nos utilisateurs" },
+    { icon: Globe, title: "Local First", desc: "Conçu pour la réalité africaine, pas adapté de solutions occidentales" },
+    { icon: Shield, title: "Confiance", desc: "Vos données sont sécurisées, sauvegardées et vous appartiennent" },
+    { icon: Rocket, title: "Innovation", desc: "Nous améliorons constamment la plateforme grâce aux retours de nos utilisateurs" },
   ];
   return (
     <section className="py-20 px-4 bg-[#1A1208]">
@@ -166,7 +165,7 @@ function Values() {
         <div className="mt-12 grid md:grid-cols-3 gap-6">
           {values.map((v, i) => (
             <div key={i} className="rounded-2xl border border-border bg-background p-7 hover:border-primary transition-colors">
-              <div className="h-12 w-12 rounded-xl bg-primary/15 text-primary flex items-center justify-center text-2xl">{v.emoji}</div>
+              <div className="h-12 w-12 rounded-xl bg-primary/15 text-primary flex items-center justify-center text-2xl"><v.icon className="h-6 w-6" /></div>
               <h3 className="mt-5 text-xl font-semibold">{v.title}</h3>
               <p className="mt-2 text-sm text-muted-foreground leading-relaxed">{v.desc}</p>
             </div>
@@ -217,7 +216,7 @@ function Partnership() {
         <div className="mt-12 max-w-2xl mx-auto rounded-2xl border-2 border-[color:var(--gold)] bg-[#0D0A06] p-8 md:p-10 text-center shadow-[0_0_40px_-10px_var(--gold)]">
           <img src={figuiraLogo} alt="Figuira Editions" style={{ height: "80px", width: "auto" }} className="mx-auto" />
           <h3 className="mt-5 text-xl font-bold tracking-wide">FIGUIRA ÉDITIONS</h3>
-          <p className="mt-1 text-sm font-semibold text-primary">Partenaire officiel ⭐</p>
+          <p className="mt-1 text-sm font-semibold text-primary">Partenaire officiel</p>
           <p className="mt-4 text-sm text-muted-foreground max-w-lg mx-auto">
             Maison d'édition malienne fondée en 2019 par Fatoumata Keïta. Spécialisée dans
             la littérature générale et la jeunesse bilingue (français-langues nationales).

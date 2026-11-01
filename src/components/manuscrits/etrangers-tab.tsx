@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
+import { pl } from "@/lib/plural";
 import {
   Plus, Search, Globe, Loader2, Pencil, Trash2, BookOpen, BadgeCheck, Coins,
 } from "lucide-react";
@@ -121,9 +122,9 @@ export function EtrangersTab({
 
       {/* Cartes de synthèse */}
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-        <SummaryCard icon={BookOpen} label="📚 Total" value={`${totaux.total} titre(s)`} />
-        <SummaryCard icon={BadgeCheck} label="✅ Disponibles" value={`${totaux.disponibles} titre(s)`} />
-        <SummaryCard icon={Coins} label="💰 CA généré" value={fcfa(totaux.ca)} />
+        <SummaryCard icon={BookOpen} label="Total" value={`${pl(totaux.total, "titre", "titres")}`} />
+        <SummaryCard icon={BadgeCheck} label="Disponibles" value={`${pl(totaux.disponibles, "titre", "titres")}`} />
+        <SummaryCard icon={Coins} label="CA généré" value={fcfa(totaux.ca)} />
       </div>
 
       {/* Filtres */}
@@ -192,7 +193,7 @@ export function EtrangersTab({
                 style={{ borderColor: `${ETRANGER_ACCENT}33` }}
               >
                 <div className="min-w-0">
-                  <p className="font-semibold leading-snug break-words">📖 {m.titre}</p>
+                  <p className="font-semibold leading-snug break-words">{m.titre}</p>
                   <p className="text-xs text-muted-foreground mt-1">
                     Auteur : {m.auteur?.trim() ? m.auteur : "— (non applicable)"}
                   </p>

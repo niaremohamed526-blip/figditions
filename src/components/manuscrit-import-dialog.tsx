@@ -1,4 +1,5 @@
 import { useMemo, useRef, useState } from "react";
+import { pl } from "@/lib/plural";
 import * as XLSX from "xlsx";
 import { Loader2, Upload, Download, FileSpreadsheet, CheckCircle2, AlertCircle, X } from "lucide-react";
 import { toast } from "sonner";
@@ -132,7 +133,7 @@ export function ManuscritImportDialog({
       }
       if (parsed.length === 0) { toast.error("Aucune ligne de données trouvée"); return; }
       setRows(parsed);
-      toast.success(`${parsed.length} ligne(s) analysée(s), ${parsed.filter((p) => !p.error).length} valide(s)`);
+      toast.success(`${pl(parsed.length, "ligne analysée", "lignes analysées")}, ${pl(parsed.filter((p) => !p.error).length, "valide", "valides")}`);
     } catch (e: any) {
       toast.error("Impossible de lire le fichier : " + (e?.message ?? "format invalide"));
       reset();
@@ -158,7 +159,7 @@ export function ManuscritImportDialog({
     const { error } = await supabase.from("manuscrits").insert(payload as any);
     setImporting(false);
     if (error) return toast.error(error.message);
-    toast.success(`${payload.length} manuscrit(s) importé(s)`);
+    toast.success(`${pl(payload.length, "manuscrit importé", "manuscrits importés")}`);
     onImported();
     close();
   };
@@ -291,7 +292,7 @@ export function ManuscritImportDialog({
             >
               {importing
                 ? <><Loader2 className="h-4 w-4 mr-2 animate-spin" /> Import en cours…</>
-                : <>Importer {validCount > 0 ? `${validCount} manuscrit(s)` : ""}</>}
+                : <>Importer {validCount > 0 ? `${pl(validCount, "manuscrit", "manuscrits")}` : ""}</>}
             </Button>
           </DialogFooter>
         </DialogContent>

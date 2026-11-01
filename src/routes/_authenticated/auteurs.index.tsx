@@ -362,7 +362,6 @@ function AuthorAnalytics({ auteurs, entrepriseId }: { auteurs: Auteur[]; entrepr
 
   if (ventes === null) return <Skeleton className="h-24 w-full" />;
 
-  const medals = ["🥇", "🥈", "🥉"];
   const sortBtn = (key: typeof sortKey, label: string) => (
     <button onClick={() => setSortKey(key)} className={`text-left ${sortKey === key ? "text-primary" : ""}`}>
       {label} {sortKey === key && "↓"}
@@ -370,7 +369,7 @@ function AuthorAnalytics({ auteurs, entrepriseId }: { auteurs: Auteur[]; entrepr
   );
 
   return (
-    <AnalyticsSection title="📊 Analytiques auteurs" range={range} setRange={setRange}>
+    <AnalyticsSection title="Analytiques auteurs" range={range} setRange={setRange}>
       <div className="rounded-xl border border-border bg-background/40 overflow-hidden">
         <div className="overflow-x-auto">
           <table className="w-full text-sm">
@@ -390,7 +389,7 @@ function AuthorAnalytics({ auteurs, entrepriseId }: { auteurs: Auteur[]; entrepr
                 <tr><td colSpan={7}><EmptyChart label="Aucune donnée auteur" /></td></tr>
               ) : rows.map((r, i) => (
                 <tr key={r.id} className="border-t border-border">
-                  <td className="px-3 py-2">{i < 3 ? medals[i] : i + 1}</td>
+                  <td className="px-3 py-2">{i + 1}</td>
                   <td className="px-3 py-2 font-medium">{r.nom_complet}</td>
                   <td className="px-3 py-2 text-center">{r.manuscripts}</td>
                   <td className="px-3 py-2 text-right">{r.copies}</td>
@@ -405,7 +404,7 @@ function AuthorAnalytics({ auteurs, entrepriseId }: { auteurs: Auteur[]; entrepr
       </div>
 
       <div className="rounded-xl border border-border bg-background/40 p-5">
-        <h3 className="font-semibold mb-3">💰 Droits d'auteur (6 derniers mois)</h3>
+        <h3 className="font-semibold mb-3">Droits d'auteur (6 derniers mois)</h3>
         <div className="h-64">
           {royaltyMonths.every((b) => b.paid === 0 && b.pending === 0) ? <EmptyChart /> : (
             <ResponsiveContainer width="100%" height="100%">

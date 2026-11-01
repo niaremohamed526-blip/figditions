@@ -272,7 +272,7 @@ export async function generateManuelStocksPdf(opts: { maison?: string | null } =
   // ─── 2. Stock interne ──────────────────────────────────
   h1("2. Stock interne : vos livres chez vous");
   h2("Ouvrir l'onglet");
-  p("Dans la page Stocks, cliquez sur l'onglet 🏭 Stock Interne en haut. Vous voyez alors tous les titres que vous détenez, avec la quantité disponible.");
+  p("Dans la page Stocks, cliquez sur l'onglet Stock Interne en haut. Vous voyez alors tous les titres que vous détenez, avec la quantité disponible.");
 
   h2("Ajouter un titre au stock interne");
   step(1, "Cliquez sur le bouton « Ajouter au stock ».");
@@ -333,24 +333,24 @@ export async function generateManuelStocksPdf(opts: { maison?: string | null } =
 
   // ─── 4. Ventes ─────────────────────────────────────────
   h1("4. Enregistrer les ventes");
-  p("Toute vente doit être enregistrée pour que les royalties de l'auteur et vos statistiques financières restent à jour. FIGDITIONS propose désormais un raccourci unique et rapide : le bouton doré « 💰 Enregistrer une vente ».");
+  p("Toute vente doit être enregistrée pour que les royalties de l'auteur et vos statistiques financières restent à jour. FIGDITIONS propose désormais un raccourci unique et rapide : le bouton doré « Enregistrer une vente ».");
 
-  h2("Le bouton « 💰 Enregistrer une vente »");
+  h2("Le bouton « Enregistrer une vente »");
   p("Ce bouton doré est présent en haut à droite de deux pages :");
   bullet("Page Stocks : visible sur les onglets Stock interne et Stock externe.");
   bullet("Page Finances : même bouton, même formulaire.");
   p("Où que vous soyez, un seul clic ouvre le même tiroir latéral pour saisir la vente. Aucun besoin d'ouvrir la fiche du livre au préalable.");
 
   h2("Étape 1 : choisir le livre");
-  step(1, "Cliquez sur « 💰 Enregistrer une vente ».");
-  step(2, "Dans le champ « 📚 Manuscrit », tapez les premières lettres du titre ou du nom de l'auteur : la liste se filtre en direct.");
+  step(1, "Cliquez sur « Enregistrer une vente ».");
+  step(2, "Dans le champ « Manuscrit », tapez les premières lettres du titre ou du nom de l'auteur : la liste se filtre en direct.");
   step(3, "Sélectionnez le livre. Le nom de l'auteur, le prix unitaire et le stock disponible s'affichent automatiquement.");
   callout("Seuls les livres publiés apparaissent", "La liste ne montre que les manuscrits au statut « Publié ». Si un titre manque, vérifiez qu'il est bien passé en publié dans la page Manuscrits.", "tip");
 
   h2("Étape 2 : choisir le type de vente");
   p("Deux cartes cliquables s'affichent côte à côte :");
-  bullet("🏪 Vente en librairie : pour une vente réalisée par une librairie partenaire. Un sélecteur de librairie apparaît ensuite : choisissez le point de dépôt concerné. Les librairies en rupture (0 exemplaire) sont grisées.");
-  bullet("🛍️ Vente libre : pour une vente libre hors librairie (salon, événement, particulier, boutique en ligne, bureau). La vente sera automatiquement déduite de votre Stock interne.");
+  bullet("Vente en librairie : pour une vente réalisée par une librairie partenaire. Un sélecteur de librairie apparaît ensuite : choisissez le point de dépôt concerné. Les librairies en rupture (0 exemplaire) sont grisées.");
+  bullet("Vente libre : pour une vente libre hors librairie (salon, événement, particulier, boutique en ligne, bureau). La vente sera automatiquement déduite de votre Stock interne.");
 
   h2("Étape 3 : détails de la vente");
   step(1, "Saisissez la quantité vendue. Le système empêche de dépasser le stock disponible et affiche une alerte rouge en cas de saisie trop élevée.");
@@ -359,7 +359,7 @@ export async function generateManuelStocksPdf(opts: { maison?: string | null } =
   step(4, "Ajoutez une note si besoin (optionnel).");
 
   h2("Récapitulatif en temps réel");
-  p("Sous le formulaire, un encadré « 📊 Récapitulatif » se met à jour à chaque frappe et affiche :");
+  p("Sous le formulaire, un encadré « Récapitulatif » se met à jour à chaque frappe et affiche :");
   bullet("La quantité et le prix unitaire saisis.");
   bullet("Le montant total de la vente (en doré, mis en évidence).");
   bullet("Les droits d'auteur calculés automatiquement : 10 % par défaut, ou le pourcentage du contrat signé si un contrat existe pour cet auteur et ce manuscrit.");
@@ -368,9 +368,9 @@ export async function generateManuelStocksPdf(opts: { maison?: string | null } =
   callout("Contrats reconnus automatiquement", "Si un contrat signé prévoit un pourcentage de droits différent (par ex. 12 %), FIGDITIONS l'utilise à la place du 10 % standard. Aucune saisie manuelle nécessaire.", "tip");
 
   h2("Étape 4 : enregistrer");
-  step(1, "Cliquez sur « 💾 Enregistrer la vente ».");
-  step(2, "Le tiroir bascule sur un écran vert de confirmation ✅ résumant la vente : titre, auteur, type, librairie (le cas échéant), quantité, prix, total, droits d'auteur, date.");
-  step(3, "Deux boutons apparaissent : « 📝 Enregistrer une autre vente » (réinitialise le formulaire pour une saisie en chaîne) ou « ✕ Fermer ».");
+  step(1, "Cliquez sur « Enregistrer la vente ».");
+  step(2, "Le tiroir bascule sur un écran vert de confirmation résumant la vente : titre, auteur, type, librairie (le cas échéant), quantité, prix, total, droits d'auteur, date.");
+  step(3, "Deux boutons apparaissent : « Enregistrer une autre vente » (réinitialise le formulaire pour une saisie en chaîne) ou « ✕ Fermer ».");
 
   callout("Mise à jour instantanée partout", "Dès la vente enregistrée, tout est synchronisé : Stocks (exemplaires vendus / restants), Finances (chiffre d'affaires, droits d'auteur en attente), fiche Auteur, Tableau de bord, meilleures ventes, flux d'activité. Aucun rafraîchissement manuel nécessaire.", "example");
 
@@ -386,7 +386,7 @@ export async function generateManuelStocksPdf(opts: { maison?: string | null } =
   p("Un bordereau est un document officiel PDF, à faire signer par vous et le libraire. Il sert de preuve pour le dépôt ou la vente.");
 
   h2("Générer un bordereau");
-  step(1, "Ouvrez l'onglet 📄 Bordereaux.");
+  step(1, "Ouvrez l'onglet Bordereaux.");
   step(2, "Choisissez le type : bordereau de dépôt ou bordereau de vente.");
   step(3, "Sélectionnez la librairie et la période.");
   step(4, "Ajoutez éventuellement un logo maison (filigrane discret).");
@@ -467,7 +467,7 @@ export async function generateManuelStocksPdf(opts: { maison?: string | null } =
   p("Cliquez sur l'icône poubelle. Attention : la suppression est définitive et les ventes associées à ce dépôt seront perdues.");
 
   h2("Je ne vois pas l'onglet Bordereaux, pourquoi ?");
-  p("L'onglet 📄 Bordereaux est réservé au plan Business. Un clic dessus affiche l'écran d'upgrade avec le bouton pour passer au plan supérieur.");
+  p("L'onglet Bordereaux est inclus à partir du plan Pro. Sur le plan Starter, un clic dessus affiche l'écran pour passer au plan Pro.");
 
   h2("Un libraire me rend des livres invendus, comment enregistrer ?");
   p("Ouvrez la ligne dans Stock externe, modifiez la quantité déposée en la diminuant du nombre retourné, puis augmentez d'autant votre Stock interne. Vos totaux restent cohérents.");

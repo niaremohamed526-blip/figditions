@@ -80,7 +80,7 @@ function BatchHistoryBadge({
           title="Historique des dépôts"
           className="inline-flex shrink-0 items-center gap-1 rounded-full border border-[color:var(--gold)]/30 bg-[color:var(--gold)]/10 px-2 py-px text-[10px] font-semibold text-[color:var(--gold)] hover:bg-[color:var(--gold)]/20"
         >
-          📦 Dépôts
+          Dépôts
         </button>
       </PopoverTrigger>
       <PopoverContent align="end" className="w-72 border-border bg-card p-3">
@@ -99,7 +99,7 @@ function BatchHistoryBadge({
                 <li key={b.id} className="flex items-start justify-between gap-2 border-b border-border/60 pb-1.5 last:border-0 last:pb-0">
                   <span className={cn("text-xs text-muted-foreground", annule && "line-through opacity-60")}>
                     {fdate(b.date_depot)}
-                    {b.provenance === "hors_stock" && <span className="ml-1 opacity-70">📤</span>}
+                    {b.provenance === "hors_stock" && <span className="ml-1 opacity-70">(hors stock)</span>}
                     {b.notes && <span className="block text-[10px] opacity-70">{b.notes}</span>}
                     {annule && (
                       <span className="block text-[10px] text-red-400 no-underline">
@@ -145,7 +145,7 @@ function BatchHistoryBadge({
           <>
             <p><span className="text-muted-foreground">Librairie :</span> {cancelTarget.librairie_nom}</p>
             <p><span className="text-muted-foreground">Date du dépôt :</span> {fdate(cancelTarget.date_depot)}</p>
-            <p><span className="text-muted-foreground">Quantité :</span> {cancelTarget.quantite_deposee} exemplaire(s)</p>
+            <p><span className="text-muted-foreground">Quantité :</span> {pl(cancelTarget.quantite_deposee, "exemplaire", "exemplaires")}</p>
           </>
         ) : undefined}
         onConfirm={(raison) => cancelTarget ? cancelBatch(cancelTarget, raison) : undefined}
@@ -166,22 +166,21 @@ const fdate = (d: string | null | undefined) => {
 export function ExterneQuickStats({
   librairies, titres, deposes, vendus, restants, ca, horsStock = 0,
 }: { librairies: number; titres: number; deposes: number; vendus: number; restants: number; ca: number; horsStock?: number }) {
-  const Stat = ({ icon, label, value }: { icon: string; label: string; value: string }) => (
+  const Stat = ({ label, value }: { label: string; value: string }) => (
     <span className="inline-flex items-center gap-1.5 text-xs text-muted-foreground">
-      <span aria-hidden>{icon}</span>
       <span className="font-semibold text-[color:var(--gold)] tabular-nums">{value}</span>
       <span>{label}</span>
     </span>
   );
   return (
     <div className="flex flex-wrap gap-x-4 gap-y-2 rounded-xl border border-[color:var(--gold)]/10 bg-[color:var(--gold)]/[0.05] px-4 py-3">
-      <Stat icon="🏪" label="librairies" value={String(librairies)} />
-      <Stat icon="📚" label="titres" value={String(titres)} />
-      <Stat icon="📦" label="déposés" value={String(deposes)} />
-      <Stat icon="✅" label="vendus" value={String(vendus)} />
-      <Stat icon="📊" label="restants" value={String(restants)} />
-      {horsStock > 0 && <Stat icon="📤" label="hors stock interne" value={String(horsStock)} />}
-      <Stat icon="💰" label="" value={fcfa(ca)} />
+      <Stat label="librairies" value={String(librairies)} />
+      <Stat label="titres" value={String(titres)} />
+      <Stat label="déposés" value={String(deposes)} />
+      <Stat label="vendus" value={String(vendus)} />
+      <Stat label="restants" value={String(restants)} />
+      {horsStock > 0 && <Stat label="hors stock interne" value={String(horsStock)} />}
+      <Stat label="de chiffre d'affaires" value={fcfa(ca)} />
     </div>
   );
 }
@@ -424,7 +423,7 @@ export function StockExterneGroups({
                 {[...byDate.entries()].map(([date, rows]) => (
                   <div key={date} className="ml-2 border-l-[3px] border-[color:var(--gold)]/20 bg-[color:var(--gold)]/[0.03] px-3 py-2">
                     <p className="mb-2 text-[12px] uppercase tracking-[1px] text-[color:var(--gold)]">
-                      📅 Dépôt du {date === "—" ? "—" : fdate(date)}
+                      Dépôt du {date === "—" ? "—" : fdate(date)}
                     </p>
                     <div className="space-y-1.5">
                       {rows.map((r) => {
@@ -447,7 +446,7 @@ export function StockExterneGroups({
                                   {titreMap[r.manuscrit_id] ?? "—"}
                                   {r.provenance === "hors_stock" && (
                                     <span className="ml-1.5 inline-flex items-center rounded-full border border-[color:var(--gold)]/40 bg-[color:var(--gold)]/10 px-1.5 py-px align-middle text-[10px] font-semibold text-[color:var(--gold)]">
-                                      📤 Hors stock interne
+                                      Hors stock interne
                                     </span>
                                   )}
                                 </p>

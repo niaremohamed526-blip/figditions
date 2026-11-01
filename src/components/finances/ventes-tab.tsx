@@ -1,4 +1,5 @@
 import { useMemo, useState } from "react";
+import { pl } from "@/lib/plural";
 import { supabase } from "@/integrations/supabase/client";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -286,8 +287,8 @@ export function VentesTab({
       if (data?.ok === false) throw new Error(data.error ?? "Erreur");
       toast.success(
         data.statut === "encaisse"
-          ? "✅ Vente totalement encaissée"
-          : `✅ Encaissement partiel enregistré : reste ${fmtFCFA(data.reste)}`,
+          ? "Vente totalement encaissée"
+          : `Encaissement partiel enregistré : reste ${fmtFCFA(data.reste)}`,
       );
       setEncVente(null);
       onChanged();
@@ -313,7 +314,7 @@ export function VentesTab({
       });
       if (error) throw error;
       if (data?.ok === false) throw new Error(data.error ?? "Erreur");
-      toast.success(`✅ Vente annulée : ${data.quantite_reversee} exemplaire(s) restauré(s) en stock`);
+      toast.success(`Vente annulée : ${pl(data.quantite_reversee, "exemplaire restauré", "exemplaires restaurés")} en stock`);
       setCancelVente(null);
       onChanged();
     } catch (e: any) {
@@ -344,8 +345,8 @@ export function VentesTab({
         ok += 1;
         montant += reste;
       }
-      if (ok > 0) toast.success(`✅ ${ok} vente(s) encaissée(s) : ${fmtFCFA(montant)}`);
-      if (echecs > 0) toast.error(`${echecs} vente(s) n'ont pas pu être encaissées`);
+      if (ok > 0) toast.success(`${pl(ok, "vente encaissée", "ventes encaissées")} : ${fmtFCFA(montant)}`);
+      if (echecs > 0) toast.error(`${pl(echecs, "vente n'a pas pu être encaissée", "ventes n'ont pas pu être encaissées")}`);
       setEncGroupe(null);
       onChanged();
     } finally {
@@ -373,8 +374,8 @@ export function VentesTab({
         ok += 1;
         ex += Number(data?.quantite_reversee ?? 0);
       }
-      if (ok > 0) toast.success(`✅ ${ok} vente(s) annulée(s) : ${ex} exemplaire(s) restauré(s) en stock`);
-      if (echecs > 0) toast.error(`${echecs} vente(s) n'ont pas pu être annulées (droits déjà payés ?)`);
+      if (ok > 0) toast.success(`${pl(ok, "vente annulée", "ventes annulées")} : ${pl(ex, "exemplaire restauré", "exemplaires restaurés")} en stock`);
+      if (echecs > 0) toast.error(`${pl(echecs, "vente n'a pas pu être annulée", "ventes n'ont pas pu être annulées")} (droits déjà payés ?)`);
       setCancelGroupe(null);
       setCancelGroupeReason("");
       onChanged();
@@ -452,7 +453,7 @@ export function VentesTab({
             </div>
           </div>
           <p className="text-xs text-muted-foreground mt-3">
-            {filtered.length} vente(s) affichée(s) · {groupes.length} dépôt(s) groupé(s) · {activeTotals.count} active(s) · {activeTotals.annulees} annulée(s) · CA filtré {fmtFCFA(totaux.ca)} · Encaissé {fmtFCFA(totaux.encaisse)}{!hideDroits && <> · Droits {fmtFCFA(totaux.droits)}</>}
+            {pl(filtered.length, "vente affichée", "ventes affichées")} · {pl(groupes.length, "dépôt groupé", "dépôts groupés")} · {pl(activeTotals.count, "active", "actives")} · {pl(activeTotals.annulees, "annulée", "annulées")} · CA filtré {fmtFCFA(totaux.ca)} · Encaissé {fmtFCFA(totaux.encaisse)}{!hideDroits && <> · Droits {fmtFCFA(totaux.droits)}</>}
           </p>
         </CardContent>
       </Card>
@@ -517,14 +518,14 @@ export function VentesTab({
                               {g.kind === "panier" ? "Vente directe" : "Librairie"}
                             </Badge>
                             <span className="text-sm font-medium truncate">
-                              {g.kind === "panier" ? `🛍️ ${g.librairie_nom}` : g.librairie_nom}
+                              {g.kind === "panier" ? `${g.librairie_nom}` : g.librairie_nom}
                             </span>
                             {g.kind === "panier" && g.facture_numero && (
                               <span className="text-[10px] text-muted-foreground">n° {g.facture_numero}</span>
                             )}
                           </div>
                           <p className="mt-1 text-xs text-muted-foreground">
-                            {g.nb_actives} titre(s) · {g.total_qte} exemplaire(s)
+                            {pl(g.nb_actives, "titre", "titres")} · {pl(g.total_qte, "exemplaire", "exemplaires")}
                             {toutAnnule && <span className="text-red-400"> · groupe entièrement annulé</span>}
                           </p>
                         </div>
@@ -811,7 +812,7 @@ export function VentesTab({
               </div>
               <div className="pointer-events-none absolute right-0 top-0 h-full w-10 bg-gradient-to-l from-card to-transparent md:hidden" />
               <p className="mt-2 text-center text-[11px] text-muted-foreground md:hidden">
-                👉 Glissez le tableau vers la gauche pour voir les autres colonnes
+                Glissez le tableau vers la gauche pour voir les autres colonnes
               </p>
             </div>
           )}
@@ -822,7 +823,7 @@ export function VentesTab({
       <Dialog open={!!encVente} onOpenChange={(o) => !o && setEncVente(null)}>
         <DialogContent className="max-w-md">
           <DialogHeader>
-            <DialogTitle>💵 Enregistrer un encaissement</DialogTitle>
+            <DialogTitle>Enregistrer un encaissement</DialogTitle>
             <DialogDescription>
               {encVente && (
                 <>
@@ -870,11 +871,11 @@ export function VentesTab({
       <Dialog open={!!encGroupe} onOpenChange={(o) => !o && setEncGroupe(null)}>
         <DialogContent className="max-w-md">
           <DialogHeader>
-            <DialogTitle>💵 Encaisser tout le dépôt</DialogTitle>
+            <DialogTitle>Encaisser tout le dépôt</DialogTitle>
             <DialogDescription>
               {encGroupe && (
                 <>
-                  Marquer comme encaissé : {encGroupe.lignes.filter((v) => !isCancelled(v) && resteDe(v) > 0).length} vente(s) pour{" "}
+                  Marquer comme encaissé : {pl(encGroupe.lignes.filter((v) => !isCancelled(v) && resteDe(v) > 0).length, "vente", "ventes")} pour{" "}
                   <strong>{encGroupe.librairie_nom}</strong> du {new Date(encGroupe.date_vente).toLocaleDateString("fr-FR")} ?
                 </>
               )}
@@ -916,7 +917,7 @@ export function VentesTab({
             <DialogDescription>
               {choixGroupe && (
                 <>
-                  {choixGroupe.librairie_nom} : {new Date(choixGroupe.date_vente).toLocaleDateString("fr-FR")} · {choixGroupe.nb_actives} titre(s) actif(s)
+                  {choixGroupe.librairie_nom} : {new Date(choixGroupe.date_vente).toLocaleDateString("fr-FR")} · {pl(choixGroupe.nb_actives, "titre actif", "titres actifs")}
                 </>
               )}
             </DialogDescription>
@@ -959,11 +960,11 @@ export function VentesTab({
               {cancelVente && (
                 <>
                   <p>
-                    <strong>{manuscritMap.get(cancelVente.manuscrit_id)?.titre ?? "Vente"}</strong> : {fmtFCFA(cancelVente.montant_total_fcfa)} : {cancelVente.quantite_vendue} exemplaire(s)
+                    <strong>{manuscritMap.get(cancelVente.manuscrit_id)?.titre ?? "Vente"}</strong> : {fmtFCFA(cancelVente.montant_total_fcfa)} : {pl(cancelVente.quantite_vendue, "exemplaire", "exemplaires")}
                   </p>
 
                   <div className="rounded-lg border border-amber-500/30 bg-amber-500/10 p-3 text-sm">
-                    <p className="font-medium text-amber-300 mb-2">📊 Aperçu avant / après</p>
+                    <p className="font-medium text-amber-300 mb-2">Aperçu avant / après</p>
                     <div className="grid grid-cols-2 gap-3 text-xs">
                       <div>
                         <p className="text-muted-foreground">Avant annulation</p>
@@ -1022,7 +1023,7 @@ export function VentesTab({
                 <>
                   <p>
                     <strong>{cancelGroupe.librairie_nom}</strong> : {new Date(cancelGroupe.date_vente).toLocaleDateString("fr-FR")} ·{" "}
-                    {cancelGroupe.nb_actives} vente(s) · {cancelGroupe.total_qte} exemplaire(s) · {fmtFCFA(cancelGroupe.total_montant)}
+                    {pl(cancelGroupe.nb_actives, "vente", "ventes")} · {pl(cancelGroupe.total_qte, "exemplaire", "exemplaires")} · {fmtFCFA(cancelGroupe.total_montant)}
                   </p>
                   <p className="text-xs text-muted-foreground">
                     Chaque ligne est annulée séparément : les exemplaires sont remis en stock titre par titre. Les ventes dont les droits d'auteur sont déjà payés seront ignorées.
@@ -1048,7 +1049,7 @@ export function VentesTab({
               className="bg-red-600 text-white hover:bg-red-500"
             >
               {cancelGroupeBusy ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : <RotateCcw className="h-4 w-4 mr-2" />}
-              Annuler les {cancelGroupe?.nb_actives ?? 0} vente(s)
+              {(cancelGroupe?.nb_actives ?? 0) > 1 ? `Annuler les ${cancelGroupe?.nb_actives} ventes` : "Annuler la vente"}
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>

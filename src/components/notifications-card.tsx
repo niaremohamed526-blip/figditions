@@ -39,7 +39,7 @@ export function NotificationsCard({
     if (res.ok) {
       setSubscribed(true);
       setPermission("granted");
-      toast.success("Notifications activées 🔔");
+      toast.success("Notifications activées");
     } else {
       toast.error(res.error);
     }

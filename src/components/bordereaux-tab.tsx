@@ -182,7 +182,7 @@ export function BordereauxTab({
 
       <div className="rounded-xl border border-border bg-card overflow-hidden">
         <div className="px-5 py-3 border-b border-border">
-          <h3 className="font-semibold">📄 Historique des bordereaux</h3>
+          <h3 className="font-semibold">Historique des bordereaux</h3>
         </div>
         {items === null ? (
           <div className="p-5 space-y-2">

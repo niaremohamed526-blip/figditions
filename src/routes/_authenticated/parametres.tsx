@@ -692,7 +692,7 @@ function PlanCard({ plan, entreprise, onUpgrade, isAdmin }: {
           )}
           {plan === "business" && (
             <Button disabled className="opacity-60">
-              <Crown className="h-4 w-4" /> Plan maximum atteint ⭐
+              <Crown className="h-4 w-4" /> Plan maximum atteint
             </Button>
           )}
         </div>
@@ -1054,8 +1054,7 @@ function PermissionBadges({ perms }: { perms: Permissions }) {
     <div className="flex flex-wrap gap-1">
       {active.slice(0, 6).map((p) => (
         <span key={p.key} title={p.label} className="inline-flex items-center gap-1 text-[11px] bg-primary/10 text-primary border border-primary/20 rounded-md px-1.5 py-0.5">
-          <span>{p.emoji}</span>
-          <span className="hidden md:inline">{p.label}</span>
+          <span>{p.label}</span>
         </span>
       ))}
       {active.length > 6 && <span className="text-[11px] text-muted-foreground">+{active.length - 6}</span>}
@@ -1086,7 +1085,6 @@ function PermissionTogglesList({ perms, setPerms }: { perms: Permissions; setPer
               disabled={locked}
               className={cn("w-full flex items-center gap-3 p-3 text-left hover:bg-muted/30 transition-colors", locked && "opacity-80 cursor-not-allowed")}
             >
-              <span className="text-xl">{page.emoji}</span>
               <div className="flex-1 min-w-0">
                 <div className="font-medium text-sm">{page.label}</div>
                 <div className="text-xs text-muted-foreground">{page.description}</div>
@@ -1216,7 +1214,7 @@ function InviteModal({
         {createdLink ? (
           <div className="space-y-4">
             <div className="rounded-xl border border-emerald-500/30 bg-emerald-500/10 p-4 text-sm text-emerald-200">
-              ✅ L'invitation a été créée et expire dans 7 jours.
+              L'invitation a été créée et expire dans 7 jours.
             </div>
             <div className="space-y-2">
               <Label>Lien d'invitation</Label>

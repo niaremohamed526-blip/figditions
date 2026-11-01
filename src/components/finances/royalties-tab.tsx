@@ -1,4 +1,5 @@
 import { useMemo, useState } from "react";
+import { pl } from "@/lib/plural";
 import { supabase } from "@/integrations/supabase/client";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -122,7 +123,7 @@ export function RoyaltiesTab({
       if (error) throw error;
       if (data?.ok === false) throw new Error(data.error ?? "Erreur");
 
-      toast.success(`✅ Quittance ${data.numero} générée : ${fmtFCFA(data.montant)} payés à ${data.auteur_nom}`);
+      toast.success(`Quittance ${data.numero} générée : ${fmtFCFA(data.montant)} payés à ${data.auteur_nom}`);
 
       // Télécharge immédiatement le reçu PDF
       downloadQuittance({
@@ -177,14 +178,14 @@ export function RoyaltiesTab({
             Royalties à payer par auteur
           </CardTitle>
           <CardDescription>
-            {pendingGroups.length} auteur(s) en attente de paiement. Chaque paiement génère une quittance numérotée
+            {pl(pendingGroups.length, "auteur", "auteurs")} en attente de paiement. Chaque paiement génère une quittance numérotée
             téléchargeable (preuve pour les deux parties).
           </CardDescription>
         </CardHeader>
         <CardContent>
           {pendingGroups.length === 0 ? (
             <p className="text-center py-10 text-muted-foreground text-sm flex items-center justify-center gap-2">
-              <CheckCircle2 className="h-4 w-4 text-emerald-400" /> Aucune royalty en attente : tout est réglé. 🎉
+              <CheckCircle2 className="h-4 w-4 text-emerald-400" /> Aucune royalty en attente : tout est réglé.
             </p>
           ) : (
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -193,7 +194,7 @@ export function RoyaltiesTab({
                   <div className="flex items-start justify-between gap-3">
                     <div>
                       <p className="font-semibold">{g.nom}</p>
-                      <p className="text-xs text-muted-foreground">{g.ventes.length} vente(s) en attente</p>
+                      <p className="text-xs text-muted-foreground">{pl(g.ventes.length, "vente", "ventes")} en attente</p>
                     </div>
                     <p className="text-lg font-bold text-[color:var(--gold)]">{fmtFCFA(g.montant)}</p>
                   </div>
@@ -203,7 +204,7 @@ export function RoyaltiesTab({
                         • {manuscritMap.get(v.manuscrit_id)?.titre ?? "Livre"} : {v.quantite_vendue} ex. : {fmtFCFA(v.droits_auteur_fcfa)}
                       </p>
                     ))}
-                    {g.ventes.length > 5 && <p>… et {g.ventes.length - 5} autre(s)</p>}
+                    {g.ventes.length > 5 && <p>… et {pl(g.ventes.length - 5, "autre", "autres")}</p>}
                   </div>
                   <Button
                     onClick={() => { setPayGroup(g); setMethode("especes"); setReference(""); setNotes(""); }}
@@ -289,11 +290,11 @@ export function RoyaltiesTab({
       <Dialog open={!!payGroup} onOpenChange={(o) => !o && setPayGroup(null)}>
         <DialogContent className="max-w-md">
           <DialogHeader>
-            <DialogTitle>💰 Payer les royalties : {payGroup?.nom}</DialogTitle>
+            <DialogTitle>Payer les royalties : {payGroup?.nom}</DialogTitle>
             <DialogDescription>
               {payGroup && (
                 <>
-                  {payGroup.ventes.length} vente(s) seront marquées comme payées · Total :{" "}
+                  {pl(payGroup.ventes.length, "vente sera marquée comme payée", "ventes seront marquées comme payées")} · Total :{" "}
                   <strong className="text-[color:var(--gold)]">{fmtFCFA(payGroup.montant)}</strong>
                   <br />Une quittance numérotée sera générée et téléchargée automatiquement.
                 </>

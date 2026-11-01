@@ -132,7 +132,7 @@ function EstimateurPage() {
       const exists = manuscrits.find((m) => m.id === prefillManuscritId);
       if (exists) {
         setManuscritId(prefillManuscritId);
-        toast.info(`📚 Pré-rempli pour « ${exists.titre} »`);
+        toast.info(`Pré-rempli pour « ${exists.titre} »`);
       }
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -307,17 +307,17 @@ function EstimateurPage() {
     }
     setApplying(false);
     if (error) return toast.error(error.message);
-    toast.success(`✅ Stock interne mis à jour (+${tirage} ex.)`);
+    toast.success(`Stock interne mis à jour (+${tirage} ex.)`);
     setToApply(null);
   };
 
 
 
   const tirageRec = tirage < 500
-    ? { color: "bg-blue-500/15 text-blue-300 border-blue-500/30", text: "💡 Impression numérique recommandée" }
+    ? { color: "bg-blue-500/15 text-blue-300 border-blue-500/30", text: "Impression numérique recommandée" }
     : tirage <= 1000
-      ? { color: "bg-orange-500/15 text-orange-300 border-orange-500/30", text: "⚖️ Comparer offset et numérique" }
-      : { color: "bg-primary/15 text-primary border-primary/30", text: "💡 Impression offset recommandée" };
+      ? { color: "bg-orange-500/15 text-orange-300 border-orange-500/30", text: "Comparer offset et numérique" }
+      : { color: "bg-primary/15 text-primary border-primary/30", text: "Impression offset recommandée" };
 
   const comparedRows = (history ?? []).filter((h) => compareIds.includes(h.id));
   const cheapestId = comparedRows.length > 1
@@ -396,7 +396,7 @@ function EstimateurPage() {
                 </label>
                 <label className={cn("flex items-center gap-2 rounded-lg border px-3 py-2.5 cursor-pointer transition-colors",
                   couleur ? "border-primary bg-primary/10" : "border-border")}>
-                  <RadioGroupItem value="color" id="color" /><span className="text-sm">🎨 Couleur (premium)</span>
+                  <RadioGroupItem value="color" id="color" /><span className="text-sm">Couleur (premium)</span>
                 </label>
               </RadioGroup>
             </Field>
@@ -487,7 +487,7 @@ function EstimateurPage() {
 
             {/* Breakdown */}
             <div className="rounded-2xl border border-border bg-card p-5 space-y-4">
-              <Section title="📋 Préparation">
+              <Section title="Préparation">
                 <CostRow label="Mise en page" value={calc.coutMiseEnPage} />
                 <CostRow label="Conception couverture" value={calc.coutConception} />
                 <CostRow label="ISBN" value={calc.coutIsbn} />
@@ -495,7 +495,7 @@ function EstimateurPage() {
                 <Subtotal label="Total de la préparation" value={calc.sousTotalPrepress} />
               </Section>
 
-              <Section title={`🖨️ Production (${calc.tirageFinal.toLocaleString("fr-FR")} ex.)`}>
+              <Section title={`Production (${calc.tirageFinal.toLocaleString("fr-FR")} ex.)`}>
                 <CostRow label={calc.methode === "offset" ? `Papier (${pages} p.)` : `Impression numérique (${pages} p.)`} value={calc.coutPapier} />
                 <CostRow label="Couverture" value={calc.coutCouverture} />
                 <CostRow label="Reliure" value={calc.coutReliure} />
@@ -504,7 +504,7 @@ function EstimateurPage() {
                 <Subtotal label="Total de la production" value={calc.sousTotalProduction} />
               </Section>
 
-              <Section title="📦 Finition">
+              <Section title="Finition">
                 <CostRow label="Découpe et finition" value={calc.coutDecoupe} />
                 <CostRow label="Emballage" value={calc.coutEmballage} />
                 <CostRow label="Livraison" value={calc.coutLivraison} />
@@ -512,7 +512,7 @@ function EstimateurPage() {
               </Section>
 
               <div className="flex items-center justify-between rounded-lg px-3 py-2 bg-muted/30">
-                <span className="text-sm">💼 Marge imprimeur (30%)</span>
+                <span className="text-sm">Marge imprimeur (30%)</span>
                 <span className="tabular-nums font-semibold">{fcfa(calc.margeImprimeur)}</span>
               </div>
 
@@ -524,7 +524,7 @@ function EstimateurPage() {
                 <p className="text-2xl font-extrabold text-primary">{fcfa(calc.coutTotal)}</p>
               </div>
 
-              <Section title="📊 Analyse commerciale">
+              <Section title="Analyse commerciale">
                 <CostRow label="Coût unitaire" value={calc.coutUnitaire} />
                 <CostRow label="Marge librairie (30%)" value={calc.margeLibrairie} />
                 <CostRow label="Droits auteur (10%)" value={calc.droitsAuteur} />
@@ -571,7 +571,7 @@ function EstimateurPage() {
                   <tr key={r.id} className={cn("border-t border-border", r.id === cheapestId && "bg-primary/10")}>
                     <td className="px-4 py-3 font-medium">
                       {r.nom_estimation}
-                      {r.id === cheapestId && <span className="ml-2 text-xs text-primary font-bold">★ Le moins cher</span>}
+                      {r.id === cheapestId && <span className="ml-2 text-xs text-primary font-bold">Le moins cher</span>}
                     </td>
                     <td className="px-4 py-3 text-center">{r.tirage.toLocaleString("fr-FR")}</td>
                     <td className="px-4 py-3 capitalize">{r.methode_impression}</td>

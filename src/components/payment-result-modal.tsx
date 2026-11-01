@@ -10,27 +10,6 @@ interface Props {
 }
 
 export function PaymentResultModal({ status, onClose, onRetry }: Props) {
-  // Confetti via emojis : no extra dependency
-  useEffect(() => {
-    if (status !== "success") return;
-    const root = document.createElement("div");
-    root.style.cssText = "position:fixed;inset:0;pointer-events:none;z-index:9999;overflow:hidden;";
-    document.body.appendChild(root);
-    const emojis = ["🎉", "✨", "🎊", "⭐", "💚"];
-    for (let i = 0; i < 30; i++) {
-      const s = document.createElement("span");
-      s.textContent = emojis[i % emojis.length];
-      s.style.cssText = `position:absolute;left:${Math.random() * 100}%;top:-10%;font-size:${16 + Math.random() * 20}px;transition:transform 2.5s ease-out,opacity 2.5s;opacity:1;`;
-      root.appendChild(s);
-      requestAnimationFrame(() => {
-        s.style.transform = `translateY(${110 + Math.random() * 20}vh) rotate(${Math.random() * 720}deg)`;
-        s.style.opacity = "0";
-      });
-    }
-    const t = setTimeout(() => root.remove(), 3000);
-    return () => { clearTimeout(t); root.remove(); };
-  }, [status]);
-
   const isOpen = status !== null;
   const isSuccess = status === "success";
 
@@ -49,7 +28,7 @@ export function PaymentResultModal({ status, onClose, onRetry }: Props) {
             </div>
           )}
           <h2 className="mt-4 text-2xl font-bold">
-            {isSuccess ? "Paiement réussi ! 🎉" : "Paiement annulé"}
+            {isSuccess ? "Paiement réussi !" : "Paiement annulé"}
           </h2>
           <p className="mt-2 text-sm text-muted-foreground">
             {isSuccess

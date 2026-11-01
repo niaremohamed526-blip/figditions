@@ -238,11 +238,11 @@ function DashboardPage() {
   }, [stocks]);
 
   const activity = useMemo(() => {
-    const items: { id: string; icon: string; text: string; date: string }[] = [];
-    (manuscrits ?? []).slice(0, 20).forEach((m) => items.push({ id: `m-${m.id}`, icon: "📖", text: `Nouveau manuscrit: ${m.titre}`, date: m.created_at }));
-    ventes.slice(0, 20).forEach((v) => items.push({ id: `v-${v.id}`, icon: "💰", text: `Vente: ${mMap[v.manuscrit_id]?.titre ?? "—"} (${v.quantite_vendue} ex.)`, date: v.created_at || v.date_vente }));
-    contrats.slice(0, 20).forEach((c) => items.push({ id: `c-${c.id}`, icon: "📝", text: `Contrat ${c.statut}: ${mMap[c.manuscrit_id]?.titre ?? "—"}`, date: c.created_at }));
-    stocks.slice(0, 20).forEach((s) => items.push({ id: `s-${s.id}`, icon: "📦", text: `Dépôt mis à jour: ${mMap[s.manuscrit_id]?.titre ?? "—"} chez ${s.librairie_nom ?? "—"}`, date: s.created_at }));
+    const items: { id: string; text: string; date: string }[] = [];
+    (manuscrits ?? []).slice(0, 20).forEach((m) => items.push({ id: `m-${m.id}`, text: `Nouveau manuscrit: ${m.titre}`, date: m.created_at }));
+    ventes.slice(0, 20).forEach((v) => items.push({ id: `v-${v.id}`, text: `Vente: ${mMap[v.manuscrit_id]?.titre ?? "—"} (${v.quantite_vendue} ex.)`, date: v.created_at || v.date_vente }));
+    contrats.slice(0, 20).forEach((c) => items.push({ id: `c-${c.id}`, text: `Contrat ${c.statut}: ${mMap[c.manuscrit_id]?.titre ?? "—"}`, date: c.created_at }));
+    stocks.slice(0, 20).forEach((s) => items.push({ id: `s-${s.id}`, text: `Dépôt mis à jour: ${mMap[s.manuscrit_id]?.titre ?? "—"} chez ${s.librairie_nom ?? "—"}`, date: s.created_at }));
     return items.sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime()).slice(0, 10);
   }, [manuscrits, ventes, contrats, stocks, mMap]);
 
@@ -325,7 +325,7 @@ function DashboardPage() {
             <BreakdownLine tone="blue">Librairies : {nf(totals.externeRestant)}</BreakdownLine>
             <MiniBar segments={[{ value: totals.interneDisponible, tone: "gold" }, { value: totals.externeRestant, tone: "blue" }]} />
             <p className="mt-2 text-[11px] text-[color:var(--gold)]">
-              📕 {nf(stockByOrigin.propres)} nos productions · 🌍 {nf(stockByOrigin.etrangers)} étrangers
+              {nf(stockByOrigin.propres)} nos productions · {nf(stockByOrigin.etrangers)} étrangers
             </p>
           </StatCard>
 
@@ -398,7 +398,7 @@ function DashboardPage() {
       </section>
 
       <AnalyticsSection
-        title="📊 Analytiques générales"
+        title="Analytiques générales"
         range={range}
         setRange={setRange}
         preview={
@@ -411,7 +411,7 @@ function DashboardPage() {
         <div className="grid lg:grid-cols-2 gap-4">
           <div className="rounded-xl border border-border bg-background/40 p-5">
             <div className="flex items-center justify-between mb-3">
-              <h3 className="font-semibold">📈 Chiffre d'affaires (6 derniers mois)</h3>
+              <h3 className="font-semibold">Chiffre d'affaires (6 derniers mois)</h3>
               <span className="text-sm text-[color:var(--gold)] font-semibold tabular-nums">Total: {fcfa(totalRevenue)}</span>
             </div>
             <div className="h-64">
@@ -436,7 +436,7 @@ function DashboardPage() {
           </div>
 
           <div className="rounded-xl border border-border bg-background/40 p-5">
-            <h3 className="font-semibold mb-3">📚 Manuscrits par statut</h3>
+            <h3 className="font-semibold mb-3">Manuscrits par statut</h3>
             <div className="h-64 relative">
               {stats.total === 0 ? <EmptyChart /> : (
                 <>
@@ -470,21 +470,21 @@ function DashboardPage() {
         <div className="grid md:grid-cols-3 gap-4">
           <MetricCard
             icon={<Trophy className="h-5 w-5" />}
-            title="🏆 Livre le plus vendu"
+            title="Livre le plus vendu"
             primary={bestBook?.titre ?? "—"}
             line1={bestBook ? `${bestBook.copies} exemplaires vendus` : "Aucune vente"}
             line2={bestBook ? fcfa(bestBook.revenue) : ""}
           />
           <MetricCard
             icon={<PenLine className="h-5 w-5" />}
-            title="✍️ Auteur le plus actif"
+            title="Auteur le plus actif"
             primary={topAuthor?.name ?? "—"}
             line1={topAuthor ? `${pl(topAuthor.manuscripts, "manuscrit")}` : "—"}
             line2={topAuthor ? `${fcfa(topAuthor.royalties)} de royalties` : ""}
           />
           <MetricCard
             icon={<Store className="h-5 w-5" />}
-            title="📦 Librairie la plus performante"
+            title="Librairie la plus performante"
             primary={topStore?.name ?? "—"}
             line1={topStore ? `${topStore.copies} exemplaires vendus` : "—"}
             line2={topStore ? fcfa(topStore.revenue) : ""}
@@ -493,7 +493,7 @@ function DashboardPage() {
 
         <div className="rounded-xl border border-border bg-background/40 p-5">
           <div className="flex items-center justify-between mb-3">
-            <h3 className="font-semibold flex items-center gap-2"><Trophy className="h-4 w-4 text-[color:var(--gold)]" /> 🏆 Livres les plus vendus</h3>
+            <h3 className="font-semibold flex items-center gap-2"><Trophy className="h-4 w-4 text-[color:var(--gold)]" /> Livres les plus vendus</h3>
             <Link to="/finances" className="text-sm text-primary hover:underline">Voir tous les livres →</Link>
           </div>
           <BestSellingBooks books={bookRankings} limit={3} />
@@ -502,14 +502,13 @@ function DashboardPage() {
         <ActivityFeed entrepriseId={profile?.entreprise_id ?? null} limit={10} />
 
         <div className="rounded-xl border border-border bg-background/40 p-5">
-          <h3 className="font-semibold mb-3 flex items-center gap-2"><Activity className="h-4 w-4 text-primary" /> 🕐 Activité récente</h3>
+          <h3 className="font-semibold mb-3 flex items-center gap-2"><Activity className="h-4 w-4 text-primary" /> Activité récente</h3>
           {activity.length === 0 ? (
             <p className="text-sm text-muted-foreground py-4 text-center">Aucune activité récente</p>
           ) : (
             <ol className="space-y-2">
               {activity.map((it) => (
                 <li key={it.id} className="flex items-start gap-3 py-2 border-b border-border last:border-0">
-                  <span className="text-xl">{it.icon}</span>
                   <div className="flex-1 min-w-0">
                     <p className="text-sm">{it.text}</p>
                     <p className="text-xs text-muted-foreground">

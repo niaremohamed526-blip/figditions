@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { pl } from "@/lib/plural";
 import { useServerFn } from "@tanstack/react-start";
 import { CheckCircle2, XCircle, AlertTriangle, Loader2, RefreshCw, Info, ExternalLink, Copy, Check } from "lucide-react";
 import { toast } from "sonner";
@@ -95,12 +96,12 @@ export function ConfigStatusSection() {
               : "bg-destructive/15 text-destructive"
           }`}>
             {requiredMissing.length === 0 ? <Check className="h-3 w-3" /> : <XCircle className="h-3 w-3" />}
-            {requiredMissing.length === 0 ? "Toutes les variables requises sont présentes" : `${requiredMissing.length} variable(s) requise(s) manquante(s)`}
+            {requiredMissing.length === 0 ? "Toutes les variables requises sont présentes" : `${pl(requiredMissing.length, "variable requise manquante", "variables requises manquantes")}`}
           </span>
           {optionalMissing.length > 0 && (
             <span className="inline-flex items-center gap-1 rounded-full px-3 py-1 bg-amber-500/15 text-amber-500">
               <AlertTriangle className="h-3 w-3" />
-              {optionalMissing.length} optionnelle(s) manquante(s)
+              {pl(optionalMissing.length, "optionnelle manquante", "optionnelles manquantes")}
             </span>
           )}
           {data.runtimeHints.isVercel && (

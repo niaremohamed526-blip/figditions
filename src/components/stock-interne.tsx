@@ -1,4 +1,5 @@
 import { CHART_TOOLTIP_STYLE } from "@/lib/chart-style";
+import { pl } from "@/lib/plural";
 import { useEffect, useMemo, useState } from "react";
 import {
   Warehouse, Truck, ShoppingBag, BellRing, Plus, ArrowUpDown, History, Pencil,
@@ -82,15 +83,15 @@ interface Mouvement {
 }
 
 
-const MOUVEMENT_LABEL: Record<string, { icon: string; label: string; sign: "+" | "-" | "~"; color: string }> = {
-  impression:          { icon: "📥", label: "Nouveau stock reçu",       sign: "+", color: "text-primary" },
-  transfert_librairie: { icon: "📤", label: "Transfert vers librairie", sign: "-", color: "text-blue-400" },
-  vente_directe:       { icon: "🛍️", label: "Vente libre",              sign: "-", color: "text-blue-400" },
-  evenement:           { icon: "📚", label: "Événement / Exposition",   sign: "-", color: "text-blue-400" },
-  retour_librairie:    { icon: "🔄", label: "Retour de dépôt",          sign: "+", color: "text-primary" },
-  perte:               { icon: "❌", label: "Perte / Dommage",          sign: "-", color: "text-red-400" },
-  don:                 { icon: "🎁", label: "Don / Donation",           sign: "-", color: "text-sky-400" },
-  ajustement:          { icon: "🔧", label: "Ajustement manuel",        sign: "~", color: "text-yellow-400" },
+const MOUVEMENT_LABEL: Record<string, { label: string; sign: "+" | "-" | "~"; color: string }> = {
+  impression:          { label: "Nouveau stock reçu",       sign: "+", color: "text-primary" },
+  transfert_librairie: { label: "Transfert vers librairie", sign: "-", color: "text-blue-400" },
+  vente_directe:       { label: "Vente libre",              sign: "-", color: "text-blue-400" },
+  evenement:           { label: "Événement / Exposition",   sign: "-", color: "text-blue-400" },
+  retour_librairie:    { label: "Retour de dépôt",          sign: "+", color: "text-primary" },
+  perte:               { label: "Perte / Dommage",          sign: "-", color: "text-red-400" },
+  don:                 { label: "Don / Donation",           sign: "-", color: "text-sky-400" },
+  ajustement:          { label: "Ajustement manuel",        sign: "~", color: "text-yellow-400" },
 };
 
 export function StockInterneTab({ entrepriseId, userId }: { entrepriseId: string | null; userId: string | null }) {
@@ -240,7 +241,6 @@ export function StockInterneTab({ entrepriseId, userId }: { entrepriseId: string
                 <tr key={r.manuscrit_id} className="group border-t border-border hover:bg-primary/5 transition-colors">
                   <td className="px-4 py-3">
                     <div className="flex items-start gap-2">
-                      <span className="text-lg">{foreign ? "🌍" : "📚"}</span>
                       <div className="min-w-0">
                         <p className="font-medium"><Highlight text={r.titre} term={term} /></p>
                         <p className="text-xs text-primary"><Highlight text={r.auteur} term={term} /></p>
@@ -267,7 +267,7 @@ export function StockInterneTab({ entrepriseId, userId }: { entrepriseId: string
                   <td className="px-4 py-3 text-center text-muted-foreground tabular-nums hidden lg:table-cell">{r.quantite_exposee_evenements}</td>
                   <td className="px-4 py-3 text-center tabular-nums hidden lg:table-cell">
                     {Number(r.quantite_donnee || 0) > 0
-                      ? <span className="inline-flex items-center gap-1 rounded-full border border-sky-500/30 bg-sky-500/10 px-2 h-6 text-xs font-semibold text-sky-400">🎁 {r.quantite_donnee}</span>
+                      ? <span className="inline-flex items-center gap-1 rounded-full border border-sky-500/30 bg-sky-500/10 px-2 h-6 text-xs font-semibold text-sky-400">{r.quantite_donnee}</span>
                       : <span className="text-muted-foreground">0</span>}
                   </td>
                   <td className="px-4 py-3 text-right text-muted-foreground tabular-nums hidden xl:table-cell">{fcfa(r.prix_vente_direct_fcfa)}</td>
@@ -328,22 +328,22 @@ export function StockInterneTab({ entrepriseId, userId }: { entrepriseId: string
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
         <SumCard
           icon={<Warehouse />}
-          label="📦 Total en stock"
+          label="Total en stock"
           value={String(totals.disponible)}
-          sub={`📚 ${totals.dispoPropre} propres · 🌍 ${totals.dispoEtranger} étrangers`}
+          sub={`${totals.dispoPropre} propres · ${totals.dispoEtranger} étrangers`}
           accent="#C8922A"
         />
-        <SumCard icon={<Truck />} label="🔄 Transférés librairies" value={String(totals.transferees)} accent="#3B82F6" />
+        <SumCard icon={<Truck />} label="Transférés librairies" value={String(totals.transferees)} accent="#3B82F6" />
         <SumCard
           icon={<ShoppingBag />}
-          label="🛍️ Ventes libres"
+          label="Ventes libres"
           value={String(totals.vendusDirect)}
           sub={fcfa(totals.revenueDirect)}
           accent="#E8B84B"
         />
         <SumCard
           icon={<BellRing />}
-          label="⚠️ Alertes stock bas"
+          label="Alertes stock bas"
           value={String(totals.lowCount)}
           accent="#EF4444"
           pulse={totals.lowCount > 0}
@@ -360,7 +360,7 @@ export function StockInterneTab({ entrepriseId, userId }: { entrepriseId: string
           >
             <p className="font-semibold text-red-400 flex items-center gap-2">
               <AlertTriangle className="h-4 w-4" />
-              {totals.low.length} livre(s) en stock critique
+              {pl(totals.low.length, "livre", "livres")} en stock critique
             </p>
             <ChevronDown className={cn("h-4 w-4 text-red-400 transition-transform", alertsOpen && "rotate-180")} />
           </button>
@@ -390,7 +390,7 @@ export function StockInterneTab({ entrepriseId, userId }: { entrepriseId: string
                             atSeuil ? "text-orange-400" : "text-red-400",
                           )}
                         >
-                          {q === 0 ? "ÉPUISÉ" : atSeuil ? `${q} ex. ⚠️` : `${q} ex.`}
+                          {q === 0 ? "ÉPUISÉ" : atSeuil ? `${q} ex.` : `${q} ex.`}
                         </p>
                         <p className="text-[11px] text-muted-foreground whitespace-nowrap">seuil: {s.seuil_alerte}</p>
                       </div>
@@ -398,7 +398,7 @@ export function StockInterneTab({ entrepriseId, userId }: { entrepriseId: string
                     <div className="flex flex-col min-[420px]:flex-row gap-2 w-full">
                       <Button asChild size="sm" variant="outline" className="flex-1 min-w-0 text-[10px] sm:text-xs px-2">
                         <Link to="/estimateur" search={{ manuscrit: s.manuscrit_id }} className="truncate">
-                          <span className="truncate sm:hidden">🖨️ Réimprimer</span>
+                          <span className="truncate sm:hidden">Réimprimer</span>
                           <span className="hidden sm:inline truncate">Commander une impression</span>
                         </Link>
                       </Button>
@@ -472,9 +472,9 @@ export function StockInterneTab({ entrepriseId, userId }: { entrepriseId: string
           {ownRows.length > 0 && (
             <section className="space-y-2">
               <div className="flex flex-wrap items-baseline justify-between gap-2">
-                <h3 className="font-semibold">📚 Notre production</h3>
+                <h3 className="font-semibold">Notre production</h3>
                 <p className="text-xs text-muted-foreground">
-                  {ownRows.length} titre(s) —{" "}
+                  {pl(ownRows.length, "titre", "titres")} —{" "}
                   <span className="font-semibold text-[color:var(--gold)] tabular-nums">
                     {ownRows.reduce((s, r) => s + r.quantite_disponible, 0)}
                   </span>{" "}
@@ -488,9 +488,9 @@ export function StockInterneTab({ entrepriseId, userId }: { entrepriseId: string
           {foreignRows.length > 0 && (
             <section className="space-y-2">
               <div className="flex flex-wrap items-baseline justify-between gap-2">
-                <h3 className="font-semibold">🌍 Livres étrangers</h3>
+                <h3 className="font-semibold">Livres étrangers</h3>
                 <p className="text-xs text-muted-foreground">
-                  {foreignRows.length} titre(s) —{" "}
+                  {pl(foreignRows.length, "titre", "titres")} —{" "}
                   <span className="font-semibold text-[#C08A55] tabular-nums">
                     {foreignRows.reduce((s, r) => s + r.quantite_disponible, 0)}
                   </span>{" "}
@@ -510,7 +510,7 @@ export function StockInterneTab({ entrepriseId, userId }: { entrepriseId: string
       {/* Drawers / modals */}
       <Sheet open={addOpen} onOpenChange={(o) => { setAddOpen(o); if (!o) setMvtPrefillId(null); }}>
         <SheetContent side="right" className="bg-card border-border w-full sm:max-w-md overflow-y-auto">
-          <SheetHeader><SheetTitle>📥 Nouveau stock reçu</SheetTitle></SheetHeader>
+          <SheetHeader><SheetTitle>Nouveau stock reçu</SheetTitle></SheetHeader>
           <AddStockForm
             key={String(addOpen) + (mvtPrefillId ?? "")}
             entrepriseId={entrepriseId}
@@ -525,7 +525,7 @@ export function StockInterneTab({ entrepriseId, userId }: { entrepriseId: string
 
       <Sheet open={mvtOpen} onOpenChange={(o) => { setMvtOpen(o); if (!o) setMvtPrefillId(null); }}>
         <SheetContent side="right" className="bg-card border-border w-full sm:max-w-md overflow-y-auto">
-          <SheetHeader><SheetTitle>📤 Enregistrer un mouvement</SheetTitle></SheetHeader>
+          <SheetHeader><SheetTitle>Enregistrer un mouvement</SheetTitle></SheetHeader>
           <MouvementForm
             key={String(mvtOpen) + (mvtPrefillId ?? "")}
             entrepriseId={entrepriseId}
@@ -541,7 +541,7 @@ export function StockInterneTab({ entrepriseId, userId }: { entrepriseId: string
 
       <Dialog open={!!historyFor} onOpenChange={(o) => !o && setHistoryFor(null)}>
         <DialogContent className="bg-card border-border max-w-3xl max-h-[85vh] overflow-y-auto">
-          <DialogHeader><DialogTitle>📊 Historique des mouvements</DialogTitle></DialogHeader>
+          <DialogHeader><DialogTitle>Historique des mouvements</DialogTitle></DialogHeader>
           {historyFor && (
             <HistoryView
               stock={historyFor}
@@ -717,7 +717,7 @@ function AddStockForm({
           onChange={(v) => setForm({ ...form, manuscrit_id: v })}
         />
         {isForeign && (
-          <p className="text-xs text-[#C08A55]">🌍 Livre étranger : entrée en stock d'exemplaires achetés ou reçus.</p>
+          <p className="text-xs text-[#C08A55]">Livre étranger : entrée en stock d'exemplaires achetés ou reçus.</p>
         )}
       </div>
       <div className="space-y-2">
@@ -774,13 +774,13 @@ function AddStockForm({
 /* ------------------------------------------------------------------ */
 
 const MVT_TYPES: { value: string; label: string; hint?: string }[] = [
-  { value: "transfert_librairie", label: "📤 Transfert vers librairie", hint: "Envoyer des exemplaires en librairie" },
-  { value: "vente_directe",       label: "🛍️ Vente libre",              hint: "Vente hors librairie (événement, particulier, en ligne…)" },
-  { value: "evenement",           label: "📚 Événement / Exposition",   hint: "Exemplaires envoyés pour un événement ou exposition" },
-  { value: "retour_librairie",    label: "🔄 Retour de dépôt",          hint: "Livres retournés depuis une librairie, un événement ou toute autre destination" },
-  { value: "don",                 label: "🎁 Don / Donation",           hint: "Exemplaires offerts (école, ONG, bibliothèque, personne…) : sans chiffre d'affaires ni droits d'auteur" },
-  { value: "perte",               label: "❌ Perte / Dommage",          hint: "Exemplaires perdus ou endommagés" },
-  { value: "ajustement",          label: "🔧 Ajustement manuel",        hint: "Correction manuelle du stock (note obligatoire)" },
+  { value: "transfert_librairie", label: "Transfert vers librairie", hint: "Envoyer des exemplaires en librairie" },
+  { value: "vente_directe",       label: "Vente libre",              hint: "Vente hors librairie (événement, particulier, en ligne…)" },
+  { value: "evenement",           label: "Événement / Exposition",   hint: "Exemplaires envoyés pour un événement ou exposition" },
+  { value: "retour_librairie",    label: "Retour de dépôt",          hint: "Livres retournés depuis une librairie, un événement ou toute autre destination" },
+  { value: "don",                 label: "Don / Donation",           hint: "Exemplaires offerts (école, ONG, bibliothèque, personne…) : sans chiffre d'affaires ni droits d'auteur" },
+  { value: "perte",               label: "Perte / Dommage",          hint: "Exemplaires perdus ou endommagés" },
+  { value: "ajustement",          label: "Ajustement manuel",        hint: "Correction manuelle du stock (note obligatoire)" },
 ];
 
 const DON_TYPES: string[] = [
@@ -795,12 +795,12 @@ const DON_TYPES: string[] = [
 
 type ProvenanceKey = "librairie" | "evenement" | "exposition" | "scolaire" | "institution" | "autre";
 const PROVENANCE_OPTIONS: { value: ProvenanceKey; label: string }[] = [
-  { value: "librairie",   label: "🏪 Librairie partenaire" },
-  { value: "evenement",   label: "📚 Événement littéraire" },
-  { value: "exposition",  label: "🖼️ Exposition" },
-  { value: "scolaire",    label: "🏫 Établissement scolaire" },
-  { value: "institution", label: "🏛️ Institution / Organisation" },
-  { value: "autre",       label: "📦 Autre" },
+  { value: "librairie",   label: "Librairie partenaire" },
+  { value: "evenement",   label: "Événement littéraire" },
+  { value: "exposition",  label: "Exposition" },
+  { value: "scolaire",    label: "Établissement scolaire" },
+  { value: "institution", label: "Institution / Organisation" },
+  { value: "autre",       label: "Autre" },
 ];
 
 function MouvementForm({
@@ -887,7 +887,7 @@ function MouvementForm({
         return toast.error("Précisez la provenance");
       }
       if (form.quantite > maxRetour) {
-        return toast.error(`Maximum retournable : ${maxRetour} exemplaire(s)`);
+        return toast.error(`Maximum retournable : ${pl(maxRetour, "exemplaire", "exemplaires")}`);
       }
       let goodQty = form.quantite;
       let damagedQty = 0;
@@ -928,7 +928,7 @@ function MouvementForm({
           p_notes: `Retour endommagé depuis ${provLabel}${form.notes ? " : " + form.notes : ""}`,
         });
         if (error) { setLoading(false); return toast.error(error.message); }
-        toast.warning(`⚠️ ${damagedQty} exemplaire(s) endommagé(s) enregistré(s) comme perte`);
+        toast.warning(`${pl(damagedQty, "exemplaire endommagé enregistré", "exemplaires endommagés enregistrés")} comme perte`);
       }
 
       setLoading(false);
@@ -942,7 +942,7 @@ function MouvementForm({
     if (isDon) {
       if (!donNom.trim()) return toast.error("Indiquez le destinataire du don");
       if (form.quantite > currentStock.quantite_disponible) {
-        return toast.error(`Stock insuffisant : ${currentStock.quantite_disponible} exemplaire(s) disponibles, don de ${form.quantite} demandé.`);
+        return toast.error(`Stock insuffisant : ${pl(currentStock.quantite_disponible, "exemplaire disponible", "exemplaires disponibles")}, don de ${form.quantite} demandé.`);
       }
     }
 
@@ -963,12 +963,12 @@ function MouvementForm({
     const newAvail = res.quantite_disponible ?? currentStock.quantite_disponible;
     const seuil = res.seuil_alerte ?? currentStock.seuil_alerte;
     if (isDon) {
-      toast.success(`🎁 Don enregistré : ${form.quantite} exemplaire(s) offert(s) à ${donNom.trim()}`);
+      toast.success(`Don enregistré : ${pl(form.quantite, "exemplaire offert", "exemplaires offerts")} à ${donNom.trim()}`);
       if (newAvail <= seuil) {
-        toast.warning(`⚠️ Stock bas pour ${book?.titre ?? "ce livre"} : seulement ${newAvail} exemplaires restants après ce don`);
+        toast.warning(`Stock bas pour ${book?.titre ?? "ce livre"} : seulement ${newAvail} exemplaires restants après ce don`);
       }
     } else if (newAvail <= seuil) {
-      toast.error(`⚠️ Attention: Le stock de ${book?.titre ?? "ce livre"} est bas (${newAvail} exemplaires restants)`);
+      toast.error(`Attention: Le stock de ${book?.titre ?? "ce livre"} est bas (${newAvail} exemplaires restants)`);
     } else if (form.type === "vente_directe") {
       toast.success("Vente libre enregistrée");
     } else {
@@ -1018,7 +1018,7 @@ function MouvementForm({
         {isRetour && (
           <>
             <div className="space-y-2">
-              <Label>📍 Provenance du retour</Label>
+              <Label>Provenance du retour</Label>
               <Select value={provenance} onValueChange={(v) => { setProvenance(v as ProvenanceKey); setLibrairieStockId(""); }}>
                 <SelectTrigger><SelectValue /></SelectTrigger>
                 <SelectContent>
@@ -1038,7 +1038,7 @@ function MouvementForm({
                     <SelectContent>
                       {librairiesForBook.map((s) => (
                         <SelectItem key={s.id} value={s.id}>
-                          {s.librairie_nom} : {s.exemplaires_restants} ex. restants{s.provenance === "hors_stock" ? " · 📤 hors stock interne" : ""}
+                          {s.librairie_nom} : {s.exemplaires_restants} ex. restants{s.provenance === "hors_stock" ? " · hors stock interne" : ""}
                         </SelectItem>
                       ))}
                     </SelectContent>
@@ -1049,7 +1049,7 @@ function MouvementForm({
                     {selectedLibrairie.exemplaires_deposes} ex. envoyés : <span className="text-primary font-semibold">Maximum retournable : {maxRetour}</span>
                     {selectedLibrairie.provenance === "hors_stock" && (
                       <span className="mt-0.5 block text-[11px] text-primary">
-                        📤 Dépôt direct : le retour fera entrer ces exemplaires dans l'entrepôt (jamais prélevés du stock interne).
+                        Dépôt direct : le retour fera entrer ces exemplaires dans l'entrepôt (jamais prélevés du stock interne).
                       </span>
                     )}
                   </p>
@@ -1101,13 +1101,13 @@ function MouvementForm({
             <p className="text-xs text-red-400">Dépasse le maximum retournable ({maxRetour})</p>
           )}
           {isDon && currentStock && form.quantite > currentStock.quantite_disponible && (
-            <p className="text-xs text-red-400">Stock insuffisant : {currentStock.quantite_disponible} exemplaire(s) disponibles.</p>
+            <p className="text-xs text-red-400">Stock insuffisant : {pl(currentStock.quantite_disponible, "exemplaire disponible", "exemplaires disponibles")}.</p>
           )}
         </div>
 
         {isDon && (
           <p className="rounded-r-lg border-l-[3px] border-primary bg-[rgba(200,146,42,0.08)] px-3 py-2 text-xs text-muted-foreground">
-            💡 Ce mouvement ne génère aucun chiffre d'affaires ni droits d'auteur : il s'agit d'un don sans contrepartie financière.
+            Ce mouvement ne génère aucun chiffre d'affaires ni droits d'auteur : il s'agit d'un don sans contrepartie financière.
           </p>
         )}
 
@@ -1118,9 +1118,9 @@ function MouvementForm({
             <Label>État des livres retournés</Label>
             <div className="space-y-2">
               {[
-                { v: "bon", l: "✅ Bon état (ajouter au stock disponible)" },
-                { v: "endommage", l: "❌ Endommagés (enregistrer comme pertes)" },
-                { v: "mixte", l: "🔀 Mixte (préciser les quantités)" },
+                { v: "bon", l: "Bon état (ajouter au stock disponible)" },
+                { v: "endommage", l: "Endommagés (enregistrer comme pertes)" },
+                { v: "mixte", l: "Mixte (préciser les quantités)" },
               ].map((o) => (
                 <label key={o.v} className={cn(
                   "flex items-center gap-2 rounded-lg border px-3 py-2 text-sm cursor-pointer transition-colors",
@@ -1133,7 +1133,7 @@ function MouvementForm({
               ))}
             </div>
             {etat === "endommage" && (
-              <p className="text-xs text-red-400">⚠️ Ces exemplaires seront enregistrés comme perdus.</p>
+              <p className="text-xs text-red-400">Ces exemplaires seront enregistrés comme perdus.</p>
             )}
             {etat === "mixte" && (
               <div className="grid grid-cols-2 gap-2 mt-2">
@@ -1193,7 +1193,7 @@ function MouvementForm({
           <AlertDialogHeader>
             <AlertDialogTitle>Confirmer la perte ?</AlertDialogTitle>
             <AlertDialogDescription>
-              Cette action est irréversible. {form.quantite} exemplaire(s) seront définitivement retirés du stock.
+              Cette action est irréversible. {pl(Number(form.quantite) || 0, "exemplaire sera définitivement retiré", "exemplaires seront définitivement retirés")} du stock.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
@@ -1344,7 +1344,7 @@ function EditStockDialog({
     <Dialog open={open} onOpenChange={(o) => !o && onClose()}>
       <DialogContent className="bg-card border-border max-w-lg max-h-[90vh] overflow-y-auto">
         <DialogHeader>
-          <DialogTitle>✏️ Corriger le stock : {titre}</DialogTitle>
+          <DialogTitle>Corriger le stock : {titre}</DialogTitle>
         </DialogHeader>
         <div className="space-y-4">
           <p className="text-xs text-muted-foreground">
@@ -1483,12 +1483,12 @@ function HistoryView({
         <MiniStat label="Disponible" value={stock.quantite_disponible} highlight />
         <MiniStat label="Librairies" value={stock.quantite_transferee_librairies} />
         <MiniStat label="Ventes libres" value={stock.quantite_vendue_directement} />
-        <MiniStat label="🎁 Dons" value={Number(stock.quantite_donnee || 0)} />
+        <MiniStat label="Dons" value={Number(stock.quantite_donnee || 0)} />
       </div>
 
       {chartData.length > 1 && (
         <div className="rounded-xl border border-border bg-background/40 p-4">
-          <h4 className="font-medium mb-3 text-sm">📈 Évolution du stock</h4>
+          <h4 className="font-medium mb-3 text-sm">Évolution du stock</h4>
           <div className="h-48">
             <ResponsiveContainer width="100%" height="100%">
               <LineChart data={chartData}>
@@ -1506,15 +1506,15 @@ function HistoryView({
 
       <div>
         <h4 className="font-medium mb-3 text-sm">
-          🕐 Mouvements ({actifs.length}
-          {sorted.length !== actifs.length && ` · ${sorted.length - actifs.length} annulé(s)`})
+          Mouvements ({actifs.length}
+          {sorted.length !== actifs.length && ` · ${pl(sorted.length - actifs.length, "annulé", "annulés")}`})
         </h4>
         {sorted.length === 0 ? (
           <p className="text-sm text-muted-foreground py-6 text-center">Aucun mouvement enregistré.</p>
         ) : (
           <ol className="space-y-2">
             {[...sorted].reverse().map((m) => {
-              const meta = MOUVEMENT_LABEL[m.type_mouvement] ?? { icon: "•", label: m.type_mouvement, sign: "~", color: "" };
+              const meta = MOUVEMENT_LABEL[m.type_mouvement] ?? { label: m.type_mouvement, sign: "~", color: "" };
               const annule = m.statut_annulation === "annulee";
               const annulable = !annule && m.type_mouvement !== "vente_directe" && m.type_mouvement !== "ajustement";
               return (
@@ -1522,7 +1522,6 @@ function HistoryView({
                   "flex items-start gap-3 p-3 rounded-lg border border-border bg-background/40",
                   annule && "opacity-70 border-red-500/30",
                 )}>
-                  <span className="text-xl">{meta.icon}</span>
                   <div className="flex-1 min-w-0">
                     <p className={cn("text-sm font-medium", annule && "line-through")}>{meta.label}</p>
                     {m.type_mouvement === "don" ? (
@@ -1575,7 +1574,7 @@ function HistoryView({
         summary={cancelTarget ? (
           <>
             <p><span className="text-muted-foreground">Type :</span> {MOUVEMENT_LABEL[cancelTarget.type_mouvement]?.label ?? cancelTarget.type_mouvement}</p>
-            <p><span className="text-muted-foreground">Quantité :</span> {cancelTarget.quantite} exemplaire(s)</p>
+            <p><span className="text-muted-foreground">Quantité :</span> {pl(cancelTarget.quantite, "exemplaire", "exemplaires")}</p>
             {cancelTarget.type_mouvement === "don"
               ? <p><span className="text-muted-foreground">Don initialement fait à :</span> {cancelTarget.destinataire_don || cancelTarget.destination || "—"}</p>
               : cancelTarget.destination && <p><span className="text-muted-foreground">Destination :</span> {cancelTarget.destination}</p>}
@@ -1649,33 +1648,33 @@ function DistributionAnalytics({
 
   return (
     <div className="rounded-xl border border-border bg-card p-5 space-y-5">
-      <h2 className="font-semibold flex items-center gap-2"><BookOpen className="h-4 w-4 text-primary" /> 📊 Analytiques stock interne</h2>
+      <h2 className="font-semibold flex items-center gap-2"><BookOpen className="h-4 w-4 text-primary" /> Analytiques stock interne</h2>
 
       <div className="grid grid-cols-1 md:grid-cols-4 gap-3">
         <div className="rounded-lg border border-border bg-background/40 p-4">
-          <p className="text-xs uppercase tracking-wide text-muted-foreground">💰 Valeur totale du stock</p>
+          <p className="text-xs uppercase tracking-wide text-muted-foreground">Valeur totale du stock</p>
           <p className="mt-1 text-2xl font-bold text-[color:var(--gold)] tabular-nums">{fcfa(valeurStock)}</p>
         </div>
         <div className="rounded-lg border border-border bg-background/40 p-4">
-          <p className="text-xs uppercase tracking-wide text-muted-foreground">📦 Livres en gestion</p>
+          <p className="text-xs uppercase tracking-wide text-muted-foreground">Livres en gestion</p>
           <p className="mt-1 text-2xl font-bold tabular-nums">{stocks.length}</p>
         </div>
         <div className="rounded-lg border border-border bg-background/40 p-4">
-          <p className="text-xs uppercase tracking-wide text-muted-foreground">🎁 Total donné</p>
+          <p className="text-xs uppercase tracking-wide text-muted-foreground">Total donné</p>
           <p className="mt-1 text-2xl font-bold tabular-nums text-[#6B9BD1]">
             {stocks.reduce((s, x) => s + Number(x.quantite_donnee || 0), 0)}
           </p>
           <p className="text-[10px] text-muted-foreground">exemplaires · aucun impact financier</p>
         </div>
         <div className="rounded-lg border border-border bg-background/40 p-4">
-          <p className="text-xs uppercase tracking-wide text-muted-foreground">🔁 Mouvements enregistrés</p>
+          <p className="text-xs uppercase tracking-wide text-muted-foreground">Mouvements enregistrés</p>
           <p className="mt-1 text-2xl font-bold tabular-nums">{mouvements.filter((m) => m.statut_annulation !== "annulee").length}</p>
         </div>
       </div>
 
       <div className="grid lg:grid-cols-2 gap-4">
         <div className="rounded-lg border border-border bg-background/40 p-5">
-          <h3 className="font-semibold mb-3">🔄 Flux de distribution</h3>
+          <h3 className="font-semibold mb-3">Flux de distribution</h3>
           <div className="h-72">
             {distribution.length === 0 ? (
               <p className="h-full flex items-center justify-center text-sm text-muted-foreground">Aucune donnée</p>
@@ -1699,14 +1698,14 @@ function DistributionAnalytics({
         </div>
 
         <div className="rounded-lg border border-border bg-background/40 p-5">
-          <h3 className="font-semibold mb-3">📈 Meilleure rotation de stock</h3>
+          <h3 className="font-semibold mb-3">Meilleure rotation de stock</h3>
           {rotation.length === 0 ? (
             <p className="text-sm text-muted-foreground py-10 text-center">Aucune donnée disponible</p>
           ) : (
             <ul className="space-y-2">
               {rotation.map((r, i) => (
                 <li key={i} className="flex items-center gap-3 p-2 rounded-lg border border-border bg-background/30">
-                  <span className="text-lg">{i === 0 ? "🥇" : i === 1 ? "🥈" : i === 2 ? "🥉" : `#${i + 1}`}</span>
+                  <span className="font-wordmark-serif text-xl text-[color:var(--gold)] tabular-nums">{i + 1}</span>
                   <div className="flex-1 min-w-0">
                     <p className="font-medium text-sm truncate">{r.titre}</p>
                     <div className="mt-1 h-1.5 rounded-full bg-muted overflow-hidden">

@@ -47,7 +47,7 @@ export function FactureWatermarkUploader({
 
   return (
     <div className="space-y-2">
-      <Label className="text-xs">🖼️ Logo en filigrane sur la facture (optionnel)</Label>
+      <Label className="text-xs">Logo en filigrane sur la facture (optionnel)</Label>
       <div className="flex items-center gap-3 rounded-xl border border-border p-3">
         {logo ? (
           <img

@@ -13,7 +13,6 @@ export interface BookRanking {
   revenue: number;
 }
 
-const MEDALS = ["🥇", "🥈", "🥉"];
 
 export function BestSellingBooks({
   books,
@@ -34,7 +33,7 @@ export function BestSellingBooks({
     <div className="space-y-2">
       {list.map((b, i) => {
         const pct = (b.copies / max) * 100;
-        const badge = i < 3 ? MEDALS[i] : `#${i + 1}`;
+        const badge = String(i + 1);
         const Row = (
           <div className="flex items-center gap-3 p-3 rounded-lg border border-border bg-background/50 hover:bg-primary/5 transition-colors">
             <div className={cn(
@@ -46,13 +45,12 @@ export function BestSellingBooks({
             )}>
               {badge}
             </div>
-            <div className="text-2xl flex-shrink-0">📚</div>
             <div className="flex-1 min-w-0">
               <div className="flex items-center gap-2 flex-wrap">
                 <p className="font-medium truncate">{b.titre}</p>
                 {b.etranger && (
                   <span className="inline-flex items-center rounded-full border px-2 py-0.5 text-[10px] font-semibold" style={{ borderColor: "#6B9BD166", background: "#6B9BD11A", color: "#6B9BD1" }}>
-                    🌍 Étranger
+                    Étranger
                   </span>
                 )}
                 {b.genre && (

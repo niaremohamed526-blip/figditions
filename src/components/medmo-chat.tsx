@@ -75,10 +75,10 @@ const INPUT_LABELS: Record<string, string> = {
 };
 
 const SUGGESTIONS = [
-  { emoji: "📊", text: "Fais le point sur mes stocks et dis-moi quoi réassortir" },
-  { emoji: "💰", text: "Combien dois-je en royalties à mes auteurs ?" },
-  { emoji: "⚠️", text: "Quelles sont mes alertes du moment ?" },
-  { emoji: "📈", text: "Aide-moi à faire un plan pour développer ma maison d'édition ce mois-ci" },
+  { text: "Fais le point sur mes stocks et dis-moi quoi réassortir" },
+  { text: "Combien dois-je en royalties à mes auteurs ?" },
+  { text: "Quelles sont mes alertes du moment ?" },
+  { text: "Aide-moi à faire un plan pour développer ma maison d'édition ce mois-ci" },
 ];
 
 const springIn = {
@@ -347,7 +347,7 @@ function ToolPartView({
       }
       return (
         <div className="my-2 rounded-xl border border-[color:var(--gold)]/40 bg-[color:var(--gold)]/10 px-3.5 py-2.5 text-xs text-muted-foreground">
-          📷 {out?.message ?? "Aucune vente exploitable détectée sur la photo."}
+          {out?.message ?? "Aucune vente exploitable détectée sur la photo."}
         </div>
       );
     }
@@ -455,7 +455,7 @@ export function MedmoChat({
       return;
     }
     void sendMessage({
-      text: t || "Analyse le(s) document(s) joint(s) et dis-moi ce qu'ils contiennent.",
+      text: t || "Analyse les documents joints et dis-moi ce qu'ils contiennent.",
       ...(files.length > 0 ? { files } : {}),
     });
   };
@@ -513,12 +513,12 @@ export function MedmoChat({
                 }}
               >
                 <h2 className="text-xl font-bold">
-                  Bonjour, je suis <MedmoWordmark className="text-2xl align-baseline" /> 👋
+                  Bonjour, je suis <MedmoWordmark className="text-2xl align-baseline" />
                 </h2>
                 <p className="text-sm text-muted-foreground mt-2 max-w-md mx-auto">
                   Votre copilote pour FIGDITIONS : je peux consulter vos données en direct, vous guider
                   pas à pas, enregistrer des actions pour vous et vous conseiller pour développer votre
-                  maison d'édition. Joignez une image ou un PDF 📎 et je l'analyserai pour vous.
+                  maison d'édition. Joignez une image ou un PDF et je l'analyserai pour vous.
                 </p>
               </motion.div>
               <div className="grid sm:grid-cols-2 gap-2 w-full">
@@ -534,7 +534,6 @@ export function MedmoChat({
                     onClick={() => send(s.text)}
                     className="text-left text-xs rounded-xl border border-border bg-card px-3.5 py-3 hover:border-[color:var(--gold)]/50 hover:bg-[color:var(--gold)]/5 hover:shadow-[0_6px_20px_rgba(200,146,42,0.12)] transition-colors"
                   >
-                    <span className="mr-1.5">{s.emoji}</span>
                     {s.text}
                   </motion.button>
                 ))}
@@ -677,7 +676,7 @@ export function MedmoChat({
           >
             <MedmoAttachmentChips />
             <PromptInputTextarea
-              placeholder="Demandez quelque chose à PR MEDMO… ou joignez une image/PDF 📎"
+              placeholder="Demandez quelque chose à PR MEDMO… ou joignez une image/PDF"
               className="min-h-[46px] text-sm"
             />
             <PromptInputFooter>

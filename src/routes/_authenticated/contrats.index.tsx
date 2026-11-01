@@ -216,7 +216,7 @@ function ContratsInner({ entrepriseId, entreprise }: { entrepriseId: string | nu
             <table className="w-full text-sm">
               <thead className="bg-muted/30 text-muted-foreground">
                 <tr className="text-left">
-                  <th className="px-4 py-3 font-medium">Livre(s)</th>
+                  <th className="px-4 py-3 font-medium">Livres</th>
                   <th className="px-4 py-3 font-medium">Auteur</th>
                   <th className="px-4 py-3 font-medium hidden sm:table-cell">% Droits</th>
                   <th className="px-4 py-3 font-medium hidden lg:table-cell">Couverture</th>
@@ -751,7 +751,7 @@ function ContratSheet({
                         <BookCombobox
                           items={manuscrits}
                           value={l.manuscrit_id ?? "_manual"}
-                          extraOption={{ value: "_manual", label: "✍️ Saisie manuelle" }}
+                          extraOption={{ value: "_manual", label: "Saisie manuelle" }}
                           placeholder="Rechercher dans le catalogue…"
                           emptyLabel="Aucun manuscrit"
                           onChange={(v) => {

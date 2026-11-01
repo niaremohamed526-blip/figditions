@@ -96,7 +96,7 @@ export function RecordSaleTrigger({ onClick, className }: { onClick: () => void;
         className,
       )}
     >
-      💰 Enregistrer une vente
+      Enregistrer une vente
     </Button>
   );
 }
@@ -370,7 +370,7 @@ export function RecordSaleDrawer({
 
       const restant = Math.max(0, (currentStock.exemplaires_restants ?? 0) - qtyN);
       if (restant <= 5) {
-        toast.warning(`⚠️ Stock bas à ${currentStock.librairie_nom ?? "librairie"} : seulement ${pl(restant, "exemplaire restant", "exemplaires restants")}`);
+        toast.warning(`Stock bas à ${currentStock.librairie_nom ?? "librairie"} : seulement ${pl(restant, "exemplaire restant", "exemplaires restants")}`);
       }
 
       setSuccess({
@@ -418,7 +418,7 @@ export function RecordSaleDrawer({
         const si = interne.find((s) => s.manuscrit_id === l.manuscrit_id);
         const restant = Math.max(0, l.disponible - l.quantite);
         if (si && restant <= si.seuil_alerte) {
-          toast.warning(`⚠️ Stock interne bas pour « ${l.titre} » : ${pl(restant, "exemplaire restant", "exemplaires restants")}`);
+          toast.warning(`Stock interne bas pour « ${l.titre} » : ${pl(restant, "exemplaire restant", "exemplaires restants")}`);
         }
       });
 
@@ -495,7 +495,7 @@ export function RecordSaleDrawer({
     >
       <SheetContent side="right" className="bg-card border-border w-full sm:max-w-lg overflow-y-auto">
         <SheetHeader>
-          <SheetTitle className="text-xl">💰 Enregistrer une vente</SheetTitle>
+          <SheetTitle className="text-xl">Enregistrer une vente</SheetTitle>
           <SheetDescription>Saisissez les détails de la vente</SheetDescription>
         </SheetHeader>
 
@@ -540,7 +540,7 @@ export function RecordSaleDrawer({
                 {/* Panier */}
                 <div className="rounded-xl border border-border overflow-hidden">
                   <div className="flex items-center justify-between px-3 py-2 bg-muted/30 border-b border-border">
-                    <span className="text-sm font-semibold">📚 Livres vendus</span>
+                    <span className="text-sm font-semibold">Livres vendus</span>
                     <span className="text-xs text-muted-foreground">{pl(cart.length, "article")}</span>
                   </div>
 
@@ -642,7 +642,7 @@ export function RecordSaleDrawer({
                               });
                               if (list.length === 0) return null;
                               return (
-                                <CommandGroup key={grp} heading={grp === "etranger" ? "🌍 Livres étrangers" : "📗 Nos productions"}>
+                                <CommandGroup key={grp} heading={grp === "etranger" ? "Livres étrangers" : "Nos productions"}>
                                   {list.map((m) => {
                                     const si = interne.find((s) => s.manuscrit_id === m.id);
                                     return (
@@ -675,7 +675,7 @@ export function RecordSaleDrawer({
                   <>
                     {/* Remise globale */}
                     <div className="space-y-1.5">
-                      <Label className="text-xs">💸 Remise (optionnel)</Label>
+                      <Label className="text-xs">Remise (optionnel)</Label>
                       <div className="relative">
                         <Input
                           type="number" min={0} max={100} value={remisePct}
@@ -692,11 +692,11 @@ export function RecordSaleDrawer({
 
                     <div className="grid grid-cols-2 gap-3">
                       <div className="space-y-1.5">
-                        <Label className="text-xs">📅 Date de la vente</Label>
+                        <Label className="text-xs">Date de la vente</Label>
                         <Input type="date" value={dateVente} onChange={(e) => setDateVente(e.target.value)} />
                       </div>
                       <div className="space-y-1.5">
-                        <Label className="text-xs">🙋 Nom du client (optionnel)</Label>
+                        <Label className="text-xs">Nom du client (optionnel)</Label>
                         <Input value={clientNom} onChange={(e) => setClientNom(e.target.value)} placeholder="Client comptant" />
                       </div>
                     </div>
@@ -709,7 +709,7 @@ export function RecordSaleDrawer({
                         className="mt-0.5 h-4 w-4 accent-[color:var(--gold)]"
                       />
                       <span className="text-xs">
-                        <span className="block font-semibold">💵 Paiement reçu maintenant</span>
+                        <span className="block font-semibold">Paiement reçu maintenant</span>
                         <span className="block text-muted-foreground">
                           {paiementRecu
                             ? "La vente sera marquée « Encaissé »."
@@ -719,7 +719,7 @@ export function RecordSaleDrawer({
                     </label>
 
                     <div className="space-y-1.5">
-                      <Label className="text-xs">📝 Notes (optionnel)</Label>
+                      <Label className="text-xs">Notes (optionnel)</Label>
                       <Textarea value={notes} onChange={(e) => setNotes(e.target.value)} rows={2} placeholder="Commentaire sur cette vente…" />
                     </div>
 
@@ -731,7 +731,7 @@ export function RecordSaleDrawer({
 
                     {/* Récapitulatif */}
                     <div className="rounded-xl border border-[color:var(--gold)]/30 bg-[color:var(--gold)]/5 p-4 space-y-2">
-                      <div className="text-sm font-semibold">📊 Récapitulatif</div>
+                      <div className="text-sm font-semibold">Récapitulatif</div>
                       <Row label="Total avant remise" value={fcfa(cartSousTotal)} mono />
                       {cartRemise > 0 && (
                         <div className="flex items-center justify-between text-sm">
@@ -741,7 +741,7 @@ export function RecordSaleDrawer({
                       )}
                       <div className="border-t border-border my-1" />
                       <div className="flex items-center justify-between">
-                        <span className="text-sm">💰 TOTAL</span>
+                        <span className="text-sm">TOTAL</span>
                         <span className="tabular-nums text-lg font-bold text-[color:var(--gold)] tabular-nums">{fcfa(cartTotal)}</span>
                       </div>
                       <div className="border-t border-border my-1" />
@@ -781,7 +781,7 @@ export function RecordSaleDrawer({
               <>
                 {/* Manuscrit : flux librairie */}
                 <div className="space-y-1.5">
-                  <Label className="text-xs">📚 Manuscrit</Label>
+                  <Label className="text-xs">Manuscrit</Label>
                   <Popover open={pickerOpen} onOpenChange={setPickerOpen}>
                     <PopoverTrigger asChild>
                       <Button variant="outline" role="combobox" className={cn("w-full justify-between font-normal", !manuscritId && "text-muted-foreground")}>
@@ -800,7 +800,7 @@ export function RecordSaleDrawer({
                             );
                             if (list.length === 0) return null;
                             return (
-                              <CommandGroup key={grp} heading={grp === "etranger" ? "🌍 Livres étrangers" : "📗 Nos productions"}>
+                              <CommandGroup key={grp} heading={grp === "etranger" ? "Livres étrangers" : "Nos productions"}>
                                 {list.map((m) => {
                                   const aName = nomAuteurDe(m);
                                   const si = interne.find((s) => s.manuscrit_id === m.id);
@@ -826,7 +826,7 @@ export function RecordSaleDrawer({
                 </div>
 
                 <div className="space-y-1.5">
-                  <Label className="text-xs">✍️ Auteur</Label>
+                  <Label className="text-xs">Auteur</Label>
                   <div className="h-10 rounded-md border border-border bg-muted/20 px-3 flex items-center text-sm text-[color:var(--gold)] font-medium">
                     {auteurName || <span className="text-muted-foreground italic">Sélectionnez un manuscrit</span>}
                   </div>
@@ -834,7 +834,7 @@ export function RecordSaleDrawer({
 
                 {manuscritId && (
                   <div className="space-y-1.5">
-                    <Label className="text-xs">🏪 Librairie</Label>
+                    <Label className="text-xs">Librairie</Label>
                     {bookstoresForManuscrit.length === 0 ? (
                       <div className="rounded-md border border-orange-500/30 bg-orange-500/10 text-orange-300 text-xs px-3 py-2">
                         Aucun dépôt en librairie pour ce titre. Utilisez « Vente Libre » ou créez un dépôt.
@@ -907,7 +907,7 @@ export function RecordSaleDrawer({
                   <>
                     <div className="grid grid-cols-2 gap-3">
                       <div className="space-y-1.5">
-                        <Label className="text-xs">📦 Quantité vendue</Label>
+                        <Label className="text-xs">Quantité vendue</Label>
                         <Input
                           type="number" min={1} value={qty}
                           onChange={(e) => setQty(e.target.value)}
@@ -921,38 +921,38 @@ export function RecordSaleDrawer({
                         )}
                       </div>
                       <div className="space-y-1.5">
-                        <Label className="text-xs">💵 Prix unitaire (FCFA)</Label>
+                        <Label className="text-xs">Prix unitaire (FCFA)</Label>
                         <Input type="number" min={0} value={prix} onChange={(e) => setPrix(e.target.value)} className="tabular-nums" />
                       </div>
                     </div>
 
                     <div className="space-y-1.5">
-                      <Label className="text-xs">📅 Date de la vente</Label>
+                      <Label className="text-xs">Date de la vente</Label>
                       <Input type="date" value={dateVente} onChange={(e) => setDateVente(e.target.value)} />
                     </div>
 
                     <div className="space-y-1.5">
-                      <Label className="text-xs">📝 Notes (optionnel)</Label>
+                      <Label className="text-xs">Notes (optionnel)</Label>
                       <Textarea value={notes} onChange={(e) => setNotes(e.target.value)} placeholder="Commentaire sur cette vente…" rows={2} />
                     </div>
 
                     <div className="rounded-xl border border-[color:var(--gold)]/30 bg-[color:var(--gold)]/5 p-4 space-y-2">
-                      <div className="flex items-center gap-2 text-sm font-semibold">📊 Récapitulatif</div>
+                      <div className="flex items-center gap-2 text-sm font-semibold">Récapitulatif</div>
                       <Row label="Quantité" value={`${pl(qtyN, "exemplaire")}`} />
                       <Row label="Prix unitaire" value={fcfa(prixN)} mono />
                       <div className="border-t border-border my-1" />
                       <div className="flex items-center justify-between">
-                        <span className="text-sm">💰 Montant total</span>
+                        <span className="text-sm">Montant total</span>
                         <span className="tabular-nums text-lg font-bold text-[color:var(--gold)] tabular-nums">{fcfa(total)}</span>
                       </div>
                       <div className="border-t border-border my-1" />
                       {isEtranger ? (
-                        <Row label="✍️ Droits auteur" value="Non applicable (livre étranger)" />
+                        <Row label="Droits auteur" value="Non applicable (livre étranger)" />
                       ) : (
-                        <Row label={`✍️ Droits auteur (${royaltyPct}%)`} value={fcfa(royalties)} mono />
+                        <Row label={`Droits auteur (${royaltyPct}%)`} value={fcfa(royalties)} mono />
                       )}
                       <div className="flex items-center justify-between text-sm">
-                        <span>📦 Stock restant après vente</span>
+                        <span>Stock restant après vente</span>
                         <span className={cn("font-semibold tabular-nums", stockAfter < 5 ? "text-red-400" : "text-emerald-400")}>
                           {stockAfter}
                         </span>
@@ -1052,12 +1052,12 @@ function PanierSuccessView({
           </div>
         )}
         <div className="flex items-center justify-between pt-1">
-          <span>💰 Total</span>
+          <span>Total</span>
           <span className="tabular-nums text-lg font-bold text-[color:var(--gold)] tabular-nums">{fcfa(panier.total)}</span>
         </div>
-        <Row label="✍️ Droits auteur" value={fcfa(panier.droits)} mono />
-        <Row label="🙋 Client" value={panier.client ?? "Client comptant"} />
-        <Row label="📅 Date" value={new Date(panier.date).toLocaleDateString("fr-FR")} />
+        <Row label="Droits auteur" value={fcfa(panier.droits)} mono />
+        <Row label="Client" value={panier.client ?? "Client comptant"} />
+        <Row label="Date" value={new Date(panier.date).toLocaleDateString("fr-FR")} />
       </div>
 
       <div className="grid gap-2">
@@ -1067,7 +1067,7 @@ function PanierSuccessView({
         >
           <FileText className="h-4 w-4 mr-2" /> Télécharger la facture
         </Button>
-        <Button variant="outline" onClick={onAnother} className="w-full">📝 Enregistrer une autre vente</Button>
+        <Button variant="outline" onClick={onAnother} className="w-full">Enregistrer une autre vente</Button>
         <Button variant="ghost" onClick={onClose} className="w-full">✕ Fermer</Button>
       </div>
     </div>
@@ -1087,8 +1087,8 @@ function SuccessView({
       </div>
 
       <div className="rounded-xl border border-border bg-card p-4 space-y-2 text-sm">
-        <div className="font-semibold">📚 {result.titre}</div>
-        <div className="text-muted-foreground">✍️ {result.auteur}</div>
+        <div className="font-semibold">{result.titre}</div>
+        <div className="text-muted-foreground">{result.auteur}</div>
         <div className="border-t border-border my-2" />
         <Row label="Type" value={result.type === "librairie" ? "Vente en librairie" : "Vente libre"} />
         {result.librairie && <Row label="Librairie" value={result.librairie} />}
@@ -1098,17 +1098,17 @@ function SuccessView({
           <>
             <Row label="Prix catalogue" value={fcfa(result.prixCatalogue ?? result.prixUnit)} mono />
             <div className="flex items-center justify-between text-sm">
-              <span className="text-muted-foreground">🏷️ Remise accordée</span>
+              <span className="text-muted-foreground">Remise accordée</span>
               <span className="tabular-nums text-orange-400">− {fcfa(result.remise)}</span>
             </div>
           </>
         ) : null}
         <div className="flex items-center justify-between pt-1">
-          <span>💰 Total</span>
+          <span>Total</span>
           <span className="tabular-nums text-lg font-bold text-[color:var(--gold)] tabular-nums">{fcfa(result.total)}</span>
         </div>
-        <Row label="✍️ Droits auteur" value={fcfa(result.royalties)} mono />
-        <Row label="📅 Date" value={new Date(result.date).toLocaleDateString("fr-FR")} />
+        <Row label="Droits auteur" value={fcfa(result.royalties)} mono />
+        <Row label="Date" value={new Date(result.date).toLocaleDateString("fr-FR")} />
       </div>
 
       <div className="grid gap-2">
@@ -1116,7 +1116,7 @@ function SuccessView({
           onClick={onAnother}
           className="w-full text-white font-semibold border-0 bg-[linear-gradient(135deg,#C8922A,#A67420)] hover:brightness-110 rounded-[10px] h-11"
         >
-          📝 Enregistrer une autre vente
+          Enregistrer une autre vente
         </Button>
         <Button variant="outline" onClick={onClose} className="w-full">✕ Fermer</Button>
       </div>

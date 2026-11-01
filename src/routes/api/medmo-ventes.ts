@@ -1,4 +1,5 @@
 import { createFileRoute } from "@tanstack/react-router";
+import { pl } from "@/lib/plural";
 import { createClient, type SupabaseClient } from "@supabase/supabase-js";
 
 // Photo-to-Action : enregistrement en masse des ventes validées dans la carte
@@ -112,7 +113,7 @@ export const Route = createFileRoute("/api/medmo-ventes")({
             }
             const s = depots[0];
             if (num(s.exemplaires_restants) < quantite) {
-              resultats.push({ index, ok: false, message: `« ${m.titre} » chez ${s.librairie_nom} : seulement ${num(s.exemplaires_restants)} exemplaire(s) restant(s) pour ${quantite} vendu(s).` });
+              resultats.push({ index, ok: false, message: `« ${m.titre} » chez ${s.librairie_nom} : seulement ${pl(num(s.exemplaires_restants), "exemplaire restant", "exemplaires restants")} pour ${pl(quantite, "vendu", "vendus")}.` });
               continue;
             }
             const { error } = await supabase
@@ -145,7 +146,7 @@ export const Route = createFileRoute("/api/medmo-ventes")({
               continue;
             }
             if (num(stock.quantite_disponible) < quantite) {
-              resultats.push({ index, ok: false, message: `« ${m.titre} » : stock interne insuffisant (${num(stock.quantite_disponible)} dispo pour ${quantite} vendu(s)).` });
+              resultats.push({ index, ok: false, message: `« ${m.titre} » : stock interne insuffisant (${num(stock.quantite_disponible)} dispo pour ${pl(quantite, "vendu", "vendus")}).` });
               continue;
             }
             const { error } = await supabase.rpc("record_stock_mouvement", {

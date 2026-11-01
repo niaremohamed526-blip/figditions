@@ -38,7 +38,7 @@ export function ActivityFeed({ entrepriseId, limit = 10 }: { entrepriseId: strin
     <div className="rounded-xl border border-border bg-background/40 p-5">
       <div className="flex items-center justify-between mb-3">
         <h3 className="font-semibold flex items-center gap-2">
-          <Bell className="h-4 w-4 text-primary" /> 🔔 Notifications récentes
+          <Bell className="h-4 w-4 text-primary" /> Notifications récentes
         </h3>
       </div>
       {items.length === 0 ? (

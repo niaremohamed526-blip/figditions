@@ -61,7 +61,7 @@ export const Route = createFileRoute("/api/public/hooks/check-reminders")({
             await supabaseAdmin.rpc("fn_notify", {
               p_entreprise: (c as any).entreprise_id,
               p_type: "contrat_expiration",
-              p_titre: "📜 Contrat bientôt expiré",
+              p_titre: "Contrat bientôt expiré",
               p_message: `Le contrat « ${(m as any)?.titre ?? "manuscrit"} » expire le ${fin.toLocaleDateString("fr-FR")}.`,
               p_lien: "/contrats",
               p_metadata: { contrat_id: (c as any).id, manuscrit_id: (c as any).manuscrit_id, date_fin: fin.toISOString() },
@@ -106,7 +106,7 @@ export const Route = createFileRoute("/api/public/hooks/check-reminders")({
           await supabaseAdmin.rpc("fn_notify", {
             p_entreprise: agg.ent,
             p_type: "royalty_retard",
-            p_titre: "⏰ Royalties en retard",
+            p_titre: "Royalties en retard",
             p_message: `${auteurNom} : ${Math.round(agg.total).toLocaleString("fr-FR")} FCFA dus depuis plus de 30 jours.`,
             p_lien: "/auteurs",
             p_metadata: { auteur_key: key, total: agg.total },
@@ -136,7 +136,7 @@ export const Route = createFileRoute("/api/public/hooks/check-reminders")({
           await supabaseAdmin.rpc("fn_notify", {
             p_entreprise: (e as any).id,
             p_type: "abonnement_expiration",
-            p_titre: "💳 Abonnement bientôt expiré",
+            p_titre: "Abonnement bientôt expiré",
             p_message: `Votre plan ${(e as any).plan} expire le ${fin.toLocaleDateString("fr-FR")}. Renouvelez pour conserver vos accès.`,
             p_lien: "/parametres",
             p_metadata: { plan: (e as any).plan, expire_le: fin.toISOString() },

@@ -16,7 +16,7 @@ export function SecurityCard() {
         </div>
         <div className="flex-1 min-w-0">
           <h3 className="text-lg font-semibold flex items-center gap-2">
-            🔒 Vos données sont en sécurité
+            Vos données sont en sécurité
           </h3>
           <p className="text-sm text-muted-foreground mt-1">
             Nous prenons la sécurité de vos données très au sérieux.

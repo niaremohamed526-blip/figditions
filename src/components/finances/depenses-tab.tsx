@@ -1,4 +1,5 @@
 import { useMemo, useState } from "react";
+import { pl } from "@/lib/plural";
 import { supabase } from "@/integrations/supabase/client";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -118,13 +119,13 @@ export function DepensesTab({
       if (editing) {
         const { error } = await (supabase as any).from("depenses").update(payload).eq("id", editing.id);
         if (error) throw error;
-        toast.success("✅ Dépense modifiée");
+        toast.success("Dépense modifiée");
       } else {
         const { error } = await (supabase as any)
           .from("depenses")
           .insert({ ...payload, entreprise_id: entrepriseId, created_by: userId });
         if (error) throw error;
-        toast.success("✅ Dépense enregistrée");
+        toast.success("Dépense enregistrée");
       }
       setDialogOpen(false);
       onChanged();
@@ -162,7 +163,7 @@ export function DepensesTab({
                 Dépenses
               </CardTitle>
               <CardDescription>
-                {filtered.length} dépense(s) : total {fmtFCFA(totalFiltered)}. Rattachez une dépense à un livre pour alimenter sa rentabilité.
+                {pl(filtered.length, "dépense", "dépenses")} : total {fmtFCFA(totalFiltered)}. Rattachez une dépense à un livre pour alimenter sa rentabilité.
               </CardDescription>
             </div>
             <Button
@@ -247,7 +248,7 @@ export function DepensesTab({
       <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
         <DialogContent className="max-w-lg">
           <DialogHeader>
-            <DialogTitle>{editing ? "✏️ Modifier la dépense" : "💸 Nouvelle dépense"}</DialogTitle>
+            <DialogTitle>{editing ? "Modifier la dépense" : "Nouvelle dépense"}</DialogTitle>
             <DialogDescription>Chaque dépense est journalisée dans l'audit financier.</DialogDescription>
           </DialogHeader>
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">

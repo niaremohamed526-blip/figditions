@@ -1,4 +1,5 @@
 import { useMemo, useRef, useState } from "react";
+import { pl } from "@/lib/plural";
 import * as XLSX from "xlsx";
 import { format } from "date-fns";
 import { Loader2, Upload, Download, FileSpreadsheet, CheckCircle2, AlertCircle, X } from "lucide-react";
@@ -161,7 +162,7 @@ export function StockImportDialog({
       }
       setRows(parsed);
       const ok = parsed.filter((p) => !p.error).length;
-      toast.success(`${parsed.length} ligne(s) analysée(s) : ${ok} valide(s)`);
+      toast.success(`${pl(parsed.length, "ligne analysée", "lignes analysées")} : ${pl(ok, "valide", "valides")}`);
     } catch (e: any) {
       toast.error("Impossible de lire le fichier : " + (e?.message ?? "format invalide"));
       reset();
@@ -201,8 +202,8 @@ export function StockImportDialog({
     warnings.forEach((w) => toast.warning(w));
     if (done === 0) return toast.error("Aucun dépôt importé");
     toast.success(
-      `${done} dépôt(s) importé(s) chez « ${librairieNom} »` +
-        (merged > 0 ? ` : ${merged} fusionné(s) avec un dépôt existant` : ""),
+      `${pl(done, "dépôt importé", "dépôts importés")} chez « ${librairieNom} »` +
+        (merged > 0 ? ` : ${pl(merged, "fusionné", "fusionnés")} avec un dépôt existant` : ""),
     );
     onImported();
     close();
@@ -353,7 +354,7 @@ export function StockImportDialog({
           >
             {importing
               ? <><Loader2 className="h-4 w-4 mr-2 animate-spin" /> Import en cours…</>
-              : <>Importer {validCount > 0 ? `${validCount} dépôt(s)` : ""}</>}
+              : <>Importer {validCount > 0 ? `${pl(validCount, "dépôt", "dépôts")}` : ""}</>}
           </Button>
         </DialogFooter>
       </DialogContent>

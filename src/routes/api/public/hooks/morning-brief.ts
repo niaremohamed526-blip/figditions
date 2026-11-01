@@ -107,7 +107,7 @@ export const Route = createFileRoute("/api/public/hooks/morning-brief")({
             await supabaseAdmin.rpc("fn_notify", {
               p_entreprise: eid,
               p_type: BRIEF_TYPE,
-              p_titre: "☀️ Votre brief du jour",
+              p_titre: "Votre brief du jour",
               p_message: message,
               p_lien: "/dashboard",
               p_metadata: { date: today },

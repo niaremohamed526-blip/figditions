@@ -49,7 +49,7 @@ export function NotificationBell({
     // toast on new notification arriving while bell is closed
     if (!open) {
       // We re-load above; sonner toast is best-effort
-      toast("🔔 Nouvelle notification", { duration: 2500 });
+      toast("Nouvelle notification", { duration: 2500 });
     }
   });
 
@@ -94,7 +94,6 @@ export function NotificationBell({
             onClick={() => { setOpen(false); onOpenChangelog(); }}
             className="w-full text-left px-4 py-3 border-b border-border flex items-center gap-2 hover:bg-sidebar-accent transition-colors"
           >
-            <span className="text-base">📋</span>
             <span className="text-sm font-medium flex-1">Quoi de neuf</span>
             {hasUnseenChangelog && <span className="h-2 w-2 rounded-full bg-[color:var(--gold)]" />}
           </button>

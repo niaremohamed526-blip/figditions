@@ -1,4 +1,5 @@
 import { createFileRoute } from "@tanstack/react-router";
+import { pl } from "@/lib/plural";
 import {
   convertToModelMessages,
   createUIMessageStream,
@@ -387,7 +388,7 @@ function buildTools(supabase: AnySupabase, userId: string, entrepriseId: string 
           .maybeSingle();
         if (!stock) return { erreur: `« ${m.titre} » n'a pas de stock interne. Créez d'abord un stock sur la page Stocks, ou enregistrez une vente en librairie.` };
         if (num(stock.quantite_disponible) < quantite) {
-          return { erreur: `Stock insuffisant pour « ${m.titre} » : ${num(stock.quantite_disponible)} exemplaire(s) disponible(s), ${quantite} demandé(s).` };
+          return { erreur: `Stock insuffisant pour « ${m.titre} » : ${pl(num(stock.quantite_disponible), "exemplaire disponible", "exemplaires disponibles")}, ${pl(quantite, "demandé", "demandés")}.` };
         }
         const { error } = await supabase.rpc("record_stock_mouvement", {
           p_manuscrit_id: m.id,
@@ -403,7 +404,7 @@ function buildTools(supabase: AnySupabase, userId: string, entrepriseId: string 
         const total = quantite * prix_unitaire_fcfa;
         return {
           succes: true,
-          resume: `Vente libre enregistrée : ${quantite} × « ${m.titre} » à ${fcfa(prix_unitaire_fcfa)} = ${fcfa(total)}. Stock interne restant : ${restant}${restant <= num(stock.seuil_alerte) ? " ⚠️ (sous le seuil d'alerte)" : ""}.`,
+          resume: `Vente libre enregistrée : ${quantite} × « ${m.titre} » à ${fcfa(prix_unitaire_fcfa)} = ${fcfa(total)}. Stock interne restant : ${restant}${restant <= num(stock.seuil_alerte) ? " (sous le seuil d'alerte)" : ""}.`,
         };
       },
     }),
@@ -434,7 +435,7 @@ function buildTools(supabase: AnySupabase, userId: string, entrepriseId: string 
         if ("error" in dep) return { erreur: dep.error };
         const s = dep.depot;
         if (num(s.exemplaires_restants) < quantite) {
-          return { erreur: `Stock insuffisant chez ${s.librairie_nom} : ${num(s.exemplaires_restants)} exemplaire(s) restant(s), ${quantite} demandé(s).` };
+          return { erreur: `Stock insuffisant chez ${s.librairie_nom} : ${pl(num(s.exemplaires_restants), "exemplaire restant", "exemplaires restants")}, ${pl(quantite, "demandé", "demandés")}.` };
         }
         const prix = prix_unitaire_fcfa && prix_unitaire_fcfa > 0 ? prix_unitaire_fcfa : num(s.prix_unitaire_fcfa);
         const { error } = await supabase
@@ -451,7 +452,7 @@ function buildTools(supabase: AnySupabase, userId: string, entrepriseId: string 
           succes: true,
           resume: withNote(
             [found.note, dep.note].filter(Boolean).join(" ") || null,
-            `Vente en librairie enregistrée : ${quantite} × « ${m.titre} » chez ${s.librairie_nom} à ${fcfa(prix)} = ${fcfa(quantite * prix)}. Il reste ${restant} exemplaire(s) sur place.${restant <= 5 ? " ⚠️ Pensez au réassort." : ""}`,
+            `Vente en librairie enregistrée : ${quantite} × « ${m.titre} » chez ${s.librairie_nom} à ${fcfa(prix)} = ${fcfa(quantite * prix)}. Il reste ${pl(restant, "exemplaire", "exemplaires")} sur place.${restant <= 5 ? " Pensez au réassort." : ""}`,
           ),
         };
       },
@@ -490,7 +491,7 @@ function buildTools(supabase: AnySupabase, userId: string, entrepriseId: string 
         if (prov === "interne") {
           if (!stockInt) return { erreur: `« ${m.titre} » n'a pas de stock interne. Utilisez la provenance « hors_stock » si les livres sont déjà chez la librairie, ou enregistrez d'abord une impression.` };
           if (num(stockInt.quantite_disponible) < quantite) {
-            return { erreur: `Stock interne insuffisant pour « ${m.titre} » : ${num(stockInt.quantite_disponible)} exemplaire(s) disponible(s), ${quantite} demandé(s). Utilisez la provenance « hors_stock » si ces livres ne viennent pas de l'entrepôt.` };
+            return { erreur: `Stock interne insuffisant pour « ${m.titre} » : ${pl(num(stockInt.quantite_disponible), "exemplaire disponible", "exemplaires disponibles")}, ${pl(quantite, "demandé", "demandés")}. Utilisez la provenance « hors_stock » si ces livres ne viennent pas de l'entrepôt.` };
           }
         }
 
@@ -577,8 +578,8 @@ function buildTools(supabase: AnySupabase, userId: string, entrepriseId: string 
               (prix > 0 ? ` à ${fcfa(prix)}` : "") +
               (prov === "hors_stock"
                 ? " : hors stock interne : l'entrepôt n'a pas été touché."
-                : ` : ${quantite} exemplaire(s) déduit(s) de l'entrepôt.`) +
-              (warning ? ` ⚠️ ${warning}` : ""),
+                : ` : ${pl(quantite, "exemplaire déduit", "exemplaires déduits")} de l'entrepôt.`) +
+              (warning ? ` ${warning}` : ""),
           ),
         };
       },
@@ -616,7 +617,7 @@ function buildTools(supabase: AnySupabase, userId: string, entrepriseId: string 
         if (error) return { erreur: error.message };
         return {
           succes: true,
-          resume: `Impression enregistrée : +${quantite} exemplaire(s) de « ${m.titre} ». Stock interne disponible : ${num(stock.quantite_disponible) + quantite}.`,
+          resume: `Impression enregistrée : +${pl(quantite, "exemplaire", "exemplaires")} de « ${m.titre} ». Stock interne disponible : ${num(stock.quantite_disponible) + quantite}.`,
         };
       },
     }),
@@ -648,7 +649,7 @@ function buildTools(supabase: AnySupabase, userId: string, entrepriseId: string 
         if ("error" in dep) return { erreur: dep.error };
         const s = dep.depot;
         if (num(s.exemplaires_restants) < quantite) {
-          return { erreur: `Maximum retournable depuis ${s.librairie_nom} : ${num(s.exemplaires_restants)} exemplaire(s).` };
+          return { erreur: `Maximum retournable depuis ${s.librairie_nom} : ${pl(num(s.exemplaires_restants), "exemplaire", "exemplaires")}.` };
         }
         const { error } = await supabase.rpc("record_stock_mouvement", {
           p_manuscrit_id: m.id,
@@ -664,7 +665,7 @@ function buildTools(supabase: AnySupabase, userId: string, entrepriseId: string 
           succes: true,
           resume: withNote(
             [found.note, dep.note].filter(Boolean).join(" ") || null,
-            `Retour enregistré : ${quantite} × « ${m.titre} » de ${s.librairie_nom} vers l'entrepôt. Il reste ${num(s.exemplaires_restants) - quantite} exemplaire(s) sur place.`,
+            `Retour enregistré : ${quantite} × « ${m.titre} » de ${s.librairie_nom} vers l'entrepôt. Il reste ${pl(num(s.exemplaires_restants) - quantite, "exemplaire", "exemplaires")} sur place.`,
           ),
         };
       },
@@ -750,7 +751,7 @@ function buildTools(supabase: AnySupabase, userId: string, entrepriseId: string 
           succes: true,
           resume:
             `« ${m.titre} » est passé de « ${m.statut} » à « ${nouveau_statut} ».` +
-            (nouveau_statut === "publie" ? " 📘 Une fiche de stock interne a été créée automatiquement : vous pouvez maintenant enregistrer une impression." : ""),
+            (nouveau_statut === "publie" ? " Une fiche de stock interne a été créée automatiquement : vous pouvez maintenant enregistrer une impression." : ""),
         };
       },
     }),
@@ -882,7 +883,7 @@ function buildTools(supabase: AnySupabase, userId: string, entrepriseId: string 
           entreprise_id: eid,
           doublons_fusionnes: doublons,
           entrees: out,
-          message: `${out.length} entrée(s) prête(s) à valider${doublons > 0 ? ` (${doublons} doublon(s) fusionné(s))` : ""}.`,
+          message: `${pl(out.length, "entrée prête", "entrées prêtes")} à valider${doublons > 0 ? ` (${pl(doublons, "doublon fusionné", "doublons fusionnés")})` : ""}.`,
         };
       },
     }),
@@ -1102,7 +1103,7 @@ export const Route = createFileRoute("/api/chat")({
                 const firstFile = firstUser?.parts?.find((p) => p.type === "file") as
                   | { filename?: string }
                   | undefined;
-                const title = text || (firstFile ? `📎 ${firstFile.filename ?? "Document joint"}` : "");
+                const title = text || (firstFile ? `${firstFile.filename ?? "Document joint"}` : "");
                 if (title) {
                   await supabase
                     .from("chat_threads")

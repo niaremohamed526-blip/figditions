@@ -64,7 +64,7 @@ export function PromoCodeCard({ entrepriseId, isAdmin, compact = false, onSucces
     setSuccess({ plan: planLabel });
     fireConfetti();
     notifyEntrepriseUpdated();
-    toast.success(`🎉 Bienvenue dans le plan ${planLabel} !`, {
+    toast.success(`Bienvenue dans le plan ${planLabel} !`, {
       description: "Toutes les fonctionnalités sont débloquées.",
       duration: 5000,
       style: { borderLeft: "4px solid #C8922A" },

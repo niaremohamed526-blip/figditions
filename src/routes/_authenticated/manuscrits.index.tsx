@@ -1,4 +1,5 @@
 import { CHART_TOOLTIP_STYLE } from "@/lib/chart-style";
+import { pl } from "@/lib/plural";
 import { createFileRoute } from "@tanstack/react-router";
 import { useEffect, useMemo, useState } from "react";
 import { Plus, Search, BookOpen, Loader2, Pencil, Trash2, FileSpreadsheet } from "lucide-react";
@@ -134,7 +135,7 @@ function ManuscritsPage() {
             Suivez l'avancement de chaque ouvrage.
             {items && (
               <span className="ml-2 text-xs">
-                🏠 {originCounts.propre} publication(s) · 🌍 {originCounts.etranger} livre(s) étranger(s)
+                {pl(originCounts.propre, "publication", "publications")} · {pl(originCounts.etranger, "livre étranger", "livres étrangers")}
               </span>
             )}
           </p>
@@ -424,8 +425,8 @@ function ManuscritForm({
         >
           <SelectTrigger><SelectValue /></SelectTrigger>
           <SelectContent>
-            <SelectItem value="propre">🏠 Notre production (publié par nous)</SelectItem>
-            <SelectItem value="etranger">🌍 Livre étranger (édité ailleurs)</SelectItem>
+            <SelectItem value="propre">Notre production (publié par nous)</SelectItem>
+            <SelectItem value="etranger">Livre étranger (édité ailleurs)</SelectItem>
           </SelectContent>
         </Select>
       </div>
@@ -523,7 +524,7 @@ function EditorialAnalytics({ items }: { items: Manuscrit[] | null }) {
   if (!items) return <Skeleton className="h-24 w-full" />;
 
   return (
-    <AnalyticsSection title="📊 Analytiques éditoriales" range={range} setRange={setRange}>
+    <AnalyticsSection title="Analytiques éditoriales" range={range} setRange={setRange}>
       <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
         <MiniCard label="Relecture (moy.)" value={`${lectureAvg} j`} />
         <MiniCard label="Épreuve 1 (moy.)" value={`${correctionAvg} j`} />
@@ -532,7 +533,7 @@ function EditorialAnalytics({ items }: { items: Manuscrit[] | null }) {
       </div>
       <div className="grid lg:grid-cols-2 gap-4">
         <div className="rounded-xl border border-border bg-background/40 p-5">
-          <h3 className="font-semibold mb-3">⏱️ Temps moyen par étape éditoriale</h3>
+          <h3 className="font-semibold mb-3">Temps moyen par étape éditoriale</h3>
           <div className="h-64">
             {stageAvg.every((s) => s.days === 0) ? <EmptyChart /> : (
               <ResponsiveContainer width="100%" height="100%">
@@ -554,7 +555,7 @@ function EditorialAnalytics({ items }: { items: Manuscrit[] | null }) {
           </div>
         </div>
         <div className="rounded-xl border border-border bg-background/40 p-5">
-          <h3 className="font-semibold mb-3">📅 Manuscrits ajoutés par mois</h3>
+          <h3 className="font-semibold mb-3">Manuscrits ajoutés par mois</h3>
           <div className="h-64">
             {perMonth.every((b) => b.count === 0) ? <EmptyChart /> : (
               <ResponsiveContainer width="100%" height="100%">

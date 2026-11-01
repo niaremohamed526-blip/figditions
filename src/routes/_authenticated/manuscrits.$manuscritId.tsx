@@ -119,7 +119,7 @@ function ManuscritDetailPage() {
     setProgress(100);
     setTimeout(() => { setUploading(false); setProgress(0); }, 400);
     if (updErr) return toast.error(updErr.message);
-    toast.success("✅ PDF enregistré");
+    toast.success("PDF enregistré");
     loadManuscrit();
   };
 
@@ -188,7 +188,7 @@ function ManuscritDetailPage() {
         <p className="text-muted-foreground mt-1">{m.auteur}{m.genre ? ` · ${m.genre}` : ""}{m.langue ? ` · ${m.langue}` : ""}</p>
         {m.origine === "etranger" && (
           <span className="mt-2 inline-flex items-center gap-1 rounded-full border border-[#C08A55]/40 bg-[#C08A55]/10 px-2.5 py-0.5 text-xs font-medium text-[#C08A55]">
-            🌍 Livre étranger{m.editeur_origine ? ` · ${m.editeur_origine}` : ""}
+            Livre étranger{m.editeur_origine ? ` · ${m.editeur_origine}` : ""}
           </span>
         )}
       </div>
@@ -196,7 +196,7 @@ function ManuscritDetailPage() {
       {/* Progression */}
       {m.origine !== "etranger" && (
         <section className="rounded-xl border border-border bg-card p-5">
-          <h2 className="font-semibold mb-4">📈 Progression éditoriale</h2>
+          <h2 className="font-semibold mb-4">Progression éditoriale</h2>
           <StatusStepper statut={m.statut} />
         </section>
       )}
@@ -261,7 +261,7 @@ function ManuscritDetailPage() {
       <section className="rounded-xl border border-border bg-card p-5">
         <div className="flex items-center gap-3 mb-4">
           <FileText className="h-5 w-5" style={{ color: "var(--primary)" }} />
-          <h2 className="font-semibold">📄 Fichier du manuscrit</h2>
+          <h2 className="font-semibold">Fichier du manuscrit</h2>
         </div>
 
         <input
@@ -335,7 +335,7 @@ function ManuscritDetailPage() {
           style={{ background: "rgba(232,184,75,0.1)", border: "1px solid rgba(232,184,75,0.3)", color: "var(--gold)" }}
         >
           <AlertTriangle className="h-4 w-4 mt-0.5 shrink-0" />
-          <span>⚠️ Uploadez d'abord un PDF pour pouvoir créer des liens de partage sécurisés</span>
+          <span>Uploadez d'abord un PDF pour pouvoir créer des liens de partage sécurisés</span>
         </div>
       )}
 

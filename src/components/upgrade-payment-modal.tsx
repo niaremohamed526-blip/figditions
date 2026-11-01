@@ -223,7 +223,7 @@ export function UpgradePaymentModal({ open, onOpenChange, plan, defaultPeriode =
                   style={{ color: "#C8922A" }}
                 >
                   <Ticket className="h-4 w-4" />
-                  <span>🎟️ J'ai un code promotionnel</span>
+                  <span>J'ai un code promotionnel</span>
                   <ChevronDown className={cn("h-4 w-4 transition-transform", promoOpen && "rotate-180")} />
                 </button>
                 {promoOpen && (

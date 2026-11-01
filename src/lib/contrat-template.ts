@@ -84,7 +84,7 @@ export const CHAMPS: { cle: string; label: string; groupe: string }[] = [
   { cle: "representant", label: "Représentant de la maison", groupe: "Éditeur" },
   { cle: "qualite_representant", label: "Qualité du représentant", groupe: "Éditeur" },
   { cle: "ville_maison", label: "Ville de la maison", groupe: "Éditeur" },
-  { cle: "livres", label: "Titre(s) des livres", groupe: "Ouvrages" },
+  { cle: "livres", label: "Titres des livres", groupe: "Ouvrages" },
   { cle: "collection", label: "Collection", groupe: "Ouvrages" },
   { cle: "format", label: "Format", groupe: "Ouvrages" },
   { cle: "type_couverture", label: "Couverture", groupe: "Ouvrages" },

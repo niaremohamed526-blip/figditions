@@ -1,4 +1,5 @@
 import { CHART_TOOLTIP_STYLE } from "@/lib/chart-style";
+import { pl } from "@/lib/plural";
 import { createFileRoute } from "@tanstack/react-router";
 import { CommissionFields } from "@/components/commission-fields";
 import { useEffect, useMemo, useState } from "react";
@@ -141,7 +142,7 @@ function StocksPage() {
   const statutOf = (rest: number, dep: number): { key: string; label: string; cls: string } => {
     if (rest === 0) return { key: "epuise", label: "✕ Épuisé", cls: "bg-red-500/15 text-red-400 border-red-500/30" };
     if (rest < 5) return { key: "critique", label: "! Critique", cls: "bg-red-500/15 text-red-400 border-red-500/30 animate-pulse" };
-    if (rest <= 20) return { key: "bas", label: "⚠ Bas", cls: "bg-orange-500/15 text-orange-400 border-orange-500/30" };
+    if (rest <= 20) return { key: "bas", label: "Bas", cls: "bg-orange-500/15 text-orange-400 border-orange-500/30" };
     return { key: "bon", label: "✓ Bon", cls: "bg-emerald-500/15 text-emerald-400 border-emerald-500/30" };
   };
 
@@ -847,8 +848,8 @@ function StockForm({
       });
       if (rpcErr) toast.error(`Entrepôt non mis à jour : ${rpcErr.message}`);
       else if (res?.warning) toast.warning(res.warning);
-      else if (deltaDeposes > 0) toast.success(`${deltaDeposes} ex. retiré(s) de l'entrepôt`);
-      else toast.success(`${-deltaDeposes} ex. rendu(s) à l'entrepôt`);
+      else if (deltaDeposes > 0) toast.success(`${pl(deltaDeposes, "ex. retiré", "ex. retirés")} de l'entrepôt`);
+      else toast.success(`${pl(-deltaDeposes, "ex. rendu", "ex. rendus")} à l'entrepôt`);
     }
 
     setLoading(false);
@@ -884,15 +885,15 @@ function StockForm({
         {existing ? (
           <p className="rounded-lg border border-border bg-background/40 px-3 py-2 text-xs text-muted-foreground">
             {form.provenance === "hors_stock"
-              ? "📤 Dépôt direct hors stock interne (aucune déduction de l'entrepôt)"
-              : "🏭 Livres prélevés depuis le stock interne"}
+              ? "Dépôt direct hors stock interne (aucune déduction de l'entrepôt)"
+              : "Livres prélevés depuis le stock interne"}
             <span className="mt-0.5 block opacity-70">La provenance ne peut pas être modifiée après création.</span>
           </p>
         ) : (
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
             {[
-              { v: "interne", icon: "🏭", t: "Depuis le stock interne", d: "Déduit les exemplaires de l'entrepôt" },
-              { v: "hors_stock", icon: "📤", t: "Hors stock interne", d: "Livres déjà dehors, aucune déduction de l'entrepôt" },
+              { v: "interne", t: "Depuis le stock interne", d: "Déduit les exemplaires de l'entrepôt" },
+              { v: "hors_stock", t: "Hors stock interne", d: "Livres déjà dehors, aucune déduction de l'entrepôt" },
             ].map((o) => (
               <button
                 key={o.v}
@@ -905,7 +906,7 @@ function StockForm({
                     : "border-border bg-background/40 hover:border-[color:var(--gold)]/30",
                 )}
               >
-                <p className="text-sm font-semibold text-foreground">{o.icon} {o.t}</p>
+                <p className="text-sm font-semibold text-foreground">{o.t}</p>
                 <p className="mt-0.5 text-[11px] text-muted-foreground">{o.d}</p>
               </button>
             ))}
@@ -929,7 +930,7 @@ function StockForm({
       {!existing && dejaEnPlace && (
         <div className="rounded-xl border border-[color:var(--gold)]/30 bg-[color:var(--gold)]/[0.07] p-4 space-y-1.5 text-sm animate-fade-in">
           <p className="text-xs font-semibold uppercase tracking-[1px] text-[color:var(--gold)]">
-            📦 Dépôt existant chez « {form.librairie_nom.trim()} »
+            Dépôt existant chez « {form.librairie_nom.trim()} »
           </p>
           <Row icon={<Package className="h-4 w-4" />} label="Stock actuel restant">
             <span className="font-semibold text-foreground">{dejaEnPlace.exemplaires_restants ?? 0}</span>
@@ -985,7 +986,7 @@ function StockForm({
         </div>
         {deltaVendus > 0 && Number(form.prix_unitaire_fcfa) > 0 && (
           <p className="pt-2 text-xs text-muted-foreground border-t border-border">
-            ✨ Une vente de <span className="text-primary font-medium">{deltaVendus} exemplaire(s)</span> sera enregistrée automatiquement avec une commission de {tauxComm} %{form.applique_droits_auteur ? " et 10 % de droits d'auteur" : " (sans droits d'auteur)"}.
+            Une vente de <span className="text-primary font-medium">{pl(deltaVendus, "exemplaire", "exemplaires")}</span> sera enregistrée automatiquement avec une commission de {tauxComm} %{form.applique_droits_auteur ? " et 10 % de droits d'auteur" : " (sans droits d'auteur)"}.
           </p>
         )}
       </div>
@@ -1075,7 +1076,7 @@ function InventoryAnalytics({ stocks, titreMap }: { stocks: Stock[]; titreMap: R
   const colors = ["#C8922A", "#E8B84B", "#3B82F6", "#F59E0B", "#8B5CF6", "#EC4899"];
 
   return (
-    <AnalyticsSection title="📊 Analytiques stocks" range={range} setRange={setRange}>
+    <AnalyticsSection title="Analytiques stocks" range={range} setRange={setRange}>
       <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
         <SummaryCard icon={<BookOpen />} label="En circulation" value={String(totalCirc)} />
         <SummaryCard icon={<ShoppingBag />} label="Vendus (total)" value={String(totalVendus)} accent="primary" />
@@ -1085,7 +1086,7 @@ function InventoryAnalytics({ stocks, titreMap }: { stocks: Stock[]; titreMap: R
 
       <div className="grid lg:grid-cols-2 gap-4">
         <div className="rounded-xl border border-border bg-background/40 p-5">
-          <h3 className="font-semibold mb-3">📦 Stock par librairie</h3>
+          <h3 className="font-semibold mb-3">Stock par librairie</h3>
           <div className="h-64">
             {byStore.length === 0 ? <EmptyChart /> : (
               <ResponsiveContainer width="100%" height="100%">
@@ -1103,7 +1104,7 @@ function InventoryAnalytics({ stocks, titreMap }: { stocks: Stock[]; titreMap: R
           </div>
         </div>
         <div className="rounded-xl border border-border bg-background/40 p-5">
-          <h3 className="font-semibold mb-3">📉 Évolution des ventes par livre</h3>
+          <h3 className="font-semibold mb-3">Évolution des ventes par livre</h3>
           <div className="h-64">
             {salesEvolution.titles.length === 0 ? <EmptyChart /> : (
               <ResponsiveContainer width="100%" height="100%">
@@ -1127,7 +1128,7 @@ function InventoryAnalytics({ stocks, titreMap }: { stocks: Stock[]; titreMap: R
           {critical.map((s) => (
             <div key={s.id} className="flex items-center justify-between gap-3 p-3 rounded-lg border border-red-500/30 bg-red-500/10">
               <p className="text-sm">
-                ⚠️ Stock critique: <span className="font-semibold">{titreMap[s.manuscrit_id] ?? "—"}</span> à {s.librairie_nom ?? "—"} : Plus que {s.exemplaires_restants} exemplaire(s)
+                Stock critique: <span className="font-semibold">{titreMap[s.manuscrit_id] ?? "—"}</span> à {s.librairie_nom ?? "—"} : Plus que {pl(s.exemplaires_restants, "exemplaire", "exemplaires")}
               </p>
               <Link to="/imprimeries" className="text-xs px-3 py-1.5 rounded-md bg-primary text-primary-foreground hover:bg-primary/90 whitespace-nowrap">
                 Contacter l'imprimeur

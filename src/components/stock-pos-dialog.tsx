@@ -307,7 +307,7 @@ export function StockPosDialog({
             style={{ background: "rgba(200,146,42,0.08)", border: "1px solid rgba(200,146,42,0.3)" }}
           >
             <span className="flex-1">
-              📋 Un brouillon non sauvegardé a été trouvé
+              Un brouillon non sauvegardé a été trouvé
               {draftFound.savedAt && (
                 <span className="text-muted-foreground"> (sauvegardé à {new Date(draftFound.savedAt).toLocaleTimeString("fr-FR", { hour: "2-digit", minute: "2-digit" })})</span>
               )}
@@ -323,11 +323,11 @@ export function StockPosDialog({
         {step === 2 && (lines.length > 0 || isDirty) && (
           <div className="flex flex-wrap items-center justify-between gap-2 text-xs">
             <span className="text-[color:var(--gold)] font-semibold">
-              📝 {pl(lines.length, "ligne saisie", "lignes saisies")} : non sauvegardé
+              {pl(lines.length, "ligne saisie", "lignes saisies")} : non sauvegardé
             </span>
             {lastSavedAt && (
               <span className="text-muted-foreground">
-                💾 Brouillon sauvegardé à {new Date(lastSavedAt).toLocaleTimeString("fr-FR", { hour: "2-digit", minute: "2-digit" })}
+                Brouillon sauvegardé à {new Date(lastSavedAt).toLocaleTimeString("fr-FR", { hour: "2-digit", minute: "2-digit" })}
               </span>
             )}
           </div>
@@ -365,8 +365,8 @@ export function StockPosDialog({
               </div>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
                 {[
-                  { v: "interne", icon: "🏭", t: "Depuis le stock interne", d: "Déduit les exemplaires de l'entrepôt" },
-                  { v: "hors_stock", icon: "📤", t: "Hors stock interne", d: "Livres déjà dehors : aucune déduction de l'entrepôt" },
+                  { v: "interne", t: "Depuis le stock interne", d: "Déduit les exemplaires de l'entrepôt" },
+                  { v: "hors_stock", t: "Hors stock interne", d: "Livres déjà dehors : aucune déduction de l'entrepôt" },
                 ].map((o) => (
                   <button
                     key={o.v}
@@ -379,7 +379,7 @@ export function StockPosDialog({
                         : "border-border bg-background/40 hover:border-[color:var(--gold)]/30",
                     )}
                   >
-                    <p className="text-sm font-semibold text-foreground">{o.icon} {o.t}</p>
+                    <p className="text-sm font-semibold text-foreground">{o.t}</p>
                     <p className="mt-0.5 text-[11px] text-muted-foreground">{o.d}</p>
                   </button>
                 ))}
@@ -411,7 +411,7 @@ export function StockPosDialog({
                 {librairieAdresse && <span className="text-muted-foreground truncate">— {librairieAdresse}</span>}
                 {provenance === "hors_stock" && (
                   <span className="flex-shrink-0 rounded-full border border-[color:var(--gold)]/40 bg-[color:var(--gold)]/10 px-2 py-0.5 text-[10px] font-semibold text-[color:var(--gold)]">
-                    📤 Hors stock interne
+                    Hors stock interne
                   </span>
                 )}
                 <span className="flex-shrink-0 rounded-full border border-orange-400/40 bg-orange-400/10 px-2 py-0.5 text-[10px] font-semibold text-orange-300">
@@ -550,7 +550,7 @@ export function StockPosDialog({
               >
                 {saving
                   ? <><Loader2 className="h-4 w-4 mr-2 animate-spin" /> Enregistrement…</>
-                  : <>Enregistrer {lines.length} dépôt(s)</>}
+                  : <>Enregistrer {pl(lines.length, "dépôt", "dépôts")}</>}
               </Button>
             </DialogFooter>
           </div>

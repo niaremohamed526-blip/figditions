@@ -501,7 +501,7 @@ function FinancesAnalytics({ ventes, manuscrits, aMap, mMap }: { ventes: VenteRo
   });
 
   return (
-    <AnalyticsSection title="📊 Analytiques financières" range={range} setRange={setRange}>
+    <AnalyticsSection title="Analytiques financières" range={range} setRange={setRange}>
       <div className="grid grid-cols-2 md:grid-cols-5 gap-3">
         <FCard label="Ce mois" value={fcfa(thisMonth)} />
         <FCard label="Mois dernier" value={fcfa(lastMonth)} />
@@ -510,7 +510,7 @@ function FinancesAnalytics({ ventes, manuscrits, aMap, mMap }: { ventes: VenteRo
         <FCard label="Moyenne mensuelle" value={fcfa(avg)} />
       </div>
       <div className="rounded-xl border border-border bg-background/40 p-5">
-        <h3 className="font-semibold mb-3">💹 Évolution du chiffre d'affaires</h3>
+        <h3 className="font-semibold mb-3">Évolution du chiffre d'affaires</h3>
         <div className="h-64">
           {months.every((m) => m.revenue === 0) ? <EmptyChart /> : (
             <ResponsiveContainer width="100%" height="100%">
@@ -529,7 +529,7 @@ function FinancesAnalytics({ ventes, manuscrits, aMap, mMap }: { ventes: VenteRo
       </div>
       <div className="rounded-xl border border-border bg-background/40 p-5">
         <div className="flex flex-wrap items-center justify-between gap-2 mb-3">
-          <h3 className="font-semibold">🏆 Livres les plus vendus</h3>
+          <h3 className="font-semibold">Livres les plus vendus</h3>
           <div className="flex gap-1.5">
             <button onClick={() => setSortKey("copies")} className={`text-xs px-3 py-1 rounded-md border ${sortKey === "copies" ? "bg-primary text-primary-foreground border-primary" : "border-border"}`}>Exemplaires</button>
             <button onClick={() => setSortKey("revenue")} className={`text-xs px-3 py-1 rounded-md border ${sortKey === "revenue" ? "bg-primary text-primary-foreground border-primary" : "border-border"}`}>Revenu</button>
@@ -538,7 +538,7 @@ function FinancesAnalytics({ ventes, manuscrits, aMap, mMap }: { ventes: VenteRo
         <BestSellingBooks books={rankings} limit={5} />
       </div>
       <div className="rounded-xl border border-border bg-background/40 p-5">
-        <h3 className="font-semibold mb-3">✍️ Suivi des droits d'auteur</h3>
+        <h3 className="font-semibold mb-3">Suivi des droits d'auteur</h3>
         {royaltiesByAuthor.size === 0 ? <EmptyChart label="Aucun droit d'auteur sur cette période" /> : (
           <div className="space-y-3">
             {[...royaltiesByAuthor.values()].map((r) => {

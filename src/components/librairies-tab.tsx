@@ -1,4 +1,5 @@
 import { useMemo, useState } from "react";
+import { pl } from "@/lib/plural";
 import { Store, Search, Eye, FileText, BookOpen, Loader2 } from "lucide-react";
 import { format } from "date-fns";
 import { toast } from "sonner";
@@ -213,14 +214,14 @@ export function LibrairiesTab({
 
                 <div className="p-4 space-y-4">
                   <p className="text-xs text-muted-foreground inline-flex items-center gap-1.5">
-                    <BookOpen className="h-3.5 w-3.5 text-primary" /> {g.titres} titre(s) déposé(s)
+                    <BookOpen className="h-3.5 w-3.5 text-primary" /> {pl(g.titres, "titre déposé", "titres déposés")}
                   </p>
 
                   {(() => {
                     const hs = g.rows.reduce((s, r) => s + (r.provenance === "hors_stock" ? (r.exemplaires_deposes ?? 0) : 0), 0);
                     return hs > 0 ? (
                       <p className="-mt-2 text-[11px] text-muted-foreground">
-                        📤 dont <span className="font-semibold text-[color:var(--gold)]">{hs} ex.</span> hors stock interne (dépôts directs)
+                        dont <span className="font-semibold text-[color:var(--gold)]">{hs} ex.</span> hors stock interne (dépôts directs)
                       </p>
                     ) : null;
                   })()}

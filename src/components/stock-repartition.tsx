@@ -38,12 +38,12 @@ export function StockRepartition({ entrepriseId }: { entrepriseId: string | null
 
       <div className="mt-3 grid grid-cols-2 gap-3 text-sm">
         <div className="rounded-lg border border-border bg-background/40 p-3">
-          <p className="text-muted-foreground text-xs">🏭 Entrepôt</p>
+          <p className="text-muted-foreground text-xs">Entrepôt</p>
           <p className="font-bold tabular-nums">{nf(t.interneDisponible)} ex.</p>
           <p className="text-xs text-[color:var(--gold)]">{t.stockTotal ? pctInt : 0}%</p>
         </div>
         <div className="rounded-lg border border-border bg-background/40 p-3">
-          <p className="text-muted-foreground text-xs">📦 Librairies</p>
+          <p className="text-muted-foreground text-xs">Librairies</p>
           <p className="font-bold tabular-nums">{nf(t.externeRestant)} ex.</p>
           <p className="text-xs text-[#C08A55]">{t.stockTotal ? pctExt : 0}%</p>
         </div>

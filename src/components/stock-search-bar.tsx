@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from "react";
+import { pl } from "@/lib/plural";
 import { Search, X } from "lucide-react";
 import { cn } from "@/lib/utils";
 
@@ -173,7 +174,7 @@ export function StockSearchBar({
       {activeTerm.trim() ? (
         <div className="flex flex-wrap items-center justify-between gap-2 rounded-xl border border-primary/15 bg-primary/[0.05] px-4 py-2.5 text-sm">
           <p className="text-muted-foreground">
-            Recherche : <span className="font-semibold text-primary">« {activeTerm.trim()} »</span> : {resultCount} livre(s) trouvé(s) sur {totalCount} au total
+            Recherche : <span className="font-semibold text-primary">« {activeTerm.trim()} »</span> : {pl(resultCount, "livre trouvé", "livres trouvés")} sur {totalCount} au total
           </p>
           <button
             type="button"
@@ -184,7 +185,7 @@ export function StockSearchBar({
           </button>
         </div>
       ) : (
-        <p className="text-xs text-muted-foreground">{resultCount} livre(s) trouvé(s)</p>
+        <p className="text-xs text-muted-foreground">{pl(resultCount, "livre trouvé", "livres trouvés")}</p>
       )}
     </div>
   );

@@ -19,7 +19,6 @@ export type Permissions = Partial<Record<PermissionKey, boolean>>;
 
 export interface PageDef {
   key: PermissionKey;
-  emoji: string;
   label: string;
   description: string;
   defaultOn: boolean;
@@ -27,18 +26,18 @@ export interface PageDef {
 }
 
 export const PAGES: PageDef[] = [
-  { key: "dashboard", emoji: "🏠", label: "Tableau de bord", description: "Accès aux statistiques générales", defaultOn: true },
-  { key: "medmo", emoji: "🤖", label: "PR MEDMO", description: "Assistant IA : conseils, données en direct et actions", defaultOn: true },
-  { key: "manuscrits", emoji: "📚", label: "Manuscrits", description: "Gérer les manuscrits et leur workflow", defaultOn: false },
-  { key: "auteurs", emoji: "✍️", label: "Auteurs", description: "Gérer les fiches auteurs", defaultOn: false },
-  { key: "stocks_interne", emoji: "🏭", label: "Stock Interne", description: "Gérer l'entrepôt et les mouvements", defaultOn: false },
-  { key: "stocks_externe", emoji: "🏪", label: "Stock Externe", description: "Gérer les dépôts en librairies", defaultOn: false },
-  { key: "finances", emoji: "💰", label: "Finances", description: "Accéder aux ventes et royalties", defaultOn: false },
-  { key: "contrats", emoji: "📄", label: "Contrats & Droits", description: "Créer et gérer les contrats d'édition et droits d'auteur", defaultOn: false },
-  { key: "conversions", emoji: "🔄", label: "Conversions", description: "Convertir des documents en ebook", defaultOn: false },
-  { key: "estimateur", emoji: "🧮", label: "Estimateur", description: "Calculer les coûts d'impression", defaultOn: false },
-  { key: "imprimeries", emoji: "🏭", label: "Imprimeries", description: "Consulter le répertoire des imprimeurs", defaultOn: false },
-  { key: "parametres", emoji: "⚙️", label: "Paramètres", description: "Réservé aux administrateurs", defaultOn: false, adminOnly: true },
+  { key: "dashboard", label: "Tableau de bord", description: "Accès aux statistiques générales", defaultOn: true },
+  { key: "medmo", label: "PR MEDMO", description: "Assistant IA : conseils, données en direct et actions", defaultOn: true },
+  { key: "manuscrits", label: "Manuscrits", description: "Gérer les manuscrits et leur workflow", defaultOn: false },
+  { key: "auteurs", label: "Auteurs", description: "Gérer les fiches auteurs", defaultOn: false },
+  { key: "stocks_interne", label: "Stock Interne", description: "Gérer l'entrepôt et les mouvements", defaultOn: false },
+  { key: "stocks_externe", label: "Stock Externe", description: "Gérer les dépôts en librairies", defaultOn: false },
+  { key: "finances", label: "Finances", description: "Accéder aux ventes et royalties", defaultOn: false },
+  { key: "contrats", label: "Contrats & Droits", description: "Créer et gérer les contrats d'édition et droits d'auteur", defaultOn: false },
+  { key: "conversions", label: "Conversions", description: "Convertir des documents en ebook", defaultOn: false },
+  { key: "estimateur", label: "Estimateur", description: "Calculer les coûts d'impression", defaultOn: false },
+  { key: "imprimeries", label: "Imprimeries", description: "Consulter le répertoire des imprimeurs", defaultOn: false },
+  { key: "parametres", label: "Paramètres", description: "Réservé aux administrateurs", defaultOn: false, adminOnly: true },
 ];
 
 export const PRESETS: { label: string; keys: PermissionKey[] }[] = [

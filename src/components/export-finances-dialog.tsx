@@ -113,7 +113,7 @@ export function ExportFinancesDialog({
         depenses: (dp ?? []) as Depense[],
       });
       pdf.save(reportFilename(entrepriseNom, from, to));
-      toast.success(lang === "fr" ? "✅ Rapport PDF téléchargé avec succès" : "✅ PDF report downloaded successfully");
+      toast.success(lang === "fr" ? "Rapport PDF téléchargé avec succès" : "PDF report downloaded successfully");
       onOpenChange(false);
     } catch (e: any) {
       toast.error(e?.message ?? "Erreur lors de la génération du PDF");
@@ -149,14 +149,14 @@ export function ExportFinancesDialog({
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
         <DialogHeader>
-          <DialogTitle>📄 Exporter le rapport financier</DialogTitle>
+          <DialogTitle>Exporter le rapport financier</DialogTitle>
           <DialogDescription>Choisissez les informations à inclure dans votre rapport PDF</DialogDescription>
         </DialogHeader>
 
         <div className="space-y-5 mt-2">
           {/* Période */}
           <section className="space-y-3">
-            <h3 className="text-sm font-semibold">📅 Période</h3>
+            <h3 className="text-sm font-semibold">Période</h3>
             <div className="flex flex-wrap gap-2">
               {presetBtn("mois", "Ce mois")}
               {presetBtn("3mois", "3 mois")}
@@ -179,7 +179,7 @@ export function ExportFinancesDialog({
 
           {/* Sections */}
           <section className="space-y-2">
-            <h3 className="text-sm font-semibold">📋 Sections à inclure</h3>
+            <h3 className="text-sm font-semibold">Sections à inclure</h3>
             <p className="text-xs text-muted-foreground">Cochez les sections à inclure dans le rapport</p>
             <div className="grid sm:grid-cols-2 gap-2">
               {sectionRow("resume", "Résumé exécutif", "Vue d'ensemble des performances financières")}
@@ -196,7 +196,7 @@ export function ExportFinancesDialog({
 
           {/* Langue */}
           <section className="space-y-2">
-            <h3 className="text-sm font-semibold">🌍 Langue du rapport</h3>
+            <h3 className="text-sm font-semibold">Langue du rapport</h3>
             <RadioGroup value={lang} onValueChange={(v) => setLang(v as ReportLang)} className="flex gap-6">
               <label className="flex items-center gap-2 cursor-pointer">
                 <RadioGroupItem value="fr" id="lang-fr" />
