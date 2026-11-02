@@ -28,7 +28,7 @@ const FAQS = [
   },
   {
     question: "Est-ce que ça fonctionne sans internet ?",
-    answer: "Oui pour consulter. FIGDITIONS s'installe comme une application sur votre téléphone ou votre ordinateur. Pendant une coupure, toutes vos pages s'ouvrent avec les dernières données enregistrées sur l'appareil. Pour enregistrer une vente ou modifier une fiche, il faut la connexion : l'application vous le dit clairement et rien n'est envoyé à moitié.",
+    answer: "Oui pour consulter. FIGDITIONS s'installe comme une application sur votre téléphone ou votre ordinateur. Pendant une coupure, l'application s'ouvre et affiche les dernières données que vous avez consultées sur l'appareil. Pour enregistrer une vente ou modifier une fiche, il faut la connexion : l'application vous le dit clairement et rien n'est envoyé à moitié.",
   },
   {
     question: "Comment payer mon abonnement ?",
