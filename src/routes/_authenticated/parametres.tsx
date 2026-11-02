@@ -27,6 +27,7 @@ import { PromoCodeCard } from "@/components/promo-code-card";
 import { PaymentResultModal } from "@/components/payment-result-modal";
 import { fcfa } from "@/lib/format";
 import { SecurityCard } from "@/components/security-card";
+import { PdfFiligraneCard } from "@/components/pdf-filigrane-card";
 import { NotificationsCard } from "@/components/notifications-card";
 import { ConfigStatusSection } from "@/components/config-status-section";
 import {
@@ -148,8 +149,9 @@ function ParametresPage() {
         </TabsContent>
 
         {isAdmin && (
-          <TabsContent value="maison" className="mt-6">
+          <TabsContent value="maison" className="mt-6 space-y-6">
             <MaisonSection entreprise={entreprise} />
+            <PdfFiligraneCard entreprise={entreprise} />
           </TabsContent>
         )}
 
@@ -422,6 +424,7 @@ function MaisonSection({ entreprise }: { entreprise: any }) {
     if (newUrl) {
       setCachetUrl(newUrl);
       await supabase.from("entreprises").update({ cachet_url: newUrl } as any).eq("id", entreprise.id);
+      notifyEntrepriseUpdated();
       toast.success("Cachet mis à jour");
     }
     setUploadingCachet(false);
@@ -430,8 +433,8 @@ function MaisonSection({ entreprise }: { entreprise: any }) {
   return (
     <div className="rounded-xl border border-border bg-card p-6 space-y-6">
       <div className="flex items-center gap-2">
-        <Building2 className="h-5 w-5 text-primary" />
-        <h2 className="font-semibold">Profil de la maison d'édition</h2>
+        <Building2 className="h-5 w-5 shrink-0 text-primary" />
+        <h2 className="text-lg font-semibold">Profil de la maison d'édition</h2>
       </div>
 
       <div className="grid sm:grid-cols-2 gap-6">
@@ -444,7 +447,7 @@ function MaisonSection({ entreprise }: { entreprise: any }) {
             <Button variant="outline" onClick={() => fileRef.current?.click()} disabled={uploading}>
               {uploading ? <Loader2 className="h-4 w-4 animate-spin" /> : <><Upload className="h-4 w-4" /> Logo</>}
             </Button>
-            <p className="text-xs text-muted-foreground mt-1">PNG/JPG · max 2 Mo</p>
+            <p className="text-xs text-muted-foreground mt-1">PNG/JPG · max 10 Mo</p>
           </div>
         </div>
         <div className="flex items-center gap-4">

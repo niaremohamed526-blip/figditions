@@ -241,7 +241,9 @@ export function CreancesLibrairies({
               onClick={() => {
                 if (!recu) return;
                 const clean = recu.librairieNom.replace(/[^a-zA-Z0-9]+/g, "_").slice(0, 30);
-                generateRecuLibrairiePdf(recu).save(`${recu.numero}_${clean}.pdf`);
+                generateRecuLibrairiePdf(recu)
+                  .then((pdf) => pdf.save(`${recu.numero}_${clean}.pdf`))
+                  .catch(() => toast.error("Le reçu PDF n'a pas pu être créé. Réessayez."));
               }}
             >
               <Download className="h-4 w-4" /> Reçu PDF

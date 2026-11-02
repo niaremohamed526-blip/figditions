@@ -91,7 +91,7 @@ export function ExportFinancesDialog({
       const prevFrom = isoDay(new Date(new Date(prevTo).getTime() - days * 86400 * 1000));
       const prevV = await fetchAllRows<Vente>(() => supabase.from("ventes").select("*").eq("statut_annulation", "active").gte("date_vente", prevFrom).lte("date_vente", prevTo));
 
-      const pdf = generateFinanceReport({
+      const pdf = await generateFinanceReport({
         lang,
         from,
         to,

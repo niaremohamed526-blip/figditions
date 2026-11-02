@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from "react";
+import { Link } from "@tanstack/react-router";
 import { pl } from "@/lib/plural";
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetDescription } from "@/components/ui/sheet";
 import { Button } from "@/components/ui/button";
@@ -23,8 +24,6 @@ import { cn } from "@/lib/utils";
 import { UnsavedChangesModal } from "@/components/unsaved-changes-modal";
 import { useCloseGuard } from "@/hooks/useCloseGuard";
 import { generateFactureVentePdf, type FactureVenteData } from "@/lib/pdf-facture-vente";
-import { FactureWatermarkUploader } from "@/components/facture-watermark-uploader";
-import { getFactureWatermark } from "@/lib/facture-watermark";
 
 interface Manuscrit { id: string; titre: string; auteur: string | null; auteur_id: string | null; statut: string; origine?: string | null; }
 interface StockRow {
@@ -162,7 +161,6 @@ export function RecordSaleDrawer({
   const [addingLine, setAddingLine] = useState(false);
   const qtyRefs = useRef<Record<string, HTMLInputElement | null>>({});
   const [focusLine, setFocusLine] = useState<string | null>(null);
-  const watermarkPickerActiveRef = useRef(false);
 
   const [saving, setSaving] = useState(false);
   const [success, setSuccess] = useState<RecordSaleResult | null>(null);
@@ -467,7 +465,6 @@ export function RecordSaleDrawer({
       remiseFcfa: p.remiseFcfa,
       total: p.total,
       notes: p.notes,
-      watermarkLogoUrl: getFactureWatermark(),
     };
     try {
       await generateFactureVentePdf(d, "download");
@@ -488,10 +485,7 @@ export function RecordSaleDrawer({
     <>
     <Sheet
       open={open}
-      onOpenChange={(nextOpen) => {
-        if (!nextOpen && watermarkPickerActiveRef.current) return;
-        guard.handleOpenChange(nextOpen);
-      }}
+      onOpenChange={(nextOpen) => guard.handleOpenChange(nextOpen)}
     >
       <SheetContent side="right" className="bg-card border-border w-full sm:max-w-lg overflow-y-auto">
         <SheetHeader>
@@ -723,11 +717,10 @@ export function RecordSaleDrawer({
                       <Textarea value={notes} onChange={(e) => setNotes(e.target.value)} rows={2} placeholder="Commentaire sur cette vente…" />
                     </div>
 
-                    <FactureWatermarkUploader
-                      onPickerActiveChange={(active) => {
-                        watermarkPickerActiveRef.current = active;
-                      }}
-                    />
+                    <p className="text-xs text-muted-foreground">
+                      La facture porte le logo FIGDITIONS et votre logo en filigrane. Réglage dans{" "}
+                      <Link to="/parametres" className="text-primary underline-offset-2 hover:underline">Paramètres, Maison d'édition</Link>.
+                    </p>
 
                     {/* Récapitulatif */}
                     <div className="rounded-xl border border-[color:var(--gold)]/30 bg-[color:var(--gold)]/5 p-4 space-y-2">

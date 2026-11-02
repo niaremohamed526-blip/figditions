@@ -1,19 +1,8 @@
 import jsPDF from "jspdf";
-import { FIGDITIONS_SITE_LOGO_URL as figditionsLogoUrl } from "@/lib/brand-assets";
+import { chargerMarquePdf, dessinerEnteteSuite, finaliserPdf, PDF } from "@/lib/pdf-theme";
 
-async function urlToDataUrl(url: string): Promise<string> {
-  const res = await fetch(url);
-  const blob = await res.blob();
-  return new Promise((resolve, reject) => {
-    const r = new FileReader();
-    r.onloadend = () => resolve(r.result as string);
-    r.onerror = reject;
-    r.readAsDataURL(blob);
-  });
-}
-
-const BRAND = "#1a1a1a";
-const GOLD = "#c9a961";
+const BRAND = PDF.ink;
+const GOLD = PDF.gold;
 const MUTED = "#666666";
 const RULE = "#dcdcdc";
 const BG_SOFT = "#f5f2ea";
@@ -38,6 +27,7 @@ function clean(s: string): string {
 }
 
 export async function generateManuelStocksPdf(opts: { maison?: string | null } = {}) {
+  const marque = await chargerMarquePdf();
   const doc = new jsPDF({ unit: "pt", format: "a4" });
   const W = doc.internal.pageSize.getWidth();
   const H = doc.internal.pageSize.getHeight();
@@ -64,41 +54,28 @@ export async function generateManuelStocksPdf(opts: { maison?: string | null } =
   };
 
   const ensureSpace = (needed: number) => {
-    if (y + needed > H - M) {
-      addFooter();
+    if (y + needed > H - 64) {
       doc.addPage();
-      y = M;
       addHeader();
     }
   };
 
-  let pageNumber = 0;
+  // Same header and footer as every FIGDITIONS PDF (footer drawn by finaliserPdf).
   const addHeader = () => {
-    pageNumber++;
-    setColor(MUTED);
-    doc.setFont("helvetica", "normal");
-    doc.setFontSize(8);
-    doc.text("FIGDITIONS - Manuel Stocks", M, 24);
-    doc.text(`Page ${pageNumber}`, W - M, 24, { align: "right" });
-    setDraw(RULE);
-    doc.setLineWidth(0.5);
-    doc.line(M, 30, W - M, 30);
-    y = M;
-  };
-  const addFooter = () => {
-    setColor(MUTED);
-    doc.setFontSize(8);
-    doc.text("(c) FIGDITIONS - Guide d'utilisation", M, H - 20);
+    y = dessinerEnteteSuite(doc, marque, "Manuel · Gestion des stocks");
   };
 
   // ─── COVER ─────────────────────────────────────────────
-  try {
-    const logoData = await urlToDataUrl(figditionsLogoUrl);
-    doc.addImage(logoData, "PNG", (W - 140) / 2, 120, 140, 140, undefined, "FAST");
-  } catch { /* ignore */ }
+  doc.setFillColor(PDF.gold);
+  doc.rect(0, 0, W, 6, "F");
+  if (marque.figditions) {
+    const k = Math.min(200 / marque.figditions.w, 120 / marque.figditions.h);
+    const lw = marque.figditions.w * k, lh = marque.figditions.h * k;
+    try { doc.addImage(marque.figditions.dataUrl, "PNG", (W - lw) / 2, 250 - lh, lw, lh, "figditions-logo", "FAST"); } catch { /* ignore */ }
+  }
 
   setColor(BRAND);
-  doc.setFont("times", "bold");
+  doc.setFont("helvetica", "bold");
   doc.setFontSize(30);
   doc.text("Manuel d'utilisation", W / 2, 300, { align: "center" });
   doc.setFontSize(20);
@@ -135,10 +112,11 @@ export async function generateManuelStocksPdf(opts: { maison?: string | null } =
 
   // ─── HELPERS ───────────────────────────────────────────
   const h1 = (text: string) => {
-    ensureSpace(60);
+    if (y > 100) y += 16;
+    ensureSpace(70);
     setColor(BRAND);
-    doc.setFont("times", "bold");
-    doc.setFontSize(22);
+    doc.setFont("helvetica", "bold");
+    doc.setFontSize(19);
     doc.text(clean(text), M, y + 20);
     setDraw(GOLD);
     doc.setLineWidth(1.2);
@@ -146,6 +124,7 @@ export async function generateManuelStocksPdf(opts: { maison?: string | null } =
     y += 50;
   };
   const h2 = (text: string) => {
+    y += 8;
     ensureSpace(40);
     setColor(BRAND);
     doc.setFont("helvetica", "bold");
@@ -241,7 +220,7 @@ export async function generateManuelStocksPdf(opts: { maison?: string | null } =
     "2. Stock interne : vos livres chez vous",
     "3. Stock externe : vos livres en librairie",
     "4. Enregistrer les ventes",
-    "5. Bordereaux (plan Business)",
+    "5. Bordereaux (plans Pro et Business)",
     "6. Comprendre les calculs",
     "7. Questions fréquentes",
     "8. Support",
@@ -379,10 +358,10 @@ export async function generateManuelStocksPdf(opts: { maison?: string | null } =
   bullet("Vente libre : le Stock interne diminue, un mouvement de type « vente libre » est enregistré, et une ligne apparaît dans Ventes sans commission libraire.");
   bullet("Si le stock passe sous le seuil d'alerte, une notification jaune s'affiche pour vous prévenir.");
 
-  callout("Attention", "Vérifiez toujours la quantité avant de valider : une vente enregistrée diminue immédiatement le stock. En cas d'erreur, ouvrez la page Finances → Ventes pour supprimer ou corriger l'enregistrement.", "warn");
+  callout("Attention", "Vérifiez toujours la quantité avant de valider : une vente enregistrée diminue immédiatement le stock. En cas d'erreur, ouvrez la page Finances, onglet Ventes, pour annuler la vente puis la saisir à nouveau.", "warn");
 
   // ─── 5. Bordereaux ─────────────────────────────────────
-  h1("5. Bordereaux (plan Business)");
+  h1("5. Bordereaux (plans Pro et Business)");
   p("Un bordereau est un document officiel PDF, à faire signer par vous et le libraire. Il sert de preuve pour le dépôt ou la vente.");
 
   h2("Générer un bordereau");
@@ -401,7 +380,7 @@ export async function generateManuelStocksPdf(opts: { maison?: string | null } =
   bullet("Récapitulatif : chiffre d'affaires, commission 20 %, droits auteur 10 %, net éditeur.");
   bullet("Deux zones de signature (éditeur et libraire).");
 
-  callout("Attention", "La génération de bordereaux est réservée au plan Business. Si vous êtes sur Starter ou Pro, un écran vous propose la mise à niveau.", "warn");
+  callout("Attention", "La génération de bordereaux est incluse dans les plans Pro et Business. Sur le plan Starter, un écran vous propose de passer au plan Pro.", "warn");
 
   // ─── 6. Calculs ────────────────────────────────────────
   h1("6. Comprendre les calculs");
@@ -479,12 +458,11 @@ export async function generateManuelStocksPdf(opts: { maison?: string | null } =
   h1("8. Support");
   p("Une question, un bug, une suggestion ? L'équipe FIGDITIONS est joignable :");
   bullet("Email : figditions@gmail.com");
-  bullet("Depuis l'application : Paramètres → Support");
+  bullet("WhatsApp : +233 53 526 4616");
   p("Nous répondons en général sous 24 heures ouvrées.");
 
   callout("Merci !", "Nous espérons que ce manuel vous rendra la gestion des stocks plus simple et plus rapide. Bonne édition !", "example");
 
-  addFooter();
-
+  finaliserPdf(doc, marque, "Manuel d'utilisation · Gestion des stocks");
   doc.save(`Manuel-Stocks-FIGDITIONS.pdf`);
 }

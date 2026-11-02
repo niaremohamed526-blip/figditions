@@ -1,5 +1,7 @@
 import jsPDF from "jspdf";
 import { pl } from "@/lib/plural";
+import { calculerResultat, coutUnitaireParLivre } from "@/lib/finance-calc";
+import { chargerMarquePdf, dessinerEnteteSuite, dessinerTableau, finaliserPdf, PDF, type Cellule, type MarquePdf } from "@/lib/pdf-theme";
 
 export type ReportLang = "fr" | "en";
 
@@ -59,9 +61,24 @@ export interface ReportInput {
 const T = {
   fr: {
     title: "RAPPORT FINANCIER",
+    kpiVsAvant: "vs période précédente",
+    depenseUn: "dépense", depensePlusieurs: "dépenses",
+    kpiResultatSub: "Ventes - commissions - droits - impression - dépenses",
+    canal: "Vendu par",
+    droitsStatut: "Droits",
+    venteUn: "vente", ventePlusieurs: "ventes",
+    resteAPayer: "Reste à payer",
+    reste: "Reste dû",
+    titresCol: "Titres",
+    etrangers: "LIVRES ÉTRANGERS DISTRIBUÉS",
+    commission: "Commission",
+    net: "Net",
+    etrangersNote: "Aucun droit d'auteur n'est calculé sur ces ventes : les livres appartiennent à d'autres maisons d'édition.",
+    epuise: "Épuisé", stockBas: "Stock bas", disponible: "Disponible",
+    ventesMontant: "Ventes",
     period: (a: string, b: string) => `Du ${a} au ${b}`,
     generatedAt: (d: string) => `Généré le ${d}`,
-    confidential: "Confidentiel, usage interne",
+    confidential: "Document confidentiel, usage interne",
     resume: "RÉSUMÉ EXÉCUTIF",
     ventes: "DÉTAIL DES VENTES",
     droits: "DROITS D'AUTEUR",
@@ -75,7 +92,7 @@ const T = {
     kpiEncaisse: "Encaissé",
     kpiAEncaisser: "À encaisser",
     kpiDepenses: "Dépenses",
-    kpiResultat: "Résultat net estimé",
+    kpiResultat: "Bénéfice de la période",
     depenses: "DÉPENSES",
     rentabilite: "RENTABILITÉ PAR LIVRE",
     categorie: "Catégorie",
@@ -84,12 +101,12 @@ const T = {
     investi: "Investi",
     coutProd: "Coût production",
     marge: "Marge",
-    resultatCol: "Résultat",
+    resultatCol: "Bénéfice",
     seuilRent: "Seuil (ex.)",
     encaisseCol: "Encaissé",
     nonLiees: "Charges globales",
     depensesText: (n: number, total: string) => `${pl(n, "dépense déclarée", "dépenses déclarées")} sur la période pour un total de ${total}.`,
-    rentabiliteText: "Investi = coût de production (impressions) + dépenses liées au livre. Résultat = encaissé - commissions - droits d'auteur - investi.",
+    rentabiliteText: "Bénéfice = ventes - commissions - droits d'auteur - impression des exemplaires vendus - dépenses du livre. Les exemplaires non vendus restent du stock. Investi = tout le tirage imprimé + dépenses du livre. Seuil = exemplaires à vendre pour rembourser l'investissement.",
     fcfa: "FCFA",
     transactions: "transactions",
     copies: "exemplaires vendus",
@@ -114,7 +131,7 @@ const T = {
     remise: "Remise",
     remisesLigne: (r: string) => `Remises accordées sur la période (ventes libres) : ${r}.`,
     grandDroits: "TOTAL GÉNÉRAL DES DROITS",
-    subtotal: (n: string) => `Total droits ${n}`,
+    subtotal: (n: string) => `Total ${n}`,
     contact: "Contact",
     mm: "Mobile Money",
     ventesCol: "Ventes",
@@ -143,15 +160,30 @@ const T = {
       `Durant la période du ${a} au ${b}, ${nom} a enregistré ${pl(nv, "vente", "ventes")} pour un chiffre d'affaires total de ${ca}. ${pl(na, "auteur a", "auteurs ont")} généré des droits s'élevant à ${dr}, dont ${pa} ont été réglés.`,
     footer: (nom: string, d: string) =>
       `Ce rapport a été généré automatiquement par FIGDITIONS le ${d}. Les données présentées sont confidentielles et destinées à l'usage exclusif de ${nom}.`,
-    tagline: "FIGDITIONS - La plateforme des maisons d'edition",
+    tagline: "FIGDITIONS · La plateforme des maisons d'édition · figditions.xyz",
     site: "figditions.xyz",
-    headerRight: (a: string, b: string) => `Rapport Financier - ${a} au ${b}`,
+    headerRight: (a: string, b: string) => `Rapport financier du ${a} au ${b}`,
     page: "Page",
     of: "/",
     suite: "Suite page suivante",
   },
   en: {
     title: "FINANCIAL REPORT",
+    kpiVsAvant: "vs previous period",
+    depenseUn: "expense", depensePlusieurs: "expenses",
+    kpiResultatSub: "Sales - commissions - royalties - printing - expenses",
+    canal: "Sold by",
+    droitsStatut: "Royalties",
+    venteUn: "sale", ventePlusieurs: "sales",
+    resteAPayer: "Left to pay",
+    reste: "Left",
+    titresCol: "Titles",
+    etrangers: "DISTRIBUTED FOREIGN BOOKS",
+    commission: "Commission",
+    net: "Net",
+    etrangersNote: "No royalties apply to these sales: the titles belong to other publishers.",
+    epuise: "Sold out", stockBas: "Low stock", disponible: "Available",
+    ventesMontant: "Sales",
     period: (a: string, b: string) => `From ${a} to ${b}`,
     generatedAt: (d: string) => `Generated on ${d}`,
     confidential: "Confidential - Internal use",
@@ -168,7 +200,7 @@ const T = {
     kpiEncaisse: "Collected",
     kpiAEncaisser: "Outstanding",
     kpiDepenses: "Expenses",
-    kpiResultat: "Estimated net result",
+    kpiResultat: "Profit for the period",
     depenses: "EXPENSES",
     rentabilite: "PER BOOK PROFITABILITY",
     categorie: "Category",
@@ -177,12 +209,12 @@ const T = {
     investi: "Invested",
     coutProd: "Production cost",
     marge: "Margin",
-    resultatCol: "Result",
+    resultatCol: "Profit",
     seuilRent: "Break-even (copies)",
     encaisseCol: "Collected",
     nonLiees: "Global charges",
     depensesText: (n: number, total: string) => `${pl(n, "expense", "expenses")} recorded over the period for a total of ${total}.`,
-    rentabiliteText: "Invested = production cost (printing) + book-linked expenses. Result = collected - commissions - royalties - invested.",
+    rentabiliteText: "Profit = sales - commissions - royalties - printing of the copies sold - book expenses. Unsold copies remain stock. Invested = whole print run + book expenses. Break-even = copies to sell to pay back the investment.",
     fcfa: "FCFA",
     transactions: "transactions",
     copies: "copies sold",
@@ -207,7 +239,7 @@ const T = {
     remise: "Discount",
     remisesLigne: (r: string) => `Discounts granted over the period (direct sales): ${r}.`,
     grandDroits: "GRAND TOTAL ROYALTIES",
-    subtotal: (n: string) => `${n} - royalties subtotal`,
+    subtotal: (n: string) => `Total ${n}`,
     contact: "Contact",
     mm: "Mobile Money",
     ventesCol: "Sales",
@@ -236,9 +268,9 @@ const T = {
       `From ${a} to ${b}, ${nom} recorded ${pl(nv, "sale", "sales")} for a total revenue of ${ca}. ${pl(na, "author", "authors")} generated royalties amounting to ${dr}, of which ${pa} has been paid.`,
     footer: (nom: string, d: string) =>
       `This report was automatically generated by FIGDITIONS on ${d}. The data is confidential and intended for the exclusive use of ${nom}.`,
-    tagline: "FIGDITIONS - West Africa's publishing platform",
+    tagline: "FIGDITIONS · The publishing house platform · figditions.xyz",
     site: "figditions.xyz",
-    headerRight: (a: string, b: string) => `Financial Report - ${a} to ${b}`,
+    headerRight: (a: string, b: string) => `Financial report, ${a} to ${b}`,
     page: "Page",
     of: "/",
     suite: "Continued on next page",
@@ -246,11 +278,7 @@ const T = {
 };
 
 // ---------- helpers ----------
-const GOLD = "#C8922A";
-const DARK = "#0D0A06";
-const ROW_ALT = "#F9F7F4";
-const TOTAL_BG = "#F0EBE3";
-const BORDER = "#E0D5C8";
+const GOLD = PDF.goldDark;
 
 // Strip any characters outside WinAnsi-safe range (jsPDF built-in fonts).
 // Keeps ASCII + French accents; replaces smart quotes/dashes/emoji with plain equivalents.
@@ -271,6 +299,9 @@ function clean(s: string): string {
 function readableValue(value: string | null | undefined): string {
   return clean(String(value ?? "").replace(/[_-]+/g, " ").replace(/\s+/g, " ").trim());
 }
+const fmtN = (n: number | null | undefined) => clean(new Intl.NumberFormat("fr-FR").format(Math.round(Number(n) || 0)));
+/** Table header with the currency, so cells can show plain numbers. */
+const fc = (h: string) => `${h} (FCFA)`;
 const fmtFCFA = (n: number) => clean(new Intl.NumberFormat("fr-FR").format(Math.round(n || 0))) + " FCFA";
 const fmtDate = (d: string | null | undefined) => {
   if (!d) return "-";
@@ -290,23 +321,26 @@ function truncate(txt: string, max: number): string {
 // ---------- PDF Builder ----------
 class PdfBuilder {
   doc: jsPDF;
-  page = 1;
   cursorY = 0;
   input: ReportInput;
   t: (typeof T)["fr"];
-  marginX = 40;
-  marginTop = 60;
-  marginBottom = 50;
+  marque: MarquePdf;
+  marginX = PDF.marge;
+  marginBottom = 64;
 
-  constructor(input: ReportInput) {
+  constructor(input: ReportInput, marque: MarquePdf) {
     this.doc = new jsPDF({ unit: "pt", format: "a4" });
     this.input = input;
     this.t = T[input.lang];
+    this.marque = marque;
   }
 
   get pageWidth() { return this.doc.internal.pageSize.getWidth(); }
   get pageHeight() { return this.doc.internal.pageSize.getHeight(); }
   get contentWidth() { return this.pageWidth - this.marginX * 2; }
+  get titreSuite() {
+    return `${clean(this.input.entrepriseNom)} · ${this.t.headerRight(fmtDate(this.input.from), fmtDate(this.input.to))}`;
+  }
 
   addPageIfNeeded(needed: number) {
     if (this.cursorY + needed > this.pageHeight - this.marginBottom) {
@@ -316,222 +350,171 @@ class PdfBuilder {
 
   newPage() {
     this.doc.addPage();
-    this.page += 1;
-    this.drawHeader();
-    this.cursorY = this.marginTop + 10;
+    this.cursorY = dessinerEnteteSuite(this.doc, this.marque, this.titreSuite);
   }
 
-  drawHeader() {
+  /** Text line whose top sits at cursorY; moves the cursor below it. */
+  ligne(txt: string, opts: { taille?: number; style?: "normal" | "bold" | "italic"; couleur?: string; espace?: number } = {}) {
+    const taille = opts.taille ?? 9.5;
+    // A single line may use the space just above the footer.
+    if (this.cursorY + taille * 1.4 > this.pageHeight - 50) this.newPage();
     const d = this.doc;
-    d.setFont("helvetica", "normal");
-    d.setFontSize(9);
-    d.setTextColor("#666");
-    d.text(this.input.entrepriseNom, this.marginX, 30);
-    const right = this.t.headerRight(fmtDate(this.input.from), fmtDate(this.input.to));
-    d.text(right, this.pageWidth - this.marginX, 30, { align: "right" });
-    d.setDrawColor(GOLD);
-    d.setLineWidth(0.8);
-    d.line(this.marginX, 40, this.pageWidth - this.marginX, 40);
-  }
-
-  drawPageNumbers(total: number) {
-    const d = this.doc;
-    for (let i = 2; i <= total; i++) {
-      d.setPage(i);
-      d.setFont("helvetica", "italic");
-      d.setFontSize(8);
-      d.setTextColor("#888");
-      d.text(`${this.t.page} ${i} ${this.t.of} ${total}`, this.pageWidth - this.marginX, this.pageHeight - 20, { align: "right" });
-    }
+    d.setFont("helvetica", opts.style ?? "normal");
+    d.setFontSize(taille);
+    d.setTextColor(opts.couleur ?? PDF.ink);
+    const lignes = d.splitTextToSize(txt, this.contentWidth) as string[];
+    d.text(lignes, this.marginX, this.cursorY + taille * 0.9);
+    this.cursorY += lignes.length * taille * 1.35 + (opts.espace ?? 4);
   }
 
   // ---------- Cover ----------
   drawCover() {
     const d = this.doc;
-    d.setFillColor(DARK);
-    d.rect(0, 0, this.pageWidth, this.pageHeight, "F");
+    const W = this.pageWidth;
+    const H = this.pageHeight;
+    d.setFillColor(PDF.gold);
+    d.rect(0, 0, W, 6, "F");
 
-    // top gold line
-    d.setDrawColor(GOLD);
-    d.setLineWidth(1.5);
-    d.line(this.marginX, 120, this.pageWidth - this.marginX, 120);
+    let y = 170;
+    if (this.marque.figditions) {
+      const img = this.marque.figditions;
+      const k = Math.min(220 / img.w, 110 / img.h);
+      try { d.addImage(img.dataUrl, "PNG", (W - img.w * k) / 2, y, img.w * k, img.h * k, "figditions-logo", "FAST"); } catch { /* noop */ }
+      y += img.h * k + 60;
+    } else {
+      d.setFont("helvetica", "bold");
+      d.setFontSize(28);
+      d.setTextColor(PDF.goldDark);
+      d.text("FIGDITIONS", W / 2, y + 40, { align: "center" });
+      y += 110;
+    }
 
-    // Brand
+    d.setDrawColor(PDF.gold);
+    d.setLineWidth(1.2);
+    d.line(W / 2 - 40, y, W / 2 + 40, y);
+    y += 50;
+
     d.setFont("helvetica", "bold");
-    d.setFontSize(28);
-    d.setTextColor(GOLD);
-    d.text("FIGDITIONS", this.pageWidth / 2, 100, { align: "center" });
-
-    // Title
-    d.setFont("helvetica", "bold");
-    d.setFontSize(32);
-    d.setTextColor("#FFFFFF");
-    d.text(this.t.title, this.pageWidth / 2, this.pageHeight / 2 - 40, { align: "center" });
+    d.setFontSize(30);
+    d.setTextColor(PDF.ink);
+    d.text(this.t.title, W / 2, y, { align: "center" });
+    y += 34;
 
     d.setFont("helvetica", "normal");
-    d.setFontSize(18);
-    d.setTextColor(GOLD);
-    d.text(this.input.entrepriseNom, this.pageWidth / 2, this.pageHeight / 2 - 5, { align: "center" });
+    d.setFontSize(17);
+    d.setTextColor(PDF.goldDark);
+    const nom = d.splitTextToSize(clean(this.input.entrepriseNom), this.contentWidth - 40) as string[];
+    d.text(nom, W / 2, y, { align: "center" });
+    y += nom.length * 22 + 18;
 
-    d.setFontSize(12);
-    d.setTextColor("#BBBBBB");
-    d.text(this.t.period(fmtDate(this.input.from), fmtDate(this.input.to)), this.pageWidth / 2, this.pageHeight / 2 + 25, { align: "center" });
+    const periode = this.t.period(fmtDate(this.input.from), fmtDate(this.input.to));
+    d.setFont("helvetica", "bold");
+    d.setFontSize(11);
+    const pw = d.getTextWidth(periode) + 36;
+    d.setFillColor(PDF.goldSoft);
+    d.setDrawColor(PDF.gold);
+    d.setLineWidth(0.8);
+    d.roundedRect((W - pw) / 2, y, pw, 28, 14, 14, "FD");
+    d.setTextColor(PDF.ink);
+    d.text(periode, W / 2, y + 18, { align: "center" });
 
-    // Bottom
-    d.setDrawColor(GOLD);
-    d.setLineWidth(1);
-    d.line(this.marginX, this.pageHeight - 120, this.pageWidth - this.marginX, this.pageHeight - 120);
-
+    d.setFont("helvetica", "normal");
+    d.setFontSize(9);
+    d.setTextColor(PDF.muted);
+    d.text(this.t.generatedAt(fmtDateTime(new Date())), W / 2, H - 110, { align: "center" });
     d.setFont("helvetica", "italic");
-    d.setFontSize(10);
-    d.setTextColor("#CCCCCC");
-    d.text(this.t.generatedAt(fmtDateTime(new Date())), this.pageWidth / 2, this.pageHeight - 95, { align: "center" });
-    d.text(this.t.confidential, this.pageWidth / 2, this.pageHeight - 78, { align: "center" });
+    d.text(this.t.confidential, W / 2, H - 95, { align: "center" });
   }
 
   // ---------- Section title ----------
   sectionTitle(txt: string) {
-    this.addPageIfNeeded(50);
+    if (this.cursorY > 90) this.cursorY += 14;
+    this.addPageIfNeeded(110);
     const d = this.doc;
     d.setFont("helvetica", "bold");
-    d.setFontSize(16);
-    d.setTextColor("#1A1208");
-    d.text(txt, this.marginX, this.cursorY);
-    d.setDrawColor(GOLD);
-    d.setLineWidth(1.5);
-    d.line(this.marginX, this.cursorY + 6, this.marginX + 120, this.cursorY + 6);
-    this.cursorY += 30;
+    d.setFontSize(14);
+    d.setTextColor(PDF.ink);
+    d.text(txt, this.marginX, this.cursorY + 12);
+    d.setDrawColor(PDF.gold);
+    d.setLineWidth(2);
+    d.line(this.marginX, this.cursorY + 21, this.marginX + 44, this.cursorY + 21);
+    this.cursorY += 38;
   }
 
   // ---------- KPI grid ----------
-  drawKpiGrid(kpis: { label: string; value: string; sub?: string; delta?: { pct: number; up: boolean } }[]) {
+  drawKpiGrid(kpis: { label: string; value: string; sub?: string; color?: string; delta?: { pct: number; up: boolean } }[]) {
     const d = this.doc;
     const cols = 2;
     const gap = 12;
     const boxW = (this.contentWidth - gap) / cols;
-    const boxH = 80;
-    kpis.forEach((k, i) => {
-      const col = i % cols;
-      const row = Math.floor(i / cols);
-      const x = this.marginX + col * (boxW + gap);
-      const y = this.cursorY + row * (boxH + gap);
-      d.setDrawColor(BORDER);
-      d.setFillColor("#FFFFFF");
-      d.roundedRect(x, y, boxW, boxH, 6, 6, "FD");
-      d.setFont("helvetica", "normal");
-      d.setFontSize(9);
-      d.setTextColor("#666");
-      d.text(k.label.toUpperCase(), x + 14, y + 20);
-      d.setFont("helvetica", "bold");
-      d.setFontSize(18);
-      d.setTextColor(GOLD);
-      d.text(truncate(k.value, 28), x + 14, y + 45);
-      if (k.sub) {
-        d.setFont("helvetica", "normal");
-        d.setFontSize(9);
-        d.setTextColor("#666");
-        d.text(truncate(k.sub, 60), x + 14, y + 62);
-      }
-      if (k.delta) {
-        const label = `${k.delta.up ? "+" : "-"}${Math.abs(k.delta.pct).toFixed(1)}%`;
-        d.setTextColor(k.delta.up ? "#0a8a3d" : "#c02323");
-        d.setFontSize(9);
-        d.text(label, x + boxW - 14, y + 62, { align: "right" });
-      }
-    });
-    const rows = Math.ceil(kpis.length / cols);
-    this.cursorY += rows * (boxH + gap) + 10;
+    const boxH = 72;
+    const fit = (s: string, max: number) => {
+      let t = s;
+      while (t.length > 1 && d.getTextWidth(t) > max) t = t.slice(0, -2) + "…";
+      return t;
+    };
+    for (let i = 0; i < kpis.length; i += cols) {
+      this.addPageIfNeeded(boxH + gap);
+      kpis.slice(i, i + cols).forEach((k, col) => {
+        const x = this.marginX + col * (boxW + gap);
+        const y = this.cursorY;
+        d.setDrawColor(PDF.border);
+        d.setFillColor("#FFFFFF");
+        d.setLineWidth(0.8);
+        d.roundedRect(x, y, boxW, boxH, 6, 6, "FD");
+        d.setFont("helvetica", "bold");
+        d.setFontSize(7.5);
+        d.setTextColor(PDF.goldDark);
+        d.text(fit(k.label.toUpperCase(), boxW - 28), x + 14, y + 18);
+        d.setFontSize(16);
+        d.setTextColor(k.color ?? PDF.ink);
+        d.text(fit(k.value, boxW - 28), x + 14, y + 41);
+        if (k.sub) {
+          d.setFont("helvetica", "normal");
+          d.setFontSize(8.5);
+          d.setTextColor(PDF.muted);
+          d.text(fit(k.sub, boxW - 28 - (k.delta ? 50 : 0)), x + 14, y + 59);
+        }
+        if (k.delta) {
+          const label = `${k.delta.up ? "+" : "-"}${Math.abs(k.delta.pct).toFixed(1)} %`;
+          d.setFont("helvetica", "bold");
+          d.setFontSize(8.5);
+          d.setTextColor(k.delta.up ? PDF.green : PDF.red);
+          d.text(label, x + boxW - 14, y + 59, { align: "right" });
+        }
+      });
+      this.cursorY += boxH + gap;
+    }
+    this.cursorY += 6;
   }
 
   paragraph(txt: string) {
-    this.addPageIfNeeded(60);
-    const d = this.doc;
-    d.setFont("helvetica", "normal");
-    d.setFontSize(10);
-    d.setTextColor("#333");
-    const lines = d.splitTextToSize(txt, this.contentWidth);
-    d.text(lines, this.marginX, this.cursorY);
-    this.cursorY += lines.length * 13 + 10;
+    this.ligne(txt, { taille: 9.5, couleur: "#333333", espace: 10 });
   }
 
   // ---------- Table ----------
-  drawTable(headers: string[], rows: string[][], opts: { widths?: number[]; totalRow?: string[]; aligns?: ("left" | "right" | "center")[] } = {}) {
-    const d = this.doc;
-    const widths = opts.widths ?? headers.map(() => this.contentWidth / headers.length);
-    const aligns = opts.aligns ?? headers.map(() => "left" as const);
-    const rowH = 20;
-    const headerH = 24;
-
-    const drawHead = () => {
-      this.addPageIfNeeded(headerH + rowH * 2);
-      d.setFillColor(GOLD);
-      d.rect(this.marginX, this.cursorY, this.contentWidth, headerH, "F");
-      d.setFont("helvetica", "bold");
-      d.setFontSize(9);
-      d.setTextColor("#FFFFFF");
-      let x = this.marginX;
-      headers.forEach((h, i) => {
-        const align = aligns[i];
-        const tx = align === "right" ? x + widths[i] - 6 : align === "center" ? x + widths[i] / 2 : x + 6;
-        d.text(h.toUpperCase(), tx, this.cursorY + 16, { align });
-        x += widths[i];
-      });
-      this.cursorY += headerH;
-    };
-
-    drawHead();
-
-    rows.forEach((r, idx) => {
-      if (this.cursorY + rowH > this.pageHeight - this.marginBottom) {
-        d.setFont("helvetica", "italic");
-        d.setFontSize(8);
-        d.setTextColor("#888");
-        d.text(this.t.suite, this.pageWidth - this.marginX, this.cursorY + 12, { align: "right" });
-        this.newPage();
-        drawHead();
-      }
-      if (idx % 2 === 1) {
-        d.setFillColor(ROW_ALT);
-        d.rect(this.marginX, this.cursorY, this.contentWidth, rowH, "F");
-      }
-      d.setDrawColor(BORDER);
-      d.setLineWidth(0.3);
-      d.line(this.marginX, this.cursorY + rowH, this.marginX + this.contentWidth, this.cursorY + rowH);
-      d.setFont("helvetica", "normal");
-      d.setFontSize(9);
-      d.setTextColor("#222");
-      let x = this.marginX;
-      r.forEach((cell, i) => {
-        const align = aligns[i];
-        const tx = align === "right" ? x + widths[i] - 6 : align === "center" ? x + widths[i] / 2 : x + 6;
-        const maxChars = Math.floor(widths[i] / 5);
-        d.text(truncate(String(cell ?? ""), maxChars), tx, this.cursorY + 14, { align });
-        x += widths[i];
-      });
-      this.cursorY += rowH;
-    });
-
-    if (opts.totalRow) {
-      this.addPageIfNeeded(rowH + 6);
-      d.setFillColor(TOTAL_BG);
-      d.rect(this.marginX, this.cursorY, this.contentWidth, rowH, "F");
-      d.setFont("helvetica", "bold");
-      d.setFontSize(9);
-      d.setTextColor("#1A1208");
-      let x = this.marginX;
-      opts.totalRow.forEach((cell, i) => {
-        const align = aligns[i];
-        const tx = align === "right" ? x + widths[i] - 6 : align === "center" ? x + widths[i] / 2 : x + 6;
-        d.text(String(cell ?? ""), tx, this.cursorY + 14, { align });
-        x += widths[i];
-      });
-      this.cursorY += rowH;
-    }
-
-    this.cursorY += 15;
+  drawTable(headers: string[], rows: Cellule[][], opts: { widths?: number[]; totalRow?: Cellule[]; aligns?: ("left" | "right" | "center")[] } = {}) {
+    const cw = this.contentWidth;
+    const widths = opts.widths ?? headers.map(() => cw / headers.length);
+    const colonnes = headers.map((titre, i) => ({ titre, largeur: widths[i] / cw, align: opts.aligns?.[i] ?? "left" }));
+    this.cursorY = dessinerTableau(this.doc, this.marque, this.titreSuite, this.cursorY, colonnes, rows, this.marginBottom, opts.totalRow ?? null);
   }
 
   // ---------- Sections ----------
+  /** Ventes de nos propres livres (les livres distribués pour d'autres maisons n'ont ni droits ni coût d'impression). */
+  get ventesPropres() {
+    const etrangers = new Set(this.input.manuscrits.filter((m) => m.origine === "etranger").map((m) => m.id));
+    return this.input.ventes.filter((v) => !etrangers.has(v.manuscrit_id));
+  }
+
+  get coutUnitaire() {
+    return coutUnitaireParLivre(this.input.stockInterne.map((s) => ({
+      manuscrit_id: s.manuscrit_id,
+      quantite_imprimee: Number(s.quantite_imprimee || 0),
+      cout_unitaire_impression_fcfa: Number(s.cout_unitaire_impression_fcfa || 0),
+    })));
+  }
+
   buildResume() {
     this.sectionTitle(this.t.resume);
     const v = this.input.ventes;
@@ -546,7 +529,7 @@ class PdfBuilder {
     v.forEach((s) => { byBook[s.manuscrit_id] = (byBook[s.manuscrit_id] ?? 0) + Number(s.quantite_vendue || 0); });
     const topId = Object.entries(byBook).sort((a, b) => b[1] - a[1])[0];
     const mMap = Object.fromEntries(this.input.manuscrits.map((m) => [m.id, m]));
-    const topTitle = topId ? (mMap[topId[0]]?.titre ?? "—") : "—";
+    const topTitle = topId ? clean(mMap[topId[0]]?.titre ?? "-") : "-";
     const topQty = topId ? topId[1] : 0;
 
     // delta
@@ -565,16 +548,16 @@ class PdfBuilder {
     const encaisse = v.reduce((a, x) => a + Number(x.montant_encaisse_fcfa || 0), 0);
     const aEncaisser = Math.max(0, totalRev - encaisse);
     const totalDep = (this.input.depenses ?? []).reduce((a, x) => a + Number(x.montant_fcfa || 0), 0);
-    const totalComm = v.reduce((a, x) => a + Number(x.commission_librairie_fcfa || 0), 0);
-    const resultat = totalRev - totalComm - totalRoyalties - totalDep;
+    // Même bénéfice que l'application (lib/finance-calc).
+    const resultat = calculerResultat(this.ventesPropres as any, (this.input.depenses ?? []) as any, this.coutUnitaire).benefice;
 
     this.drawKpiGrid([
-      { label: this.t.kpiRevenue, value: fmtFCFA(totalRev), delta },
-      { label: this.t.kpiEncaisse, value: fmtFCFA(encaisse), sub: `${this.t.kpiAEncaisser}: ${fmtFCFA(aEncaisser)}` },
-      { label: this.t.kpiDepenses, value: fmtFCFA(totalDep), sub: `${this.input.depenses?.length ?? 0} ${this.t.transactions}` },
-      { label: this.t.kpiResultat, value: fmtFCFA(resultat) },
+      { label: this.t.kpiRevenue, value: fmtFCFA(totalRev), sub: delta ? this.t.kpiVsAvant : undefined, delta },
+      { label: this.t.kpiEncaisse, value: fmtFCFA(encaisse), sub: `${this.t.kpiAEncaisser} : ${fmtFCFA(aEncaisser)}` },
+      { label: this.t.kpiDepenses, value: fmtFCFA(totalDep), sub: pl(this.input.depenses?.length ?? 0, this.t.depenseUn, this.t.depensePlusieurs) },
+      { label: this.t.kpiResultat, value: fmtFCFA(resultat), color: resultat < 0 ? PDF.red : PDF.green, sub: this.t.kpiResultatSub },
       { label: this.t.kpiCount, value: String(v.length), sub: this.t.transactions },
-      { label: this.t.kpiRoyalties, value: fmtFCFA(totalRoyalties), sub: `${this.t.paid}: ${fmtFCFA(paidRoy)} | ${this.t.pending}: ${fmtFCFA(pendingRoy)}` },
+      { label: this.t.kpiRoyalties, value: fmtFCFA(totalRoyalties), sub: `${this.t.paid} : ${fmtFCFA(paidRoy)} · ${this.t.pending} : ${fmtFCFA(pendingRoy)}` },
       { label: this.t.kpiTop, value: topTitle, sub: `${topQty} ${this.t.copies}` },
     ]);
 
@@ -584,7 +567,7 @@ class PdfBuilder {
 
     this.paragraph(
       this.t.resumeText(
-        this.input.entrepriseNom,
+        clean(this.input.entrepriseNom),
         fmtDate(this.input.from),
         fmtDate(this.input.to),
         v.length,
@@ -602,45 +585,41 @@ class PdfBuilder {
     if (v.length === 0) { this.paragraph(this.t.noData); return; }
     const mMap = Object.fromEntries(this.input.manuscrits.map((m) => [m.id, m]));
     const aMap = Object.fromEntries(this.input.auteurs.map((a) => [a.id, a.nom_complet]));
-    const rows = v.map((s) => {
+    const rows: Cellule[][] = v.map((s) => {
       const m = mMap[s.manuscrit_id];
       const aid = s.auteur_id ?? m?.auteur_id;
-      const auteur = (aid && aMap[aid]) || m?.auteur || "-";
+      const auteur = clean((aid && aMap[aid]) || m?.auteur || "");
       const isExt = s.canal_vente !== "interne";
+      const paye = s.statut_paiement === "paye";
+      const sansDroits = Number(s.droits_auteur_fcfa || 0) === 0;
       return [
         fmtDate(s.date_vente),
-        clean(m?.titre ?? "-"),
-        auteur,
-        isExt ? this.t.canalExt : this.t.canalInt,
+        { texte: clean(m?.titre ?? "-"), sous: auteur || null },
+        isExt ? clean(s.librairie_nom || this.t.canalExt) : this.t.canalInt,
         String(s.quantite_vendue),
-        fmtFCFA(s.prix_unitaire_fcfa),
-        Number(s.remise_fcfa) > 0 ? `-${fmtFCFA(Number(s.remise_fcfa))}` : "-",
-        fmtFCFA(s.montant_total_fcfa),
-        fmtFCFA(s.droits_auteur_fcfa),
-        s.statut_paiement === "paye" ? this.t.payeShort : this.t.attente,
+        { texte: fmtN(s.montant_total_fcfa), gras: true },
+        sansDroits ? "-" : fmtN(s.droits_auteur_fcfa),
+        sansDroits ? "-" : { texte: paye ? this.t.payeShort : this.t.attente, couleur: paye ? PDF.green : PDF.goldDark },
       ];
     });
     const cw = this.contentWidth;
-    const widths = [cw * 0.085, cw * 0.18, cw * 0.14, cw * 0.08, cw * 0.05, cw * 0.095, cw * 0.095, cw * 0.10, cw * 0.10, cw * 0.075];
-    const aligns: ("left" | "right" | "center")[] = ["left", "left", "left", "center", "center", "right", "right", "right", "right", "center"];
     const totalQty = v.reduce((a, x) => a + Number(x.quantite_vendue || 0), 0);
     const totalRev = v.reduce((a, x) => a + Number(x.montant_total_fcfa || 0), 0);
     const totalRoy = v.reduce((a, x) => a + Number(x.droits_auteur_fcfa || 0), 0);
-    const totalRem = v.reduce((a, x) => a + Number(x.remise_fcfa || 0), 0);
     this.drawTable(
-      [this.t.date, this.t.livre, this.t.auteur, this.t.type, this.t.qte, this.t.pu, this.t.remise, this.t.total, this.t.droitsCol, this.t.statut],
+      [this.t.date, this.t.livre, this.t.canal, this.t.qte, fc(this.t.total), fc(this.t.droitsCol), this.t.droitsStatut],
       rows,
       {
-        widths,
-        aligns,
-        totalRow: [this.t.totalGeneral, "", "", "", String(totalQty), "", totalRem > 0 ? `-${fmtFCFA(totalRem)}` : "", fmtFCFA(totalRev), fmtFCFA(totalRoy), ""],
+        widths: [cw * 0.125, cw * 0.275, cw * 0.15, cw * 0.06, cw * 0.14, cw * 0.13, cw * 0.12],
+        aligns: ["left", "left", "left", "right", "right", "right", "left"],
+        totalRow: [this.t.totalGeneral, pl(v.length, this.t.venteUn, this.t.ventePlusieurs), "", String(totalQty), fmtN(totalRev), fmtN(totalRoy), ""],
       },
     );
   }
 
   buildDroits() {
     this.sectionTitle(this.t.droits);
-    const v = this.input.ventes;
+    const v = this.ventesPropres;
     if (v.length === 0) { this.paragraph(this.t.noData); return; }
     const mMap = Object.fromEntries(this.input.manuscrits.map((m) => [m.id, m]));
     const aMap = Object.fromEntries(this.input.auteurs.map((a) => [a.id, a]));
@@ -653,27 +632,18 @@ class PdfBuilder {
     });
 
     let grand = 0;
+    let grandPaye = 0;
     Object.entries(byAuthor).forEach(([aid, sales]) => {
-      this.addPageIfNeeded(80);
+      this.addPageIfNeeded(120);
       const auteur = aMap[aid];
       const name = clean(auteur?.nom_complet ?? mMap[sales[0].manuscrit_id]?.auteur ?? "-");
-      const d = this.doc;
-      d.setFont("helvetica", "bold");
-      d.setFontSize(12);
-      d.setTextColor(GOLD);
-      d.text(name, this.marginX, this.cursorY);
-      this.cursorY += 16;
+      this.ligne(name, { taille: 11.5, style: "bold", couleur: PDF.ink, espace: 2 });
       const info = [
-        auteur?.email ? `${this.t.contact}: ${auteur.email}${auteur.telephone ? " | " + auteur.telephone : ""}` : null,
-        auteur?.mobile_money_numero ? `${this.t.mm}: ${auteur.mobile_money_operateur ?? ""} - ${auteur.mobile_money_numero}` : null,
+        auteur?.email || auteur?.telephone ? `${this.t.contact} : ${[auteur?.email, auteur?.telephone].filter(Boolean).join(" · ")}` : null,
+        auteur?.mobile_money_numero ? `${this.t.mm} : ${[auteur.mobile_money_operateur, auteur.mobile_money_numero].filter(Boolean).join(" ")}` : null,
       ].filter(Boolean) as string[];
-      if (info.length) {
-        d.setFont("helvetica", "normal");
-        d.setFontSize(9);
-        d.setTextColor("#555");
-        info.forEach((line) => { d.text(line, this.marginX, this.cursorY); this.cursorY += 12; });
-      }
-      this.cursorY += 4;
+      info.forEach((line) => this.ligne(clean(line), { taille: 8.5, couleur: PDF.muted, espace: 1 }));
+      this.cursorY += 6;
 
       // per-book aggregate
       const byBook: Record<string, { qte: number; ca: number; droits: number; paid: number }> = {};
@@ -686,46 +656,42 @@ class PdfBuilder {
         if (s.statut_paiement === "paye") byBook[k].paid += Number(s.droits_auteur_fcfa || 0);
       });
 
-      const rows = Object.entries(byBook).map(([mid, b]) => {
-        const rate = b.ca > 0 ? (b.droits / b.ca) * 100 : 10;
+      const rows: Cellule[][] = Object.entries(byBook).map(([mid, b]) => {
+        const rate = b.ca > 0 ? (b.droits / b.ca) * 100 : 0;
+        const reste = b.droits - b.paid;
         return [
           clean(mMap[mid]?.titre ?? "-"),
           String(b.qte),
-          fmtFCFA(b.ca),
-          `${rate.toFixed(1)}%`,
-          fmtFCFA(b.droits),
-          b.paid >= b.droits && b.droits > 0 ? this.t.payeShort : this.t.attente,
+          fmtN(b.ca),
+          `${rate.toFixed(1).replace(".", ",")} %`,
+          { texte: fmtN(b.droits), gras: true },
+          reste > 0 ? { texte: fmtN(reste), couleur: PDF.goldDark } : { texte: this.t.payeShort, couleur: PDF.green },
         ];
       });
-      const cw = this.contentWidth;
-      const widths = [cw * 0.32, cw * 0.11, cw * 0.18, cw * 0.11, cw * 0.18, cw * 0.10];
-      const aligns: ("left" | "right" | "center")[] = ["left", "center", "right", "center", "right", "center"];
-      this.drawTable(
-        [this.t.livre, this.t.ventesCol, this.t.ca, this.t.taux, this.t.droitsDus, this.t.statut],
-        rows,
-        { widths, aligns },
-      );
       const totalRoy = sales.reduce((a, x) => a + Number(x.droits_auteur_fcfa || 0), 0);
       const paidRoy = sales.filter((x) => x.statut_paiement === "paye").reduce((a, x) => a + Number(x.droits_auteur_fcfa || 0), 0);
       grand += totalRoy;
-      d.setFont("helvetica", "bold");
-      d.setFontSize(10);
-      d.setTextColor("#1A1208");
-      d.text(`${this.t.subtotal(name)}: ${fmtFCFA(totalRoy)}   -   ${this.t.paid}: ${fmtFCFA(paidRoy)} | ${this.t.pending}: ${fmtFCFA(totalRoy - paidRoy)}`, this.marginX, this.cursorY);
-      this.cursorY += 20;
+      grandPaye += paidRoy;
+      const cw = this.contentWidth;
+      this.drawTable(
+        [this.t.livre, this.t.ventesCol, fc(this.t.ca), this.t.taux, fc(this.t.droitsCol), fc(this.t.reste)],
+        rows,
+        {
+          widths: [cw * 0.33, cw * 0.09, cw * 0.16, cw * 0.1, cw * 0.16, cw * 0.16],
+          aligns: ["left", "right", "right", "right", "right", "right"],
+          totalRow: [this.t.subtotal(name), "", "", "", fmtN(totalRoy), totalRoy - paidRoy > 0 ? fmtN(totalRoy - paidRoy) : this.t.payeShort],
+        },
+      );
     });
 
-    this.addPageIfNeeded(30);
+    this.addPageIfNeeded(40);
     const d = this.doc;
-    d.setDrawColor(GOLD);
+    d.setDrawColor(PDF.gold);
     d.setLineWidth(1);
     d.line(this.marginX, this.cursorY, this.marginX + this.contentWidth, this.cursorY);
-    this.cursorY += 16;
-    d.setFont("helvetica", "bold");
-    d.setFontSize(12);
-    d.setTextColor(GOLD);
-    d.text(`${this.t.grandDroits}: ${fmtFCFA(grand)}`, this.marginX, this.cursorY);
-    this.cursorY += 20;
+    this.cursorY += 8;
+    this.ligne(`${this.t.grandDroits} : ${fmtFCFA(grand)}`, { taille: 12, style: "bold", couleur: PDF.ink, espace: 2 });
+    this.ligne(`${this.t.paid} : ${fmtFCFA(grandPaye)} · ${this.t.resteAPayer} : ${fmtFCFA(grand - grandPaye)}`, { taille: 9, couleur: PDF.muted });
   }
 
   buildLivres() {
@@ -748,64 +714,73 @@ class PdfBuilder {
     const ranked = Object.entries(agg).sort((a, b) => b[1].qte - a[1].qte);
     if (ranked.length === 0) { this.paragraph(this.t.noData); return; }
 
+    const d = this.doc;
     ranked.forEach(([mid, r], idx) => {
-      this.addPageIfNeeded(85);
+      this.addPageIfNeeded(78);
       const m = mMap[mid];
-      const d = this.doc;
+      const top = this.cursorY;
+      const rest = stockRestMap[mid] ?? 0;
+      const totalBooks = r.qte + rest;
+      const rate = totalBooks > 0 ? (r.qte / totalBooks) * 100 : 0;
+
+      let badge: { txt: string; couleur: string } | null = null;
+      if (idx === 0) badge = { txt: this.t.best, couleur: PDF.green };
+      else if (idx < 3) badge = { txt: this.t.good, couleur: PDF.goldDark };
+      else if (rate < 20) badge = { txt: this.t.watch, couleur: PDF.red };
+      let badgeW = 0;
+      if (badge) {
+        d.setFont("helvetica", "bold");
+        d.setFontSize(7.5);
+        badgeW = d.getTextWidth(badge.txt.toUpperCase()) + 16;
+        d.setDrawColor(badge.couleur);
+        d.setLineWidth(0.7);
+        d.roundedRect(this.pageWidth - this.marginX - badgeW, top, badgeW, 16, 8, 8, "S");
+        d.setTextColor(badge.couleur);
+        d.text(badge.txt.toUpperCase(), this.pageWidth - this.marginX - badgeW / 2, top + 11, { align: "center" });
+      }
+
       d.setFont("helvetica", "bold");
-      d.setFontSize(12);
-      d.setTextColor("#1A1208");
-      d.text(truncate(m?.titre ?? "-", 80), this.marginX, this.cursorY);
-      this.cursorY += 14;
+      d.setFontSize(11.5);
+      d.setTextColor(PDF.ink);
+      let titre = clean(m?.titre ?? "-");
+      while (titre.length > 1 && d.getTextWidth(titre) > this.contentWidth - badgeW - 12) titre = titre.slice(0, -2) + "…";
+      d.text(titre, this.marginX, top + 11);
 
       const aid = m?.auteur_id;
       const auteur = clean((aid && aMap[aid]) || m?.auteur || "-");
       d.setFont("helvetica", "normal");
-      d.setFontSize(9);
-      d.setTextColor("#666");
-      const meta = `${this.t.auteur}: ${auteur}${m?.genre ? ` | ${this.t.genre}: ${m.genre}` : ""}`;
-      d.text(meta, this.marginX, this.cursorY);
-      this.cursorY += 14;
+      d.setFontSize(8.5);
+      d.setTextColor(PDF.muted);
+      d.text(`${auteur}${m?.genre ? ` · ${clean(m.genre)}` : ""}`, this.marginX, top + 25);
 
-      // Compact numbers row
-      const rest = stockRestMap[mid] ?? 0;
-      const totalBooks = r.qte + rest;
-      const rate = totalBooks > 0 ? (r.qte / totalBooks) * 100 : 0;
-      d.setFont("helvetica", "normal");
       d.setFontSize(9);
-      d.setTextColor("#333");
-      d.text(`${this.t.ventesCol}: ${r.qte}   ${this.t.ca}: ${fmtFCFA(r.ca)}   ${this.t.droitsCol}: ${fmtFCFA(r.droits)}   ${this.t.stockRestant}: ${rest}`, this.marginX, this.cursorY);
-      this.cursorY += 14;
+      d.setTextColor("#333333");
+      d.text(
+        `${this.t.ventesCol} : ${r.qte}   ·   ${this.t.ca} : ${fmtFCFA(r.ca)}   ·   ${this.t.droitsCol} : ${fmtFCFA(r.droits)}   ·   ${this.t.stockRestant} : ${rest}`,
+        this.marginX, top + 41,
+      );
 
-      // sell-through bar
-      const barW = 200;
-      const barH = 8;
-      d.setFillColor("#E8E2D5");
-      d.rect(this.marginX, this.cursorY, barW, barH, "F");
-      d.setFillColor(GOLD);
-      d.rect(this.marginX, this.cursorY, (barW * rate) / 100, barH, "F");
-      d.setFont("helvetica", "normal");
-      d.setFontSize(9);
-      d.setTextColor("#555");
-      d.text(`${this.t.sellthrough}: ${rate.toFixed(0)}%`, this.marginX + barW + 10, this.cursorY + 7);
-
-      let badge = "";
-      if (idx === 0) badge = `[TOP] ${this.t.best}`;
-      else if (idx < 3) badge = `[BON] ${this.t.good}`;
-      else if (rate < 20) badge = `[SURVEILLER] ${this.t.watch}`;
-      if (badge) {
-        d.setTextColor(GOLD);
-        d.setFont("helvetica", "bold");
-        d.setFontSize(9);
-        d.text(badge, this.pageWidth - this.marginX, this.cursorY + 7, { align: "right" });
+      const barW = 220;
+      d.setFillColor("#EEE7D8");
+      d.roundedRect(this.marginX, top + 49, barW, 6, 3, 3, "F");
+      if (rate > 0) {
+        d.setFillColor(PDF.gold);
+        d.roundedRect(this.marginX, top + 49, Math.max(6, (barW * rate) / 100), 6, 3, 3, "F");
       }
-      this.cursorY += 22;
+      d.setFontSize(8.5);
+      d.setTextColor(PDF.muted);
+      d.text(`${this.t.sellthrough} : ${Math.round(rate)} %`, this.marginX + barW + 10, top + 55);
+
+      this.cursorY = top + 66;
+      d.setDrawColor(PDF.border);
+      d.setLineWidth(0.4);
+      d.line(this.marginX, this.cursorY, this.marginX + this.contentWidth, this.cursorY);
+      this.cursorY += 12;
     });
   }
 
   buildLibrairies() {
     this.sectionTitle(this.t.librairies);
-    const v = this.input.ventes;
     const stocks = this.input.stocks;
     if (stocks.length === 0) { this.paragraph(this.t.noData); return; }
     // aggregate per librairie
@@ -825,27 +800,27 @@ class PdfBuilder {
       a.livres.add(s.manuscrit_id);
       if (s.derniere_visite && (!a.derniere || s.derniere_visite > a.derniere)) a.derniere = s.derniere_visite;
     });
-    // enrich CA with actual ventes (externes)
-    // (kept approximate using stocks totals to align with page)
-    void v;
 
     const ranked = Object.entries(agg).sort((a, b) => b[1].ca - a[1].ca);
-    const rows = ranked.map(([nom, r], i) => [
-      clean((i === 0 ? "[TOP] " : "") + nom),
-      truncate(r.adresse || "-", 30),
+    const rows: Cellule[][] = ranked.map(([nom, r]) => [
+      { texte: clean(nom), sous: r.adresse ? clean(r.adresse) : null, gras: true },
       String(r.livres.size),
+      String(r.deposes),
       String(r.vendus),
-      fmtFCFA(r.ca),
       String(r.restants),
+      fmtN(r.ca),
       fmtDate(r.derniere),
     ]);
     const cw = this.contentWidth;
-    const widths = [cw * 0.20, cw * 0.20, cw * 0.09, cw * 0.10, cw * 0.16, cw * 0.10, cw * 0.15];
-    const aligns: ("left" | "right" | "center")[] = ["left", "left", "center", "center", "right", "center", "center"];
+    const tot = ranked.reduce((a, [, r]) => ({ dep: a.dep + r.deposes, ven: a.ven + r.vendus, res: a.res + r.restants, ca: a.ca + r.ca }), { dep: 0, ven: 0, res: 0, ca: 0 });
     this.drawTable(
-      [this.t.librairie, this.t.adresse, this.t.livre, this.t.vendus, this.t.ca, this.t.restants, this.t.derniereVisite],
+      [this.t.librairie, this.t.titresCol, this.t.deposes, this.t.vendus, this.t.restants, fc(this.t.ca), this.t.derniereVisite],
       rows,
-      { widths, aligns },
+      {
+        widths: [cw * 0.3, cw * 0.08, cw * 0.1, cw * 0.09, cw * 0.1, cw * 0.17, cw * 0.16],
+        aligns: ["left", "right", "right", "right", "right", "right", "left"],
+        totalRow: [this.t.totalGeneral, "", String(tot.dep), String(tot.ven), String(tot.res), fmtN(tot.ca), ""],
+      },
     );
   }
 
@@ -855,7 +830,7 @@ class PdfBuilder {
       this.input.manuscrits.filter((m) => m.origine === "etranger").map((m) => m.id),
     );
     const v = this.input.ventes.filter((x) => etrangerIds.has(x.manuscrit_id));
-    this.sectionTitle(this.input.lang === "fr" ? "LIVRES ETRANGERS DISTRIBUES" : "DISTRIBUTED FOREIGN BOOKS");
+    this.sectionTitle(this.t.etrangers);
     if (v.length === 0) { this.paragraph(this.t.noData); return; }
     const titre = (id: string) => this.input.manuscrits.find((m) => m.id === id)?.titre ?? "-";
     const agg: Record<string, { ex: number; ca: number; com: number }> = {};
@@ -866,54 +841,41 @@ class PdfBuilder {
       a.com += Number(x.commission_librairie_fcfa || 0);
     });
     const ranked = Object.entries(agg).sort((a, b) => b[1].ca - a[1].ca);
-    const rows = ranked.map(([id, r]) => [
-      truncate(clean(titre(id)), 40),
+    const rows: Cellule[][] = ranked.map(([id, r]) => [
+      clean(titre(id)),
       String(r.ex),
-      fmtFCFA(r.ca),
-      fmtFCFA(r.com),
-      fmtFCFA(r.ca - r.com),
+      fmtN(r.ca),
+      fmtN(r.com),
+      { texte: fmtN(r.ca - r.com), gras: true },
     ]);
     const tot = ranked.reduce((a, [, r]) => ({ ex: a.ex + r.ex, ca: a.ca + r.ca, com: a.com + r.com }), { ex: 0, ca: 0, com: 0 });
     const cw = this.contentWidth;
     this.drawTable(
-      this.input.lang === "fr"
-        ? ["Titre", "Ex.", "CA", "Commission", "Net"]
-        : ["Title", "Qty", "Revenue", "Commission", "Net"],
+      [this.t.livre, this.t.qte, fc(this.t.ca), fc(this.t.commission), fc(this.t.net)],
       rows,
       {
-        widths: [cw * 0.40, cw * 0.10, cw * 0.17, cw * 0.17, cw * 0.16],
-        aligns: ["left", "center", "right", "right", "right"],
-        totalRow: [this.input.lang === "fr" ? "TOTAL" : "TOTAL", String(tot.ex), fmtFCFA(tot.ca), fmtFCFA(tot.com), fmtFCFA(tot.ca - tot.com)],
+        widths: [cw * 0.38, cw * 0.1, cw * 0.17, cw * 0.18, cw * 0.17],
+        aligns: ["left", "right", "right", "right", "right"],
+        totalRow: [this.t.totalGeneral, String(tot.ex), fmtN(tot.ca), fmtN(tot.com), fmtN(tot.ca - tot.com)],
       },
     );
-    this.paragraph(
-      this.input.lang === "fr"
-        ? "Aucun droit d'auteur n'est calcule sur ces ventes : les livres appartiennent a d'autres maisons d'edition."
-        : "No royalties apply to these sales: the titles belong to other publishers.",
-    );
+    this.paragraph(this.t.etrangersNote);
   }
 
   buildStocks() {
     this.sectionTitle(this.t.stocks);
-    const d = this.doc;
-    d.setFont("helvetica", "italic");
-    d.setFontSize(9);
-    d.setTextColor("#666");
-    d.text(this.t.at(fmtDate(new Date().toISOString())), this.marginX, this.cursorY);
-    this.cursorY += 20;
+    this.ligne(this.t.at(fmtDate(new Date().toISOString())), { taille: 9, style: "italic", couleur: PDF.muted, espace: 10 });
 
     const mMap = Object.fromEntries(this.input.manuscrits.map((m) => [m.id, m]));
+    const cw = this.contentWidth;
 
     // Interne
-    d.setFont("helvetica", "bold");
-    d.setFontSize(11);
-    d.setTextColor(GOLD);
-    d.text(this.t.interne, this.marginX, this.cursorY);
-    this.cursorY += 14;
+    this.addPageIfNeeded(80);
+    this.ligne(this.t.interne, { taille: 10.5, style: "bold", couleur: GOLD, espace: 6 });
     if (this.input.stockInterne.length === 0) {
       this.paragraph(this.t.noData);
     } else {
-      const rows = this.input.stockInterne.map((s) => {
+      const rows: Cellule[][] = this.input.stockInterne.map((s) => {
         const price = Number(s.prix_vente_direct_fcfa || 0);
         return [
           clean(mMap[s.manuscrit_id]?.titre ?? "-"),
@@ -921,45 +883,40 @@ class PdfBuilder {
           String(s.quantite_disponible ?? 0),
           String(s.quantite_reservee ?? 0),
           String(s.quantite_vendue_directement ?? 0),
-          fmtFCFA(Number(s.quantite_disponible || 0) * price),
+          fmtN(Number(s.quantite_disponible || 0) * price),
         ];
       });
-      const cw = this.contentWidth;
-      const widths = [cw * 0.32, cw * 0.12, cw * 0.12, cw * 0.12, cw * 0.12, cw * 0.20];
-      const aligns: ("left" | "right" | "center")[] = ["left", "center", "center", "center", "center", "right"];
       this.drawTable(
-        [this.t.livre, this.t.imprimes, this.t.dispo, this.t.reserves, this.t.vendus, this.t.valeur],
-        rows, { widths, aligns },
+        [this.t.livre, this.t.imprimes, this.t.dispo, this.t.reserves, this.t.vendus, fc(this.t.valeur)],
+        rows,
+        { widths: [cw * 0.34, cw * 0.11, cw * 0.12, cw * 0.11, cw * 0.1, cw * 0.22], aligns: ["left", "right", "right", "right", "right", "right"] },
       );
     }
 
     // Externe
-    d.setFont("helvetica", "bold");
-    d.setFontSize(11);
-    d.setTextColor(GOLD);
-    d.text(this.t.externe, this.marginX, this.cursorY);
-    this.cursorY += 14;
+    this.addPageIfNeeded(80);
+    this.ligne(this.t.externe, { taille: 10.5, style: "bold", couleur: GOLD, espace: 6 });
     if (this.input.stocks.length === 0) {
       this.paragraph(this.t.noData);
     } else {
-      const rows = this.input.stocks.map((s) => {
+      const rows: Cellule[][] = this.input.stocks.map((s) => {
         const rest = Number(s.exemplaires_restants || 0);
-        const statut = rest === 0 ? "CRITIQUE" : rest <= 5 ? "STOCK BAS" : "OK";
+        const statut = rest === 0
+          ? { texte: this.t.epuise, couleur: PDF.red, gras: true }
+          : rest <= 5 ? { texte: this.t.stockBas, couleur: PDF.goldDark, gras: true } : { texte: this.t.disponible, couleur: PDF.green };
         return [
           clean(s.librairie_nom ?? "-"),
-          truncate(mMap[s.manuscrit_id]?.titre ?? "-", 30),
+          clean(mMap[s.manuscrit_id]?.titre ?? "-"),
           String(s.exemplaires_deposes ?? 0),
           String(s.exemplaires_vendus ?? 0),
           String(rest),
           statut,
         ];
       });
-      const cw = this.contentWidth;
-      const widths = [cw * 0.20, cw * 0.30, cw * 0.11, cw * 0.11, cw * 0.11, cw * 0.17];
-      const aligns: ("left" | "right" | "center")[] = ["left", "left", "center", "center", "center", "center"];
       this.drawTable(
         [this.t.librairie, this.t.livre, this.t.deposes, this.t.vendus, this.t.restants, this.t.statut],
-        rows, { widths, aligns },
+        rows,
+        { widths: [cw * 0.22, cw * 0.3, cw * 0.11, cw * 0.1, cw * 0.11, cw * 0.16], aligns: ["left", "left", "right", "right", "right", "left"] },
       );
     }
   }
@@ -972,121 +929,105 @@ class PdfBuilder {
     const total = list.reduce((a, x) => a + Number(x.montant_fcfa || 0), 0);
     this.paragraph(this.t.depensesText(list.length, fmtFCFA(total)));
 
-    const rows = list.map((d) => [
+    const rows: Cellule[][] = list.map((d) => [
       fmtDate(d.date_depense),
-      truncate(readableValue(d.categorie), 18),
-      truncate(clean(d.libelle), 34),
+      readableValue(d.categorie),
+      clean(d.libelle),
       clean(d.manuscrit_id ? (mMap[d.manuscrit_id]?.titre ?? "-") : this.t.nonLiees),
-      fmtFCFA(Number(d.montant_fcfa || 0)),
+      { texte: fmtN(Number(d.montant_fcfa || 0)), gras: true },
     ]);
     const cw = this.contentWidth;
-    const widths = [cw * 0.12, cw * 0.17, cw * 0.32, cw * 0.21, cw * 0.18];
-    const aligns: ("left" | "right" | "center")[] = ["left", "left", "left", "left", "right"];
     this.drawTable(
-      [this.t.date, this.t.categorie, this.t.libelle, this.t.livre, this.t.montantCol],
-      rows,
-      { widths, aligns, totalRow: [this.t.totalGeneral, "", "", "", fmtFCFA(total)] },
-    );
-  }
-
-  buildRentabilite() {
-    this.sectionTitle(this.t.rentabilite);
-    const v = this.input.ventes;
-    const dep = this.input.depenses ?? [];
-    if (v.length === 0 && dep.length === 0) { this.paragraph(this.t.noData); return; }
-    const mMap = Object.fromEntries(this.input.manuscrits.map((m) => [m.id, m]));
-    this.paragraph(this.t.rentabiliteText);
-
-    // aggregate per book
-    const agg: Record<string, {
-      ca: number; encaisse: number; comm: number; droits: number; dep: number; coutProd: number;
-    }> = {};
-    v.forEach((s) => {
-      const a = (agg[s.manuscrit_id] ||= { ca: 0, encaisse: 0, comm: 0, droits: 0, dep: 0, coutProd: 0 });
-      a.ca += Number(s.montant_total_fcfa || 0);
-      a.encaisse += Number(s.montant_encaisse_fcfa || 0);
-      a.comm += Number(s.commission_librairie_fcfa || 0);
-      a.droits += Number(s.droits_auteur_fcfa || 0);
-    });
-    dep.forEach((d) => {
-      if (!d.manuscrit_id) return;
-      const a = (agg[d.manuscrit_id] ||= { ca: 0, encaisse: 0, comm: 0, droits: 0, dep: 0, coutProd: 0 });
-      a.dep += Number(d.montant_fcfa || 0);
-    });
-    this.input.stockInterne.forEach((s) => {
-      const cost = Number(s.cout_unitaire_impression_fcfa || 0) * Number(s.quantite_imprimee || 0);
-      if (cost <= 0) return;
-      const a = (agg[s.manuscrit_id] ||= { ca: 0, encaisse: 0, comm: 0, droits: 0, dep: 0, coutProd: 0 });
-      a.coutProd += cost;
-    });
-
-    const entries = Object.entries(agg)
-      .map(([mid, a]) => {
-        const investi = a.coutProd + a.dep;
-        const resultat = a.encaisse - a.comm - a.droits - investi;
-        const prixMoyen = (() => {
-          const qty = v.filter((s) => s.manuscrit_id === mid).reduce((x, s) => x + Number(s.quantite_vendue || 0), 0);
-          return qty > 0 ? a.ca / qty : 0;
-        })();
-        const margeUnit = prixMoyen > 0 ? prixMoyen * (1 - (a.ca > 0 ? (a.comm + a.droits) / a.ca : 0)) : 0;
-        const seuil = margeUnit > 0 && investi > 0 ? Math.ceil(investi / margeUnit) : 0;
-        return { mid, ...a, investi, resultat, seuil };
-      })
-      .filter((e) => e.investi > 0 || e.ca > 0)
-      .sort((a, b) => b.resultat - a.resultat);
-
-    if (entries.length === 0) { this.paragraph(this.t.noData); return; }
-
-    const rows = entries.map((e) => [
-      truncate(clean(mMap[e.mid]?.titre ?? "-"), 26),
-      fmtFCFA(e.investi),
-      fmtFCFA(e.encaisse),
-      fmtFCFA(e.resultat),
-      e.seuil > 0 ? String(e.seuil) : "-",
-    ]);
-    const cw = this.contentWidth;
-    const widths = [cw * 0.30, cw * 0.19, cw * 0.19, cw * 0.19, cw * 0.13];
-    const aligns: ("left" | "right" | "center")[] = ["left", "right", "right", "right", "center"];
-    this.drawTable(
-      [this.t.livre, this.t.investi, this.t.encaisseCol, this.t.resultatCol, this.t.seuilRent],
+      [this.t.date, this.t.categorie, this.t.libelle, this.t.livre, fc(this.t.montantCol)],
       rows,
       {
-        widths,
-        aligns,
-        totalRow: [
-          this.t.totalGeneral,
-          fmtFCFA(entries.reduce((a, e) => a + e.investi, 0)),
-          fmtFCFA(entries.reduce((a, e) => a + e.encaisse, 0)),
-          fmtFCFA(entries.reduce((a, e) => a + e.resultat, 0)),
-          "",
-        ],
+        widths: [cw * 0.12, cw * 0.17, cw * 0.31, cw * 0.22, cw * 0.18],
+        aligns: ["left", "left", "left", "left", "right"],
+        totalRow: [this.t.totalGeneral, "", "", "", fmtN(total)],
       },
     );
   }
 
+  /** Même calcul que l'onglet Rentabilité de l'application. */
+  buildRentabilite() {
+    this.sectionTitle(this.t.rentabilite);
+    const v = this.ventesPropres;
+    const dep = this.input.depenses ?? [];
+    if (v.length === 0 && dep.length === 0) { this.paragraph(this.t.noData); return; }
+    const mMap = Object.fromEntries(this.input.manuscrits.map((m) => [m.id, m]));
+    const etrangers = new Set(this.input.manuscrits.filter((m) => m.origine === "etranger").map((m) => m.id));
+    this.paragraph(this.t.rentabiliteText);
+
+    const coutUnitaire = this.coutUnitaire;
+    type Agg = { vendus: number; ca: number; comm: number; droits: number; dep: number; coutProd: number };
+    const agg: Record<string, Agg> = {};
+    const ensure = (id: string) => (agg[id] ||= { vendus: 0, ca: 0, comm: 0, droits: 0, dep: 0, coutProd: 0 });
+    v.forEach((s) => {
+      const a = ensure(s.manuscrit_id);
+      a.vendus += Number(s.quantite_vendue || 0);
+      a.ca += Number(s.montant_total_fcfa || 0);
+      a.comm += Number(s.commission_librairie_fcfa || 0);
+      a.droits += Number(s.droits_auteur_fcfa || 0);
+    });
+    dep.forEach((d) => { if (d.manuscrit_id) ensure(d.manuscrit_id).dep += Number(d.montant_fcfa || 0); });
+    this.input.stockInterne.forEach((s) => {
+      if (etrangers.has(s.manuscrit_id)) return;
+      const cost = Number(s.cout_unitaire_impression_fcfa || 0) * Number(s.quantite_imprimee || 0);
+      if (cost > 0) ensure(s.manuscrit_id).coutProd += cost;
+    });
+
+    const entries = Object.entries(agg)
+      .map(([mid, a]) => {
+        const coutVendus = Math.round((coutUnitaire.get(mid) ?? 0) * a.vendus);
+        const benefice = a.ca - a.comm - a.droits - coutVendus - a.dep;
+        const investi = a.coutProd + a.dep;
+        const netUnit = a.vendus > 0 ? (a.ca - a.comm - a.droits) / a.vendus : 0;
+        const seuil = investi > 0 && netUnit > 0 ? Math.ceil(investi / netUnit) : 0;
+        return { mid, ...a, investi, benefice, seuil };
+      })
+      .filter((e) => e.investi > 0 || e.ca > 0)
+      .sort((a, b) => b.benefice - a.benefice);
+
+    if (entries.length === 0) { this.paragraph(this.t.noData); return; }
+
+    const rows: Cellule[][] = entries.map((e) => [
+      clean(mMap[e.mid]?.titre ?? "-"),
+      String(e.vendus),
+      fmtN(e.ca),
+      fmtN(e.investi),
+      { texte: fmtN(e.benefice), gras: true, couleur: e.benefice < 0 ? PDF.red : PDF.green },
+      e.seuil > 0 ? `${e.seuil} ex.` : "-",
+    ]);
+    const somme = entries.reduce((a, e) => a + e.benefice, 0);
+    const globales = dep.filter((d) => !d.manuscrit_id).reduce((a, d) => a + Number(d.montant_fcfa || 0), 0);
+    const cw = this.contentWidth;
+    this.drawTable(
+      [this.t.livre, this.t.vendus, fc(this.t.ventesMontant), fc(this.t.investi), fc(this.t.resultatCol), this.t.seuilRent],
+      rows,
+      {
+        widths: [cw * 0.31, cw * 0.09, cw * 0.15, cw * 0.15, cw * 0.15, cw * 0.15],
+        aligns: ["left", "right", "right", "right", "right", "right"],
+        totalRow: [this.t.totalGeneral, String(entries.reduce((a, e) => a + e.vendus, 0)), fmtN(entries.reduce((a, e) => a + e.ca, 0)), fmtN(entries.reduce((a, e) => a + e.investi, 0)), fmtN(somme), ""],
+      },
+    );
+    if (globales > 0) {
+      this.ligne(`${this.t.nonLiees} : - ${fmtFCFA(globales)}`, { taille: 9, couleur: PDF.muted, espace: 2 });
+    }
+    const benefice = somme - globales;
+    this.cursorY -= 8;
+    this.ligne(`${this.t.kpiResultat} : ${fmtFCFA(benefice)}`, { taille: 12, style: "bold", couleur: benefice < 0 ? PDF.red : PDF.green, espace: 6 });
+  }
+
   buildFooter() {
-    this.addPageIfNeeded(120);
+    this.cursorY += 18;
+    this.addPageIfNeeded(70);
     const d = this.doc;
-    this.cursorY = Math.max(this.cursorY, this.pageHeight - 150);
-    d.setDrawColor(GOLD);
+    d.setDrawColor(PDF.gold);
     d.setLineWidth(0.8);
     d.line(this.marginX, this.cursorY, this.pageWidth - this.marginX, this.cursorY);
-    this.cursorY += 14;
-    d.setFont("helvetica", "italic");
-    d.setFontSize(9);
-    d.setTextColor("#555");
-    const lines = d.splitTextToSize(this.t.footer(this.input.entrepriseNom, fmtDateTime(new Date())), this.contentWidth);
-    d.text(lines, this.marginX, this.cursorY);
-    this.cursorY += lines.length * 12 + 10;
-    d.setFont("helvetica", "bold");
-    d.setFontSize(10);
-    d.setTextColor(GOLD);
-    d.text(this.t.tagline, this.pageWidth / 2, this.cursorY, { align: "center" });
-    this.cursorY += 14;
-    d.setFont("helvetica", "normal");
-    d.setFontSize(9);
-    d.setTextColor("#888");
-    d.text(this.t.site, this.pageWidth / 2, this.cursorY, { align: "center" });
+    this.cursorY += 10;
+    this.ligne(this.t.footer(clean(this.input.entrepriseNom), fmtDateTime(new Date())), { taille: 8.5, style: "italic", couleur: PDF.muted, espace: 4 });
+    this.ligne(this.t.tagline, { taille: 9, style: "bold", couleur: GOLD });
   }
 
   build(): jsPDF {
@@ -1103,14 +1044,15 @@ class PdfBuilder {
     if (this.input.sections.stocks) this.buildStocks();
     this.buildFooter();
 
-    const total = this.doc.getNumberOfPages();
-    this.drawPageNumbers(total);
+    finaliserPdf(this.doc, this.marque, `${this.t.title} · ${clean(this.input.entrepriseNom)}`);
     return this.doc;
   }
 }
 
-export function generateFinanceReport(input: ReportInput): jsPDF {
-  return new PdfBuilder(input).build();
+/** Rapport financier complet, au design commun des PDF FIGDITIONS. */
+export async function generateFinanceReport(input: ReportInput): Promise<jsPDF> {
+  const marque = await chargerMarquePdf();
+  return new PdfBuilder(input, marque).build();
 }
 
 export function reportFilename(entrepriseNom: string, from: string, to: string): string {

@@ -21,7 +21,6 @@ import { fr } from "date-fns/locale";
 import { withSessionRecovery } from "@/lib/session-recovery";
 import { Eyebrow, Montant, Panel, PanelHeader, Pastille, Vide, GOLD_BUTTON, fmtMontant } from "@/components/finances/finance-ui";
 import { generateFactureVentePdf } from "@/lib/pdf-facture-vente";
-import { getFactureWatermark } from "@/lib/facture-watermark";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
 import { fmtFCFA, type VenteRow } from "@/lib/finance-types";
@@ -263,7 +262,6 @@ export function VentesTab({
         remisePct: Number(g.remise_pct ?? 0),
         remiseFcfa: Math.max(0, sousTotal - total),
         total,
-        watermarkLogoUrl: getFactureWatermark(),
       }, "download");
     } catch (e: any) {
       toast.error(e?.message ?? "Impossible de générer la facture");

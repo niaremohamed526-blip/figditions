@@ -113,7 +113,8 @@ export function RoyaltiesTab({
       }));
     const clean = a.nom.replace(/[^a-zA-Z0-9]+/g, "_").slice(0, 30);
     generateReleveAuteurPdf({ entrepriseNom: entrepriseNom || "Maison d'édition", auteurNom: a.nom, annee: Number(releveAnnee), lignes })
-      .save(`Releve_${releveAnnee}_${clean}.pdf`);
+      .then((pdf) => pdf.save(`Releve_${releveAnnee}_${clean}.pdf`))
+      .catch(() => toast.error("Le relevé PDF n'a pas pu être créé. Réessayez."));
   };
 
   const buildLignes = (ids: string[]): QuittanceLigne[] =>
@@ -131,7 +132,7 @@ export function RoyaltiesTab({
     reference?: string | null; notes?: string | null; payeParNom?: string | null;
     date: Date; venteIds: string[];
   }) => {
-    const pdf = generateQuittancePdf({
+    generateQuittancePdf({
       entrepriseNom: entrepriseNom || "Maison d'édition",
       entrepriseVille,
       numero: p.numero,
@@ -143,8 +144,9 @@ export function RoyaltiesTab({
       notes: p.notes,
       payeParNom: p.payeParNom,
       lignes: buildLignes(p.venteIds),
-    });
-    pdf.save(quittanceFilename(p.numero, p.auteurNom));
+    })
+      .then((pdf) => pdf.save(quittanceFilename(p.numero, p.auteurNom)))
+      .catch(() => toast.error("La quittance PDF n'a pas pu être créée. Réessayez."));
   };
 
   const payer = async () => {
