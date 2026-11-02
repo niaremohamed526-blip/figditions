@@ -40,7 +40,7 @@ const FAQS = [
   },
   {
     question: "Les contrats générés sont-ils valables dans mon pays ?",
-    answer: "Nos modèles de contrats d'édition, bordereaux et factures partent du droit de la zone OHADA, et vous adaptez les territoires, commissions et conditions à votre pays (modèles entièrement personnalisables avec le plan Business). Ils constituent une aide à la rédaction et non un conseil juridique : nous vous recommandons de les faire relire avant signature.",
+    answer: "Nos modèles reprennent les clauses classiques d'un contrat d'édition, communes à la plupart des pays : cession des droits, durée, territoires, droits d'auteur, relevés de ventes, résiliation. Vous les adaptez à votre pays (territoires, remises, durée, tribunal compétent), et ils sont entièrement personnalisables avec le plan Business. Le droit d'auteur reste propre à chaque pays : ces modèles sont une aide à la rédaction, pas un conseil juridique. Faites-les relire par un juriste de votre pays avant signature.",
   },
   {
     question: "J'ai déjà tout dans des cahiers. Comment je migre ?",

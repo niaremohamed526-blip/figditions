@@ -7,7 +7,7 @@ FIGDITIONS remplace les cahiers et les tableurs d'une maison d'édition par un s
 ## Ce que fait la plateforme
 
 - Manuscrits : suivi de chaque titre à travers 10 étapes éditoriales, de la réception à la publication.
-- Auteurs et contrats : fiches auteurs, contrats d'édition générés en quelques clics (base droit OHADA, adaptable au pays).
+- Auteurs et contrats : fiches auteurs, contrats d'édition générés en quelques clics, avec les clauses classiques du métier, adaptables au droit de chaque pays.
 - Stocks : entrepôt interne, dépôts en librairie avec historique par lot, alertes de stock bas, dons.
 - Ventes et finances : journal, rentabilité par titre, calcul automatique des droits d'auteur, bordereaux et reçus imprimables, import Excel.
 - Pr. MEDMO : assistant qui répond aux questions sur les données de la maison, lit une photo de cahier de ventes et prépare les écritures, toujours validées par l'utilisateur.
