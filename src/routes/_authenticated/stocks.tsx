@@ -1,4 +1,5 @@
 import { CHART_TOOLTIP_STYLE } from "@/lib/chart-style";
+import { LibrairieInput } from "@/components/librairie-input";
 import { pl } from "@/lib/plural";
 import { createFileRoute } from "@tanstack/react-router";
 import { CommissionFields } from "@/components/commission-fields";
@@ -783,6 +784,7 @@ function StockForm({
     e.preventDefault();
     if (!entrepriseId) return toast.error("Profil non chargé");
     if (!form.manuscrit_id) return toast.error("Sélectionnez un manuscrit");
+    if (!form.librairie_nom.trim()) return toast.error("Indiquez le nom de la librairie");
 
     // Nouveau dépôt : passe par add_depot_batch : fusionne dans la fiche existante
     // (même livre + même librairie), historise le lot et déduit l'entrepôt.
@@ -872,7 +874,7 @@ function StockForm({
       </div>
       <div className="space-y-2">
         <Label>Nom de la librairie</Label>
-        <Input required value={form.librairie_nom} onChange={(e) => setForm({ ...form, librairie_nom: e.target.value })} placeholder="Librairie Harmattan…" />
+        <LibrairieInput value={form.librairie_nom} onChange={(v) => setForm((f) => ({ ...f, librairie_nom: v }))} onPickAdresse={(a) => a && setForm((f) => ({ ...f, librairie_adresse: f.librairie_adresse || a }))} placeholder="Librairie Harmattan…" />
       </div>
       <div className="space-y-2">
         <Label>Adresse</Label>

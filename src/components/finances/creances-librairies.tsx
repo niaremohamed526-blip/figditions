@@ -1,7 +1,7 @@
 import { useMemo, useState } from "react";
 import { differenceInCalendarDays, format } from "date-fns";
 import { fr } from "date-fns/locale";
-import { CheckCircle2, Loader2, MessageCircle, Store } from "lucide-react";
+import { Check, CheckCircle2, Download, Loader2, MessageCircle } from "lucide-react";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
@@ -13,6 +13,7 @@ import { pl } from "@/lib/plural";
 import { fmtFCFA, type VenteRow } from "@/lib/finance-types";
 import { resteAEncaisser } from "@/lib/finance-calc";
 import { withSessionRecovery } from "@/lib/session-recovery";
+import { generateRecuLibrairiePdf, numeroRecu, type RecuLibrairieInput } from "@/lib/pdf-recu-librairie";
 
 export interface Creance {
   nom: string;
@@ -46,9 +47,10 @@ export function calculerCreances(ventes: VenteRow[], now = new Date()): Creance[
 }
 
 function ageMeta(jours: number) {
-  if (jours >= 60) return { label: `${jours} jours`, className: "bg-red-500/15 text-red-500 border-red-500/30" };
-  if (jours >= 30) return { label: `${jours} jours`, className: "bg-amber-500/15 text-amber-600 dark:text-amber-400 border-amber-500/30" };
-  return { label: jours === 0 ? "Aujourd'hui" : pl(jours, "jour", "jours"), className: "bg-muted text-muted-foreground border-border" };
+  const label = jours === 0 ? "Depuis aujourd'hui" : `Attend depuis ${pl(jours, "jour", "jours")}`;
+  if (jours >= 60) return { label, text: "text-red-500", avatar: "bg-red-500/15 text-red-500" };
+  if (jours >= 30) return { label, text: "text-amber-600 dark:text-amber-400", avatar: "bg-amber-500/15 text-amber-600 dark:text-amber-400" };
+  return { label, text: "text-muted-foreground", avatar: "bg-muted text-muted-foreground" };
 }
 
 const dateFr = (d: string) => format(new Date(d), "do MMMM yyyy", { locale: fr });
@@ -67,18 +69,23 @@ function messageRelance(c: Creance, entrepriseNom: string) {
 export function CreancesLibrairies({
   ventes,
   entrepriseNom,
+  entrepriseVille,
+  titres,
   onChanged,
 }: {
   ventes: VenteRow[];
   entrepriseNom: string;
+  entrepriseVille?: string | null;
+  /** Titre de chaque livre, pour le reçu. */
+  titres: Record<string, string>;
   onChanged: () => void;
 }) {
   const creances = useMemo(() => calculerCreances(ventes), [ventes]);
-  const total = creances.reduce((a, c) => a + c.du, 0);
   const [paiement, setPaiement] = useState<Creance | null>(null);
   const [montant, setMontant] = useState("");
   const [date, setDate] = useState(new Date().toISOString().slice(0, 10));
   const [busy, setBusy] = useState(false);
+  const [recu, setRecu] = useState<RecuLibrairieInput | null>(null);
 
   const ouvrir = (c: Creance) => {
     setPaiement(c);
@@ -107,6 +114,7 @@ export function CreancesLibrairies({
     if (recu > paiement.du) { toast.error(`${paiement.nom} ne doit que ${fmtFCFA(paiement.du)}`); return; }
     setBusy(true);
     let fait = 0;
+    const reglees: RecuLibrairieInput["lignes"] = [];
     try {
       // Une vente après l'autre ; on s'arrête au premier échec pour ne jamais compter deux fois.
       for (const { vente, montant: part } of repartition) {
@@ -121,8 +129,24 @@ export function CreancesLibrairies({
           return;
         }
         fait += part;
+        reglees.push({
+          titre: titres[vente.manuscrit_id] ?? "Livre",
+          dateVente: format(new Date(vente.date_vente), "dd/MM/yyyy"),
+          quantite: Number(vente.quantite_vendue || 0),
+          montant: part,
+        });
       }
-      toast.success(`${fmtFCFA(fait)} reçus de ${paiement.nom}`);
+      const jour = new Date(`${date}T12:00:00`);
+      setRecu({
+        entrepriseNom,
+        entrepriseVille,
+        numero: numeroRecu(jour, repartition[0]?.vente.id ?? "0000"),
+        date: jour,
+        librairieNom: paiement.nom,
+        montant: fait,
+        resteDu: paiement.du - fait,
+        lignes: reglees,
+      });
       setPaiement(null);
     } finally {
       setBusy(false);
@@ -131,49 +155,60 @@ export function CreancesLibrairies({
   };
 
   return (
-    <section className="rounded-xl border border-border bg-card">
-      <header className="flex flex-wrap items-end justify-between gap-2 p-5 pb-3">
+    <section className="rounded-2xl border border-border bg-card">
+      <header className="flex items-end justify-between gap-3 px-5 pt-5 pb-4">
         <div>
-          <h2 className="font-semibold flex items-center gap-2">
-            <Store className="h-4 w-4 text-[color:var(--gold)]" /> Qui vous doit de l'argent
+          <p className="text-[12px] uppercase tracking-[0.2em] text-muted-foreground">Qui vous doit</p>
+          <h2 className="font-wordmark-serif mt-1 text-2xl font-normal leading-tight tracking-normal">
+            {creances.length === 0 ? "Personne" : pl(creances.length, "client", "clients")}
           </h2>
-          <p className="text-sm text-muted-foreground mt-0.5">
-            Les plus anciennes dettes en premier. Quand une librairie paie, enregistrez-le ici en une fois.
-          </p>
         </div>
-        {total > 0 && <p className="text-lg font-semibold tabular-nums">{fmtFCFA(total)}</p>}
       </header>
 
       {creances.length === 0 ? (
         <p className="px-5 pb-6 text-sm text-muted-foreground flex items-center gap-2">
-          <CheckCircle2 className="h-4 w-4 text-emerald-500" /> Personne ne vous doit d'argent : tout est encaissé.
+          <CheckCircle2 className="h-4 w-4 text-emerald-500" /> Tout est encaissé.
         </p>
       ) : (
         <ul className="divide-y divide-border border-t border-border">
           {creances.map((c) => {
             const age = ageMeta(c.jours);
             return (
-              <li key={c.nom} className="flex flex-wrap items-center gap-x-4 gap-y-2 px-5 py-3">
-                <div className="min-w-0 flex-1 basis-48">
-                  <p className="font-medium truncate">{c.nom}</p>
-                  <p className="text-xs text-muted-foreground">
-                    {pl(c.ventes.length, "vente non payée", "ventes non payées")} · depuis le {dateFr(c.depuis)}
-                  </p>
+              <li key={c.nom} className="flex items-center gap-3 px-5 py-3.5">
+                <span
+                  className={cn("flex h-9 w-9 shrink-0 items-center justify-center rounded-full text-sm font-semibold", age.avatar)}
+                  aria-hidden
+                >
+                  {c.nom.charAt(0).toUpperCase()}
+                </span>
+                <div className="min-w-0 flex-1">
+                  <p className="truncate font-medium">{c.nom}</p>
+                  <p className={cn("text-xs", age.text)}>{age.label}</p>
                 </div>
-                <span className={cn("text-[11px] rounded-md border px-2 py-0.5 whitespace-nowrap", age.className)}>{age.label}</span>
-                <p className="font-semibold tabular-nums w-32 text-right">{fmtFCFA(c.du)}</p>
-                <div className="flex gap-2">
-                  <Button asChild size="sm" variant="outline" className="rounded-md">
+                <p className="shrink-0 text-right font-semibold tabular-nums">
+                  {Math.round(c.du).toLocaleString("fr-FR")}
+                  <span className="block text-[11px] font-normal text-muted-foreground">FCFA</span>
+                </p>
+                <div className="flex shrink-0 gap-1.5">
+                  <Button asChild size="icon" variant="outline" className="h-9 w-9 rounded-full border-[#25D366]/40 text-[#1EBE5B] hover:bg-[#25D366]/10">
                     <a
                       href={`https://wa.me/?text=${encodeURIComponent(messageRelance(c, entrepriseNom))}`}
                       target="_blank"
                       rel="noopener noreferrer"
+                      aria-label={`Relancer ${c.nom} sur WhatsApp`}
+                      title="Relancer sur WhatsApp"
                     >
-                      <MessageCircle className="h-3.5 w-3.5" /> Relancer
+                      <MessageCircle className="h-4 w-4" />
                     </a>
                   </Button>
-                  <Button size="sm" className="rounded-md bg-[#C8922A] text-white hover:bg-[#B5821F]" onClick={() => ouvrir(c)}>
-                    Paiement reçu
+                  <Button
+                    size="icon"
+                    className="h-9 w-9 rounded-full bg-[#C8922A] text-white hover:bg-[#B5821F]"
+                    onClick={() => ouvrir(c)}
+                    aria-label={`Paiement reçu de ${c.nom}`}
+                    title="Paiement reçu"
+                  >
+                    <Check className="h-4 w-4" />
                   </Button>
                 </div>
               </li>
@@ -181,6 +216,39 @@ export function CreancesLibrairies({
           })}
         </ul>
       )}
+      {creances.length > 0 && (
+        <p className="flex items-center gap-4 border-t border-border px-5 py-3 text-[11px] text-muted-foreground">
+          <span className="inline-flex items-center gap-1.5"><MessageCircle className="h-3 w-3" /> Relancer</span>
+          <span className="inline-flex items-center gap-1.5"><Check className="h-3 w-3" /> Paiement reçu</span>
+        </p>
+      )}
+
+      <Dialog open={!!recu} onOpenChange={(o) => !o && setRecu(null)}>
+        <DialogContent className="max-w-sm text-center">
+          <DialogHeader className="items-center sm:text-center">
+            <span className="mx-auto mb-2 flex h-12 w-12 items-center justify-center rounded-full bg-emerald-500/15 text-emerald-500">
+              <Check className="h-6 w-6" />
+            </span>
+            <DialogTitle>Paiement enregistré</DialogTitle>
+            <DialogDescription>
+              {recu && <>{fmtFCFA(recu.montant)} reçus de {recu.librairieNom}.{recu.resteDu > 0 && <> Reste {fmtFCFA(recu.resteDu)}.</>}</>}
+            </DialogDescription>
+          </DialogHeader>
+          <DialogFooter className="sm:justify-center gap-2">
+            <Button variant="outline" className="rounded-md" onClick={() => setRecu(null)}>Fermer</Button>
+            <Button
+              className="rounded-md bg-[#C8922A] text-white hover:bg-[#B5821F]"
+              onClick={() => {
+                if (!recu) return;
+                const clean = recu.librairieNom.replace(/[^a-zA-Z0-9]+/g, "_").slice(0, 30);
+                generateRecuLibrairiePdf(recu).save(`${recu.numero}_${clean}.pdf`);
+              }}
+            >
+              <Download className="h-4 w-4" /> Reçu PDF
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
 
       <Dialog open={!!paiement} onOpenChange={(o) => !o && !busy && setPaiement(null)}>
         <DialogContent className="max-w-md">

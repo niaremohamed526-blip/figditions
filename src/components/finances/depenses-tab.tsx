@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { pl } from "@/lib/plural";
 import { supabase } from "@/integrations/supabase/client";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
@@ -10,7 +10,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog";
-import { Plus, Wallet, Pencil, Trash2, Loader2, Search } from "lucide-react";
+import { Plus, Wallet, Pencil, Trash2, Loader2, Search, Copy } from "lucide-react";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
 import { DEPENSE_CATEGORIES, categorieLabel, fmtFCFA, type DepenseRow } from "@/lib/finance-types";
@@ -55,12 +55,17 @@ export function DepensesTab({
   entrepriseId,
   userId,
   onChanged,
+  autoOpen = false,
+  onAutoOpened,
 }: {
   depenses: DepenseRow[];
   manuscrits: ManuscritLite[];
   entrepriseId: string;
   userId: string;
   onChanged: () => void;
+  /** Demandé depuis la Vue d'ensemble : ouvre directement « Nouvelle dépense ». */
+  autoOpen?: boolean;
+  onAutoOpened?: () => void;
 }) {
   const [dialogOpen, setDialogOpen] = useState(false);
   const [editing, setEditing] = useState<DepenseRow | null>(null);
@@ -85,6 +90,25 @@ export function DepensesTab({
   const openCreate = () => {
     setEditing(null);
     setForm(emptyForm());
+    setDialogOpen(true);
+  };
+
+  useEffect(() => {
+    if (autoOpen) { openCreate(); onAutoOpened?.(); }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [autoOpen]);
+
+  /** Même dépense, datée d'aujourd'hui : loyer, salaires, abonnements… */
+  const openDuplicate = (d: DepenseRow) => {
+    setEditing(null);
+    setForm({
+      categorie: d.categorie,
+      libelle: d.libelle,
+      montant: String(d.montant_fcfa),
+      date: new Date().toISOString().slice(0, 10),
+      manuscrit_id: d.manuscrit_id ?? "none",
+      notes: "",
+    });
     setDialogOpen(true);
   };
 
@@ -227,7 +251,10 @@ export function DepensesTab({
                       <td className="py-2.5 pr-3 text-right font-semibold text-red-400">{fmtFCFA(d.montant_fcfa)}</td>
                       <td className="py-2.5 text-right">
                         <div className="flex justify-end gap-1">
-                          <Button size="icon" variant="ghost" className="h-7 w-7" onClick={() => openEdit(d)}>
+                          <Button size="icon" variant="ghost" className="h-7 w-7" onClick={() => openDuplicate(d)} title="Refaire cette dépense aujourd'hui" aria-label="Refaire cette dépense aujourd'hui">
+                            <Copy className="h-3.5 w-3.5" />
+                          </Button>
+                          <Button size="icon" variant="ghost" className="h-7 w-7" onClick={() => openEdit(d)} title="Modifier" aria-label="Modifier">
                             <Pencil className="h-3.5 w-3.5" />
                           </Button>
                           <Button size="icon" variant="ghost" className="h-7 w-7 text-red-400 hover:text-red-300" onClick={() => setToDelete(d)}>

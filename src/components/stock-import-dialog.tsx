@@ -1,4 +1,5 @@
 import { useMemo, useRef, useState } from "react";
+import { LibrairieInput } from "@/components/librairie-input";
 import { pl } from "@/lib/plural";
 import * as XLSX from "xlsx";
 import { format } from "date-fns";
@@ -251,7 +252,7 @@ export function StockImportDialog({
             <div className="grid sm:grid-cols-2 gap-3">
               <div className="space-y-1.5">
                 <Label className="text-xs">Nom de la librairie *</Label>
-                <Input value={librairieNom} onChange={(e) => setLibrairieNom(e.target.value)} placeholder="Ex. Librairie Renaissance" />
+                <LibrairieInput value={librairieNom} onChange={setLibrairieNom} onPickAdresse={(a) => a && setLibrairieAdresse((x) => x || a)} />
               </div>
               <div className="space-y-1.5">
                 <Label className="text-xs">Adresse (optionnel)</Label>

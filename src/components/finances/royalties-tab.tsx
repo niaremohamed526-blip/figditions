@@ -14,6 +14,7 @@ import { toast } from "sonner";
 import { cn } from "@/lib/utils";
 import { fmtFCFA, methodeLabel, PAIEMENT_METHODES, type PaiementRoyaltiesRow, type VenteRow } from "@/lib/finance-types";
 import { generateQuittancePdf, quittanceFilename, type QuittanceLigne } from "@/lib/pdf-quittance";
+import { generateReleveAuteurPdf } from "@/lib/pdf-releve-auteur";
 
 interface ManuscritLite { id: string; titre: string; auteur: string; auteur_id: string | null; }
 interface AuteurLite { id: string; nom_complet: string; }
@@ -47,6 +48,10 @@ export function RoyaltiesTab({
   const [reference, setReference] = useState("");
   const [notes, setNotes] = useState("");
   const [busy, setBusy] = useState(false);
+  /** Ventes cochées pour ce paiement : toutes par défaut, l'éditeur peut en retirer. */
+  const [choix, setChoix] = useState<Set<string>>(new Set());
+  const choisies = payGroup ? payGroup.ventes.filter((v) => choix.has(v.id)) : [];
+  const montantChoisi = choisies.reduce((a, v) => a + Number(v.droits_auteur_fcfa || 0), 0);
   const [downloadingId, setDownloadingId] = useState<string | null>(null);
 
   const manuscritMap = useMemo(() => new Map(manuscrits.map((m) => [m.id, m])), [manuscrits]);
@@ -77,6 +82,38 @@ export function RoyaltiesTab({
     return [...groups.values()].sort((a, b) => b.montant - a.montant);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [ventes, manuscritMap, auteurMap]);
+
+  // Relevé annuel : un auteur, une année, toutes ses ventes (payées ou non).
+  const auteursAvecVentes = useMemo(() => {
+    const m = new Map<string, string>();
+    ventes.forEach((v) => { const { key, nom } = resolveNom(v); m.set(key, nom); });
+    return [...m.entries()].map(([key, nom]) => ({ key, nom })).sort((a, b) => a.nom.localeCompare(b.nom, "fr"));
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [ventes, manuscritMap, auteurMap]);
+  const annees = useMemo(
+    () => [...new Set([new Date().getFullYear(), ...ventes.map((v) => Number(v.date_vente.slice(0, 4)))])].sort((a, b) => b - a),
+    [ventes],
+  );
+  const [releveAuteur, setReleveAuteur] = useState("");
+  const [releveAnnee, setReleveAnnee] = useState(String(new Date().getFullYear()));
+
+  const telechargerReleve = () => {
+    const a = auteursAvecVentes.find((x) => x.key === releveAuteur);
+    if (!a) { toast.error("Choisissez un auteur"); return; }
+    const lignes = ventes
+      .filter((v) => resolveNom(v).key === a.key && v.date_vente.startsWith(releveAnnee) && Number(v.droits_auteur_fcfa) > 0)
+      .sort((x, y) => x.date_vente.localeCompare(y.date_vente))
+      .map((v) => ({
+        titre: manuscritMap.get(v.manuscrit_id)?.titre ?? "Livre",
+        date: new Date(v.date_vente).toLocaleDateString("fr-FR"),
+        quantite: Number(v.quantite_vendue || 0),
+        droits: Number(v.droits_auteur_fcfa || 0),
+        paye: v.statut_paiement === "paye",
+      }));
+    const clean = a.nom.replace(/[^a-zA-Z0-9]+/g, "_").slice(0, 30);
+    generateReleveAuteurPdf({ entrepriseNom: entrepriseNom || "Maison d'édition", auteurNom: a.nom, annee: Number(releveAnnee), lignes })
+      .save(`Releve_${releveAnnee}_${clean}.pdf`);
+  };
 
   const buildLignes = (ids: string[]): QuittanceLigne[] =>
     ventes
@@ -113,7 +150,8 @@ export function RoyaltiesTab({
     if (!payGroup) return;
     setBusy(true);
     try {
-      const ids = payGroup.ventes.map((v) => v.id);
+      const ids = choisies.map((v) => v.id);
+      if (ids.length === 0) throw new Error("Cochez au moins une vente");
       const { data, error } = await (supabase as any).rpc("payer_royalties_auteur", {
         p_vente_ids: ids,
         p_methode: methode,
@@ -207,7 +245,7 @@ export function RoyaltiesTab({
                     {g.ventes.length > 5 && <p>… et {pl(g.ventes.length - 5, "autre", "autres")}</p>}
                   </div>
                   <Button
-                    onClick={() => { setPayGroup(g); setMethode("especes"); setReference(""); setNotes(""); }}
+                    onClick={() => { setPayGroup(g); setChoix(new Set(g.ventes.map((v) => v.id))); setMethode("especes"); setReference(""); setNotes(""); }}
                     className="w-full bg-[linear-gradient(135deg,#C8922A,#A67420)] text-white border-0 font-semibold"
                   >
                     <ReceiptText className="h-4 w-4 mr-2" />
@@ -219,6 +257,36 @@ export function RoyaltiesTab({
           )}
         </CardContent>
       </Card>
+
+      {/* Relevé annuel d'un auteur */}
+      {auteursAvecVentes.length > 0 && (
+        <Card className="bg-card/70">
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2 text-lg">
+              <Download className="h-5 w-5 text-[color:var(--gold)]" />
+              Relevé pour un auteur
+            </CardTitle>
+            <CardDescription>Toutes ses ventes de l'année, ce qui est payé et ce qui reste. À lui envoyer.</CardDescription>
+          </CardHeader>
+          <CardContent className="flex flex-col gap-3 sm:flex-row">
+            <Select value={releveAuteur} onValueChange={setReleveAuteur}>
+              <SelectTrigger className="sm:w-64"><SelectValue placeholder="Choisir un auteur" /></SelectTrigger>
+              <SelectContent>
+                {auteursAvecVentes.map((a) => <SelectItem key={a.key} value={a.key}>{a.nom}</SelectItem>)}
+              </SelectContent>
+            </Select>
+            <Select value={releveAnnee} onValueChange={setReleveAnnee}>
+              <SelectTrigger className="sm:w-32"><SelectValue /></SelectTrigger>
+              <SelectContent>
+                {annees.map((y) => <SelectItem key={y} value={String(y)}>{y}</SelectItem>)}
+              </SelectContent>
+            </Select>
+            <Button onClick={telechargerReleve} disabled={!releveAuteur} className="rounded-md bg-[#C8922A] text-white hover:bg-[#B5821F]">
+              <Download className="h-4 w-4 mr-2" /> Relevé PDF
+            </Button>
+          </CardContent>
+        </Card>
+      )}
 
       {/* Historique des paiements */}
       <Card className="bg-card/70">
@@ -292,16 +360,39 @@ export function RoyaltiesTab({
           <DialogHeader>
             <DialogTitle>Payer les royalties : {payGroup?.nom}</DialogTitle>
             <DialogDescription>
-              {payGroup && (
-                <>
-                  {pl(payGroup.ventes.length, "vente sera marquée comme payée", "ventes seront marquées comme payées")} · Total :{" "}
-                  <strong className="text-[color:var(--gold)]">{fmtFCFA(payGroup.montant)}</strong>
-                  <br />Une quittance numérotée sera générée et téléchargée automatiquement.
-                </>
-              )}
+              Décochez les ventes que vous ne payez pas maintenant. Une quittance est téléchargée automatiquement.
             </DialogDescription>
           </DialogHeader>
           <div className="space-y-4">
+            {payGroup && (
+              <div className="rounded-md border border-border">
+                <div className="max-h-48 overflow-y-auto divide-y divide-border">
+                  {payGroup.ventes.map((v) => (
+                    <label key={v.id} className="flex cursor-pointer items-center gap-3 px-3 py-2 text-sm hover:bg-muted/40">
+                      <input
+                        type="checkbox"
+                        className="h-4 w-4 accent-[#C8922A]"
+                        checked={choix.has(v.id)}
+                        onChange={(e) => setChoix((prev) => {
+                          const next = new Set(prev);
+                          if (e.target.checked) next.add(v.id); else next.delete(v.id);
+                          return next;
+                        })}
+                      />
+                      <span className="min-w-0 flex-1 truncate">
+                        {manuscritMap.get(v.manuscrit_id)?.titre ?? "Livre"}
+                        <span className="text-muted-foreground"> · {new Date(v.date_vente).toLocaleDateString("fr-FR")}</span>
+                      </span>
+                      <span className="tabular-nums">{fmtFCFA(v.droits_auteur_fcfa)}</span>
+                    </label>
+                  ))}
+                </div>
+                <div className="flex justify-between border-t border-border px-3 py-2 text-sm font-medium">
+                  <span>{pl(choisies.length, "vente", "ventes")}</span>
+                  <span className="tabular-nums text-[color:var(--gold)]">{fmtFCFA(montantChoisi)}</span>
+                </div>
+              </div>
+            )}
             <div className="space-y-1.5">
               <Label>Méthode de paiement</Label>
               <Select value={methode} onValueChange={setMethode}>
@@ -330,11 +421,11 @@ export function RoyaltiesTab({
             <Button variant="outline" onClick={() => setPayGroup(null)} disabled={busy}>Annuler</Button>
             <Button
               onClick={payer}
-              disabled={busy}
+              disabled={busy || choisies.length === 0}
               className={cn("bg-[linear-gradient(135deg,#C8922A,#A67420)] text-white border-0")}
             >
               {busy ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : <ReceiptText className="h-4 w-4 mr-2" />}
-              Confirmer le paiement
+              Payer {fmtFCFA(montantChoisi)}
             </Button>
           </DialogFooter>
         </DialogContent>

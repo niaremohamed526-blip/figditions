@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from "react";
+import { LibrairieInput } from "@/components/librairie-input";
 import { pl } from "@/lib/plural";
 import { format } from "date-fns";
 import { Loader2, Zap, Trash2, Plus, CheckCircle2, X, Store, Keyboard, AlertTriangle, Save, Warehouse } from "lucide-react";
@@ -343,7 +344,7 @@ export function StockPosDialog({
               </div>
               <div className="space-y-1.5">
                 <Label className="text-xs">Nom de la librairie *</Label>
-                <Input value={librairieNom} onChange={(e) => setLibrairieNom(e.target.value)} placeholder="Ex. Librairie Renaissance" autoFocus />
+                <LibrairieInput value={librairieNom} onChange={setLibrairieNom} onPickAdresse={(a) => a && setLibrairieAdresse((x) => x || a)} autoFocus />
               </div>
               <div className="grid sm:grid-cols-2 gap-3">
                 <div className="space-y-1.5">

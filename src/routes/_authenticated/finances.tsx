@@ -55,6 +55,13 @@ interface Manuscrit { id: string; titre: string; auteur: string; auteur_id?: str
 interface Auteur { id: string; nom_complet: string; numero_mobile_money: string | null; operateur: string | null; }
 interface StockInterneLite { id: string; manuscrit_id: string; quantite_imprimee: number; cout_unitaire_impression_fcfa: number; }
 
+/** Vues de détail, ouvertes depuis la Vue d'ensemble plutôt que par un onglet. */
+const SECONDAIRES = [
+  { value: "rentabilite", label: "Rentabilité par livre", desc: "Ce que chaque livre rapporte", icon: PiggyBank },
+  { value: "etrangers", label: "Livres étrangers", desc: "Ventes pour d'autres maisons", icon: Globe },
+  { value: "journal", label: "Journal", desc: "Qui a fait quoi, et quand", icon: History },
+];
+
 const COLORS = ["#C8922A", "#E8B84B", "#4F8FF7", "#E85D8C", "#7E5FFF", "#FF9F45"];
 
 /** Normalized author name : stable grouping key when auteur_id is missing. */
@@ -119,6 +126,7 @@ function FinancesInner({
   useEffect(() => { if (entrepriseId) load(); }, [entrepriseId]);
 
   const mMap = useMemo(() => Object.fromEntries(manuscrits.map((m) => [m.id, m])), [manuscrits]);
+  const titres = useMemo(() => Object.fromEntries(manuscrits.map((m) => [m.id, m.titre])), [manuscrits]);
   const aMap = useMemo(() => Object.fromEntries(auteurs.map((a) => [a.id, a.nom_complet])), [auteurs]);
 
   /** Livres étrangers : jamais mélangés aux ventes de nos productions. */
@@ -166,10 +174,13 @@ function FinancesInner({
     const pendingVentes = ventesActivesPropres.filter((v) => v.statut_paiement === "en_attente" && Number(v.droits_auteur_fcfa) > 0);
     const pending = pendingVentes.reduce((a, v) => a + Number(v.droits_auteur_fcfa || 0), 0);
     const auteursEnAttente = new Set(pendingVentes.map((v) => v.auteur_id ?? mMap[v.manuscrit_id]?.auteur_id ?? mMap[v.manuscrit_id]?.auteur ?? v.manuscrit_id)).size;
-    return { aEncaisser, pending, auteursEnAttente };
+    const ventesTotal = ventesActives.reduce((a, v) => a + Number(v.montant_total_fcfa || 0), 0);
+    const pctEncaisse = ventesTotal > 0 ? Math.round(((ventesTotal - aEncaisser) / ventesTotal) * 100) : 100;
+    return { aEncaisser, pending, auteursEnAttente, pctEncaisse };
   }, [ventesActives, ventesActivesPropres, mMap]);
 
   const [tab, setTab] = useState("apercu");
+  const [nouvelleDepense, setNouvelleDepense] = useState(false);
   const libellePeriode = PERIODES.find((p) => p.value === periode)!.label.toLowerCase();
 
   /** 6 derniers mois, avec le même calcul de bénéfice que la carte « gagné ». */
@@ -206,7 +217,7 @@ function FinancesInner({
         <div>
           <h1 className="text-3xl font-bold tracking-tight">Finances</h1>
           <p className="text-muted-foreground mt-1">
-            Ventes, encaissements, dépenses et royalties. Chaque opération est traçable et vérifiable.
+            Ce que vous gagnez, ce qu'on vous doit, ce que vous devez.
           </p>
         </div>
         <div className="flex flex-wrap items-center gap-2">
@@ -216,93 +227,131 @@ function FinancesInner({
       </header>
 
       <Tabs value={tab} onValueChange={setTab} className="space-y-6">
-        <TabsList className="w-full justify-start overflow-x-auto flex-nowrap h-auto p-1 gap-1">
-          <TabsTrigger value="apercu" className="gap-1.5 whitespace-nowrap">
-            <LayoutDashboard className="h-4 w-4" /> Vue d'ensemble
+        <TabsList className="grid w-full grid-cols-4 h-auto p-1 gap-1">
+          <TabsTrigger value="apercu" className="gap-1.5 whitespace-nowrap px-1 text-[13px] sm:text-sm">
+            <LayoutDashboard className="hidden h-4 w-4 sm:block" /> <span className="sm:hidden">Aperçu</span><span className="hidden sm:inline">Vue d'ensemble</span>
           </TabsTrigger>
-          <TabsTrigger value="ventes" className="gap-1.5 whitespace-nowrap">
-            <ShoppingCart className="h-4 w-4" /> Ventes
+          <TabsTrigger value="ventes" className="gap-1.5 whitespace-nowrap px-1 text-[13px] sm:text-sm">
+            <ShoppingCart className="hidden h-4 w-4 sm:block" /> Ventes
             {!loading && ventes.length > 0 && (
-              <Badge variant="secondary" className="ml-1 text-[10px] px-1.5 py-0">{ventes.length}</Badge>
+              <Badge variant="secondary" className="ml-1 hidden sm:inline-flex text-[10px] px-1.5 py-0">{ventes.length}</Badge>
             )}
           </TabsTrigger>
-          <TabsTrigger value="depenses" className="gap-1.5 whitespace-nowrap">
-            <Wallet className="h-4 w-4" /> Dépenses
+          <TabsTrigger value="depenses" className="gap-1.5 whitespace-nowrap px-1 text-[13px] sm:text-sm">
+            <Wallet className="hidden h-4 w-4 sm:block" /> Dépenses
           </TabsTrigger>
-          <TabsTrigger value="royalties" className="gap-1.5 whitespace-nowrap">
-            <Users className="h-4 w-4" /> Royalties
+          <TabsTrigger value="royalties" className="gap-1.5 whitespace-nowrap px-1 text-[13px] sm:text-sm">
+            <Users className="hidden h-4 w-4 sm:block" /> Auteurs
             {totals.pending > 0 && (
-              <Badge className="ml-1 text-[10px] px-1.5 py-0 bg-amber-500/20 text-amber-400 border-amber-500/30">
+              <Badge className="ml-1 hidden sm:inline-flex text-[10px] px-1.5 py-0 bg-amber-500/20 text-amber-400 border-amber-500/30">
                 {fcfa(totals.pending)}
               </Badge>
             )}
           </TabsTrigger>
-          <TabsTrigger value="etrangers" className="gap-1.5 whitespace-nowrap">
-            <Globe className="h-4 w-4" /> Livres Étrangers
-            {ventesEtrangers.length > 0 && (
-              <Badge variant="secondary" className="ml-1 text-[10px] px-1.5 py-0">{ventesEtrangers.length}</Badge>
-            )}
-          </TabsTrigger>
-          <TabsTrigger value="rentabilite" className="gap-1.5 whitespace-nowrap">
-            <PiggyBank className="h-4 w-4" /> Rentabilité
-          </TabsTrigger>
-          <TabsTrigger value="journal" className="gap-1.5 whitespace-nowrap">
-            <History className="h-4 w-4" /> Journal
-          </TabsTrigger>
         </TabsList>
+
+        {SECONDAIRES.some((x) => x.value === tab) && (
+          <button
+            type="button"
+            onClick={() => setTab("apercu")}
+            className="text-sm text-muted-foreground hover:text-foreground"
+          >
+            ← Vue d'ensemble
+          </button>
+        )}
 
         {/* ==================== VUE D'ENSEMBLE ==================== */}
         <TabsContent value="apercu" className="space-y-6">
-          <div className="flex flex-wrap gap-1.5" role="group" aria-label="Période">
-            {PERIODES.map((p) => (
-              <button
-                key={p.value}
-                type="button"
-                onClick={() => setPeriode(p.value)}
-                aria-pressed={periode === p.value}
-                className={cn(
-                  "text-sm px-3 py-1.5 rounded-md border transition-colors",
-                  periode === p.value
-                    ? "border-[#C8922A] bg-[#C8922A] text-white"
-                    : "border-border text-muted-foreground hover:text-foreground",
-                )}
-              >
-                {p.label}
-              </button>
-            ))}
+          <div className="flex flex-wrap items-center justify-between gap-3">
+            <div className="flex items-center gap-3 text-[12px] uppercase tracking-[0.2em] text-muted-foreground">
+              <span className="h-px w-8 bg-[color:var(--gold)]" /> Vos chiffres
+            </div>
+            <div className="inline-flex rounded-full border border-border bg-muted/40 p-1" role="group" aria-label="Période">
+              {PERIODES.map((p) => (
+                <button
+                  key={p.value}
+                  type="button"
+                  onClick={() => setPeriode(p.value)}
+                  aria-pressed={periode === p.value}
+                  className={cn(
+                    "rounded-full px-3.5 py-1 text-[13px] transition-colors",
+                    periode === p.value ? "bg-[#C8922A] text-white shadow-sm" : "text-muted-foreground hover:text-foreground",
+                  )}
+                >
+                  {p.value === "tout" ? "Tout" : p.label}
+                </button>
+              ))}
+            </div>
           </div>
 
-          <div className="grid gap-4 md:grid-cols-3">
-            <AnswerCard
-              question={`Combien avez-vous gagné ${libellePeriode} ?`}
-              value={loading ? null : fcfa(resultat.benefice)}
-              tone={resultat.benefice >= 0 ? "good" : "bad"}
-              detail={
-                <>
-                  Ventes {fcfa(resultat.ventes)}, moins commissions {fcfa(resultat.commissions)}, droits d'auteur{" "}
-                  {fcfa(resultat.droits)}, impression des livres vendus {fcfa(resultat.coutVendus)} et dépenses{" "}
-                  {fcfa(resultat.depenses)}.
-                </>
-              }
-              action={{ label: "Voir par livre", onClick: () => setTab("rentabilite") }}
-            />
-            <AnswerCard
-              question="Combien vous doit-on ?"
-              value={loading ? null : fcfa(totals.aEncaisser)}
-              tone={totals.aEncaisser > 0 ? "warn" : "good"}
-              detail={totals.aEncaisser > 0 ? "Ventes faites mais pas encore payées. La liste est juste en dessous." : "Tout ce qui a été vendu est encaissé."}
-            />
-            <AnswerCard
-              question="Combien devez-vous à vos auteurs ?"
-              value={loading ? null : fcfa(totals.pending)}
-              tone={totals.pending > 0 ? "warn" : "good"}
-              detail={totals.pending > 0 ? `Droits d'auteur à payer à ${pl(totals.auteursEnAttente, "auteur", "auteurs")}.` : "Tous les droits d'auteur sont payés."}
-              action={totals.pending > 0 ? { label: "Payer les auteurs", onClick: () => setTab("royalties") } : undefined}
-            />
+          <div className="grid gap-4 lg:grid-cols-5">
+            {/* Bénéfice : la réponse principale */}
+            <div className="relative overflow-hidden rounded-2xl border border-[color:var(--gold)]/30 bg-gradient-to-br from-[color:var(--gold)]/10 via-card to-card p-6 lg:col-span-3">
+              <p className="text-[12px] uppercase tracking-[0.2em] text-muted-foreground">Gagné {libellePeriode}</p>
+              {loading ? <Skeleton className="mt-3 h-12 w-56" /> : (
+                <p className={cn(
+                  "font-wordmark-serif mt-2 text-5xl leading-none tabular-nums sm:text-6xl",
+                  resultat.benefice >= 0 ? "text-foreground" : "text-red-500",
+                )}>
+                  {fmtCourt(resultat.benefice)}<span className="ml-2 font-sans text-base text-muted-foreground">FCFA</span>
+                </p>
+              )}
+              <div className="mt-5 grid grid-cols-2 gap-x-6 gap-y-2 text-sm sm:grid-cols-3">
+                <Ligne label="Ventes" value={resultat.ventes} />
+                <Ligne label="Commissions" value={-resultat.commissions} />
+                <Ligne label="Droits d'auteur" value={-resultat.droits} />
+                <Ligne label="Impression" value={-resultat.coutVendus} />
+                <Ligne label="Dépenses" value={-resultat.depenses} />
+              </div>
+              <button
+                type="button"
+                onClick={() => { setTab("depenses"); setNouvelleDepense(true); }}
+                className="mt-3 text-xs text-muted-foreground underline-offset-2 hover:text-foreground hover:underline"
+              >
+                + Ajouter une dépense
+              </button>
+              <button type="button" onClick={() => setTab("rentabilite")} className="mt-5 text-sm font-medium text-[#C8922A] hover:text-[#B5821F]">
+                Voir livre par livre →
+              </button>
+            </div>
+
+            <div className="grid gap-4 lg:col-span-2">
+              <div className="rounded-2xl border border-border bg-card p-5">
+                <p className="text-[12px] uppercase tracking-[0.2em] text-muted-foreground">On vous doit</p>
+                {loading ? <Skeleton className="mt-3 h-9 w-40" /> : (
+                  <p className="font-wordmark-serif mt-1.5 text-4xl leading-none tabular-nums">
+                    {fmtCourt(totals.aEncaisser)}<span className="ml-1.5 font-sans text-sm text-muted-foreground">FCFA</span>
+                  </p>
+                )}
+                <div className="mt-4 h-1.5 overflow-hidden rounded-full bg-muted" aria-hidden>
+                  <div className="h-full rounded-full bg-emerald-500" style={{ width: `${totals.pctEncaisse}%` }} />
+                </div>
+                <p className="mt-1.5 text-xs text-muted-foreground">{totals.pctEncaisse} % des ventes déjà encaissées</p>
+              </div>
+
+              <div className="rounded-2xl border border-border bg-card p-5">
+                <div className="flex items-start justify-between gap-3">
+                  <p className="text-[12px] uppercase tracking-[0.2em] text-muted-foreground">À payer aux auteurs</p>
+                  {totals.pending > 0 && (
+                    <button type="button" onClick={() => setTab("royalties")} className="text-sm font-medium text-[#C8922A] hover:text-[#B5821F]">
+                      Payer →
+                    </button>
+                  )}
+                </div>
+                {loading ? <Skeleton className="mt-3 h-9 w-40" /> : (
+                  <p className="font-wordmark-serif mt-1.5 text-4xl leading-none tabular-nums">
+                    {fmtCourt(totals.pending)}<span className="ml-1.5 font-sans text-sm text-muted-foreground">FCFA</span>
+                  </p>
+                )}
+                <p className="mt-3 text-xs text-muted-foreground">
+                  {totals.pending > 0 ? pl(totals.auteursEnAttente, "auteur attend", "auteurs attendent") : "Tout est payé"}
+                </p>
+              </div>
+            </div>
           </div>
 
           {!loading && (
-            <CreancesLibrairies ventes={ventesActives} entrepriseNom={entrepriseNom} onChanged={load} />
+            <CreancesLibrairies ventes={ventesActives} entrepriseNom={entrepriseNom} entrepriseVille={entrepriseVille} titres={titres} onChanged={load} />
           )}
 
           <div className="grid lg:grid-cols-2 gap-4">
@@ -348,6 +397,25 @@ function FinancesInner({
           </div>
 
           <FinancesAnalytics ventes={loading ? null : ventesActives} manuscrits={manuscrits} aMap={aMap} mMap={mMap} />
+
+          <div className="grid gap-3 sm:grid-cols-3">
+            {SECONDAIRES.filter((x) => x.value !== "etrangers" || ventesEtrangers.length > 0 || etrangerIds.size > 0).map((x) => (
+              <button
+                key={x.value}
+                type="button"
+                onClick={() => { setTab(x.value); window.scrollTo({ top: 0, behavior: "smooth" }); }}
+                className="group flex items-center gap-3 rounded-2xl border border-border bg-card p-4 text-left transition-colors hover:border-[color:var(--gold)]/50"
+              >
+                <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-[color:var(--gold)]/10 text-[color:var(--gold)]">
+                  <x.icon className="h-4 w-4" />
+                </span>
+                <span className="min-w-0">
+                  <span className="block font-medium">{x.label}</span>
+                  <span className="block text-xs text-muted-foreground">{x.desc}</span>
+                </span>
+              </button>
+            ))}
+          </div>
         </TabsContent>
 
         {/* ==================== VENTES ==================== */}
@@ -377,6 +445,8 @@ function FinancesInner({
               entrepriseId={entrepriseId}
               userId={userId}
               onChanged={load}
+              autoOpen={nouvelleDepense}
+              onAutoOpened={() => setNouvelleDepense(false)}
             />
           )}
         </TabsContent>
@@ -449,32 +519,14 @@ function FinancesInner({
   );
 }
 
-function AnswerCard({
-  question, value, tone, detail, action,
-}: {
-  question: string;
-  value: string | null;
-  tone: "good" | "warn" | "bad";
-  detail: React.ReactNode;
-  action?: { label: string; onClick: () => void };
-}) {
+/** Montant sans l'unité (affichée à part, plus petite). */
+const fmtCourt = (n: number) => Math.round(n).toLocaleString("fr-FR");
+
+function Ligne({ label, value }: { label: string; value: number }) {
   return (
-    <div className="rounded-xl border border-border bg-card p-5 flex flex-col">
-      <p className="text-sm text-muted-foreground">{question}</p>
-      {value === null ? <Skeleton className="h-9 w-40 mt-2" /> : (
-        <p className={cn(
-          "mt-1 text-3xl font-semibold tabular-nums",
-          tone === "good" ? "text-emerald-600 dark:text-emerald-400" : tone === "bad" ? "text-red-500" : "text-foreground",
-        )}>
-          {value}
-        </p>
-      )}
-      <p className="mt-2 text-xs text-muted-foreground leading-relaxed flex-1">{detail}</p>
-      {action && (
-        <button type="button" onClick={action.onClick} className="mt-3 self-start text-sm font-medium text-[#C8922A] hover:text-[#B5821F]">
-          {action.label} →
-        </button>
-      )}
+    <div className="flex items-baseline justify-between gap-2 border-b border-border/60 pb-1.5">
+      <span className="text-muted-foreground">{label}</span>
+      <span className="tabular-nums">{value < 0 ? "−" : ""}{fmtCourt(Math.abs(value))}</span>
     </div>
   );
 }
