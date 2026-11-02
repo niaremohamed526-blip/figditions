@@ -2,7 +2,7 @@
 
 > Logiciel de gestion en ligne pour les maisons d'édition indépendantes, partout dans le monde : manuscrits, auteurs, contrats, stocks, dépôts en librairie, ventes, finances et droits d'auteur, avec un assistant intelligent intégré (Pr. MEDMO). Interface en français.
 
-FIGDITIONS remplace les cahiers et les tableurs d'une maison d'édition par un seul espace de travail, du manuscrit reçu jusqu'au versement des droits d'auteur. L'application fonctionne aussi sans connexion internet et s'installe sur téléphone ou ordinateur.
+FIGDITIONS remplace les cahiers et les tableurs d'une maison d'édition par un seul espace de travail, du manuscrit reçu jusqu'au versement des droits d'auteur. L'application s'installe sur téléphone ou ordinateur, et les données restent consultables sans connexion internet.
 
 ## Ce que fait la plateforme
 

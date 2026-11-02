@@ -206,6 +206,17 @@ html.light [data-sonner-toaster] [data-sonner-toast] {
 
 @layer base {
   * { border-color: var(--color-border); }
+  html {
+    /* App feel: no double-tap zoom, no grey flash on tap, no text inflation. */
+    touch-action: manipulation;
+    -webkit-tap-highlight-color: transparent;
+    -webkit-text-size-adjust: 100%;
+    text-size-adjust: 100%;
+  }
+  /* Installed app: the screen does not bounce or pull past its edges. */
+  @media (display-mode: standalone) {
+    html, body { overscroll-behavior-y: none; }
+  }
   html, body {
     background-color: var(--color-background);
     color: var(--color-foreground);

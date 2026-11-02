@@ -38,7 +38,7 @@ export function OfflineBanner() {
     >
       <WifiOff className="h-4 w-4 text-[color:var(--gold)]" />
       <span>
-        Mode hors ligne : vos actions seront enregistrées et synchronisées dès le retour du réseau.
+        Hors ligne : vous voyez les dernières données enregistrées sur cet appareil. Les enregistrements reprendront au retour du réseau.
       </span>
     </div>
   );

@@ -2,7 +2,7 @@
 // - Never registers in dev, Lovable preview, iframes, or with ?sw=off
 // - Unregisters any stale /sw.js in those contexts to avoid caching bugs
 
-const APP_SW_PATH = "/sw.js?v=20260821-medmo-v2";
+const APP_SW_PATH = "/sw.js?v=20261102-offline-v5";
 
 function isPreviewOrDevHost(): boolean {
   if (typeof window === "undefined") return true;
@@ -42,6 +42,12 @@ async function unregisterAppSw() {
   }
 }
 
+/** Forgets the data saved for offline use (called on sign-out). */
+export async function effacerDonneesHorsLigne() {
+  if (typeof window === "undefined" || !("caches" in window)) return;
+  try { await caches.delete("figditions-data"); } catch { /* ignore */ }
+}
+
 export async function registerPwa() {
   if (typeof window === "undefined") return;
   if (!("serviceWorker" in navigator)) return;
@@ -52,7 +58,11 @@ export async function registerPwa() {
     return;
   }
 
-  if (!import.meta.env.PROD || isInIframe() || isPreviewOrDevHost()) {
+  // Developers can test the offline mode locally with
+  // localStorage["figditions:sw-test"] = "1" (never set for real users).
+  let forceTest = false;
+  try { forceTest = window.localStorage.getItem("figditions:sw-test") === "1"; } catch { /* ignore */ }
+  if (!forceTest && (!import.meta.env.PROD || isInIframe() || isPreviewOrDevHost())) {
     await unregisterAppSw();
     return;
   }

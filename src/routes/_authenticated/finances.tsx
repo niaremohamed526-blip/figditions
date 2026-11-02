@@ -98,6 +98,14 @@ function FinancesInner({
   const [auteurs, setAuteurs] = useState<Auteur[]>([]);
   const [stockInterne, setStockInterne] = useState<StockInterneLite[]>([]);
   const [sheetOpen, setSheetOpen] = useState(false);
+  // "Enregistrer une vente" shortcut on the installed app's icon opens the form.
+  useEffect(() => {
+    const url = new URL(window.location.href);
+    if (url.searchParams.get("vente") !== "1") return;
+    setSheetOpen(true);
+    url.searchParams.delete("vente");
+    window.history.replaceState(window.history.state, "", url.pathname + url.search + url.hash);
+  }, []);
   const [exportOpen, setExportOpen] = useState(false);
 
   const load = async () => {

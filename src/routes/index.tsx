@@ -1,8 +1,9 @@
-import { createFileRoute, Link } from "@tanstack/react-router";
+import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { Menu, X, ArrowRight, Check } from "lucide-react";
 import { Logo } from "@/components/logo";
 import { useI18n } from "@/hooks/use-i18n";
+import { InstallAppButton } from "@/components/install-app-button";
 import { Button } from "@/components/ui/button";
 import {
   Accordion,
@@ -27,7 +28,7 @@ const FAQS = [
   },
   {
     question: "Est-ce que ça fonctionne sans internet ?",
-    answer: "Oui. FIGDITIONS s'installe comme une application sur votre téléphone ou votre ordinateur et fonctionne en mode sans connexion. Vous pouvez consulter et modifier vos données pendant une coupure ; tout se synchronise automatiquement au retour de la connexion.",
+    answer: "Oui pour consulter. FIGDITIONS s'installe comme une application sur votre téléphone ou votre ordinateur. Pendant une coupure, toutes vos pages s'ouvrent avec les dernières données enregistrées sur l'appareil. Pour enregistrer une vente ou modifier une fiche, il faut la connexion : l'application vous le dit clairement et rien n'est envoyé à moitié.",
   },
   {
     question: "Comment payer mon abonnement ?",
@@ -131,6 +132,14 @@ export const Route = createFileRoute("/")({
 
 
 function Landing() {
+  const navigate = useNavigate();
+  // Opened from the installed app (older installs start here): go straight
+  // to the workspace, which asks to sign in only when nobody is signed in.
+  useEffect(() => {
+    if (window.matchMedia?.("(display-mode: standalone)").matches) {
+      navigate({ to: "/dashboard", replace: true });
+    }
+  }, [navigate]);
   return (
     <div className="min-h-screen bg-[#0A0704] text-foreground overflow-x-hidden">
       <Navbar />
@@ -213,6 +222,7 @@ function Navbar() {
               {l.label}
             </a>
           ))}
+          <InstallAppButton full className="border-[#C8922A]/50 text-[#E8B84B]" />
           <Link to="/login" onClick={() => setOpen(false)} className="block">
             <Button variant="outline" className="w-full">{t("Se connecter", "Sign in")}</Button>
           </Link>
@@ -306,6 +316,9 @@ function Hero() {
             >
               {t("Voir l'interface", "See the interface")}
             </a>
+            <InstallAppButton
+              className="h-12 px-5 border-[#C8922A]/60 bg-transparent text-[#E8B84B] hover:bg-[#C8922A]/15 hover:text-[#E8B84B]"
+            />
           </div>
           <p className="mt-5 text-[13px] text-[#8C7B6B]">
             {t("Gratuit pour toujours · Sans carte bancaire · Prêt en 2 minutes", "Free forever · No card needed · Ready in 2 minutes")}
@@ -418,7 +431,7 @@ function MedmoSection() {
 
 function Features() {
   const { t } = useI18n();
-  const offlineFr = "Continuez à travailler pendant les délestages et les coupures de réseau. Vos données se synchronisent dès le retour de la connexion.";
+  const offlineFr = "Pendant les délestages et les coupures de réseau, vos pages et vos derniers chiffres restent consultables. Installez l'application en un clic.";
   const bordereauxFr = "Générez vos bordereaux de dépôt et de vente en quelques clics, prêts à signer avec vos libraires.";
   const imprimeriesFr = "Accédez aux tarifs et contacts des imprimeries partenaires pour comparer avant d'imprimer.";
   const groups = [
@@ -459,7 +472,7 @@ function Features() {
       items: [
         { fr: "Assistant Pr. MEDMO", en: "Pr. MEDMO assistant", dfr: "Une question, une photo ou un document : il prépare, vous validez.", den: "A question, a photo or a document: it prepares, you approve." },
         { fr: "Photo de cahier en ventes", en: "Notebook photo to sales", dfr: "Titres, quantités et prix reconnus sur une page de cahier.", den: "Titles, quantities and prices read from a notebook page." },
-        { fr: "Fonctionne sans connexion", en: "Works offline", dfr: offlineFr, den: "Keep working through power and network cuts. Everything syncs when you're back online." },
+        { fr: "Fonctionne sans connexion", en: "Works offline", dfr: offlineFr, den: "During power and network cuts, your pages and latest numbers stay readable. Install the app in one click." },
       ],
     },
   ];

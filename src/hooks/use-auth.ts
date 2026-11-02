@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useState } from "react";
-import type { Session, User } from "@supabase/supabase-js";
-import { supabase } from "@/integrations/supabase/client";
+import { isAuthRetryableFetchError, type Session, type User } from "@supabase/supabase-js";
+import { sessionEnregistree, supabase } from "@/integrations/supabase/client";
 import type { Permissions } from "@/lib/permissions";
 import { fullPermissions } from "@/lib/permissions";
 
@@ -28,22 +28,39 @@ export interface Entreprise {
   email?: string | null;
 }
 
+/** Waiting longer than this for the network shows the app with the saved sign-in. */
+const ATTENTE_RESEAU_MS = 4000;
+
 export function useAuth() {
   const [session, setSession] = useState<Session | null>(null);
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((_e, s) => {
+    let fini = false;
+    const appliquer = (s: Session | null) => {
       setSession(s);
       setUser(s?.user ?? null);
+    };
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, s) => {
+      // A failed renewal reports "no session" at start-up: getSession below decides.
+      if (event === "INITIAL_SESSION" && !s) return;
+      appliquer(s);
     });
-    supabase.auth.getSession().then(({ data }) => {
-      setSession(data.session);
-      setUser(data.session?.user ?? null);
+    const attente = window.setTimeout(() => {
+      if (fini) return;
+      const locale = sessionEnregistree();
+      if (locale) { appliquer(locale); setLoading(false); }
+    }, ATTENTE_RESEAU_MS);
+    // After an hour away on a weak network, renewing the sign-in fails although
+    // it is still valid: open the app with it; it is renewed when the network returns.
+    supabase.auth.getSession().then(({ data, error }) => {
+      fini = true;
+      window.clearTimeout(attente);
+      appliquer(data.session ?? (error && isAuthRetryableFetchError(error) ? sessionEnregistree() : null));
       setLoading(false);
     });
-    return () => subscription.unsubscribe();
+    return () => { fini = true; window.clearTimeout(attente); subscription.unsubscribe(); };
   }, []);
 
   return { session, user, loading };

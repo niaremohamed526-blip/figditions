@@ -19,7 +19,8 @@ import { RouteProgress } from "@/components/route-progress";
 import { OfflineBanner } from "@/components/offline-banner";
 import { MaintenanceBanner } from "@/components/maintenance-banner";
 
-import { registerPwa } from "@/lib/pwa-register";
+import { effacerDonneesHorsLigne, registerPwa } from "@/lib/pwa-register";
+import "@/lib/pwa-install";
 import { FIGDITIONS_APP_ICON_VERSION, FIGDITIONS_SITE_LOGO_ABSOLUTE_URL, FIGDITIONS_SITE_LOGO_URL } from "@/lib/brand-assets";
 import { THEME_BOOT_JS } from "@/lib/theme";
 import { useHtmlTheme } from "@/components/theme-toggle";
@@ -72,7 +73,12 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
   head: () => ({
     meta: [
       { charSet: "utf-8" },
-      { name: "viewport", content: "width=device-width, initial-scale=1" },
+      // maximum-scale stops the screen zooming in when a field is tapped (iPhone).
+      { name: "viewport", content: "width=device-width, initial-scale=1, maximum-scale=1, interactive-widget=resizes-content" },
+      { name: "mobile-web-app-capable", content: "yes" },
+      { name: "apple-mobile-web-app-capable", content: "yes" },
+      { name: "apple-mobile-web-app-title", content: "FIGDITIONS" },
+      { name: "apple-mobile-web-app-status-bar-style", content: "black" },
       { title: "FIGDITIONS Plateforme éditoriale" },
       { name: "description", content: "FIGDITIONS, la plateforme de gestion des maisons d'édition. Gérez vos manuscrits, stocks et finances, où que vous soyez." },
       { property: "og:title", content: "FIGDITIONS Plateforme éditoriale" },
@@ -208,6 +214,12 @@ function RootComponent() {
   useEffect(() => {
     const { data: { subscription } } = supabase.auth.onAuthStateChange((event) => {
       if (event !== "SIGNED_IN" && event !== "SIGNED_OUT" && event !== "USER_UPDATED") return;
+      // A shared phone must never show the previous account's data offline.
+      if (event === "SIGNED_OUT") {
+        void effacerDonneesHorsLigne();
+        void del("figditions-query-cache-v1");
+        queryClient.clear();
+      }
       router.invalidate();
       if (event !== "SIGNED_OUT") queryClient.invalidateQueries();
     });
