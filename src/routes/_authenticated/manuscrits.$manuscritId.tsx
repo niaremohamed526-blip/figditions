@@ -1,29 +1,24 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useEffect, useMemo, useRef, useState } from "react";
 import {
-  ArrowLeft, Lock, Plus, Copy, Power, Trash2, Loader2, FileText,
+  ArrowLeft, Lock, Trash2, Loader2, FileText,
   BarChart3, Eye, CloudUpload, AlertTriangle, CheckCircle2, Sparkles, RefreshCw,
 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth, useProfile } from "@/hooks/use-auth";
-import { debutDuMois, planFor } from "@/lib/plans";
+import { planFor } from "@/lib/plans";
 import { UpgradeModal } from "@/components/upgrade-modal";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
 import { Skeleton } from "@/components/ui/skeleton";
-import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
 import {
   AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent,
   AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
-import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet";
-import {
-  Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
-} from "@/components/ui/select";
+import { Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle } from "@/components/ui/sheet";
 import { toast } from "sonner";
 import { StatusStepper } from "@/components/status-stepper";
+import { CreatePartageForm, PartagesSection, type Partage } from "@/components/partage-securise";
 
 const MAX_PDF_BYTES = 10 * 1024 * 1024;
 const fmtSize = (b: number) => b < 1024 * 1024 ? `${(b / 1024).toFixed(0)} Ko` : `${(b / 1024 / 1024).toFixed(2)} Mo`;
@@ -41,13 +36,6 @@ interface Manuscrit {
   pdf_path: string | null; entreprise_id: string;
   origine?: string | null; editeur_origine?: string | null;
 }
-interface Partage {
-  id: string; token: string; nom_lecteur: string; email_lecteur: string | null;
-  entreprise_lecteur: string | null; nombre_vues_max: number;
-  nombre_vues_actuel: number; est_actif: boolean; created_at: string;
-  last_viewed_at: string | null;
-}
-
 function ManuscritDetailPage() {
   const { manuscritId } = Route.useParams();
   const { user } = useAuth();
@@ -143,26 +131,6 @@ function ManuscritDetailPage() {
     toast.success("PDF supprimé");
     setConfirmDelete(false);
     loadManuscrit();
-  };
-
-  const copyLink = (token: string) => {
-    const url = `${window.location.origin}/lecture/${token}`;
-    navigator.clipboard.writeText(url);
-    toast.success("Lien copié");
-  };
-  const toggleActive = async (p: Partage) => {
-    const { error } = await supabase
-      .from("pdf_partages").update({ est_actif: !p.est_actif }).eq("id", p.id);
-    if (error) return toast.error(error.message);
-    toast.success(p.est_actif ? "Lien désactivé" : "Lien réactivé");
-    loadPartages();
-  };
-  const deletePartage = async (p: Partage) => {
-    if (!confirm("Supprimer ce lien définitivement ?")) return;
-    const { error } = await supabase.from("pdf_partages").delete().eq("id", p.id);
-    if (error) return toast.error(error.message);
-    toast.success("Lien supprimé");
-    loadPartages();
   };
 
   const stats = useMemo(() => {
@@ -340,79 +308,13 @@ function ManuscritDetailPage() {
       )}
 
       {/* Secure share */}
-      <section className="rounded-xl border border-border bg-card p-5">
-        <div className="flex items-center justify-between flex-wrap gap-3 mb-4">
-          <div className="flex items-center gap-3">
-            <Lock className="h-5 w-5" style={{ color: "var(--gold)" }} />
-            <h2 className="font-semibold">Partage sécurisé</h2>
-          </div>
-          <Button
-            disabled={!m.pdf_path}
-            onClick={() => (plan.partagesParMois > 0 ? setSheetOpen(true) : setShareUpgradeOpen(true))}
-            className="bg-primary text-primary-foreground hover:bg-primary/90"
-          >
-            <Plus className="h-4 w-4" /> Créer un lien sécurisé
-          </Button>
-        </div>
-
-        {partages === null ? (
-          <Skeleton className="h-32 w-full" />
-        ) : partages.length === 0 ? (
-          <div className="py-10 text-center">
-            <Lock className="h-10 w-10 mx-auto" style={{ color: "var(--gold)" }} />
-            <p className="mt-3 text-sm text-muted-foreground">
-              Aucun lien partagé pour le moment.
-            </p>
-          </div>
-        ) : (
-          <div className="overflow-x-auto">
-            <table className="w-full text-sm">
-              <thead className="bg-muted/30 text-muted-foreground">
-                <tr className="text-left">
-                  <th className="px-3 py-2">Lecteur</th>
-                  <th className="px-3 py-2 hidden md:table-cell">Entreprise</th>
-                  <th className="px-3 py-2">Vues</th>
-                  <th className="px-3 py-2">Statut</th>
-                  <th className="px-3 py-2 hidden lg:table-cell">Créé</th>
-                  <th className="px-3 py-2 text-right">Actions</th>
-                </tr>
-              </thead>
-              <tbody>
-                {partages.map((p) => {
-                  const exhausted = p.nombre_vues_actuel >= p.nombre_vues_max;
-                  const status = !p.est_actif ? "off" : exhausted ? "exp" : "ok";
-                  return (
-                    <tr key={p.id} className="border-t border-border">
-                      <td className="px-3 py-2 font-medium">{p.nom_lecteur}</td>
-                      <td className="px-3 py-2 text-muted-foreground hidden md:table-cell">{p.entreprise_lecteur ?? "—"}</td>
-                      <td className="px-3 py-2">{p.nombre_vues_actuel}/{p.nombre_vues_max}</td>
-                      <td className="px-3 py-2">
-                        {status === "ok" && <Badge className="bg-primary/15 text-primary border-0">Actif</Badge>}
-                        {status === "exp" && <Badge className="bg-destructive/15 text-destructive border-0">Expiré</Badge>}
-                        {status === "off" && <Badge className="bg-muted text-muted-foreground border-0">Désactivé</Badge>}
-                      </td>
-                      <td className="px-3 py-2 text-muted-foreground hidden lg:table-cell">{new Date(p.created_at).toLocaleDateString("fr-FR")}</td>
-                      <td className="px-3 py-2 text-right">
-                        <div className="inline-flex gap-1">
-                          <Button size="icon" variant="ghost" className="h-8 w-8" title="Copier le lien" onClick={() => copyLink(p.token)}>
-                            <Copy className="h-4 w-4" />
-                          </Button>
-                          <Button size="icon" variant="ghost" className="h-8 w-8" title={p.est_actif ? "Désactiver" : "Réactiver"} onClick={() => toggleActive(p)}>
-                            <Power className={`h-4 w-4 ${p.est_actif ? "text-destructive" : "text-primary"}`} />
-                          </Button>
-                          <Button size="icon" variant="ghost" className="h-8 w-8" title="Supprimer" onClick={() => deletePartage(p)}>
-                            <Trash2 className="h-4 w-4" />
-                          </Button>
-                        </div>
-                      </td>
-                    </tr>
-                  );
-                })}
-              </tbody>
-            </table>
-          </div>
-        )}
-      </section>
+      <PartagesSection
+        partages={partages}
+        pdfPresent={!!m.pdf_path}
+        peutCreer={plan.partagesParMois > 0}
+        onCreer={() => (plan.partagesParMois > 0 ? setSheetOpen(true) : setShareUpgradeOpen(true))}
+        onChange={loadPartages}
+      />
 
       {/* Analytics */}
       <section className="rounded-xl border border-border bg-card p-5">
@@ -446,8 +348,11 @@ function ManuscritDetailPage() {
       </section>
 
       <Sheet open={sheetOpen} onOpenChange={setSheetOpen}>
-        <SheetContent side="right" className="bg-card border-border w-full sm:max-w-md">
-          <SheetHeader><SheetTitle>Créer un lien sécurisé</SheetTitle></SheetHeader>
+        <SheetContent side="right" className="bg-card border-border w-full sm:max-w-md overflow-y-auto">
+          <SheetHeader>
+            <SheetTitle>Créer un lien sécurisé</SheetTitle>
+            <SheetDescription>Le lecteur recevra un exemplaire marqué à son nom, lisible uniquement en ligne.</SheetDescription>
+          </SheetHeader>
           <CreatePartageForm
             maxParMois={plan.partagesParMois}
             manuscritId={manuscritId}
@@ -497,94 +402,5 @@ function StatCard({ label, value, small }: { label: string; value: string | numb
       <p className="text-xs uppercase tracking-wide text-muted-foreground">{label}</p>
       <p className={`mt-1 font-semibold ${small ? "text-base" : "text-2xl"}`} style={{ color: "var(--gold)" }}>{value}</p>
     </div>
-  );
-}
-
-function CreatePartageForm({
-  manuscritId, entrepriseId, userId, onCreated, maxParMois,
-}: { manuscritId: string; entrepriseId: string | null; userId: string | null; onCreated: () => void; maxParMois: number }) {
-  const [form, setForm] = useState({
-    nom_lecteur: "", email_lecteur: "", entreprise_lecteur: "", nombre_vues_max: "3",
-  });
-  const [loading, setLoading] = useState(false);
-  const [createdUrl, setCreatedUrl] = useState<string | null>(null);
-
-  const submit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!entrepriseId) return;
-    setLoading(true);
-    if (maxParMois !== Infinity) {
-      const { count } = await supabase
-        .from("pdf_partages")
-        .select("id", { count: "exact", head: true })
-        .eq("entreprise_id", entrepriseId)
-        .gte("created_at", debutDuMois());
-      if ((count ?? 0) >= maxParMois) {
-        setLoading(false);
-        return toast.error(`Vous avez créé vos ${maxParMois} liens sécurisés de ce mois. Passez au plan Business pour un partage illimité.`);
-      }
-    }
-    const { data, error } = await supabase.from("pdf_partages").insert({
-      entreprise_id: entrepriseId,
-      manuscrit_id: manuscritId,
-      nom_lecteur: form.nom_lecteur,
-      email_lecteur: form.email_lecteur || null,
-      entreprise_lecteur: form.entreprise_lecteur || null,
-      nombre_vues_max: parseInt(form.nombre_vues_max, 10),
-      created_by: userId,
-    }).select("token").single();
-    setLoading(false);
-    if (error) return toast.error(error.message);
-    const url = `${window.location.origin}/lecture/${data.token}`;
-    setCreatedUrl(url);
-    toast.success("Lien sécurisé créé avec succès !");
-  };
-
-  if (createdUrl) {
-    return (
-      <div className="space-y-4 mt-6">
-        <Label>Lien sécurisé généré</Label>
-        <div className="flex gap-2">
-          <Input readOnly value={createdUrl} className="font-mono text-xs" />
-          <Button type="button" onClick={() => { navigator.clipboard.writeText(createdUrl); toast.success("Copié"); }}>
-            <Copy className="h-4 w-4" /> Copier
-          </Button>
-        </div>
-        <p className="text-xs text-muted-foreground">Partagez ce lien avec votre lecteur. Il pourra accéder au document selon les limites définies.</p>
-        <Button className="w-full" onClick={onCreated}>Fermer</Button>
-      </div>
-    );
-  }
-
-  return (
-    <form onSubmit={submit} className="space-y-4 mt-6">
-      <div className="space-y-2">
-        <Label>Nom du lecteur *</Label>
-        <Input required value={form.nom_lecteur} placeholder="ex: Amadou Konaté"
-          onChange={(e) => setForm({ ...form, nom_lecteur: e.target.value })} />
-      </div>
-      <div className="space-y-2">
-        <Label>Email du lecteur</Label>
-        <Input type="email" value={form.email_lecteur} placeholder="ex: amadou@editions.ml"
-          onChange={(e) => setForm({ ...form, email_lecteur: e.target.value })} />
-      </div>
-      <div className="space-y-2">
-        <Label>Entreprise du lecteur</Label>
-        <Input value={form.entreprise_lecteur} placeholder="ex: Éditions Jamana"
-          onChange={(e) => setForm({ ...form, entreprise_lecteur: e.target.value })} />
-      </div>
-      <div className="space-y-2">
-        <Label>Nombre de vues maximum</Label>
-        <Select value={form.nombre_vues_max} onValueChange={(v) => setForm({ ...form, nombre_vues_max: v })}>
-          <SelectTrigger><SelectValue /></SelectTrigger>
-          <SelectContent>
-            {["1", "2", "3", "5", "10"].map((n) => <SelectItem key={n} value={n}>{n} vue{n === "1" ? "" : "s"}</SelectItem>)}
-          </SelectContent>
-        </Select>
-      </div>
-      <Button type="submit" disabled={loading} className="w-full bg-primary text-primary-foreground hover:bg-primary/90">
-        {loading ? <Loader2 className="h-4 w-4 animate-spin" /> : "Créer le lien"}
-      </Button>
-    </form>
   );
 }
