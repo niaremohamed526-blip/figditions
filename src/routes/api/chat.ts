@@ -16,6 +16,7 @@ import { createClient, type SupabaseClient } from "@supabase/supabase-js";
 import { createGeminiProvider, createLovableAiGatewayProvider } from "@/lib/ai-gateway.server";
 import { buildMedmoSystemPrompt } from "@/lib/medmo-prompt";
 import { consommerQuestionMedmo } from "@/lib/medmo-quota.server";
+import { consommerLimite } from "@/lib/rate-limit.server";
 import { normalizeMatchKey, normalizeName } from "@/lib/normalizeText";
 import {
   besoinConfirmation,
@@ -48,6 +49,33 @@ function userClient(token: string): AnySupabase {
     global: { headers: { Authorization: `Bearer ${token}` } },
     auth: { storage: undefined, persistSession: false, autoRefreshToken: false },
   });
+}
+
+/**
+ * True when the incoming assistant message answers a confirmation the saved
+ * thread is really waiting for: a tool call the model made, saved as
+ * "approval-requested", that now comes back answered. Tool call ids come from
+ * the model, so a hand-made request cannot invent one that matches.
+ */
+async function estApprobationEnAttente(supabase: AnySupabase, threadId: string, message: any): Promise<boolean> {
+  const repondus = new Set<string>(
+    (Array.isArray(message?.parts) ? message.parts : [])
+      .filter((p: any) => p?.state === "approval-responded" && typeof p?.toolCallId === "string")
+      .map((p: any) => p.toolCallId),
+  );
+  if (repondus.size === 0) return false;
+  const { data } = await supabase
+    .from("chat_messages")
+    .select("parts")
+    .eq("thread_id", threadId)
+    .eq("role", "assistant")
+    .order("position", { ascending: false })
+    .limit(3);
+  return (data ?? []).some((row: any) =>
+    (Array.isArray(row?.parts) ? row.parts : []).some(
+      (p: any) => p?.state === "approval-requested" && repondus.has(p?.toolCallId),
+    ),
+  );
 }
 
 /** Préfixe de transparence : Pr. MEDMO annonce toujours ce qu'il a compris. */
@@ -991,9 +1019,18 @@ export const Route = createFileRoute("/api/chat")({
           if (e) entreprise = { nom: e.nom, ville: e.ville ?? "", plan: e.plan ?? "starter" };
         }
 
-        // Monthly quota per plan. Only a new question counts: tool approvals and
-        // other follow-ups end with an assistant message, not a user one.
-        if (rawMessages[rawMessages.length - 1]?.role === "user") {
+        // Per-person speed limit: every call counts, whatever its shape.
+        const limite = await consommerLimite(supabase, "medmo");
+        if (!limite.ok) return new Response(limite.message, { status: 429 });
+
+        // Monthly quota per plan. Only a new question counts: a tool approval
+        // (the user clicking Confirmer) continues the last answer instead. An
+        // approval is only free when the saved thread really is waiting for it,
+        // so a hand-made request cannot pass a question off as an approval.
+        const dernier = rawMessages[rawMessages.length - 1];
+        const approbationValide = dernier?.role === "assistant"
+          && await estApprobationEnAttente(supabase, threadRow.id, dernier);
+        if (!approbationValide) {
           const quota = await consommerQuestionMedmo(supabase, entrepriseId, userId, entreprise.plan, "chat");
           if (!quota.ok) return new Response(quota.message, { status: 402 });
         }

@@ -115,6 +115,9 @@ function friendlyChatError(raw: string | undefined): string {
   if (!m) return "Une erreur est survenue. Vérifiez votre connexion puis réessayez.";
   if (lower.includes("413") || lower.includes("too large") || lower.includes("trop lourds") || lower.includes("payload"))
     return "Les fichiers joints sont trop lourds pour être envoyés. Réduisez leur taille ou envoyez-les un par un.";
+  // Nos propres limites anti-abus : le serveur envoie déjà une phrase claire.
+  if (lower.startsWith("trop de demandes en une minute") || lower.startsWith("vous avez atteint la limite de demandes"))
+    return m;
   if (lower.includes("429") || lower.includes("trop de demandes") || lower.includes("quota") || lower.includes("rate limit"))
     return "Pr. MEDMO reçoit trop de demandes en ce moment (limite du fournisseur IA). Patientez une minute puis réessayez.";
   if (lower.includes("crédits") || lower.includes("credits") || lower.includes("402"))

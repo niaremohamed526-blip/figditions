@@ -6,6 +6,7 @@ import { z } from "zod";
 import { createGeminiProvider, createLovableAiGatewayProvider } from "@/lib/ai-gateway.server";
 import { CHAMPS, TYPES_CONTRAT } from "@/lib/contrat-template";
 import { planFor } from "@/lib/plans";
+import { consommerLimite } from "@/lib/rate-limit.server";
 
 // Medmo turns a house's own contract (PDF, photo or Word) into a template:
 // its articles, with the party-specific values replaced by {champs}.
@@ -110,6 +111,9 @@ export const Route = createFileRoute("/api/contrat-import")({
         if (!planFor((profil as any)?.entreprises?.plan).modelesContrat) {
           return Response.json({ erreur: "L'import de votre contrat est disponible avec le plan Business." }, { status: 403 });
         }
+
+        const limite = await consommerLimite(supabase, "contrat_import");
+        if (!limite.ok) return Response.json({ erreur: limite.message }, { status: 429 });
 
         const geminiKey = process.env["GEMINI_API_KEY"];
         const lovableKey = process.env["LOVABLE_API_KEY"];
