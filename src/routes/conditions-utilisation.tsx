@@ -123,7 +123,7 @@ function TermsPage() {
       <Section id="propriete" title="6. Propriété des contenus">
         <p>
           Vous conservez l'intégralité des droits sur vos manuscrits, œuvres, contrats,
-          logos et données uploadés sur FIGDITIONS. Nous ne revendiquons aucun droit de
+          logos et données déposés sur FIGDITIONS. Nous ne revendiquons aucun droit de
           propriété intellectuelle sur vos contenus. Vous nous accordez uniquement la
           licence technique strictement nécessaire à l'exécution du service (stockage,
           affichage à votre équipe, génération de PDF, conversion sur votre demande).
@@ -191,7 +191,7 @@ function TermsPage() {
           Dans les limites autorisées par la loi applicable, FIGDITIONS ne peut être tenu
           responsable des pertes indirectes (perte de chiffre d'affaires, perte de clientèle,
           dommage à la réputation) résultant d'une interruption du service, d'une perte de
-          données au-delà de nos sauvegardes, ou d'un usage non conforme de la plateforme.
+          données, ou d'un usage non conforme de la plateforme.
           La responsabilité totale de FIGDITIONS est en tout état de cause limitée au montant
           effectivement payé par l'utilisateur au titre des 12 derniers mois d'abonnement.
         </p>

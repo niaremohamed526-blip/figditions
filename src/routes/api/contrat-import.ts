@@ -153,7 +153,7 @@ export const Route = createFileRoute("/api/contrat-import")({
             maxRetries: 1,
           });
           if (!output.lisible || output.articles.length === 0) {
-            return Response.json({ erreur: "Medmo n'a pas reconnu de contrat dans ce document. Essayez un fichier plus net ou au format Word." }, { status: 422 });
+            return Response.json({ erreur: "Pr. MEDMO n'a pas reconnu de contrat dans ce document. Essayez un fichier plus net ou au format Word." }, { status: 422 });
           }
           const type = TYPES_CONTRAT.some((t) => t.value === output.type_contrat) ? output.type_contrat : "autre";
           return Response.json({
@@ -174,7 +174,7 @@ export const Route = createFileRoute("/api/contrat-import")({
           if (/api key|401|403|permission/i.test(msg)) {
             return Response.json({ erreur: "La clé du service IA est invalide ou expirée." }, { status: 502 });
           }
-          return Response.json({ erreur: "Medmo n'a pas pu lire ce contrat. Réessayez dans un instant." }, { status: 502 });
+          return Response.json({ erreur: "Pr. MEDMO n'a pas pu lire ce contrat. Réessayez dans un instant." }, { status: 502 });
         }
       },
     },

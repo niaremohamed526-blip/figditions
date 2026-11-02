@@ -141,10 +141,10 @@ function StocksPage() {
   }, [items, titreMap]);
 
   const statutOf = (rest: number, dep: number): { key: string; label: string; cls: string } => {
-    if (rest === 0) return { key: "epuise", label: "✕ Épuisé", cls: "bg-red-500/15 text-red-400 border-red-500/30" };
-    if (rest < 5) return { key: "critique", label: "! Critique", cls: "bg-red-500/15 text-red-400 border-red-500/30 animate-pulse" };
-    if (rest <= 20) return { key: "bas", label: "Bas", cls: "bg-orange-500/15 text-orange-400 border-orange-500/30" };
-    return { key: "bon", label: "✓ Bon", cls: "bg-emerald-500/15 text-emerald-400 border-emerald-500/30" };
+    if (rest === 0) return { key: "epuise", label: "Épuisé", cls: "bg-red-500/15 text-red-400 border-red-500/30" };
+    if (rest < 5) return { key: "critique", label: "Critique", cls: "bg-red-500/15 text-red-400 border-red-500/30 animate-pulse" };
+    if (rest <= 20) return { key: "bas", label: "Stock bas", cls: "bg-orange-500/15 text-orange-400 border-orange-500/30" };
+    return { key: "bon", label: "Bon stock", cls: "bg-emerald-500/15 text-emerald-400 border-emerald-500/30" };
   };
 
   const monthStart = useMemo(() => { const d = new Date(); return new Date(d.getFullYear(), d.getMonth(), 1); }, []);
@@ -361,7 +361,7 @@ function StocksPage() {
 
           {/* Mobile stats (existing) */}
           <div className="grid grid-cols-2 gap-3 sm:hidden">
-            <SummaryCard icon={<BookOpen />} label="En circulation" value={String(totals.deposes)} sublabel="exemplaires" />
+            <SummaryCard icon={<BookOpen />} label="Déposés" value={String(totals.deposes)} sublabel="exemplaires au total" />
             <SummaryCard icon={<ShoppingBag />} label="Vendus" value={String(totals.vendus)} sublabel="exemplaires" accent="primary" />
             <SummaryCard icon={<TrendingUp />} label="Restants" value={String(totals.restants)} sublabel="exemplaires" />
             <SummaryCard icon={<Store />} label="Librairies" value={String(totals.librairies)} sublabel="actives" />
@@ -411,7 +411,7 @@ function StocksPage() {
 
             {/* Supporting metrics */}
             <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
-              <MetricCard icon={<BookOpen className="h-5 w-5" />} label="En circulation" value={totals.deposes} sublabel="exemplaires" />
+              <MetricCard icon={<BookOpen className="h-5 w-5" />} label="Déposés" value={totals.deposes} sublabel="exemplaires au total" />
               <MetricCard icon={<ShoppingBag className="h-5 w-5" />} label="Vendus" value={totals.vendus} sublabel="exemplaires" />
               <MetricCard icon={<Package className="h-5 w-5" />} label="Restants" value={totals.restants} sublabel="exemplaires" />
               <MetricCard icon={<Store className="h-5 w-5" />} label="Librairies" value={totals.librairies} sublabel="actives" />
@@ -1080,7 +1080,7 @@ function InventoryAnalytics({ stocks, titreMap }: { stocks: Stock[]; titreMap: R
   return (
     <AnalyticsSection title="Analytiques stocks" range={range} setRange={setRange}>
       <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-        <SummaryCard icon={<BookOpen />} label="En circulation" value={String(totalCirc)} />
+        <SummaryCard icon={<BookOpen />} label="Déposés" value={String(totalCirc)} />
         <SummaryCard icon={<ShoppingBag />} label="Vendus (total)" value={String(totalVendus)} accent="primary" />
         <SummaryCard icon={<TrendingUp />} label="Taux de vente" value={`${sellThrough}%`} accent="gold" />
         <SummaryCard icon={<AlertTriangle />} label="Stock faible" value={String(lowStock.length)} />

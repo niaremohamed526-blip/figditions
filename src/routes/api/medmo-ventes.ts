@@ -3,7 +3,7 @@ import { pl } from "@/lib/plural";
 import { createClient, type SupabaseClient } from "@supabase/supabase-js";
 
 // Photo-to-Action : enregistrement en masse des ventes validées dans la carte
-// PR MEDMO. Même auth bearer que /api/chat : RLS appliquée en tant que
+// Pr. MEDMO. Même auth bearer que /api/chat : RLS appliquée en tant que
 // l'utilisateur connecté. Aucune clé service requise (compatible Vercel).
 
 type AnySupabase = SupabaseClient<any, "public", any>;
@@ -90,7 +90,7 @@ export const Route = createFileRoute("/api/medmo-ventes")({
             continue;
           }
 
-          const notesBase = `Saisie via photo de cahier (PR MEDMO)${e.statut_paiement === "en_attente" ? " : paiement à encaisser" : ""}`;
+          const notesBase = `Saisie via photo de cahier (Pr. MEDMO)${e.statut_paiement === "en_attente" ? " : paiement à encaisser" : ""}`;
           const librairie = e.librairie?.trim() || null;
 
           if (librairie) {
@@ -104,7 +104,7 @@ export const Route = createFileRoute("/api/medmo-ventes")({
               .limit(3);
             const depots = rows ?? [];
             if (depots.length === 0) {
-              resultats.push({ index, ok: false, message: `« ${m.titre} » : aucun dépôt trouvé chez « ${librairie} ». Créez d'abord le dépôt (PR MEDMO peut le faire).` });
+              resultats.push({ index, ok: false, message: `« ${m.titre} » : aucun dépôt trouvé chez « ${librairie} ». Créez d'abord le dépôt (Pr. MEDMO peut le faire).` });
               continue;
             }
             if (depots.length > 1) {

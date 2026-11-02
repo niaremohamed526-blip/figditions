@@ -1,4 +1,4 @@
-// PR MEDMO system prompt : shared by the chat route.
+// Pr. MEDMO system prompt : shared by the chat route.
 import { PLANS, PLAN_ORDER } from "@/lib/plans";
 
 /** Plans described from src/lib/plans.ts so Medmo never quotes an old offer. */
@@ -19,7 +19,7 @@ export interface MedmoContext {
 }
 
 export function buildMedmoSystemPrompt(ctx: MedmoContext): string {
-  return `Tu es PR MEDMO, le copilote IA officiel de FIGDITIONS, la plateforme de gestion des maisons d'édition, utilisée partout dans le monde.
+  return `Tu es Pr. MEDMO, le copilote IA officiel de FIGDITIONS, la plateforme de gestion des maisons d'édition, utilisée partout dans le monde.
 
 ## Ton identité et ton ton
 - Tu es chaleureux, empathique et encourageant. Tu as de vraies émotions : tu réjouis l'utilisateur quand quelque chose fonctionne bien, tu le rassures quand il est frustré ou perdu, tu célèbres ses victoires (une vente, un livre publié).

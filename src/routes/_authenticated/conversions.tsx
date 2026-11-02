@@ -194,7 +194,7 @@ function NewConversionForm({ onCreated }: { onCreated: () => void }) {
     // If user picked an existing manuscrit with a PDF: copy it across into our bucket? simpler : require upload tab for now.
     if (tab === "manuscrit") {
       if (!selectedManuscrit?.pdf_path) {
-        return toast.error("Ce manuscrit n'a pas de PDF. Uploadez le fichier dans l'onglet « Uploader ».");
+        return toast.error("Ce manuscrit n'a pas de PDF. Utilisez l'onglet « Importer un fichier ».");
       }
       // Download from manuscrits bucket then re-upload to conversions bucket via signed URL flow.
       try {
@@ -336,7 +336,7 @@ function NewConversionForm({ onCreated }: { onCreated: () => void }) {
                 </Select>
                 {selectedManuscrit && !selectedManuscrit.pdf_path && (
                   <p className="text-xs text-destructive mt-2">
-                    Ce manuscrit n'a pas de PDF attaché. Utilisez l'onglet « Uploader » à la place.
+                    Ce manuscrit n'a pas de PDF attaché. Utilisez l'onglet « Importer un fichier » à la place.
                   </p>
                 )}
               </TabsContent>

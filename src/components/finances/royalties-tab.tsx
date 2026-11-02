@@ -12,6 +12,7 @@ import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, D
 import { Users, Download, Loader2, ReceiptText, CheckCircle2 } from "lucide-react";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
+import { Eyebrow, Montant, Panel, PanelHeader, Pastille, Vide, GOLD_BUTTON, fmtMontant } from "@/components/finances/finance-ui";
 import { fmtFCFA, methodeLabel, PAIEMENT_METHODES, type PaiementRoyaltiesRow, type VenteRow } from "@/lib/finance-types";
 import { generateQuittancePdf, quittanceFilename, type QuittanceLigne } from "@/lib/pdf-quittance";
 import { generateReleveAuteurPdf } from "@/lib/pdf-releve-auteur";
@@ -206,69 +207,64 @@ export function RoyaltiesTab({
     }
   };
 
+  const totalAttente = pendingGroups.reduce((a, g) => a + g.montant, 0);
+  const annee = String(new Date().getFullYear());
+  const payeCetteAnnee = paiements
+    .filter((p) => p.paye_le?.startsWith(annee))
+    .reduce((a, p) => a + Number(p.montant_fcfa || 0), 0);
+
   return (
-    <div className="space-y-6">
+    <div className="space-y-4">
+      <Panel accent className="p-6">
+        <Eyebrow>À payer aux auteurs</Eyebrow>
+        <Montant value={totalAttente} size="xl" className="mt-2" />
+        <p className="mt-3 text-sm text-muted-foreground">
+          {pendingGroups.length > 0 ? pl(pendingGroups.length, "auteur attend", "auteurs attendent") : "Tout est payé"}
+          <span className="mx-2 text-border">|</span>
+          Payé en {annee} <span className="tabular-nums text-foreground">{fmtMontant(payeCetteAnnee)}</span>
+        </p>
+      </Panel>
+
       {/* Royalties en attente */}
-      <Card className="bg-card/70">
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2 text-lg">
-            <Users className="h-5 w-5 text-[color:var(--gold)]" />
-            Royalties à payer par auteur
-          </CardTitle>
-          <CardDescription>
-            {pl(pendingGroups.length, "auteur", "auteurs")} en attente de paiement. Chaque paiement génère une quittance numérotée
-            téléchargeable (preuve pour les deux parties).
-          </CardDescription>
-        </CardHeader>
-        <CardContent>
-          {pendingGroups.length === 0 ? (
-            <p className="text-center py-10 text-muted-foreground text-sm flex items-center justify-center gap-2">
-              <CheckCircle2 className="h-4 w-4 text-emerald-400" /> Aucune royalty en attente : tout est réglé.
-            </p>
-          ) : (
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              {pendingGroups.map((g) => (
-                <div key={g.key} className="rounded-xl border border-border/60 bg-background/40 p-4 space-y-3">
-                  <div className="flex items-start justify-between gap-3">
-                    <div>
-                      <p className="font-semibold">{g.nom}</p>
-                      <p className="text-xs text-muted-foreground">{pl(g.ventes.length, "vente", "ventes")} en attente</p>
-                    </div>
-                    <p className="text-lg font-bold text-[color:var(--gold)]">{fmtFCFA(g.montant)}</p>
-                  </div>
-                  <div className="text-[11px] text-muted-foreground space-y-0.5 max-h-20 overflow-y-auto">
-                    {g.ventes.slice(0, 5).map((v) => (
-                      <p key={v.id}>
-                        • {manuscritMap.get(v.manuscrit_id)?.titre ?? "Livre"} : {v.quantite_vendue} ex. : {fmtFCFA(v.droits_auteur_fcfa)}
-                      </p>
-                    ))}
-                    {g.ventes.length > 5 && <p>… et {pl(g.ventes.length - 5, "autre", "autres")}</p>}
-                  </div>
-                  <Button
-                    onClick={() => { setPayGroup(g); setChoix(new Set(g.ventes.map((v) => v.id))); setMethode("especes"); setReference(""); setNotes(""); }}
-                    className="w-full bg-[linear-gradient(135deg,#C8922A,#A67420)] text-white border-0 font-semibold"
-                  >
-                    <ReceiptText className="h-4 w-4 mr-2" />
-                    Payer {fmtFCFA(g.montant)} et générer la quittance
-                  </Button>
+      <Panel>
+        <PanelHeader eyebrow="En attente" title={pendingGroups.length === 0 ? "Personne" : pl(pendingGroups.length, "auteur", "auteurs")} />
+        {pendingGroups.length === 0 ? (
+          <Vide>
+            <span className="inline-flex items-center gap-2"><CheckCircle2 className="h-4 w-4 text-emerald-500" /> Tous les droits d'auteur sont payés.</span>
+          </Vide>
+        ) : (
+          <ul className="divide-y divide-border border-t border-border">
+            {pendingGroups.map((g) => (
+              <li key={g.key} className="flex items-center gap-3 px-5 py-3.5">
+                <Pastille className="bg-[color:var(--gold)]/15 text-[color:var(--gold)]">{g.nom.charAt(0).toUpperCase()}</Pastille>
+                <div className="min-w-0 flex-1">
+                  <p className="truncate font-medium">{g.nom}</p>
+                  <p className="truncate text-xs text-muted-foreground">
+                    {pl(g.ventes.length, "vente", "ventes")} · {[...new Set(g.ventes.map((v) => (manuscritMap.get(v.manuscrit_id)?.titre ?? "Livre").trim()))].join(", ")}
+                  </p>
                 </div>
-              ))}
-            </div>
-          )}
-        </CardContent>
-      </Card>
+                <p className="shrink-0 text-right font-semibold tabular-nums">
+                  {fmtMontant(g.montant)}
+                  <span className="block text-[11px] font-normal text-muted-foreground">FCFA</span>
+                </p>
+                <Button
+                  size="sm"
+                  onClick={() => { setPayGroup(g); setChoix(new Set(g.ventes.map((v) => v.id))); setMethode("especes"); setReference(""); setNotes(""); }}
+                  className={GOLD_BUTTON}
+                >
+                  Payer
+                </Button>
+              </li>
+            ))}
+          </ul>
+        )}
+      </Panel>
 
       {/* Relevé annuel d'un auteur */}
       {auteursAvecVentes.length > 0 && (
-        <Card className="bg-card/70">
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2 text-lg">
-              <Download className="h-5 w-5 text-[color:var(--gold)]" />
-              Relevé pour un auteur
-            </CardTitle>
-            <CardDescription>Toutes ses ventes de l'année, ce qui est payé et ce qui reste. À lui envoyer.</CardDescription>
-          </CardHeader>
-          <CardContent className="flex flex-col gap-3 sm:flex-row">
+        <Panel>
+          <PanelHeader eyebrow="Relevé annuel" title="À envoyer à un auteur" />
+          <div className="flex flex-col gap-3 border-t border-border p-5 sm:flex-row">
             <Select value={releveAuteur} onValueChange={setReleveAuteur}>
               <SelectTrigger className="sm:w-64"><SelectValue placeholder="Choisir un auteur" /></SelectTrigger>
               <SelectContent>
@@ -281,78 +277,50 @@ export function RoyaltiesTab({
                 {annees.map((y) => <SelectItem key={y} value={String(y)}>{y}</SelectItem>)}
               </SelectContent>
             </Select>
-            <Button onClick={telechargerReleve} disabled={!releveAuteur} className="rounded-md bg-[#C8922A] text-white hover:bg-[#B5821F]">
-              <Download className="h-4 w-4 mr-2" /> Relevé PDF
+            <Button onClick={telechargerReleve} disabled={!releveAuteur} variant="outline" className="rounded-md">
+              <Download className="h-4 w-4" /> Relevé PDF
             </Button>
-          </CardContent>
-        </Card>
+          </div>
+        </Panel>
       )}
 
       {/* Historique des paiements */}
-      <Card className="bg-card/70">
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2 text-lg">
-            <ReceiptText className="h-5 w-5 text-[color:var(--gold)]" />
-            Historique des paiements de royalties
-          </CardTitle>
-          <CardDescription>
-            Chaque quittance est numérotée, datée et vérifiable. Re-téléchargez le reçu à tout moment.
-          </CardDescription>
-        </CardHeader>
-        <CardContent>
-          {paiements.length === 0 ? (
-            <p className="text-center py-10 text-muted-foreground text-sm">Aucun paiement de royalties enregistré.</p>
-          ) : (
-            <div className="overflow-x-auto">
-              <table className="w-full text-sm min-w-[820px]">
-                <thead>
-                  <tr className="border-b border-border text-left text-xs uppercase tracking-wide text-muted-foreground">
-                    <th className="py-2 pr-3">N° quittance</th>
-                    <th className="py-2 pr-3">Date</th>
-                    <th className="py-2 pr-3">Auteur</th>
-                    <th className="py-2 pr-3 text-right">Montant</th>
-                    <th className="py-2 pr-3">Méthode</th>
-                    <th className="py-2 pr-3">Référence</th>
-                    <th className="py-2 pr-3">Payé par</th>
-                    <th className="py-2 text-right">Reçu</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {paiements.map((p) => (
-                    <tr key={p.id} className="border-b border-border/50 hover:bg-muted/20">
-                      <td className="py-2.5 pr-3">
-                        <Badge variant="outline" className="font-mono text-[11px] border-[color:var(--gold)]/40 text-[color:var(--gold)]">
-                          {p.numero}
-                        </Badge>
-                      </td>
-                      <td className="py-2.5 pr-3 whitespace-nowrap">
-                        {new Date(p.paye_le).toLocaleDateString("fr-FR")}
-                      </td>
-                      <td className="py-2.5 pr-3 font-medium">{p.auteur_nom}</td>
-                      <td className="py-2.5 pr-3 text-right font-semibold text-emerald-400">{fmtFCFA(p.montant_fcfa)}</td>
-                      <td className="py-2.5 pr-3">{methodeLabel(p.methode)}</td>
-                      <td className="py-2.5 pr-3 text-muted-foreground">{p.reference ?? "—"}</td>
-                      <td className="py-2.5 pr-3 text-muted-foreground">{p.paye_par_nom ?? "—"}</td>
-                      <td className="py-2.5 text-right">
-                        <Button
-                          size="sm"
-                          variant="outline"
-                          className="h-7 text-xs border-[color:var(--gold)]/40 text-[color:var(--gold)] hover:bg-[color:var(--gold)]/10"
-                          onClick={() => reprint(p)}
-                          disabled={downloadingId === p.id}
-                        >
-                          {downloadingId === p.id ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Download className="h-3.5 w-3.5 mr-1" />}
-                          PDF
-                        </Button>
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-          )}
-        </CardContent>
-      </Card>
+      <Panel>
+        <PanelHeader eyebrow="Déjà payé" title={paiements.length === 0 ? "Aucun paiement" : pl(paiements.length, "quittance", "quittances")} />
+        {paiements.length === 0 ? (
+          <Vide>Chaque paiement crée une quittance numérotée, à retrouver ici.</Vide>
+        ) : (
+          <ul className="divide-y divide-border border-t border-border">
+            {paiements.map((p) => (
+              <li key={p.id} className="flex items-center gap-3 px-5 py-3">
+                <Pastille className="bg-emerald-500/15 text-emerald-600 dark:text-emerald-400"><CheckCircle2 className="h-4 w-4" /></Pastille>
+                <div className="min-w-0 flex-1">
+                  <p className="truncate font-medium">{p.auteur_nom}</p>
+                  <p className="truncate text-xs text-muted-foreground">
+                    {p.numero} · {new Date(p.paye_le).toLocaleDateString("fr-FR", { day: "numeric", month: "short", year: "numeric" })} · {methodeLabel(p.methode)}
+                    {p.reference ? ` · ${p.reference}` : ""}
+                  </p>
+                </div>
+                <p className="shrink-0 text-right font-semibold tabular-nums">
+                  {fmtMontant(Number(p.montant_fcfa))}
+                  <span className="block text-[11px] font-normal text-muted-foreground">FCFA</span>
+                </p>
+                <Button
+                  size="icon"
+                  variant="ghost"
+                  className="h-8 w-8"
+                  onClick={() => reprint(p)}
+                  disabled={downloadingId === p.id}
+                  title="Télécharger la quittance"
+                  aria-label={`Télécharger la quittance ${p.numero}`}
+                >
+                  {downloadingId === p.id ? <Loader2 className="h-4 w-4 animate-spin" /> : <Download className="h-4 w-4" />}
+                </Button>
+              </li>
+            ))}
+          </ul>
+        )}
+      </Panel>
 
       {/* Dialog paiement */}
       <Dialog open={!!payGroup} onOpenChange={(o) => !o && setPayGroup(null)}>
@@ -422,7 +390,7 @@ export function RoyaltiesTab({
             <Button
               onClick={payer}
               disabled={busy || choisies.length === 0}
-              className={cn("bg-[linear-gradient(135deg,#C8922A,#A67420)] text-white border-0")}
+              className={GOLD_BUTTON}
             >
               {busy ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : <ReceiptText className="h-4 w-4 mr-2" />}
               Payer {fmtFCFA(montantChoisi)}

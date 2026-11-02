@@ -392,7 +392,7 @@ function EstimateurPage() {
               <RadioGroup value={couleur ? "color" : "bw"} onValueChange={(v) => setCouleur(v === "color")} className="grid grid-cols-2 gap-2">
                 <label className={cn("flex items-center gap-2 rounded-lg border px-3 py-2.5 cursor-pointer transition-colors",
                   !couleur ? "border-primary bg-primary/10" : "border-border")}>
-                  <RadioGroupItem value="bw" id="bw" /><span className="text-sm">⬛ Noir & Blanc (standard)</span>
+                  <RadioGroupItem value="bw" id="bw" /><span className="text-sm">Noir &amp; blanc (standard)</span>
                 </label>
                 <label className={cn("flex items-center gap-2 rounded-lg border px-3 py-2.5 cursor-pointer transition-colors",
                   couleur ? "border-primary bg-primary/10" : "border-border")}>

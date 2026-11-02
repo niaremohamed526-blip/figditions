@@ -1,13 +1,10 @@
-import { useMemo, useState } from "react";
+import { useMemo, useState, type ReactNode } from "react";
 import { pl } from "@/lib/plural";
 import { supabase } from "@/integrations/supabase/client";
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import {
   Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle,
 } from "@/components/ui/dialog";
@@ -16,14 +13,37 @@ import {
   AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
 import {
-  Search, ShoppingCart, Banknote, Loader2, Store, AlertTriangle, RotateCcw, XCircle,
-  ChevronDown, ChevronUp, ShoppingBag, FileText,
+  Search, Banknote, Loader2, Store, AlertTriangle, RotateCcw,
+  ChevronDown, ShoppingBag, FileText, SlidersHorizontal,
 } from "lucide-react";
+import { format } from "date-fns";
+import { fr } from "date-fns/locale";
+import { withSessionRecovery } from "@/lib/session-recovery";
+import { Eyebrow, Montant, Panel, PanelHeader, Pastille, Vide, GOLD_BUTTON, fmtMontant } from "@/components/finances/finance-ui";
 import { generateFactureVentePdf } from "@/lib/pdf-facture-vente";
 import { getFactureWatermark } from "@/lib/facture-watermark";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
-import { ENCAISSEMENT_META, fmtFCFA, ANNULATION_META, type VenteRow } from "@/lib/finance-types";
+import { fmtFCFA, type VenteRow } from "@/lib/finance-types";
+
+const PAGE = 30;
+const dateCourte = (d: string) => format(new Date(d), "d MMM yyyy", { locale: fr });
+
+function Chip({ active, onClick, children }: { active: boolean; onClick: () => void; children: ReactNode }) {
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      aria-pressed={active}
+      className={cn(
+        "inline-flex items-center gap-1.5 rounded-full border px-3 py-1 text-xs transition-colors",
+        active ? "border-[#C8922A] bg-[#C8922A] text-white" : "border-border text-muted-foreground hover:text-foreground",
+      )}
+    >
+      {children}
+    </button>
+  );
+}
 
 interface ManuscritLite { id: string; titre: string; auteur: string; auteur_id: string | null; }
 interface AuteurLite { id: string; nom_complet: string; }
@@ -80,6 +100,9 @@ export function VentesTab({
   const [to, setTo] = useState("");
 
   const [expanded, setExpanded] = useState<Record<string, boolean>>({});
+  const [plusFiltres, setPlusFiltres] = useState(false);
+  const [limiteGroupes, setLimiteGroupes] = useState(PAGE);
+  const [limiteLibres, setLimiteLibres] = useState(PAGE);
 
   // Encaissement individuel (ventes libres)
   const [encVente, setEncVente] = useState<VenteRow | null>(null);
@@ -247,20 +270,19 @@ export function VentesTab({
     }
   };
 
-  const activeTotals = useMemo(() => {
-    const active = ventes.filter((v) => v.statut_annulation === "active");
+  const totaux = useMemo(() => {
+    const actives = filtered.filter((v) => !isCancelled(v));
+    const somme = (f: (v: VenteRow) => number) => actives.reduce((a, v) => a + f(v), 0);
     return {
-      count: active.length,
-      ca: active.reduce((a, v) => a + Number(v.montant_total_fcfa || 0), 0),
-      annulees: ventes.filter((v) => v.statut_annulation === "annulee").length,
+      nb: actives.length,
+      qte: somme((v) => Number(v.quantite_vendue || 0)),
+      ca: somme((v) => Number(v.montant_total_fcfa || 0)),
+      encaisse: somme((v) => Number(v.montant_encaisse_fcfa || 0)),
+      reste: somme(resteDe),
+      droits: somme((v) => Number(v.droits_auteur_fcfa || 0)),
     };
-  }, [ventes]);
-
-  const totaux = useMemo(() => ({
-    ca: filtered.reduce((a, v) => a + (isCancelled(v) ? 0 : Number(v.montant_total_fcfa || 0)), 0),
-    encaisse: filtered.reduce((a, v) => a + (isCancelled(v) ? 0 : Number(v.montant_encaisse_fcfa || 0)), 0),
-    droits: filtered.reduce((a, v) => a + (isCancelled(v) ? 0 : Number(v.droits_auteur_fcfa || 0)), 0),
-  }), [filtered]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [filtered]);
 
   const openEncaissement = (v: VenteRow) => {
     setEncVente(v);
@@ -278,11 +300,13 @@ export function VentesTab({
     }
     setEncBusy(true);
     try {
-      const { data, error } = await (supabase as any).rpc("enregistrer_encaissement", {
-        p_vente_id: encVente.id,
-        p_montant: montant,
-        p_date: encDate,
-      });
+      const { data, error } = await withSessionRecovery(supabase.auth, () =>
+        (supabase as any).rpc("enregistrer_encaissement", {
+          p_vente_id: encVente.id,
+          p_montant: montant,
+          p_date: encDate,
+        }),
+      ) as { data: any; error: any };
       if (error) throw error;
       if (data?.ok === false) throw new Error(data.error ?? "Erreur");
       toast.success(
@@ -308,10 +332,12 @@ export function VentesTab({
     if (!cancelVente) return;
     setCancelBusy(true);
     try {
-      const { data, error } = await (supabase as any).rpc("annuler_vente", {
-        p_vente_id: cancelVente.id,
-        p_raison: cancelReason.trim() || null,
-      });
+      const { data, error } = await withSessionRecovery(supabase.auth, () =>
+        (supabase as any).rpc("annuler_vente", {
+          p_vente_id: cancelVente.id,
+          p_raison: cancelReason.trim() || null,
+        }),
+      ) as { data: any; error: any };
       if (error) throw error;
       if (data?.ok === false) throw new Error(data.error ?? "Erreur");
       toast.success(`Vente annulée : ${pl(data.quantite_reversee, "exemplaire restauré", "exemplaires restaurés")} en stock`);
@@ -332,23 +358,32 @@ export function VentesTab({
     setEncGroupeBusy(true);
     let ok = 0;
     let montant = 0;
-    let echecs = 0;
     try {
+      // Une vente après l'autre ; on s'arrête au premier échec pour ne jamais compter deux fois.
       for (const v of cibles) {
         const reste = resteDe(v);
-        const { data, error } = await (supabase as any).rpc("enregistrer_encaissement", {
-          p_vente_id: v.id,
-          p_montant: reste,
-          p_date: encGroupeDate,
-        });
-        if (error || data?.ok === false) { echecs += 1; continue; }
+        const { data, error } = await withSessionRecovery(supabase.auth, () =>
+          (supabase as any).rpc("enregistrer_encaissement", {
+            p_vente_id: v.id,
+            p_montant: reste,
+            p_date: encGroupeDate,
+          }),
+        ) as { data: any; error: any };
+        if (error || data?.ok === false) {
+          const msg = error?.message ?? data?.error ?? "Erreur";
+          toast.error(ok > 0
+            ? `${fmtFCFA(montant)} enregistrés, puis arrêt : ${msg}. Vérifiez avant de réessayer.`
+            : msg);
+          break;
+        }
         ok += 1;
         montant += reste;
       }
-      if (ok > 0) toast.success(`${pl(ok, "vente encaissée", "ventes encaissées")} : ${fmtFCFA(montant)}`);
-      if (echecs > 0) toast.error(`${pl(echecs, "vente n'a pas pu être encaissée", "ventes n'ont pas pu être encaissées")}`);
-      setEncGroupe(null);
-      onChanged();
+      if (ok === cibles.length) {
+        toast.success(`${pl(ok, "vente encaissée", "ventes encaissées")} : ${fmtFCFA(montant)}`);
+        setEncGroupe(null);
+      }
+      if (ok > 0) onChanged();
     } finally {
       setEncGroupeBusy(false);
     }
@@ -366,10 +401,9 @@ export function VentesTab({
     let echecs = 0;
     try {
       for (const v of cibles) {
-        const { data, error } = await (supabase as any).rpc("annuler_vente", {
-          p_vente_id: v.id,
-          p_raison: raison,
-        });
+        const { data, error } = await withSessionRecovery(supabase.auth, () =>
+          (supabase as any).rpc("annuler_vente", { p_vente_id: v.id, p_raison: raison }),
+        ) as { data: any; error: any };
         if (error || data?.ok === false) { echecs += 1; continue; }
         ok += 1;
         ex += Number(data?.quantite_reversee ?? 0);
@@ -384,440 +418,343 @@ export function VentesTab({
     }
   };
 
-  const LigneActions = ({ v }: { v: VenteRow }) =>
-    isCancelled(v) ? null : (
-      <Button
-        size="sm"
-        variant="outline"
-        className="h-7 text-xs border-red-500/40 text-red-400 hover:bg-red-500/10"
-        onClick={(e) => { e.stopPropagation(); openCancel(v); }}
-      >
-        <RotateCcw className="h-3.5 w-3.5 mr-1" />
-        Annuler
-      </Button>
+  const peutAnnuler = (v: VenteRow) => !isCancelled(v) && (hideDroits || v.statut_paiement !== "paye");
+
+  const filtresActifs = canalFilter !== "all" || encFilter !== "all" || royFilter !== "all"
+    || annulationFilter !== "actives" || !!from || !!to || !!search.trim();
+  const effacerFiltres = () => {
+    setSearch(""); setCanalFilter("all"); setEncFilter("all"); setRoyFilter("all");
+    setAnnulationFilter("actives"); setFrom(""); setTo("");
+  };
+  const pctEncaisse = totaux.ca > 0 ? Math.min(100, Math.round((totaux.encaisse / totaux.ca) * 100)) : 0;
+  const groupesVisibles = tousGroupes.slice(0, limiteGroupes);
+  const libresVisibles = individuelles.slice(0, limiteLibres);
+
+  const ouvrirEncGroupe = (g: VenteGroupe) => {
+    setEncGroupeDate(new Date().toISOString().slice(0, 10));
+    setEncGroupe(g);
+  };
+  const annulerGroupe = (g: VenteGroupe) => {
+    if (g.kind === "panier") { setCancelGroupeReason(""); setCancelGroupe(g); }
+    else setChoixGroupe(g);
+  };
+
+  /** Une ligne d'état courte : annulée, payée, partielle ou à encaisser. */
+  const Etat = ({ v }: { v: VenteRow }) => {
+    if (isCancelled(v)) return <span className="text-[11px] text-red-500">Annulée</span>;
+    const reste = resteDe(v);
+    if (reste <= 0) return <span className="text-[11px] text-emerald-600 dark:text-emerald-400">Payée</span>;
+    return (
+      <span className={cn("text-[11px]", v.statut_encaissement === "partiel" ? "text-amber-600 dark:text-amber-400" : "text-red-500")}>
+        Reste {fmtMontant(reste)}
+      </span>
     );
+  };
+
+  const BoutonAnnuler = ({ v }: { v: VenteRow }) =>
+    peutAnnuler(v) ? (
+      <Button
+        size="icon"
+        variant="ghost"
+        className="h-8 w-8 text-red-500 hover:text-red-400"
+        onClick={(e) => { e.stopPropagation(); openCancel(v); }}
+        title="Annuler cette vente"
+        aria-label="Annuler cette vente"
+      >
+        <RotateCcw className="h-4 w-4" />
+      </Button>
+    ) : null;
 
   return (
     <div className="space-y-4">
-      {/* Filtres */}
-      <Card className="bg-card/70">
-        <CardContent className="pt-4 pb-4">
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-7 gap-3">
-            <div className="relative lg:col-span-2">
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-              <Input
-                value={search}
-                onChange={(e) => setSearch(e.target.value)}
-                placeholder="Livre, auteur, librairie…"
-                className="pl-9"
-              />
+      {/* Résumé */}
+      <Panel accent className="p-5 sm:p-6">
+        <Eyebrow line>{filtresActifs ? "Ventes filtrées" : "Toutes vos ventes"}</Eyebrow>
+        <div className="mt-4 flex flex-wrap items-end justify-between gap-6">
+          <div>
+            <Montant value={totaux.ca} size="xl" />
+            <p className="mt-2 text-sm text-muted-foreground">
+              {pl(totaux.nb, "vente", "ventes")} · {pl(totaux.qte, "exemplaire", "exemplaires")}
+            </p>
+          </div>
+          <div className={cn("grid gap-6", hideDroits ? "grid-cols-2" : "grid-cols-3")}>
+            <div>
+              <Eyebrow>Encaissé</Eyebrow>
+              <Montant value={totaux.encaisse} size="md" tone="good" className="mt-1.5" />
             </div>
-            <Select value={canalFilter} onValueChange={setCanalFilter}>
-              <SelectTrigger><SelectValue placeholder="Canal" /></SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">Tous les canaux</SelectItem>
-                <SelectItem value="interne">Vente libre</SelectItem>
-                <SelectItem value="externe">Librairie</SelectItem>
-              </SelectContent>
-            </Select>
-            <Select value={encFilter} onValueChange={setEncFilter}>
-              <SelectTrigger><SelectValue placeholder="Encaissement" /></SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">Encaissement : tous</SelectItem>
-                <SelectItem value="encaisse">Encaissées</SelectItem>
-                <SelectItem value="partiel">Partiellement encaissées</SelectItem>
-                <SelectItem value="en_attente">À encaisser</SelectItem>
-              </SelectContent>
-            </Select>
+            <div>
+              <Eyebrow>Reste</Eyebrow>
+              <Montant value={totaux.reste} size="md" tone={totaux.reste > 0 ? "bad" : undefined} className="mt-1.5" />
+            </div>
             {!hideDroits && (
-            <Select value={royFilter} onValueChange={setRoyFilter}>
-              <SelectTrigger><SelectValue placeholder="Royalties" /></SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">Royalties : toutes</SelectItem>
-                <SelectItem value="en_attente">Droits en attente</SelectItem>
-                <SelectItem value="paye">Droits payés</SelectItem>
-              </SelectContent>
-            </Select>
+              <div>
+                <Eyebrow>Droits</Eyebrow>
+                <Montant value={totaux.droits} size="md" className="mt-1.5" />
+              </div>
             )}
-            <Select value={annulationFilter} onValueChange={(v) => setAnnulationFilter(v as any)}>
-              <SelectTrigger><SelectValue placeholder="Statut" /></SelectTrigger>
-              <SelectContent>
-                <SelectItem value="actives">Actives</SelectItem>
-                <SelectItem value="annulees">Annulées</SelectItem>
-                <SelectItem value="toutes">Toutes</SelectItem>
-              </SelectContent>
-            </Select>
-            <div className="flex gap-2">
-              <Input type="date" value={from} onChange={(e) => setFrom(e.target.value)} aria-label="Du" />
-              <Input type="date" value={to} onChange={(e) => setTo(e.target.value)} aria-label="Au" />
+          </div>
+        </div>
+        <div className="mt-5 h-1.5 overflow-hidden rounded-full bg-muted" role="img" aria-label={`${pctEncaisse} % encaissé`}>
+          <div className="h-full rounded-full bg-emerald-500" style={{ width: `${pctEncaisse}%` }} />
+        </div>
+        <p className="mt-1.5 text-xs text-muted-foreground">{pctEncaisse} % déjà encaissé</p>
+      </Panel>
+
+      {/* Filtres */}
+      <Panel className="space-y-3 p-4">
+        <div className="flex flex-col gap-2 sm:flex-row">
+          <div className="relative flex-1">
+            <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" aria-hidden />
+            <Input
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+              placeholder="Livre, auteur, librairie…"
+              aria-label="Rechercher une vente"
+              className="pl-9"
+            />
+          </div>
+          <Button variant="outline" className="rounded-md" onClick={() => setPlusFiltres((s) => !s)} aria-expanded={plusFiltres}>
+            <SlidersHorizontal className="mr-2 h-4 w-4" />
+            Plus de filtres
+          </Button>
+        </div>
+        <div className="flex flex-wrap gap-2">
+          <Chip active={encFilter === "all"} onClick={() => setEncFilter("all")}>Toutes</Chip>
+          <Chip active={encFilter === "en_attente"} onClick={() => setEncFilter(encFilter === "en_attente" ? "all" : "en_attente")}>À encaisser</Chip>
+          <Chip active={encFilter === "partiel"} onClick={() => setEncFilter(encFilter === "partiel" ? "all" : "partiel")}>Partielles</Chip>
+          <Chip active={encFilter === "encaisse"} onClick={() => setEncFilter(encFilter === "encaisse" ? "all" : "encaisse")}>Payées</Chip>
+          <span className="mx-1 hidden w-px bg-border sm:block" aria-hidden />
+          <Chip active={canalFilter === "externe"} onClick={() => setCanalFilter(canalFilter === "externe" ? "all" : "externe")}>Librairies</Chip>
+          <Chip active={canalFilter === "interne"} onClick={() => setCanalFilter(canalFilter === "interne" ? "all" : "interne")}>Ventes libres</Chip>
+        </div>
+        {plusFiltres && (
+          <div className="grid gap-3 border-t border-border pt-3 sm:grid-cols-2">
+            {!hideDroits && (
+              <div className="space-y-1.5">
+                <Eyebrow>Droits d'auteur</Eyebrow>
+                <div className="flex flex-wrap gap-2">
+                  <Chip active={royFilter === "all"} onClick={() => setRoyFilter("all")}>Tous</Chip>
+                  <Chip active={royFilter === "en_attente"} onClick={() => setRoyFilter("en_attente")}>À payer</Chip>
+                  <Chip active={royFilter === "paye"} onClick={() => setRoyFilter("paye")}>Payés</Chip>
+                </div>
+              </div>
+            )}
+            <div className="space-y-1.5">
+              <Eyebrow>Ventes annulées</Eyebrow>
+              <div className="flex flex-wrap gap-2">
+                <Chip active={annulationFilter === "actives"} onClick={() => setAnnulationFilter("actives")}>Masquées</Chip>
+                <Chip active={annulationFilter === "toutes"} onClick={() => setAnnulationFilter("toutes")}>Affichées</Chip>
+                <Chip active={annulationFilter === "annulees"} onClick={() => setAnnulationFilter("annulees")}>Seulement elles</Chip>
+              </div>
+            </div>
+            <div className="space-y-1.5 sm:col-span-2">
+              <Eyebrow>Période</Eyebrow>
+              <div className="flex gap-2">
+                <Input type="date" value={from} onChange={(e) => setFrom(e.target.value)} aria-label="Du" />
+                <Input type="date" value={to} onChange={(e) => setTo(e.target.value)} aria-label="Au" />
+              </div>
             </div>
           </div>
-          <p className="text-xs text-muted-foreground mt-3">
-            {pl(filtered.length, "vente affichée", "ventes affichées")} · {pl(groupes.length, "dépôt groupé", "dépôts groupés")} · {pl(activeTotals.count, "active", "actives")} · {pl(activeTotals.annulees, "annulée", "annulées")} · CA filtré {fmtFCFA(totaux.ca)} · Encaissé {fmtFCFA(totaux.encaisse)}{!hideDroits && <> · Droits {fmtFCFA(totaux.droits)}</>}
-          </p>
-        </CardContent>
-      </Card>
+        )}
+        {filtresActifs && (
+          <button type="button" onClick={effacerFiltres} className="text-xs text-[color:var(--gold)] underline-offset-4 hover:underline">
+            Effacer les filtres
+          </button>
+        )}
+      </Panel>
 
-      {/* Ventes en librairie : groupées */}
-      <Card className="bg-card/70">
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2 text-lg">
-            <Store className="h-5 w-5 text-[color:var(--gold)]" />
-            Ventes groupées <span className="text-xs font-normal text-muted-foreground">(dépôts en librairie & ventes directes)</span>
-          </CardTitle>
-          <CardDescription>
-            Un groupe = un dépôt en librairie (librairie + date) ou une vente directe multi-livres (une facture).
-            Encaissez tout le groupe d'un clic, ou dépliez pour voir chaque titre.
-          </CardDescription>
-        </CardHeader>
-        <CardContent>
-          {tousGroupes.length === 0 ? (
-            <p className="text-center py-10 text-muted-foreground text-sm">Aucune vente groupée ne correspond aux filtres.</p>
-          ) : (
-            <div className="space-y-2">
-              {tousGroupes.map((g) => {
-                const isOpen = !!expanded[g.key];
-                const aEncaisser = g.total_reste > 0;
-                const toutAnnule = g.nb_actives === 0;
-                return (
-                  <div
-                    key={g.key}
-                    className="rounded-xl border border-[rgba(200,146,42,0.15)] bg-card/85 transition-colors hover:border-[rgba(200,146,42,0.3)]"
-                  >
-                    {/* En-tête du groupe */}
-                    <div
-                      role="button"
-                      tabIndex={0}
-                      onClick={() => setExpanded((s) => ({ ...s, [g.key]: !s[g.key] }))}
-                      onKeyDown={(e) => {
-                        if (e.key === "Enter" || e.key === " ") {
-                          e.preventDefault();
-                          setExpanded((s) => ({ ...s, [g.key]: !s[g.key] }));
-                        }
-                      }}
-                      className="cursor-pointer px-4 py-4 sm:px-5 flex flex-col gap-3 lg:flex-row lg:items-center lg:gap-4"
+      {/* Dépôts en librairie et ventes groupées */}
+      <Panel>
+        <PanelHeader
+          eyebrow="Librairies et factures"
+          title={<>Ventes groupées <span className="font-sans text-sm text-muted-foreground">{tousGroupes.length}</span></>}
+        />
+        {tousGroupes.length === 0 ? (
+          <Vide>Aucune vente groupée pour ces filtres.</Vide>
+        ) : (
+          <ul className="divide-y divide-border border-t border-border">
+            {groupesVisibles.map((g) => {
+              const isOpen = !!expanded[g.key];
+              const aEncaisser = g.total_reste > 0;
+              const toutAnnule = g.nb_actives === 0;
+              const toggle = () => setExpanded((s) => ({ ...s, [g.key]: !s[g.key] }));
+              return (
+                <li key={g.key}>
+                  <div className="flex items-center gap-3 px-5 py-3">
+                    <button
+                      type="button"
+                      onClick={toggle}
+                      aria-expanded={isOpen}
+                      className="flex min-w-0 flex-1 items-center gap-3 text-left"
                     >
-                      <div className="flex items-start gap-3 min-w-0 lg:flex-1">
-                        <span className="mt-0.5 text-[color:var(--gold)]">
-                          {isOpen ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />}
+                      <Pastille
+                        className={g.kind === "panier"
+                          ? "bg-[color:var(--gold)]/15 text-[color:var(--gold)]"
+                          : "bg-blue-500/10 text-blue-600 dark:text-blue-400"}
+                      >
+                        {g.kind === "panier" ? <ShoppingBag className="h-4 w-4" /> : <Store className="h-4 w-4" />}
+                      </Pastille>
+                      <span className="min-w-0">
+                        <span className={cn("block truncate text-sm font-medium", toutAnnule && "line-through opacity-60")}>
+                          {g.librairie_nom}
                         </span>
-                        <div className="min-w-0">
-                          <div className="flex flex-wrap items-center gap-2">
-                            <span className="text-sm font-semibold">
-                              {new Date(g.date_vente).toLocaleDateString("fr-FR")}
-                            </span>
-                            <Badge
-                              variant="outline"
-                              className={cn(
-                                "text-[10px]",
-                                g.kind === "panier"
-                                  ? "bg-[color:var(--gold)]/10 text-[color:var(--gold)] border-[color:var(--gold)]/30"
-                                  : "bg-blue-500/10 text-blue-400 border-blue-500/30",
-                              )}
-                            >
-                              {g.kind === "panier" ? "Vente directe" : "Librairie"}
-                            </Badge>
-                            <span className="text-sm font-medium truncate">
-                              {g.kind === "panier" ? `${g.librairie_nom}` : g.librairie_nom}
-                            </span>
-                            {g.kind === "panier" && g.facture_numero && (
-                              <span className="text-[10px] text-muted-foreground">n° {g.facture_numero}</span>
-                            )}
-                          </div>
-                          <p className="mt-1 text-xs text-muted-foreground">
-                            {pl(g.nb_actives, "titre", "titres")} · {pl(g.total_qte, "exemplaire", "exemplaires")}
-                            {toutAnnule && <span className="text-red-400"> · groupe entièrement annulé</span>}
-                          </p>
-                        </div>
-                      </div>
+                        <span className="block truncate text-xs text-muted-foreground">
+                          {dateCourte(g.date_vente)} · {pl(g.nb_actives, "titre", "titres")} · {pl(g.total_qte, "ex.", "ex.")}
+                          {g.kind === "panier" && g.facture_numero && <> · n° {g.facture_numero}</>}
+                        </span>
+                      </span>
+                    </button>
+                    <div className="shrink-0 text-right">
+                      <p className="font-wordmark-serif text-lg leading-none tabular-nums">{fmtMontant(g.total_montant)}</p>
+                      <p className="mt-1 text-[11px]">
+                        {toutAnnule ? <span className="text-red-500">Annulé</span>
+                          : aEncaisser ? <span className="text-red-500">Reste {fmtMontant(g.total_reste)}</span>
+                          : <span className="text-emerald-600 dark:text-emerald-400">Payé</span>}
+                      </p>
+                    </div>
+                    <div className="hidden shrink-0 items-center gap-1 sm:flex">
+                      {aEncaisser && (
+                        <Button size="sm" className={cn("h-8 text-xs", GOLD_BUTTON)} onClick={() => ouvrirEncGroupe(g)}>
+                          Encaisser
+                        </Button>
+                      )}
+                      {g.kind === "panier" && (
+                        <Button size="icon" variant="ghost" className="h-8 w-8" onClick={() => voirFacture(g)} title="Télécharger la facture" aria-label="Télécharger la facture">
+                          <FileText className="h-4 w-4" />
+                        </Button>
+                      )}
+                      {!toutAnnule && (
+                        <Button size="icon" variant="ghost" className="h-8 w-8 text-red-500 hover:text-red-400" onClick={() => annulerGroupe(g)} title="Annuler" aria-label="Annuler">
+                          <RotateCcw className="h-4 w-4" />
+                        </Button>
+                      )}
+                    </div>
+                    <button type="button" onClick={toggle} className="shrink-0 text-muted-foreground" aria-label={isOpen ? "Replier" : "Voir le détail"}>
+                      <ChevronDown className={cn("h-4 w-4 transition-transform", isOpen && "rotate-180")} />
+                    </button>
+                  </div>
 
-                      <div className={cn("grid gap-3 text-xs", hideDroits ? "grid-cols-2 lg:w-[260px]" : "grid-cols-3 lg:w-[360px]")}>
-                        <div>
-                          <p className="text-muted-foreground">Total</p>
-                          <p className="font-semibold text-[color:var(--gold)]">{fmtFCFA(g.total_montant)}</p>
-                        </div>
-                        <div>
-                          <p className="text-muted-foreground">Commission</p>
-                          <p className="font-medium">{fmtFCFA(g.total_commission)}</p>
-                        </div>
-                        {!hideDroits && (
-                        <div>
-                          <p className="text-muted-foreground">Droits</p>
-                          <p className="font-medium">{fmtFCFA(g.total_droits)}</p>
-                        </div>
-                        )}
-                      </div>
-
-                      <div className="flex flex-wrap items-center gap-2 lg:justify-end">
-                        {toutAnnule ? (
-                          <Badge variant="outline" className="text-[10px] bg-red-500/10 text-red-400 border-red-500/30">
-                            <XCircle className="h-3 w-3 mr-1" /> Annulé
-                          </Badge>
-                        ) : aEncaisser ? (
-                          <Badge variant="outline" className="text-[10px] bg-red-500/15 text-red-400 border-red-500/30">
-                            À encaisser · {fmtFCFA(g.total_reste)}
-                          </Badge>
-                        ) : (
-                          <Badge variant="outline" className="text-[10px] bg-emerald-500/15 text-emerald-400 border-emerald-500/30">
-                            Payé
-                          </Badge>
-                        )}
+                  {isOpen && (
+                    <div className="px-5 pb-4">
+                      <ul className="divide-y divide-border rounded-xl border border-border bg-muted/30">
+                        {g.lignes.map((v) => {
+                          const cancelled = isCancelled(v);
+                          return (
+                            <li key={v.id} className={cn("flex items-center gap-3 px-4 py-2.5", cancelled && "opacity-60")}>
+                              <div className="min-w-0 flex-1">
+                                <p className={cn("truncate text-sm", cancelled && "line-through")}>
+                                  {manuscritMap.get(v.manuscrit_id)?.titre?.trim() ?? "Livre supprimé"}
+                                </p>
+                                <p className="truncate text-xs text-muted-foreground">
+                                  {auteurDe(v)} · {v.quantite_vendue} × {fmtMontant(Number(v.prix_unitaire_fcfa || 0))}
+                                  {!hideDroits && Number(v.droits_auteur_fcfa) > 0 && <> · droits {fmtMontant(Number(v.droits_auteur_fcfa))}</>}
+                                </p>
+                                {cancelled && v.raison_annulation && (
+                                  <p className="truncate text-[11px] text-red-500">{v.raison_annulation}</p>
+                                )}
+                              </div>
+                              <div className="shrink-0 text-right">
+                                <p className={cn("text-sm tabular-nums", cancelled && "line-through")}>{fmtMontant(Number(v.montant_total_fcfa || 0))}</p>
+                                <Etat v={v} />
+                              </div>
+                              <BoutonAnnuler v={v} />
+                            </li>
+                          );
+                        })}
+                      </ul>
+                      <div className="mt-3 flex flex-wrap gap-2 sm:hidden">
                         {aEncaisser && (
-                          <Button
-                            size="sm"
-                            className="h-8 text-xs bg-[linear-gradient(135deg,#C8922A,#A67420)] text-white border-0"
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              setEncGroupeDate(new Date().toISOString().slice(0, 10));
-                              setEncGroupe(g);
-                            }}
-                          >
-                            <Banknote className="h-3.5 w-3.5 mr-1" />
-                            Encaisser tout
+                          <Button size="sm" className={cn("h-8 text-xs", GOLD_BUTTON)} onClick={() => ouvrirEncGroupe(g)}>
+                            <Banknote className="mr-1.5 h-3.5 w-3.5" /> Encaisser {fmtMontant(g.total_reste)}
                           </Button>
                         )}
                         {g.kind === "panier" && (
-                          <Button
-                            size="sm"
-                            variant="outline"
-                            className="h-8 text-xs border-[color:var(--gold)]/40 text-[color:var(--gold)] hover:bg-[color:var(--gold)]/10"
-                            onClick={(e) => { e.stopPropagation(); voirFacture(g); }}
-                          >
-                            <FileText className="h-3.5 w-3.5 mr-1" />
-                            Voir la facture
+                          <Button size="sm" variant="outline" className="h-8 rounded-md text-xs" onClick={() => voirFacture(g)}>
+                            <FileText className="mr-1.5 h-3.5 w-3.5" /> Facture
                           </Button>
                         )}
                         {!toutAnnule && (
-                          <Button
-                            size="sm"
-                            variant="outline"
-                            className="h-8 text-xs border-red-500/40 text-red-400 hover:bg-red-500/10"
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              if (g.kind === "panier") { setCancelGroupeReason(""); setCancelGroupe(g); }
-                              else setChoixGroupe(g);
-                            }}
-                          >
-                            <RotateCcw className="h-3.5 w-3.5 mr-1" />
-                            Annuler
+                          <Button size="sm" variant="outline" className="h-8 rounded-md text-xs text-red-500" onClick={() => annulerGroupe(g)}>
+                            <RotateCcw className="mr-1.5 h-3.5 w-3.5" /> Annuler
                           </Button>
                         )}
                       </div>
                     </div>
-
-                    {/* Détail des titres */}
-                    <div
-                      className="overflow-hidden transition-all duration-[250ms] ease-in-out"
-                      style={{ maxHeight: isOpen ? `${g.lignes.length * 120 + 160}px` : "0px" }}
-                    >
-                      <div className="border-t border-[rgba(200,146,42,0.08)] px-3 pb-4 pt-3 sm:pl-6">
-                        <div className="overflow-x-auto">
-                          <table className="w-full text-[13px] min-w-[720px]">
-                            <thead>
-                              <tr className="text-left text-[10px] uppercase tracking-wide text-muted-foreground">
-                                <th className="py-1.5 pr-3">Livre</th>
-                                <th className="py-1.5 pr-3">Auteur</th>
-                                <th className="py-1.5 pr-3 text-right">Qté</th>
-                                <th className="py-1.5 pr-3 text-right">P.U.</th>
-                                <th className="py-1.5 pr-3 text-right">Total</th>
-                                {!hideDroits && <th className="py-1.5 pr-3 text-right">Droits</th>}
-                                <th className="py-1.5 pr-3">Encaissement</th>
-                                <th className="py-1.5 text-right">Action</th>
-                              </tr>
-                            </thead>
-                            <tbody>
-                              {g.lignes.map((v) => {
-                                const m = manuscritMap.get(v.manuscrit_id);
-                                const enc = ENCAISSEMENT_META[v.statut_encaissement ?? "en_attente"] ?? ENCAISSEMENT_META.en_attente;
-                                const cancelled = isCancelled(v);
-                                return (
-                                  <tr
-                                    key={v.id}
-                                    className={cn("border-t border-[rgba(200,146,42,0.08)]", cancelled && "opacity-60 bg-red-500/5")}
-                                  >
-                                    <td className={cn("py-2 pr-3 font-medium", cancelled && "line-through")}>
-                                      {m?.titre ?? "Livre supprimé"}
-                                      {cancelled && v.raison_annulation && (
-                                        <span className="block text-[10px] text-red-400 font-normal no-underline">{v.raison_annulation}</span>
-                                      )}
-                                    </td>
-                                    <td className={cn("py-2 pr-3", cancelled && "line-through")}>{auteurDe(v)}</td>
-                                    <td className={cn("py-2 pr-3 text-right", cancelled && "line-through")}>{v.quantite_vendue}</td>
-                                    <td className={cn("py-2 pr-3 text-right", cancelled && "line-through")}>{fmtFCFA(v.prix_unitaire_fcfa)}</td>
-                                    <td className={cn("py-2 pr-3 text-right font-semibold text-[color:var(--gold)]", cancelled && "line-through")}>
-                                      {fmtFCFA(v.montant_total_fcfa)}
-                                    </td>
-                                    {!hideDroits && <td className={cn("py-2 pr-3 text-right", cancelled && "line-through")}>{fmtFCFA(v.droits_auteur_fcfa)}</td>}
-                                    <td className="py-2 pr-3">
-                                      {cancelled ? (
-                                        <Badge variant="outline" className="text-[10px] bg-red-500/10 text-red-400 border-red-500/30">Annulée</Badge>
-                                      ) : (
-                                        <Badge variant="outline" className={cn("text-[10px]", enc.className)}>{enc.label}</Badge>
-                                      )}
-                                    </td>
-                                    <td className="py-2 text-right">
-                                      <LigneActions v={v} />
-                                    </td>
-                                  </tr>
-                                );
-                              })}
-                            </tbody>
-                          </table>
-                        </div>
-                        {g.total_reste > 0 && (
-                          <div className="mt-3 flex justify-end">
-                            <Button
-                              size="sm"
-                              className="h-8 text-xs bg-[linear-gradient(135deg,#C8922A,#A67420)] text-white border-0"
-                              onClick={() => {
-                                setEncGroupeDate(new Date().toISOString().slice(0, 10));
-                                setEncGroupe(g);
-                              }}
-                            >
-                              <Banknote className="h-3.5 w-3.5 mr-1" />
-                              Encaisser tout le groupe
-                            </Button>
-                          </div>
-                        )}
-                      </div>
-                    </div>
-                  </div>
-                );
-              })}
-            </div>
-          )}
-        </CardContent>
-      </Card>
+                  )}
+                </li>
+              );
+            })}
+          </ul>
+        )}
+        {tousGroupes.length > limiteGroupes && (
+          <div className="border-t border-border p-3 text-center">
+            <Button variant="ghost" size="sm" onClick={() => setLimiteGroupes((n) => n + PAGE)}>
+              Voir plus ({tousGroupes.length - limiteGroupes})
+            </Button>
+          </div>
+        )}
+      </Panel>
 
       {/* Ventes libres : individuelles */}
-      <Card className="bg-card/70">
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2 text-lg">
-            <ShoppingBag className="h-5 w-5 text-[color:var(--gold)]" />
-            Ventes libres
-          </CardTitle>
-          <CardDescription>
-            Ventes directes hors librairie : chaque vente garde son propre encaissement et son annulation.
-          </CardDescription>
-        </CardHeader>
-        <CardContent>
-          {individuelles.length === 0 ? (
-            <p className="text-center py-10 text-muted-foreground text-sm">Aucune vente libre ne correspond aux filtres.</p>
-          ) : (
-            <div className="relative">
-              <div className="overflow-x-auto">
-              <table className="w-full text-sm min-w-[980px]">
-                <thead>
-                  <tr className="border-b border-border text-left text-xs uppercase tracking-wide text-muted-foreground">
-                    <th className="py-2 pr-3">Date</th>
-                    <th className="py-2 pr-3">Livre</th>
-                    <th className="py-2 pr-3">Auteur</th>
-                    <th className="py-2 pr-3 text-right">Qté</th>
-                    <th className="py-2 pr-3 text-right">P.U.</th>
-                    <th className="py-2 pr-3 text-right">Total</th>
-                    {!hideDroits && <th className="py-2 pr-3 text-right">Droits</th>}
-                    {!hideDroits && <th className="py-2 pr-3 text-center">Royalties</th>}
-                    <th className="py-2 pr-3">Encaissement</th>
-                    <th className="py-2 pr-3 text-center">Statut</th>
-                    <th className="py-2 text-right">Action</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {individuelles.map((v) => {
-                    const m = manuscritMap.get(v.manuscrit_id);
-                    const enc = ENCAISSEMENT_META[v.statut_encaissement ?? "en_attente"] ?? ENCAISSEMENT_META.en_attente;
-                    const ann = ANNULATION_META[v.statut_annulation ?? "active"];
-                    const reste = resteDe(v);
-                    const cancelled = isCancelled(v);
-                    return (
-                      <tr
-                        key={v.id}
-                        className={cn("border-b border-border/50 hover:bg-muted/20", cancelled && "opacity-60 bg-red-500/5")}
-                      >
-                        <td className={cn("py-2.5 pr-3 whitespace-nowrap", cancelled && "line-through")}>
-                          {new Date(v.date_vente).toLocaleDateString("fr-FR")}
-                        </td>
-                        <td className={cn("py-2.5 pr-3 font-medium", cancelled && "line-through")}>
-                          {m?.titre ?? "Livre supprimé"}
-                          {cancelled && v.raison_annulation && (
-                            <span className="block text-[10px] text-red-400 font-normal no-underline">{v.raison_annulation}</span>
-                          )}
-                        </td>
-                        <td className={cn("py-2.5 pr-3", cancelled && "line-through")}>{auteurDe(v)}</td>
-                        <td className={cn("py-2.5 pr-3 text-right", cancelled && "line-through")}>{v.quantite_vendue}</td>
-                        <td className={cn("py-2.5 pr-3 text-right", cancelled && "line-through")}>{fmtFCFA(v.prix_unitaire_fcfa)}</td>
-                        <td className={cn("py-2.5 pr-3 text-right font-semibold text-[color:var(--gold)]", cancelled && "line-through")}>
-                          {fmtFCFA(v.montant_total_fcfa)}
-                          {Number(v.remise_fcfa) > 0 && (
-                            <span className="block text-[10px] font-normal text-muted-foreground">
-                              remise −{fmtFCFA(v.remise_fcfa)}
-                            </span>
-                          )}
-                        </td>
-                        {!hideDroits && <td className={cn("py-2.5 pr-3 text-right", cancelled && "line-through")}>{fmtFCFA(v.droits_auteur_fcfa)}</td>}
-                        {!hideDroits && <td className="py-2.5 pr-3 text-center">
-                          <Badge
-                            variant="outline"
-                            className={cn(
-                              "text-[10px]",
-                              v.statut_paiement === "paye"
-                                ? "bg-emerald-500/15 text-emerald-400 border-emerald-500/30"
-                                : "bg-amber-500/15 text-amber-400 border-amber-500/30",
-                              cancelled && "opacity-60",
-                            )}
-                          >
-                            {v.statut_paiement === "paye" ? "Payés" : "En attente"}
-                          </Badge>
-                        </td>}
-                        <td className="py-2.5 pr-3">
-                          <Badge variant="outline" className={cn("text-[10px]", enc.className, cancelled && "opacity-60")}>{enc.label}</Badge>
-                          {reste > 0 && !cancelled && (
-                            <span className="block text-[10px] text-muted-foreground mt-0.5">
-                              reste {fmtFCFA(reste)}
-                            </span>
-                          )}
-                        </td>
-                        <td className="py-2.5 pr-3 text-center">
-                          {cancelled ? (
-                            <Badge variant="outline" className={cn("text-[10px]", ann.className)}>
-                              <XCircle className="h-3 w-3 mr-1" /> {ann.label}
-                            </Badge>
-                          ) : (
-                            <span className="text-[10px] text-muted-foreground">—</span>
-                          )}
-                        </td>
-                        <td className="py-2.5 text-right">
-                          {!cancelled && (
-                            <div className="flex justify-end gap-1">
-                              {reste > 0 && (
-                                <Button
-                                  size="sm"
-                                  variant="outline"
-                                  className="h-7 text-xs border-[color:var(--gold)]/40 text-[color:var(--gold)] hover:bg-[color:var(--gold)]/10"
-                                  onClick={() => openEncaissement(v)}
-                                >
-                                  <Banknote className="h-3.5 w-3.5 mr-1" />
-                                  Encaisser
-                                </Button>
-                              )}
-                              {(hideDroits || v.statut_paiement !== "paye") && <LigneActions v={v} />}
-                            </div>
-                          )}
-                        </td>
-                      </tr>
-                    );
-                  })}
-                </tbody>
-              </table>
-              </div>
-              <div className="pointer-events-none absolute right-0 top-0 h-full w-10 bg-gradient-to-l from-card to-transparent md:hidden" />
-              <p className="mt-2 text-center text-[11px] text-muted-foreground md:hidden">
-                Glissez le tableau vers la gauche pour voir les autres colonnes
-              </p>
-            </div>
-          )}
-        </CardContent>
-      </Card>
+      <Panel>
+        <PanelHeader
+          eyebrow="Hors librairie"
+          title={<>Ventes libres <span className="font-sans text-sm text-muted-foreground">{individuelles.length}</span></>}
+        />
+        {individuelles.length === 0 ? (
+          <Vide>Aucune vente libre pour ces filtres.</Vide>
+        ) : (
+          <ul className="divide-y divide-border border-t border-border">
+            {libresVisibles.map((v) => {
+              const titre = manuscritMap.get(v.manuscrit_id)?.titre?.trim() ?? "Livre supprimé";
+              const reste = resteDe(v);
+              const cancelled = isCancelled(v);
+              return (
+                <li key={v.id} className={cn("flex items-center gap-3 px-5 py-3", cancelled && "opacity-60")}>
+                  <Pastille>{titre.charAt(0).toUpperCase()}</Pastille>
+                  <div className="min-w-0 flex-1">
+                    <p className={cn("truncate text-sm font-medium", cancelled && "line-through")}>{titre}</p>
+                    <p className="truncate text-xs text-muted-foreground">
+                      {dateCourte(v.date_vente)} · {auteurDe(v)} · {v.quantite_vendue} × {fmtMontant(Number(v.prix_unitaire_fcfa || 0))}
+                      {Number(v.remise_fcfa) > 0 && <> · remise {fmtMontant(Number(v.remise_fcfa))}</>}
+                      {!hideDroits && !cancelled && <> · droits {v.statut_paiement === "paye" ? "payés" : "à payer"}</>}
+                    </p>
+                    {cancelled && v.raison_annulation && (
+                      <p className="truncate text-[11px] text-red-500">{v.raison_annulation}</p>
+                    )}
+                  </div>
+                  <div className="shrink-0 text-right">
+                    <p className={cn("font-wordmark-serif text-lg leading-none tabular-nums", cancelled && "line-through")}>
+                      {fmtMontant(Number(v.montant_total_fcfa || 0))}
+                    </p>
+                    <p className="mt-1"><Etat v={v} /></p>
+                  </div>
+                  {!cancelled && reste > 0 && (
+                    <Button
+                      size="icon"
+                      variant="ghost"
+                      className="h-8 w-8 text-[color:var(--gold)]"
+                      onClick={() => openEncaissement(v)}
+                      title="Enregistrer un paiement"
+                      aria-label="Enregistrer un paiement"
+                    >
+                      <Banknote className="h-4 w-4" />
+                    </Button>
+                  )}
+                  <BoutonAnnuler v={v} />
+                </li>
+              );
+            })}
+          </ul>
+        )}
+        {individuelles.length > limiteLibres && (
+          <div className="border-t border-border p-3 text-center">
+            <Button variant="ghost" size="sm" onClick={() => setLimiteLibres((n) => n + PAGE)}>
+              Voir plus ({individuelles.length - limiteLibres})
+            </Button>
+          </div>
+        )}
+      </Panel>
 
       {/* Dialog encaissement individuel */}
       <Dialog open={!!encVente} onOpenChange={(o) => !o && setEncVente(null)}>
@@ -858,7 +795,7 @@ export function VentesTab({
             <Button
               onClick={submitEncaissement}
               disabled={encBusy}
-              className="bg-[linear-gradient(135deg,#C8922A,#A67420)] text-white border-0"
+              className={GOLD_BUTTON}
             >
               {encBusy ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : <Banknote className="h-4 w-4 mr-2" />}
               Valider l'encaissement
@@ -871,12 +808,12 @@ export function VentesTab({
       <Dialog open={!!encGroupe} onOpenChange={(o) => !o && setEncGroupe(null)}>
         <DialogContent className="max-w-md">
           <DialogHeader>
-            <DialogTitle>Encaisser tout le dépôt</DialogTitle>
+            <DialogTitle>{encGroupe?.kind === "panier" ? "Encaisser toute la facture" : "Encaisser tout le dépôt"}</DialogTitle>
             <DialogDescription>
               {encGroupe && (
                 <>
                   Marquer comme encaissé : {pl(encGroupe.lignes.filter((v) => !isCancelled(v) && resteDe(v) > 0).length, "vente", "ventes")} pour{" "}
-                  <strong>{encGroupe.librairie_nom}</strong> du {new Date(encGroupe.date_vente).toLocaleDateString("fr-FR")} ?
+                  <strong>{encGroupe.librairie_nom}</strong> du {dateCourte(encGroupe.date_vente)} ?
                 </>
               )}
             </DialogDescription>
@@ -900,7 +837,7 @@ export function VentesTab({
             <Button
               onClick={submitEncaissementGroupe}
               disabled={encGroupeBusy}
-              className="bg-[linear-gradient(135deg,#C8922A,#A67420)] text-white border-0"
+              className={GOLD_BUTTON}
             >
               {encGroupeBusy ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : <Banknote className="h-4 w-4 mr-2" />}
               Confirmer l'encaissement
@@ -917,7 +854,7 @@ export function VentesTab({
             <DialogDescription>
               {choixGroupe && (
                 <>
-                  {choixGroupe.librairie_nom} : {new Date(choixGroupe.date_vente).toLocaleDateString("fr-FR")} · {pl(choixGroupe.nb_actives, "titre actif", "titres actifs")}
+                  {choixGroupe.librairie_nom} : {dateCourte(choixGroupe.date_vente)} · {pl(choixGroupe.nb_actives, "titre actif", "titres actifs")}
                 </>
               )}
             </DialogDescription>
@@ -990,7 +927,7 @@ export function VentesTab({
                   </div>
 
                   <p className="text-[11px] text-muted-foreground">
-                    L'annulation est traçée dans le journal d'audit. Les ventes annulées restent visibles mais sont exclues des tableaux de bord et rapports financiers.
+                    L'annulation est tracée dans le journal d'audit. Les ventes annulées restent visibles mais sont exclues des tableaux de bord et rapports financiers.
                   </p>
                 </>
               )}
@@ -999,7 +936,7 @@ export function VentesTab({
           <AlertDialogFooter>
             <AlertDialogCancel disabled={cancelBusy}>Retour</AlertDialogCancel>
             <AlertDialogAction
-              onClick={submitCancel}
+              onClick={(e) => { e.preventDefault(); submitCancel(); }}
               disabled={cancelBusy}
               className="bg-red-600 text-white hover:bg-red-500"
             >
@@ -1022,7 +959,7 @@ export function VentesTab({
               {cancelGroupe && (
                 <>
                   <p>
-                    <strong>{cancelGroupe.librairie_nom}</strong> : {new Date(cancelGroupe.date_vente).toLocaleDateString("fr-FR")} ·{" "}
+                    <strong>{cancelGroupe.librairie_nom}</strong> : {dateCourte(cancelGroupe.date_vente)} ·{" "}
                     {pl(cancelGroupe.nb_actives, "vente", "ventes")} · {pl(cancelGroupe.total_qte, "exemplaire", "exemplaires")} · {fmtFCFA(cancelGroupe.total_montant)}
                   </p>
                   <p className="text-xs text-muted-foreground">

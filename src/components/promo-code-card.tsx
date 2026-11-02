@@ -113,7 +113,7 @@ export function PromoCodeCard({ entrepriseId, isAdmin, compact = false, onSucces
         <>
           <div className="flex items-center gap-2 mb-1">
             <Ticket className="h-5 w-5 text-[color:var(--gold)]" />
-            <h3 className="text-base font-semibold text-foreground">Code Promotionnel</h3>
+            <h3 className="text-base font-semibold text-foreground">Code promotionnel</h3>
           </div>
           <p className="text-[13px] mb-5" style={{ color: "var(--muted-foreground)" }}>
             Entrez un code pour activer un plan ou obtenir un accès spécial

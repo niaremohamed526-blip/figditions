@@ -1,4 +1,5 @@
 import { createFileRoute, useNavigate, useSearch } from "@tanstack/react-router";
+import { pl } from "@/lib/plural";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { whatsappLink, WHATSAPP_BUTTON_CLASS } from "@/lib/manual-payment";
 import { MessageCircle, Check, X, Sparkles, UserPlus, Trash2, Loader2, Crown, Lock, Copy, Upload, Save, AlertTriangle, KeyRound, Building2, Settings2, RotateCw } from "lucide-react";
@@ -216,9 +217,9 @@ function ExpiryBanner({ entreprise, onRenew }: { entreprise: any; onRenew: () =>
     <div className="rounded-xl border border-orange-500/30 bg-orange-500/10 p-4 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
       <div className="flex items-start gap-3">
         <AlertTriangle className="h-5 w-5 text-orange-400 shrink-0 mt-0.5" />
-        <p className="text-sm text-orange-100">
-          Votre abonnement expire dans <span className="font-bold">{days} jour{days > 1 ? "s" : ""}</span>.
-          Renouvelez maintenant pour ne pas perdre l'accès à vos données.
+        <p className="text-sm text-foreground">
+          Votre abonnement expire {days === 0 ? <span className="font-bold">aujourd'hui</span> : <>dans <span className="font-bold">{pl(days, "jour", "jours")}</span></>}.
+          Sans renouvellement, vous repassez au plan Starter : vos données restent conservées.
         </p>
       </div>
       <Button onClick={onRenew} className="bg-orange-500 text-white hover:bg-orange-600">
@@ -657,7 +658,7 @@ function PlanCard({ plan, entreprise, onUpgrade, isAdmin }: {
             </p>
             {expire && isPaid && (
               <p className="text-xs text-muted-foreground mt-1">
-                Renouvellement le {expire.toLocaleDateString("fr-FR")}
+                Valable jusqu'au {expire.toLocaleDateString("fr-FR")}
                 {daysLeft !== null && daysLeft >= 0 && ` · Il reste ${daysLeft} jour${daysLeft > 1 ? "s" : ""}`}
               </p>
             )}
@@ -1327,7 +1328,7 @@ function PlansComparison({ currentPlan, canChange, entrepriseId, onChoose }: {
               {features.map((f) => {
                 const v = (pl as any)[f.key];
                 const on = typeof v === "boolean" ? v : true;
-                const display = typeof v === "boolean" ? f.label : `${f.label} : ${v === Infinity ? "illimités" : v}`;
+                const display = typeof v === "boolean" ? f.label : `${f.label} : ${v === Infinity ? (f.label === "Librairies" ? "illimitées" : "illimités") : v}`;
                 return (
                   <li key={f.key} className="flex items-start gap-2">
                     {on

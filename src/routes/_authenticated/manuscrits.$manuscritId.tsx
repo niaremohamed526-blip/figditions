@@ -26,7 +26,7 @@ import { toast } from "sonner";
 import { StatusStepper } from "@/components/status-stepper";
 
 const MAX_PDF_BYTES = 10 * 1024 * 1024;
-const fmtSize = (b: number) => b < 1024 * 1024 ? `${(b / 1024).toFixed(0)} KB` : `${(b / 1024 / 1024).toFixed(2)} MB`;
+const fmtSize = (b: number) => b < 1024 * 1024 ? `${(b / 1024).toFixed(0)} Ko` : `${(b / 1024 / 1024).toFixed(2)} Mo`;
 
 interface PdfMeta { name: string; size: number; updated_at: string }
 
@@ -104,7 +104,7 @@ function ManuscritDetailPage() {
   const doUpload = async (file: File) => {
     if (!m || !profile?.entreprise_id) return;
     if (file.type !== "application/pdf") { toast.error("Seuls les fichiers PDF sont acceptés"); return; }
-    if (file.size > MAX_PDF_BYTES) { toast.error("Ce fichier dépasse la limite de 10 MB"); return; }
+    if (file.size > MAX_PDF_BYTES) { toast.error("Ce fichier dépasse la limite de 10 Mo"); return; }
     setUploading(true);
     setProgress(5);
     const tick = setInterval(() => setProgress((p) => (p < 90 ? p + 5 : p)), 200);
@@ -318,7 +318,7 @@ function ManuscritDetailPage() {
           >
             <CloudUpload className="h-12 w-12 mx-auto mb-3" style={{ color: "var(--primary)" }} />
             <p className="font-medium">Glissez votre PDF ici ou cliquez pour sélectionner</p>
-            <p className="text-xs text-muted-foreground mt-1">Format accepté: PDF · Taille max: 10 MB</p>
+            <p className="text-xs text-muted-foreground mt-1">Format accepté : PDF · Taille max : 10 Mo</p>
           </div>
         )}
 
@@ -335,7 +335,7 @@ function ManuscritDetailPage() {
           style={{ background: "rgba(232,184,75,0.1)", border: "1px solid rgba(232,184,75,0.3)", color: "var(--gold)" }}
         >
           <AlertTriangle className="h-4 w-4 mt-0.5 shrink-0" />
-          <span>Uploadez d'abord un PDF pour pouvoir créer des liens de partage sécurisés</span>
+          <span>Ajoutez d'abord le PDF pour créer des liens de partage sécurisés</span>
         </div>
       )}
 
@@ -344,7 +344,7 @@ function ManuscritDetailPage() {
         <div className="flex items-center justify-between flex-wrap gap-3 mb-4">
           <div className="flex items-center gap-3">
             <Lock className="h-5 w-5" style={{ color: "var(--gold)" }} />
-            <h2 className="font-semibold">Partage Sécurisé</h2>
+            <h2 className="font-semibold">Partage sécurisé</h2>
           </div>
           <Button
             disabled={!m.pdf_path}

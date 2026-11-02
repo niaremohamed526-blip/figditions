@@ -28,7 +28,7 @@ const toc = [
   { id: "base-legale", label: "4. Base légale" },
   { id: "stockage", label: "5. Stockage & hébergement" },
   { id: "sous-traitants", label: "6. Prestataires" },
-  { id: "securite", label: "7. Sécurité & sauvegardes" },
+  { id: "securite", label: "7. Sécurité" },
   { id: "conservation", label: "8. Durée de conservation" },
   { id: "droits", label: "9. Vos droits" },
   { id: "cookies", label: "10. Cookies & stockage local" },
@@ -158,12 +158,11 @@ function PrivacyPage() {
         </ul>
       </Section>
 
-      <Section id="securite" title="7. Sécurité et sauvegardes">
+      <Section id="securite" title="7. Sécurité">
         <p>Mesures techniques et organisationnelles mises en œuvre :</p>
         <ul>
           <li>Chiffrement des données en transit (HTTPS / TLS)</li>
           <li>Chiffrement au repos fourni par l'infrastructure Supabase</li>
-          <li>Sauvegardes automatiques de la base de données assurées par le fournisseur</li>
           <li>Sécurité au niveau des lignes (RLS) : chaque maison d'édition n'accède qu'à ses propres données</li>
           <li>Contrôle d'accès basé sur les rôles pour les membres de l'équipe</li>
           <li>Liens de partage sécurisé signés, avec journal d'accès, filigrane, protection contre la capture et flou lorsque la page perd le focus</li>

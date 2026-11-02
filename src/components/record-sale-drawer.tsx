@@ -1068,7 +1068,7 @@ function PanierSuccessView({
           <FileText className="h-4 w-4 mr-2" /> Télécharger la facture
         </Button>
         <Button variant="outline" onClick={onAnother} className="w-full">Enregistrer une autre vente</Button>
-        <Button variant="ghost" onClick={onClose} className="w-full">✕ Fermer</Button>
+        <Button variant="ghost" onClick={onClose} className="w-full">Fermer</Button>
       </div>
     </div>
   );
@@ -1118,7 +1118,7 @@ function SuccessView({
         >
           Enregistrer une autre vente
         </Button>
-        <Button variant="outline" onClick={onClose} className="w-full">✕ Fermer</Button>
+        <Button variant="outline" onClick={onClose} className="w-full">Fermer</Button>
       </div>
     </div>
   );

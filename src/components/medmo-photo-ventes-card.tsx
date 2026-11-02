@@ -222,7 +222,7 @@ export function MedmoPhotoVentesCard({
         {correctionsApprises > 0 && (
           <p className="flex items-center gap-1.5 text-[11px] text-muted-foreground">
             <Sparkles className="h-3 w-3 text-[color:var(--gold)]" />
-            PR MEDMO a mémorisé {pl(correctionsApprises, "correction")}. Il reconnaîtra mieux ces
+            Pr. MEDMO a mémorisé {pl(correctionsApprises, "correction")}. Il reconnaîtra mieux ces
             titres et librairies la prochaine fois.
           </p>
         )}

@@ -97,7 +97,7 @@ export const checkConfigStatus = createServerFn({ method: "GET" })
         present: has(process.env.LOVABLE_API_KEY) || has(process.env.GEMINI_API_KEY),
         required: false,
         description: "Clé IA : LOVABLE_API_KEY (hébergement Lovable) ou GEMINI_API_KEY (déploiement externe, ex. Vercel).",
-        usedFor: ["Fonctionnalités IA (PR MEDMO)"],
+        usedFor: ["Fonctionnalités IA (Pr. MEDMO)"],
       },
     ];
 

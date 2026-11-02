@@ -101,7 +101,7 @@ function formatInputValue(key: string, value: unknown): string {
   return String(value);
 }
 
-// --- Pièces jointes (images & PDF analysés par PR MEDMO) ---
+// --- Pièces jointes (images & PDF analysés par Pr. MEDMO) ---
 const MAX_ATTACH_FILES = 3;
 const MAX_ATTACH_SIZE = 2 * 1024 * 1024; // 2 Mo par fichier
 // Budget TOTAL des pièces jointes en base64 (~2,8 Mo) : l'hébergeur plafonne
@@ -116,7 +116,7 @@ function friendlyChatError(raw: string | undefined): string {
   if (lower.includes("413") || lower.includes("too large") || lower.includes("trop lourds") || lower.includes("payload"))
     return "Les fichiers joints sont trop lourds pour être envoyés. Réduisez leur taille ou envoyez-les un par un.";
   if (lower.includes("429") || lower.includes("trop de demandes") || lower.includes("quota") || lower.includes("rate limit"))
-    return "PR MEDMO reçoit trop de demandes en ce moment (limite du fournisseur IA). Patientez une minute puis réessayez.";
+    return "Pr. MEDMO reçoit trop de demandes en ce moment (limite du fournisseur IA). Patientez une minute puis réessayez.";
   if (lower.includes("crédits") || lower.includes("credits") || lower.includes("402"))
     return "Les crédits IA sont épuisés. Rechargez-les dans les paramètres de facturation.";
   if (lower.includes("gemini_api_key") || lower.includes("pas configuré") || lower.includes("api key") || lower.includes("401") || lower.includes("403"))
@@ -234,7 +234,7 @@ function MedmoAttachmentChips() {
   );
 }
 
-/** PR MEDMO brand avatar : gold book mark on a deep disc, with an optional sonar pulse. */
+/** Pr. MEDMO brand avatar : gold book mark on a deep disc, with an optional sonar pulse. */
 function MedmoAvatar({ pulsing = false, size = "md" }: { pulsing?: boolean; size?: "md" | "lg" }) {
   const dims = size === "lg" ? "h-16 w-16" : "h-8 w-8";
   const imgDims = size === "lg" ? "h-10 w-10" : "h-5 w-5";
@@ -254,7 +254,7 @@ function MedmoAvatar({ pulsing = false, size = "md" }: { pulsing?: boolean; size
           "border border-[color:var(--gold)]/45 shadow-[0_0_18px_rgba(200,146,42,0.35)]",
         )}
       >
-        <img src={medmoMark} alt="PR MEDMO" className={cn("object-contain", imgDims)} />
+        <img src={medmoMark} alt="Pr. MEDMO" className={cn("object-contain", imgDims)} />
       </div>
     </div>
   );
@@ -622,7 +622,7 @@ export function MedmoChat({
                 >
                   <MedmoAvatar pulsing />
                   <Shimmer className="text-sm font-medium" duration={1.6}>
-                    PR MEDMO réfléchit…
+                    Pr. MEDMO réfléchit…
                   </Shimmer>
                 </motion.div>
               )}
@@ -676,7 +676,7 @@ export function MedmoChat({
           >
             <MedmoAttachmentChips />
             <PromptInputTextarea
-              placeholder="Demandez quelque chose à PR MEDMO… ou joignez une image/PDF"
+              placeholder="Demandez quelque chose à Pr. MEDMO… ou joignez une image/PDF"
               className="min-h-[46px] text-sm"
             />
             <PromptInputFooter>
@@ -693,7 +693,7 @@ export function MedmoChat({
           </PromptInput>
         </motion.div>
         <p className="max-w-3xl mx-auto text-[10px] text-muted-foreground mt-1.5 text-center">
-          PR MEDMO peut se tromper : vérifiez les actions importantes avant de confirmer.
+          Pr. MEDMO peut se tromper : vérifiez les actions importantes avant de confirmer.
         </p>
       </div>
     </div>

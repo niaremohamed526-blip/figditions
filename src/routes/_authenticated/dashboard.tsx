@@ -275,14 +275,14 @@ function DashboardPage() {
 
   return (
     <div className="space-y-7">
-      <header className="grid grid-cols-[minmax(0,1fr)_auto] items-start gap-4 sm:flex sm:items-end sm:justify-between">
+      <header className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
         <div className="min-w-0">
-          <h1 className="truncate text-2xl font-bold tracking-tight sm:text-3xl">
+          <h1 className="text-2xl font-bold tracking-tight sm:truncate sm:text-3xl">
             {greeting()},{" "}
             <span className="dash-shimmer">{profile?.full_name?.split(" ")[0] ?? "…"}</span>
           </h1>
-          <p className="mt-1 truncate text-sm text-muted-foreground">
-            {entreprise?.nom} · {entreprise?.ville} · {format(new Date(), "EEEE d MMMM", { locale: fr })}
+          <p className="mt-1 text-sm text-muted-foreground sm:truncate">
+            {[entreprise?.nom, entreprise?.ville, format(new Date(), "EEEE d MMMM", { locale: fr })].filter(Boolean).join(" · ")}
           </p>
         </div>
         <div className="flex shrink-0 flex-wrap gap-1.5">

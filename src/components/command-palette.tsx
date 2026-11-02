@@ -35,7 +35,7 @@ export function CommandPalette() {
 
   const nav: Item[] = [
     { to: "/dashboard", labelFr: "Tableau de bord", labelEn: "Dashboard", icon: LayoutDashboard },
-    { to: "/medmo", labelFr: "PR MEDMO (assistant IA)", labelEn: "PR MEDMO (AI assistant)", icon: Sparkles },
+    { to: "/medmo", labelFr: "Pr. MEDMO (assistant IA)", labelEn: "Pr. MEDMO (AI assistant)", icon: Sparkles },
     { to: "/manuscrits", labelFr: "Manuscrits", labelEn: "Manuscripts", icon: BookOpen },
     { to: "/auteurs", labelFr: "Auteurs", labelEn: "Authors", icon: PenLine },
     { to: "/stocks", labelFr: "Stocks", labelEn: "Stock", icon: Package },

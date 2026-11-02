@@ -153,7 +153,7 @@ function ModelesInner({ entrepriseId, entreprise, userId }: { entrepriseId: stri
           <div className="mx-auto h-14 w-14 rounded-2xl bg-primary/10 text-primary flex items-center justify-center"><FileText className="h-7 w-7" /></div>
           <h3 className="mt-4 font-semibold">Aucun modèle pour l'instant</h3>
           <p className="mt-1 text-sm text-muted-foreground max-w-md mx-auto">
-            Vos contrats utilisent le texte standard FIGDITIONS. Importez votre propre contrat (Word, PDF ou photo) et Medmo le transforme en modèle, ou partez de notre exemple.
+            Vos contrats utilisent le texte standard FIGDITIONS. Importez votre propre contrat (Word, PDF ou photo) et Pr. MEDMO le transforme en modèle, ou partez de notre exemple.
           </p>
           <div className="mt-5 flex flex-wrap justify-center gap-2">
             <Button onClick={() => setImportOpen(true)}><Upload className="h-4 w-4" /> Importer mon contrat</Button>

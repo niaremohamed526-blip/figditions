@@ -1,9 +1,9 @@
 import { useMemo } from "react";
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
-import { TrendingUp, TrendingDown, Minus, PiggyBank, Info, AlertTriangle } from "lucide-react";
+import { Info, AlertTriangle } from "lucide-react";
 import { fmtFCFA, type DepenseRow, type VenteRow } from "@/lib/finance-types";
 import { cn } from "@/lib/utils";
+import { pl } from "@/lib/plural";
+import { Eyebrow, Montant, Panel, Vide, fmtMontant } from "@/components/finances/finance-ui";
 import { coutUnitaireParLivre } from "@/lib/finance-calc";
 
 interface StockInterneLite {
@@ -121,135 +121,99 @@ export function RentabiliteTab({
 
   const netGlobal = totaux.net - totaux.depensesGlobales;
 
-  return (
-    <div className="space-y-6">
-      {/* Résumé global */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-        <Card className="bg-card/70">
-          <CardContent className="pt-5 pb-4">
-            <p className="text-xs text-muted-foreground uppercase tracking-wide">Investi (impression + dépenses)</p>
-            <p className="text-xl font-bold mt-1">{fmtFCFA(totaux.investi + totaux.depensesGlobales)}</p>
-            {totaux.depensesGlobales > 0 && (
-              <p className="text-[11px] text-muted-foreground mt-1">dont {fmtFCFA(totaux.depensesGlobales)} de charges globales</p>
-            )}
-            {totaux.stock > 0 && (
-              <p className="text-[11px] text-muted-foreground mt-1">dont {fmtFCFA(totaux.stock)} encore en stock (livres non vendus)</p>
-            )}
-          </CardContent>
-        </Card>
-        <Card className="bg-card/70">
-          <CardContent className="pt-5 pb-4">
-            <p className="text-xs text-muted-foreground uppercase tracking-wide">Chiffre d'affaires</p>
-            <p className="text-xl font-bold mt-1 text-[color:var(--gold)]">{fmtFCFA(totaux.ca)}</p>
-          </CardContent>
-        </Card>
-        <Card className="bg-card/70">
-          <CardContent className="pt-5 pb-4">
-            <p className="text-xs text-muted-foreground uppercase tracking-wide">Bénéfice depuis le début</p>
-            <p className={cn("text-xl font-bold mt-1 flex items-center gap-2", netGlobal >= 0 ? "text-emerald-400" : "text-red-400")}>
-              {netGlobal >= 0 ? <TrendingUp className="h-4 w-4" /> : <TrendingDown className="h-4 w-4" />}
-              {fmtFCFA(netGlobal)}
-            </p>
-            <p className="text-[11px] text-muted-foreground mt-1">Ventes − commissions − droits − impression des livres vendus − dépenses</p>
-          </CardContent>
-        </Card>
-        <Card className="bg-card/70">
-          <CardContent className="pt-5 pb-4">
-            <p className="text-xs text-muted-foreground uppercase tracking-wide">Livres rentables</p>
-            <p className="text-xl font-bold mt-1">
-              {rows.filter((r) => r.net > 0).length} / {rows.length}
-            </p>
-          </CardContent>
-        </Card>
-      </div>
+  const rentables = rows.filter((r) => r.net > 0).length;
 
-      <Card className="bg-card/70">
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2 text-lg">
-            <PiggyBank className="h-5 w-5 text-[color:var(--gold)]" />
-            Rentabilité par livre
-          </CardTitle>
-          <CardDescription className="flex items-start gap-1.5">
-            <Info className="h-3.5 w-3.5 mt-0.5 shrink-0" />
-            Le bénéfice compte l'impression des seuls exemplaires vendus : les livres non vendus restent du stock, pas une
-            perte. C'est le même calcul que la Vue d'ensemble. Renseignez le coût d'impression dans le Stock interne pour un
-            calcul juste.
-          </CardDescription>
-        </CardHeader>
-        <CardContent>
-          {rows.length === 0 ? (
-            <p className="text-center py-12 text-muted-foreground text-sm">Aucune donnée de rentabilité disponible.</p>
-          ) : (
-            <div className="overflow-x-auto">
-              <table className="w-full text-sm min-w-[900px]">
-                <thead>
-                  <tr className="border-b border-border text-left text-xs uppercase tracking-wide text-muted-foreground">
-                    <th className="py-2 pr-3">Livre</th>
-                    <th className="py-2 pr-3 text-right">Vendus</th>
-                    <th className="py-2 pr-3 text-right">CA</th>
-                    <th className="py-2 pr-3 text-right">Impression vendus</th>
-                    <th className="py-2 pr-3 text-right">Dépenses</th>
-                    <th className="py-2 pr-3 text-right">Royalties</th>
-                    <th className="py-2 pr-3 text-right">Commissions</th>
-                    <th className="py-2 pr-3 text-right">Bénéfice</th>
-                    <th className="py-2 pr-3 text-right">Marge</th>
-                    <th className="py-2 text-center">Statut</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {rows.map((r) => {
-                    const statut = r.net > 0 ? "rentable" : r.net < 0 ? "deficit" : "neutre";
-                    return (
-                      <tr key={r.manuscritId} className="border-b border-border/50 hover:bg-muted/20">
-                        <td className="py-2.5 pr-3">
-                          <p className="font-medium">{r.titre}</p>
-                          <p className="text-xs text-muted-foreground">{r.auteur}</p>
-                          {r.seuil !== null && r.vendus < r.seuil && (
-                            <p className="text-[11px] text-amber-600 dark:text-amber-400 mt-0.5">
-                              Impression remboursée après {r.seuil} ex. vendus ({r.vendus}/{r.seuil})
-                            </p>
-                          )}
-                          {(r.imprimes > 10000 || r.coutProd > 20_000_000) && (
-                            <p className="text-[11px] text-red-500 mt-0.5 flex items-center gap-1">
-                              <AlertTriangle className="h-3 w-3 shrink-0" />
-                              À vérifier : {r.imprimes.toLocaleString("fr-FR")} ex. imprimés pour {fmtFCFA(r.coutProd)}
-                            </p>
-                          )}
-                        </td>
-                        <td className="py-2.5 pr-3 text-right">{r.vendus}</td>
-                        <td className="py-2.5 pr-3 text-right font-medium text-[color:var(--gold)]">{fmtFCFA(r.ca)}</td>
-                        <td className="py-2.5 pr-3 text-right">{fmtFCFA(r.coutVendus)}</td>
-                        <td className="py-2.5 pr-3 text-right">{fmtFCFA(r.depenses)}</td>
-                        <td className="py-2.5 pr-3 text-right">{fmtFCFA(r.royalties)}</td>
-                        <td className="py-2.5 pr-3 text-right">{fmtFCFA(r.commissions)}</td>
-                        <td className={cn("py-2.5 pr-3 text-right font-semibold", r.net >= 0 ? "text-emerald-400" : "text-red-400")}>
-                          {fmtFCFA(r.net)}
-                        </td>
-                        <td className="py-2.5 pr-3 text-right">
-                          {r.marge === null ? "—" : `${r.marge.toFixed(1)}%`}
-                        </td>
-                        <td className="py-2.5 text-center">
-                          <Badge
-                            variant="outline"
-                            className={cn(
-                              "text-[10px]",
-                              statut === "rentable" && "bg-emerald-500/15 text-emerald-400 border-emerald-500/30",
-                              statut === "deficit" && "bg-red-500/15 text-red-400 border-red-500/30",
-                              statut === "neutre" && "bg-muted text-muted-foreground border-border",
-                            )}
-                          >
-                            {statut === "rentable" ? "Rentable" : statut === "deficit" ? "Déficitaire" : <Minus className="h-3 w-3" />}
-                          </Badge>
-                        </td>
-                      </tr>
-                    );
-                  })}
-                </tbody>
-              </table>
-            </div>
-          )}
-        </CardContent>
-      </Card>
+  return (
+    <div className="space-y-4">
+      <Panel accent className="p-6">
+        <Eyebrow>Bénéfice depuis le début</Eyebrow>
+        <Montant value={netGlobal} size="xl" tone={netGlobal < 0 ? "bad" : undefined} className="mt-2" />
+        <div className="mt-5 grid grid-cols-2 gap-x-6 gap-y-3 text-sm sm:grid-cols-4">
+          <Stat label="Ventes" value={fmtMontant(totaux.ca)} />
+          <Stat label="Investi" value={fmtMontant(totaux.investi + totaux.depensesGlobales)} />
+          <Stat label="Encore en stock" value={fmtMontant(totaux.stock)} />
+          <Stat label="Livres rentables" value={`${rentables} / ${rows.length}`} />
+        </div>
+        <p className="mt-4 flex items-start gap-1.5 text-xs text-muted-foreground">
+          <Info className="mt-0.5 h-3.5 w-3.5 shrink-0" />
+          Seule l'impression des livres vendus est comptée : les livres non vendus restent du stock.
+        </p>
+      </Panel>
+
+      {rows.length === 0 ? (
+        <Panel><Vide>Aucune vente pour l'instant.</Vide></Panel>
+      ) : (
+        <div className="grid gap-4 md:grid-cols-2">
+          {rows.map((r) => {
+            const pct = r.seuil ? Math.min(100, Math.round((r.vendus / r.seuil) * 100)) : 100;
+            const suspect = r.imprimes > 10000 || r.coutProd > 20_000_000;
+            return (
+              <Panel key={r.manuscritId} className="flex flex-col p-5">
+                <div className="flex items-start justify-between gap-3">
+                  <div className="min-w-0">
+                    <h3 className="font-wordmark-serif truncate text-xl font-normal leading-tight tracking-normal">{r.titre}</h3>
+                    <p className="truncate text-xs text-muted-foreground">{r.auteur} · {pl(r.vendus, "exemplaire vendu", "exemplaires vendus")}</p>
+                  </div>
+                  <span className={cn(
+                    "shrink-0 rounded-full px-2.5 py-0.5 text-[11px]",
+                    r.net > 0 ? "bg-emerald-500/15 text-emerald-600 dark:text-emerald-400"
+                      : r.net < 0 ? "bg-red-500/15 text-red-500" : "bg-muted text-muted-foreground",
+                  )}>
+                    {r.marge === null ? "Pas de vente" : `Marge ${r.marge.toFixed(0)} %`}
+                  </span>
+                </div>
+
+                <Montant value={r.net} size="md" tone={r.net < 0 ? "bad" : r.net > 0 ? "good" : undefined} className="mt-4" />
+
+                <div className="mt-4 space-y-1.5 text-sm">
+                  <Ligne label="Ventes" value={r.ca} />
+                  <Ligne label="Commissions" value={-r.commissions} />
+                  <Ligne label="Droits d'auteur" value={-r.royalties} />
+                  <Ligne label="Impression des vendus" value={-r.coutVendus} />
+                  {r.depenses > 0 && <Ligne label="Dépenses du livre" value={-r.depenses} />}
+                </div>
+
+                {r.seuil !== null && (
+                  <div className="mt-4">
+                    <div className="h-1.5 overflow-hidden rounded-full bg-muted" aria-hidden>
+                      <div className={cn("h-full rounded-full", pct >= 100 ? "bg-emerald-500" : "bg-[#C8922A]")} style={{ width: `${pct}%` }} />
+                    </div>
+                    <p className="mt-1.5 text-xs text-muted-foreground">
+                      {pct >= 100
+                        ? "Impression déjà remboursée"
+                        : `Impression remboursée à ${pct} % (${r.vendus.toLocaleString("fr-FR")} / ${r.seuil.toLocaleString("fr-FR")} ex.)`}
+                    </p>
+                  </div>
+                )}
+                {suspect && (
+                  <p className="mt-3 flex items-center gap-1.5 rounded-md bg-red-500/10 px-2.5 py-1.5 text-xs text-red-500">
+                    <AlertTriangle className="h-3.5 w-3.5 shrink-0" />
+                    À vérifier : {r.imprimes.toLocaleString("fr-FR")} ex. imprimés pour {fmtFCFA(r.coutProd)}
+                  </p>
+                )}
+              </Panel>
+            );
+          })}
+        </div>
+      )}
+    </div>
+  );
+}
+
+function Stat({ label, value }: { label: string; value: string }) {
+  return (
+    <div>
+      <p className="text-xs text-muted-foreground">{label}</p>
+      <p className="mt-0.5 font-medium tabular-nums">{value}</p>
+    </div>
+  );
+}
+
+function Ligne({ label, value }: { label: string; value: number }) {
+  return (
+    <div className="flex items-baseline justify-between gap-2 border-b border-border/60 pb-1.5">
+      <span className="text-muted-foreground">{label}</span>
+      <span className="tabular-nums">{value < 0 ? "−" : ""}{fmtMontant(Math.abs(value))}</span>
     </div>
   );
 }

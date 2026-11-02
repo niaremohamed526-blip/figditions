@@ -72,10 +72,10 @@ export function MedmoFab({
           "shadow-[0_0_24px_rgba(200,146,42,0.45),0_0_48px_rgba(200,146,42,0.2)]",
           "hover:shadow-[0_0_32px_rgba(200,146,42,0.6),0_0_64px_rgba(200,146,42,0.25)] transition-shadow duration-300",
         )}
-        aria-label="Ouvrir PR MEDMO"
+        aria-label="Ouvrir Pr. MEDMO"
       >
         <span className="absolute inset-0 rounded-full bg-[color:var(--gold)]/25 animate-ping" />
-        <img src={medmoMark} alt="PR MEDMO" className="relative h-7 w-7 object-contain" />
+        <img src={medmoMark} alt="Pr. MEDMO" className="relative h-7 w-7 object-contain" />
       </motion.button>
 
       <AnimatePresence>
@@ -161,7 +161,7 @@ export function MedmoFab({
                 ) : (
                   <div className="h-full flex flex-col items-center justify-center gap-3 text-muted-foreground">
                     <div className="h-6 w-6 rounded-full border-2 border-primary border-t-transparent animate-spin" />
-                    <span className="text-xs">Préparation de PR MEDMO…</span>
+                    <span className="text-xs">Préparation de Pr. MEDMO…</span>
                   </div>
                 )}
               </div>

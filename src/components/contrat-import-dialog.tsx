@@ -71,7 +71,7 @@ export function ContratImportDialog({ open, onOpenChange, onImported }: {
         body: JSON.stringify({ nom_fichier: file.name, media_type: mediaType, data: await toBase64(blob) }),
       });
       const json = await res.json().catch(() => ({}));
-      if (!res.ok) throw new Error(json.erreur ?? "Medmo n'a pas pu lire ce contrat.");
+      if (!res.ok) throw new Error(json.erreur ?? "Pr. MEDMO n'a pas pu lire ce contrat.");
       const remarques: string[] = json.remarques ?? [];
       toast.success(`${json.modele.articles.length} articles reconnus. Relisez-les avant d'enregistrer.`, {
         description: remarques.length ? remarques.join(" · ") : undefined,
@@ -91,7 +91,7 @@ export function ContratImportDialog({ open, onOpenChange, onImported }: {
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2"><Sparkles className="h-5 w-5 text-primary" /> Importer votre contrat</DialogTitle>
           <DialogDescription>
-            Medmo lit le contrat que vous utilisez déjà, reprend ses articles mot pour mot et remplace le nom de l'auteur, les titres, les pourcentages… par des champs remplis automatiquement.
+            Pr. MEDMO lit le contrat que vous utilisez déjà, reprend ses articles mot pour mot et remplace le nom de l'auteur, les titres, les pourcentages… par des champs remplis automatiquement.
           </DialogDescription>
         </DialogHeader>
         <input ref={inputRef} type="file" className="hidden" accept={[...ACCEPT, ".docx"].join(",")} onChange={(e) => { handle(e.target.files?.[0]); e.target.value = ""; }} />
@@ -111,7 +111,7 @@ export function ContratImportDialog({ open, onOpenChange, onImported }: {
           {busy ? (
             <div className="flex flex-col items-center gap-3">
               <Loader2 className="h-8 w-8 animate-spin text-primary" />
-              <p className="font-medium">Medmo lit votre contrat…</p>
+              <p className="font-medium">Pr. MEDMO lit votre contrat…</p>
               <p className="text-xs text-muted-foreground">Environ 20 à 40 secondes</p>
             </div>
           ) : (

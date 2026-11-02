@@ -7,7 +7,7 @@ import { MedmoThreadList } from "./medmo";
 export const Route = createFileRoute("/_authenticated/medmo/")({
   component: MedmoIndex,
   head: () => ({
-    meta: [{ title: "PR MEDMO, assistant IA | FIGDITIONS" }],
+    meta: [{ title: "Pr. MEDMO, assistant IA | FIGDITIONS" }],
   }),
 });
 

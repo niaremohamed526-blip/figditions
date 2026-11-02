@@ -1,3 +1,4 @@
+import { humanizeSystemValue } from "@/lib/format";
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useEffect, useRef, useState } from "react";
 import { ArrowLeft, FileDown, Loader2, Lock, Upload, FileCheck2, ExternalLink } from "lucide-react";
@@ -142,11 +143,11 @@ function ContratDetailPage() {
         <Field label="Maison d'édition" value={entreprise?.nom ?? "—"} />
         <Field label="Auteur" value={auteurName} />
         {contrat.collection && <Field label="Collection" value={contrat.collection} />}
-        <Field label="Pourcentage droits" value={`${contrat.pourcentage_droits}%`} gold />
+        <Field label="Pourcentage droits" value={`${contrat.pourcentage_droits} %`} gold />
         <Field label="Durée" value={contrat.duree_annees ? `${contrat.duree_annees} ans` : contrat.duree} />
         <Field label="Tirage minimum" value={`${contrat.tirage_minimum ?? 100} exemplaires`} />
         <Field label="Exemplaires auteur" value={`${contrat.exemplaires_auteur ?? 10} gratuits`} />
-        <Field label="Fréquence de paiement" value={contrat.frequence_paiement ?? "annuel"} />
+        <Field label="Fréquence de paiement" value={humanizeSystemValue(contrat.frequence_paiement ?? "annuel")} />
         <Field label="Date de création" value={new Date(contrat.created_at).toLocaleDateString("fr-FR")} />
         <Field label="Date de signature" value={contrat.date_signature ? new Date(contrat.date_signature).toLocaleDateString("fr-FR") : "Non signé"} />
       </div>
@@ -154,10 +155,10 @@ function ContratDetailPage() {
       <div className="rounded-xl border border-border bg-card p-6">
         <h3 className="font-semibold mb-3">Commission libraire par territoire</h3>
         <div className="grid grid-cols-2 md:grid-cols-4 gap-3 text-sm">
-          <div><span className="text-muted-foreground">Mali:</span> <span className="font-semibold">{contrat.territoire_mali ?? 20}%</span></div>
-          <div><span className="text-muted-foreground">Côte d'Ivoire:</span> <span className="font-semibold">{contrat.territoire_ci ?? 30}%</span></div>
-          <div><span className="text-muted-foreground">Sénégal:</span> <span className="font-semibold">{contrat.territoire_senegal ?? 30}%</span></div>
-          <div><span className="text-muted-foreground">France:</span> <span className="font-semibold">{contrat.territoire_france ?? 40}%</span></div>
+          <div><span className="text-muted-foreground">Mali :</span> <span className="font-semibold">{contrat.territoire_mali ?? 20} %</span></div>
+          <div><span className="text-muted-foreground">Côte d'Ivoire :</span> <span className="font-semibold">{contrat.territoire_ci ?? 30} %</span></div>
+          <div><span className="text-muted-foreground">Sénégal :</span> <span className="font-semibold">{contrat.territoire_senegal ?? 30} %</span></div>
+          <div><span className="text-muted-foreground">France :</span> <span className="font-semibold">{contrat.territoire_france ?? 40} %</span></div>
         </div>
       </div>
 

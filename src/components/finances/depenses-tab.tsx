@@ -13,6 +13,23 @@ import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, 
 import { Plus, Wallet, Pencil, Trash2, Loader2, Search, Copy } from "lucide-react";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
+import { Eyebrow, Montant, Panel, Pastille, Vide, GOLD_BUTTON, fmtMontant } from "@/components/finances/finance-ui";
+
+function Chip({ active, onClick, children }: { active: boolean; onClick: () => void; children: React.ReactNode }) {
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      aria-pressed={active}
+      className={cn(
+        "inline-flex items-center gap-1.5 rounded-full border px-3 py-1 text-xs transition-colors",
+        active ? "border-[#C8922A] bg-[#C8922A] text-white" : "border-border text-muted-foreground hover:text-foreground",
+      )}
+    >
+      {children}
+    </button>
+  );
+}
 import { DEPENSE_CATEGORIES, categorieLabel, fmtFCFA, type DepenseRow } from "@/lib/finance-types";
 
 interface ManuscritLite { id: string; titre: string; }
@@ -86,6 +103,23 @@ export function DepensesTab({
   }, [depenses, search, catFilter, manuscritMap]);
 
   const totalFiltered = filtered.reduce((a, d) => a + Number(d.montant_fcfa || 0), 0);
+
+  const totaux = useMemo(() => {
+    const now = new Date();
+    const y = String(now.getFullYear());
+    const m = `${y}-${String(now.getMonth() + 1).padStart(2, "0")}`;
+    const sum = (p: string) => depenses.filter((d) => d.date_depense.startsWith(p)).reduce((a, d) => a + Number(d.montant_fcfa || 0), 0);
+    return { mois: sum(m), annee: sum(y) };
+  }, [depenses]);
+
+  /** Total par catégorie (les plus lourdes d'abord) : sert de filtre en un clic. */
+  const parCategorie = useMemo(() => {
+    const map = new Map<string, number>();
+    depenses.forEach((d) => map.set(d.categorie, (map.get(d.categorie) ?? 0) + Number(d.montant_fcfa || 0)));
+    return [...map.entries()]
+      .map(([value, total]) => ({ value, label: categorieLabel(value), total }))
+      .sort((x, y) => y.total - x.total);
+  }, [depenses]);
 
   const openCreate = () => {
     setEditing(null);
@@ -178,98 +212,83 @@ export function DepensesTab({
 
   return (
     <div className="space-y-4">
-      <Card className="bg-card/70">
-        <CardHeader>
-          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
-            <div>
-              <CardTitle className="flex items-center gap-2 text-lg">
-                <Wallet className="h-5 w-5 text-[color:var(--gold)]" />
-                Dépenses
-              </CardTitle>
-              <CardDescription>
-                {pl(filtered.length, "dépense", "dépenses")} : total {fmtFCFA(totalFiltered)}. Rattachez une dépense à un livre pour alimenter sa rentabilité.
-              </CardDescription>
-            </div>
-            <Button
-              onClick={openCreate}
-              className="bg-[linear-gradient(135deg,#C8922A,#A67420)] text-white border-0 rounded-[10px] font-semibold"
-            >
-              <Plus className="h-4 w-4 mr-2" /> Ajouter une dépense
-            </Button>
-          </div>
-        </CardHeader>
-        <CardContent className="space-y-4">
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-            <div className="relative sm:col-span-2">
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-              <Input value={search} onChange={(e) => setSearch(e.target.value)} placeholder="Rechercher une dépense…" className="pl-9" />
-            </div>
-            <Select value={catFilter} onValueChange={setCatFilter}>
-              <SelectTrigger><SelectValue placeholder="Catégorie" /></SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">Toutes catégories</SelectItem>
-                {DEPENSE_CATEGORIES.map((c) => (
-                  <SelectItem key={c.value} value={c.value}>{c.label}</SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </div>
-
-          {filtered.length === 0 ? (
-            <p className="text-center py-12 text-muted-foreground text-sm">
-              Aucune dépense enregistrée. Ajoutez vos impressions, livraisons, salons, etc.
+      <Panel accent className="p-6">
+        <div className="flex flex-wrap items-start justify-between gap-4">
+          <div>
+            <Eyebrow>{catFilter === "all" && !search ? "Toutes vos dépenses" : "Dépenses affichées"}</Eyebrow>
+            <Montant value={totalFiltered} size="xl" className="mt-2" />
+            <p className="mt-3 text-sm text-muted-foreground">
+              Ce mois <span className="tabular-nums text-foreground">{fmtMontant(totaux.mois)}</span>
+              <span className="mx-2 text-border">|</span>
+              Cette année <span className="tabular-nums text-foreground">{fmtMontant(totaux.annee)}</span>
             </p>
-          ) : (
-            <div className="overflow-x-auto">
-              <table className="w-full text-sm min-w-[760px]">
-                <thead>
-                  <tr className="border-b border-border text-left text-xs uppercase tracking-wide text-muted-foreground">
-                    <th className="py-2 pr-3">Date</th>
-                    <th className="py-2 pr-3">Catégorie</th>
-                    <th className="py-2 pr-3">Libellé</th>
-                    <th className="py-2 pr-3">Livre lié</th>
-                    <th className="py-2 pr-3 text-right">Montant</th>
-                    <th className="py-2 text-right">Actions</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {filtered.map((d) => (
-                    <tr key={d.id} className="border-b border-border/50 hover:bg-muted/20">
-                      <td className="py-2.5 pr-3 whitespace-nowrap">{new Date(d.date_depense).toLocaleDateString("fr-FR")}</td>
-                      <td className="py-2.5 pr-3">
-                        <Badge variant="outline" className={cn("text-[10px]", CATEGORIE_COLORS[d.categorie] ?? CATEGORIE_COLORS.autre)}>
-                          {categorieLabel(d.categorie)}
-                        </Badge>
-                      </td>
-                      <td className="py-2.5 pr-3">
-                        <p className="font-medium">{d.libelle}</p>
-                        {d.notes && <p className="text-[11px] text-muted-foreground">{d.notes}</p>}
-                      </td>
-                      <td className="py-2.5 pr-3 text-muted-foreground">
-                        {d.manuscrit_id ? (manuscritMap.get(d.manuscrit_id) ?? "—") : <span className="text-[11px]">Charge globale</span>}
-                      </td>
-                      <td className="py-2.5 pr-3 text-right font-semibold text-red-400">{fmtFCFA(d.montant_fcfa)}</td>
-                      <td className="py-2.5 text-right">
-                        <div className="flex justify-end gap-1">
-                          <Button size="icon" variant="ghost" className="h-7 w-7" onClick={() => openDuplicate(d)} title="Refaire cette dépense aujourd'hui" aria-label="Refaire cette dépense aujourd'hui">
-                            <Copy className="h-3.5 w-3.5" />
-                          </Button>
-                          <Button size="icon" variant="ghost" className="h-7 w-7" onClick={() => openEdit(d)} title="Modifier" aria-label="Modifier">
-                            <Pencil className="h-3.5 w-3.5" />
-                          </Button>
-                          <Button size="icon" variant="ghost" className="h-7 w-7 text-red-400 hover:text-red-300" onClick={() => setToDelete(d)}>
-                            <Trash2 className="h-3.5 w-3.5" />
-                          </Button>
-                        </div>
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
+          </div>
+          <Button onClick={openCreate} className={GOLD_BUTTON}>
+            <Plus className="h-4 w-4" /> Ajouter une dépense
+          </Button>
+        </div>
+      </Panel>
+
+      <Panel>
+        <div className="space-y-3 p-5 pb-4">
+          <div className="relative">
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+            <Input value={search} onChange={(e) => setSearch(e.target.value)} placeholder="Rechercher une dépense…" className="pl-9" />
+          </div>
+          {parCategorie.length > 0 && (
+            <div className="flex flex-wrap gap-1.5">
+              <Chip active={catFilter === "all"} onClick={() => setCatFilter("all")}>Toutes</Chip>
+              {parCategorie.map((c) => (
+                <Chip key={c.value} active={catFilter === c.value} onClick={() => setCatFilter(catFilter === c.value ? "all" : c.value)}>
+                  {c.label} <span className="tabular-nums opacity-70">{fmtMontant(c.total)}</span>
+                </Chip>
+              ))}
             </div>
           )}
-        </CardContent>
-      </Card>
+        </div>
+
+        {filtered.length === 0 ? (
+          <Vide>
+            {depenses.length === 0
+              ? "Aucune dépense pour l'instant. Ajoutez vos impressions, livraisons, salons…"
+              : "Aucune dépense ne correspond à cette recherche."}
+          </Vide>
+        ) : (
+          <ul className="divide-y divide-border border-t border-border">
+            {filtered.map((d) => (
+              <li key={d.id} className="flex items-center gap-3 px-5 py-3">
+                <Pastille className={cn("border", CATEGORIE_COLORS[d.categorie] ?? CATEGORIE_COLORS.autre)}>
+                  {categorieLabel(d.categorie).charAt(0)}
+                </Pastille>
+                <div className="min-w-0 flex-1">
+                  <p className="truncate font-medium">{d.libelle}</p>
+                  <p className="truncate text-xs text-muted-foreground">
+                    {new Date(d.date_depense).toLocaleDateString("fr-FR", { day: "numeric", month: "short", year: "numeric" })}
+                    {" · "}{categorieLabel(d.categorie)}
+                    {" · "}{d.manuscrit_id ? (manuscritMap.get(d.manuscrit_id) ?? "Livre") : "Charge globale"}
+                    {d.notes ? ` · ${d.notes}` : ""}
+                  </p>
+                </div>
+                <p className="shrink-0 text-right font-semibold tabular-nums">
+                  {fmtMontant(Number(d.montant_fcfa))}
+                  <span className="block text-[11px] font-normal text-muted-foreground">FCFA</span>
+                </p>
+                <div className="flex shrink-0">
+                  <Button size="icon" variant="ghost" className="h-8 w-8" onClick={() => openDuplicate(d)} title="Refaire cette dépense aujourd'hui" aria-label="Refaire cette dépense aujourd'hui">
+                    <Copy className="h-3.5 w-3.5" />
+                  </Button>
+                  <Button size="icon" variant="ghost" className="h-8 w-8" onClick={() => openEdit(d)} title="Modifier" aria-label="Modifier">
+                    <Pencil className="h-3.5 w-3.5" />
+                  </Button>
+                  <Button size="icon" variant="ghost" className="h-8 w-8 text-red-500 hover:text-red-400" onClick={() => setToDelete(d)} title="Supprimer" aria-label="Supprimer">
+                    <Trash2 className="h-3.5 w-3.5" />
+                  </Button>
+                </div>
+              </li>
+            ))}
+          </ul>
+        )}
+      </Panel>
 
       {/* Dialog création/édition */}
       <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
@@ -325,7 +344,7 @@ export function DepensesTab({
           </div>
           <DialogFooter>
             <Button variant="outline" onClick={() => setDialogOpen(false)} disabled={busy}>Annuler</Button>
-            <Button onClick={save} disabled={busy} className="bg-[linear-gradient(135deg,#C8922A,#A67420)] text-white border-0">
+            <Button onClick={save} disabled={busy} className={GOLD_BUTTON}>
               {busy && <Loader2 className="h-4 w-4 animate-spin mr-2" />}
               {editing ? "Enregistrer" : "Ajouter"}
             </Button>

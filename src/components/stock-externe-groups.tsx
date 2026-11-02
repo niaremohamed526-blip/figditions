@@ -371,7 +371,7 @@ export function StockExterneGroups({
                   <p className="mt-0.5 truncate text-xs text-muted-foreground">
                     {g.adresse ?? "Adresse non renseignée"}
                     <span className="mx-1.5 opacity-50">·</span>
-                    <span className="text-[color:var(--gold)]">Dernière visite : {fdate(g.derniereVisite)}</span>
+                    <span className="text-[color:var(--gold)]">{g.derniereVisite ? `Dernière visite : ${fdate(g.derniereVisite)}` : "Pas encore visitée"}</span>
                   </p>
                   <p className="mt-1 text-xs text-muted-foreground tabular-nums">
                     {pl(g.titres, "titre")} <span className="opacity-50">·</span> {pl(g.deposes, "déposé")} <span className="opacity-50">·</span> {pl(g.restants, "restant")}
@@ -461,7 +461,7 @@ export function StockExterneGroups({
 
                             <div className="text-xs text-muted-foreground tabular-nums sm:w-52 sm:shrink-0">
                               {dep} déposés <span className="opacity-50">·</span> {vendus} vendus <span className="opacity-50">·</span>{" "}
-                              <span className={cn("font-semibold", rs.text)}>{rest} rest.</span>
+                              <span className={cn("font-semibold", rs.text)}>{pl(rest, "restant", "restants")}</span>
                             </div>
 
                             <div className="flex items-center justify-between gap-3 sm:justify-end">

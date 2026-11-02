@@ -3,10 +3,10 @@ import { ShieldCheck, Check, ArrowRight } from "lucide-react";
 
 export function SecurityCard() {
   const items = [
-    "Sauvegarde automatique quotidienne",
-    "Chiffrement AES-256 de vos fichiers",
-    "Serveurs AWS Europe (Irlande)",
-    "Récupération possible jusqu'à 7 jours",
+    "Connexion chiffrée (HTTPS)",
+    "Données chiffrées sur nos serveurs (AES-256)",
+    "Chaque maison ne voit que ses propres données",
+    "Accès de votre équipe réglé page par page",
   ];
   return (
     <div className="rounded-2xl border-2 border-primary/40 bg-gradient-to-br from-primary/5 to-[color:var(--gold)]/5 p-6 md:p-7">

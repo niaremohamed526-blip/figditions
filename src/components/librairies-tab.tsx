@@ -207,7 +207,7 @@ export function LibrairiesTab({
                       <span className="truncate">{g.nom}</span>
                     </h3>
                     <p className="text-[13px] text-muted-foreground truncate mt-0.5">{g.adresse ?? "Adresse non renseignée"}</p>
-                    <p className="text-[12px] text-[color:var(--gold)] mt-0.5">Dernière visite : {fdate(g.derniereVisite)}</p>
+                    <p className="text-[12px] text-[color:var(--gold)] mt-0.5">{g.derniereVisite ? `Dernière visite : ${fdate(g.derniereVisite)}` : "Pas encore visitée"}</p>
                   </div>
                   <span className={cn("shrink-0 rounded-full border px-2.5 py-1 text-[11px] font-semibold", st.badge)}>{st.label}</span>
                 </header>
