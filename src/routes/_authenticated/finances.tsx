@@ -2,7 +2,7 @@ import { CHART_TOOLTIP_STYLE } from "@/lib/chart-style";
 import { createFileRoute } from "@tanstack/react-router";
 import { useEffect, useMemo, useState } from "react";
 import {
-  TrendingUp, ShoppingBag, Clock, Check, Tag, Wallet, Banknote, PiggyBank,
+  Wallet, PiggyBank,
   LayoutDashboard, ShoppingCart, Users, History, ArrowUp, ArrowDown,
 } from "lucide-react";
 import {
@@ -35,6 +35,11 @@ import { JournalTab } from "@/components/finances/journal-tab";
 import { EtrangersFinancesTab } from "@/components/finances/etrangers-finances-tab";
 import { Globe } from "lucide-react";
 import type { DepenseRow, PaiementRoyaltiesRow, VenteRow } from "@/lib/finance-types";
+import { CreancesLibrairies } from "@/components/finances/creances-librairies";
+import {
+  calculerResultat, coutUnitaireParLivre, dansPeriode, prefixePeriode, resteAEncaisser, PERIODES, type Periode,
+} from "@/lib/finance-calc";
+import { pl } from "@/lib/plural";
 
 export const Route = createFileRoute("/_authenticated/finances")({
   component: FinancesPage,
@@ -142,63 +147,46 @@ function FinancesInner({
     [ventesActives, etrangerIds],
   );
 
-  const totals = useMemo(() => {
-    const v = ventesActives;
-    const revenue = v.reduce((a, x) => a + Number(x.montant_total_fcfa || 0), 0);
-    const commission = v.reduce((a, x) => a + Number(x.commission_librairie_fcfa || 0), 0);
-    const vp = v.filter((x) => !etrangerIds.has(x.manuscrit_id));
-    const royalties = vp.reduce((a, x) => a + Number(x.droits_auteur_fcfa || 0), 0);
-    const paid = vp.filter((x) => x.statut_paiement === "paye").reduce((a, x) => a + Number(x.droits_auteur_fcfa || 0), 0);
-    const encaisse = v.reduce((a, x) => a + Number(x.montant_encaisse_fcfa || 0), 0);
-    const totalDepenses = depenses.reduce((a, d) => a + Number(d.montant_fcfa || 0), 0);
-    // Coût de production des exemplaires VENDUS seulement : les invendus restent
-    // du stock (un actif), pas une perte. Coût unitaire moyen pondéré par tirage.
-    const tirages = new Map<string, { qte: number; cout: number }>();
-    for (const s of stockInterne) {
-      const t = tirages.get(s.manuscrit_id) ?? { qte: 0, cout: 0 };
-      const qte = Number(s.quantite_imprimee || 0);
-      t.qte += qte;
-      t.cout += Number(s.cout_unitaire_impression_fcfa || 0) * qte;
-      tirages.set(s.manuscrit_id, t);
-    }
-    const coutProduction = vp.reduce((a, x) => {
-      const t = tirages.get(x.manuscrit_id);
-      return t && t.qte > 0 ? a + (t.cout / t.qte) * Number(x.quantite_vendue || 0) : a;
-    }, 0);
-    return {
-      revenue,
-      commission,
-      remises: v.reduce((a, x) => a + Number(x.remise_fcfa || 0), 0),
-      royalties,
-      paid,
-      pending: royalties - paid,
-      copies: v.reduce((a, x) => a + Number(x.quantite_vendue || 0), 0),
-      encaisse,
-      aEncaisser: Math.max(0, revenue - encaisse),
-      totalDepenses,
-      resultatNet: revenue - commission - royalties - totalDepenses - coutProduction,
-    };
-  }, [ventesActives, depenses, stockInterne, etrangerIds]);
+  const [periode, setPeriode] = useState<Periode>("mois");
+  const coutUnitaire = useMemo(() => coutUnitaireParLivre(stockInterne), [stockInterne]);
 
+  /** Bénéfice de la période : une seule définition (lib/finance-calc), nos propres livres uniquement. */
+  const resultat = useMemo(() => {
+    const p = prefixePeriode(periode);
+    return calculerResultat(
+      ventesActivesPropres.filter((v) => dansPeriode(v.date_vente, p)),
+      depenses.filter((d) => dansPeriode(d.date_depense, p)),
+      coutUnitaire,
+    );
+  }, [periode, ventesActivesPropres, depenses, coutUnitaire]);
+
+  /** Ce qui est dû aujourd'hui, quelle que soit la période. */
+  const totals = useMemo(() => {
+    const aEncaisser = ventesActives.reduce((a, v) => a + resteAEncaisser(v), 0);
+    const pendingVentes = ventesActivesPropres.filter((v) => v.statut_paiement === "en_attente" && Number(v.droits_auteur_fcfa) > 0);
+    const pending = pendingVentes.reduce((a, v) => a + Number(v.droits_auteur_fcfa || 0), 0);
+    const auteursEnAttente = new Set(pendingVentes.map((v) => v.auteur_id ?? mMap[v.manuscrit_id]?.auteur_id ?? mMap[v.manuscrit_id]?.auteur ?? v.manuscrit_id)).size;
+    return { aEncaisser, pending, auteursEnAttente };
+  }, [ventesActives, ventesActivesPropres, mMap]);
+
+  const [tab, setTab] = useState("apercu");
+  const libellePeriode = PERIODES.find((p) => p.value === periode)!.label.toLowerCase();
+
+  /** 6 derniers mois, avec le même calcul de bénéfice que la carte « gagné ». */
   const monthlyData = useMemo(() => {
-    const v = ventesActives;
-    const buckets: { key: string; label: string; revenue: number; depenses: number; net: number }[] = [];
+    const out: { key: string; label: string; revenue: number; depenses: number; net: number }[] = [];
     for (let i = 5; i >= 0; i--) {
       const d = startOfMonth(subMonths(new Date(), i));
-      buckets.push({ key: format(d, "yyyy-MM"), label: format(d, "MMM", { locale: fr }), revenue: 0, depenses: 0, net: 0 });
+      const key = format(d, "yyyy-MM");
+      const r = calculerResultat(
+        ventesActivesPropres.filter((v) => dansPeriode(v.date_vente, key)),
+        depenses.filter((x) => dansPeriode(x.date_depense, key)),
+        coutUnitaire,
+      );
+      out.push({ key, label: format(d, "MMM", { locale: fr }), revenue: r.ventes, depenses: r.depenses, net: r.benefice });
     }
-    const map = new Map(buckets.map((b) => [b.key, b]));
-    v.forEach((s) => {
-      const b = map.get(s.date_vente?.slice(0, 7));
-      if (b) b.revenue += Number(s.montant_total_fcfa || 0);
-    });
-    depenses.forEach((d) => {
-      const b = map.get(d.date_depense?.slice(0, 7));
-      if (b) b.depenses += Number(d.montant_fcfa || 0);
-    });
-    buckets.forEach((b) => { b.net = b.revenue - b.depenses; });
-    return buckets;
-  }, [ventesActives, depenses]);
+    return out;
+  }, [ventesActivesPropres, depenses, coutUnitaire]);
 
   const pieData = useMemo(() => {
     const v = ventesActives;
@@ -227,7 +215,7 @@ function FinancesInner({
         </div>
       </header>
 
-      <Tabs defaultValue="apercu" className="space-y-6">
+      <Tabs value={tab} onValueChange={setTab} className="space-y-6">
         <TabsList className="w-full justify-start overflow-x-auto flex-nowrap h-auto p-1 gap-1">
           <TabsTrigger value="apercu" className="gap-1.5 whitespace-nowrap">
             <LayoutDashboard className="h-4 w-4" /> Vue d'ensemble
@@ -265,40 +253,76 @@ function FinancesInner({
 
         {/* ==================== VUE D'ENSEMBLE ==================== */}
         <TabsContent value="apercu" className="space-y-6">
-          <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-4">
-            <StatCard icon={TrendingUp} label="Chiffre d'affaires" value={fcfa(totals.revenue)} accent="gold" />
-            <StatCard icon={Banknote} label="Encaissé" value={fcfa(totals.encaisse)} accent="primary" />
-            <StatCard icon={Clock} label="À encaisser" value={fcfa(totals.aEncaisser)} accent="warn" />
-            <StatCard icon={Wallet} label="Dépenses" value={fcfa(totals.totalDepenses)} accent="danger" />
-            <StatCard
-              icon={PiggyBank}
-              label="Résultat net estimé"
-              value={fcfa(totals.resultatNet)}
-              accent={totals.resultatNet >= 0 ? "primary" : "danger"}
-            />
-            <StatCard icon={Check} label="Royalties payées" value={fcfa(totals.paid)} accent="primary" />
-            <StatCard icon={Clock} label="Royalties en attente" value={fcfa(totals.pending)} accent="gold" />
-            <StatCard icon={ShoppingBag} label="Exemplaires vendus" value={String(totals.copies)} />
+          <div className="flex flex-wrap gap-1.5" role="group" aria-label="Période">
+            {PERIODES.map((p) => (
+              <button
+                key={p.value}
+                type="button"
+                onClick={() => setPeriode(p.value)}
+                aria-pressed={periode === p.value}
+                className={cn(
+                  "text-sm px-3 py-1.5 rounded-md border transition-colors",
+                  periode === p.value
+                    ? "border-[#C8922A] bg-[#C8922A] text-white"
+                    : "border-border text-muted-foreground hover:text-foreground",
+                )}
+              >
+                {p.label}
+              </button>
+            ))}
           </div>
+
+          <div className="grid gap-4 md:grid-cols-3">
+            <AnswerCard
+              question={`Combien avez-vous gagné ${libellePeriode} ?`}
+              value={loading ? null : fcfa(resultat.benefice)}
+              tone={resultat.benefice >= 0 ? "good" : "bad"}
+              detail={
+                <>
+                  Ventes {fcfa(resultat.ventes)}, moins commissions {fcfa(resultat.commissions)}, droits d'auteur{" "}
+                  {fcfa(resultat.droits)}, impression des livres vendus {fcfa(resultat.coutVendus)} et dépenses{" "}
+                  {fcfa(resultat.depenses)}.
+                </>
+              }
+              action={{ label: "Voir par livre", onClick: () => setTab("rentabilite") }}
+            />
+            <AnswerCard
+              question="Combien vous doit-on ?"
+              value={loading ? null : fcfa(totals.aEncaisser)}
+              tone={totals.aEncaisser > 0 ? "warn" : "good"}
+              detail={totals.aEncaisser > 0 ? "Ventes faites mais pas encore payées. La liste est juste en dessous." : "Tout ce qui a été vendu est encaissé."}
+            />
+            <AnswerCard
+              question="Combien devez-vous à vos auteurs ?"
+              value={loading ? null : fcfa(totals.pending)}
+              tone={totals.pending > 0 ? "warn" : "good"}
+              detail={totals.pending > 0 ? `Droits d'auteur à payer à ${pl(totals.auteursEnAttente, "auteur", "auteurs")}.` : "Tous les droits d'auteur sont payés."}
+              action={totals.pending > 0 ? { label: "Payer les auteurs", onClick: () => setTab("royalties") } : undefined}
+            />
+          </div>
+
+          {!loading && (
+            <CreancesLibrairies ventes={ventesActives} entrepriseNom={entrepriseNom} onChanged={load} />
+          )}
 
           <div className="grid lg:grid-cols-2 gap-4">
             <div className="rounded-xl border border-border bg-card p-6">
-              <h3 className="font-semibold mb-4">CA et dépenses sur les 6 derniers mois</h3>
+              <h3 className="font-semibold mb-4">Ventes, dépenses et bénéfice sur 6 mois</h3>
               <div className="h-64">
                 {loading ? <Skeleton className="h-full w-full" /> : (
                   <ResponsiveContainer width="100%" height="100%">
                     <ComposedChart data={monthlyData}>
-                      <CartesianGrid strokeDasharray="3 3" stroke="#1E3A5F" />
-                      <XAxis dataKey="label" stroke="#94A3B8" fontSize={12} />
-                      <YAxis stroke="#94A3B8" fontSize={12} tickFormatter={(v) => `${(v / 1000).toFixed(0)}k`} />
+                      <CartesianGrid strokeDasharray="3 3" stroke="var(--border)" />
+                      <XAxis dataKey="label" stroke="var(--muted-foreground)" fontSize={12} />
+                      <YAxis stroke="var(--muted-foreground)" fontSize={12} tickFormatter={(v) => `${(v / 1000).toFixed(0)}k`} />
                       <Tooltip
                         contentStyle={CHART_TOOLTIP_STYLE}
                         formatter={(v: number) => fcfa(v)}
                       />
                       <Legend />
-                      <Bar dataKey="revenue" name="CA" fill="#C8922A" radius={[6, 6, 0, 0]} />
+                      <Bar dataKey="revenue" name="Ventes" fill="#C8922A" radius={[6, 6, 0, 0]} />
                       <Bar dataKey="depenses" name="Dépenses" fill="#b0413e" radius={[6, 6, 0, 0]} />
-                      <Line type="monotone" dataKey="net" name="Net" stroke="#3fb96f" strokeWidth={2} />
+                      <Line type="monotone" dataKey="net" name="Bénéfice" stroke="#3fb96f" strokeWidth={2} />
                     </ComposedChart>
                   </ResponsiveContainer>
                 )}
@@ -322,12 +346,6 @@ function FinancesInner({
               </div>
             </div>
           </div>
-
-          {totals.remises > 0 && (
-            <p className="text-xs text-muted-foreground flex items-center gap-1.5">
-              <Tag className="h-3.5 w-3.5" /> Remises accordées au total : {fcfa(totals.remises)}
-            </p>
-          )}
 
           <FinancesAnalytics ventes={loading ? null : ventesActives} manuscrits={manuscrits} aMap={aMap} mMap={mMap} />
         </TabsContent>
@@ -399,7 +417,7 @@ function FinancesInner({
             <Skeleton className="h-64 w-full" />
           ) : (
             <RentabiliteTab
-              ventes={ventesActives}
+              ventes={ventesActivesPropres}
               depenses={depenses}
               stockInterne={stockInterne}
               manuscrits={manuscrits}
@@ -431,29 +449,32 @@ function FinancesInner({
   );
 }
 
-function StatCard({
-  icon: Icon, label, value, accent,
+function AnswerCard({
+  question, value, tone, detail, action,
 }: {
-  icon: any; label: string; value: string; accent?: "primary" | "gold" | "warn" | "danger";
+  question: string;
+  value: string | null;
+  tone: "good" | "warn" | "bad";
+  detail: React.ReactNode;
+  action?: { label: string; onClick: () => void };
 }) {
   return (
-    <div className="rounded-xl border border-border bg-card p-5">
-      <div className="flex items-center gap-3">
-        <div className={cn(
-          "h-10 w-10 rounded-lg flex items-center justify-center shrink-0",
-          accent === "gold" ? "bg-[color:var(--gold)]/15 text-[color:var(--gold)]" :
-          accent === "primary" ? "bg-emerald-500/15 text-emerald-400" :
-          accent === "warn" ? "bg-amber-500/15 text-amber-400" :
-          accent === "danger" ? "bg-red-500/15 text-red-400" :
-          "bg-muted text-muted-foreground",
+    <div className="rounded-xl border border-border bg-card p-5 flex flex-col">
+      <p className="text-sm text-muted-foreground">{question}</p>
+      {value === null ? <Skeleton className="h-9 w-40 mt-2" /> : (
+        <p className={cn(
+          "mt-1 text-3xl font-semibold tabular-nums",
+          tone === "good" ? "text-emerald-600 dark:text-emerald-400" : tone === "bad" ? "text-red-500" : "text-foreground",
         )}>
-          <Icon className="h-5 w-5" />
-        </div>
-        <div className="min-w-0">
-          <p className="text-xs uppercase tracking-wider text-muted-foreground">{label}</p>
-          <p className="text-xl font-bold mt-0.5 truncate">{value}</p>
-        </div>
-      </div>
+          {value}
+        </p>
+      )}
+      <p className="mt-2 text-xs text-muted-foreground leading-relaxed flex-1">{detail}</p>
+      {action && (
+        <button type="button" onClick={action.onClick} className="mt-3 self-start text-sm font-medium text-[#C8922A] hover:text-[#B5821F]">
+          {action.label} →
+        </button>
+      )}
     </div>
   );
 }
@@ -515,9 +536,9 @@ function FinancesAnalytics({ ventes, manuscrits, aMap, mMap }: { ventes: VenteRo
           {months.every((m) => m.revenue === 0) ? <EmptyChart /> : (
             <ResponsiveContainer width="100%" height="100%">
               <ComposedChart data={months}>
-                <CartesianGrid strokeDasharray="3 3" stroke="#1E3A5F" />
-                <XAxis dataKey="label" stroke="#94A3B8" fontSize={12} />
-                <YAxis stroke="#94A3B8" fontSize={12} tickFormatter={(v) => `${(v / 1000).toFixed(0)}k`} />
+                <CartesianGrid strokeDasharray="3 3" stroke="var(--border)" />
+                <XAxis dataKey="label" stroke="var(--muted-foreground)" fontSize={12} />
+                <YAxis stroke="var(--muted-foreground)" fontSize={12} tickFormatter={(v) => `${(v / 1000).toFixed(0)}k`} />
                 <Tooltip contentStyle={CHART_TOOLTIP_STYLE} formatter={(v: number) => fcfa(v)} />
                 <Legend />
                 <Bar dataKey="revenue" name="Mensuel" fill="#C8922A" radius={[6, 6, 0, 0]} />

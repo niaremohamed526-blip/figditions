@@ -1,9 +1,10 @@
 import { useMemo } from "react";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { TrendingUp, TrendingDown, Minus, PiggyBank, Info } from "lucide-react";
+import { TrendingUp, TrendingDown, Minus, PiggyBank, Info, AlertTriangle } from "lucide-react";
 import { fmtFCFA, type DepenseRow, type VenteRow } from "@/lib/finance-types";
 import { cn } from "@/lib/utils";
+import { coutUnitaireParLivre } from "@/lib/finance-calc";
 
 interface StockInterneLite {
   manuscrit_id: string;
@@ -22,7 +23,11 @@ interface RentabiliteRow {
   auteur: string;
   vendus: number;
   ca: number;
+  /** Tout le tirage imprimé : sert au seuil de remboursement, pas au bénéfice. */
   coutProd: number;
+  /** Impression des seuls exemplaires vendus : entre dans le bénéfice. */
+  coutVendus: number;
+  imprimes: number;
   depenses: number;
   royalties: number;
   commissions: number;
@@ -54,7 +59,7 @@ export function RentabiliteTab({
           manuscritId: mid,
           titre: m?.titre ?? "Livre supprimé",
           auteur: m?.auteur ?? "—",
-          vendus: 0, ca: 0, coutProd: 0, depenses: 0, royalties: 0, commissions: 0,
+          vendus: 0, ca: 0, coutProd: 0, coutVendus: 0, imprimes: 0, depenses: 0, royalties: 0, commissions: 0,
           net: 0, marge: null, seuil: null,
         };
         agg.set(mid, r);
@@ -62,11 +67,13 @@ export function RentabiliteTab({
       return r;
     };
 
-    // Coût de production = coût unitaire d'impression × quantité imprimée
+    // Tirage total = coût unitaire d'impression × quantité imprimée
     stockInterne.forEach((s) => {
       const r = ensure(s.manuscrit_id);
       r.coutProd += Number(s.cout_unitaire_impression_fcfa || 0) * Number(s.quantite_imprimee || 0);
+      r.imprimes += Number(s.quantite_imprimee || 0);
     });
+    const coutUnitaire = coutUnitaireParLivre(stockInterne);
 
     // Dépenses rattachées à un livre
     depenses.forEach((d) => {
@@ -83,10 +90,12 @@ export function RentabiliteTab({
       r.commissions += Number(v.commission_librairie_fcfa || 0);
     });
 
+    // Même définition que la Vue d'ensemble (lib/finance-calc) : les invendus restent du stock.
     agg.forEach((r) => {
-      const investi = r.coutProd + r.depenses;
-      r.net = r.ca - r.commissions - r.royalties - investi;
+      r.coutVendus = Math.round((coutUnitaire.get(r.manuscritId) ?? 0) * r.vendus);
+      r.net = r.ca - r.commissions - r.royalties - r.coutVendus - r.depenses;
       r.marge = r.ca > 0 ? (r.net / r.ca) * 100 : null;
+      const investi = r.coutProd + r.depenses;
       const netUnit = r.vendus > 0 ? (r.ca - r.commissions - r.royalties) / r.vendus : 0;
       r.seuil = investi > 0 && netUnit > 0 ? Math.ceil(investi / netUnit) : null;
     });
@@ -102,9 +111,10 @@ export function RentabiliteTab({
       (acc, r) => ({
         ca: acc.ca + r.ca,
         investi: acc.investi + r.coutProd + r.depenses,
+        stock: acc.stock + Math.max(0, r.coutProd - r.coutVendus),
         net: acc.net + r.net,
       }),
-      { ca: 0, investi: 0, net: 0 },
+      { ca: 0, investi: 0, net: 0, stock: 0 },
     );
     return { ...base, depensesGlobales };
   }, [rows, depenses]);
@@ -117,10 +127,13 @@ export function RentabiliteTab({
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
         <Card className="bg-card/70">
           <CardContent className="pt-5 pb-4">
-            <p className="text-xs text-muted-foreground uppercase tracking-wide">Investi (production + dépenses)</p>
+            <p className="text-xs text-muted-foreground uppercase tracking-wide">Investi (impression + dépenses)</p>
             <p className="text-xl font-bold mt-1">{fmtFCFA(totaux.investi + totaux.depensesGlobales)}</p>
             {totaux.depensesGlobales > 0 && (
               <p className="text-[11px] text-muted-foreground mt-1">dont {fmtFCFA(totaux.depensesGlobales)} de charges globales</p>
+            )}
+            {totaux.stock > 0 && (
+              <p className="text-[11px] text-muted-foreground mt-1">dont {fmtFCFA(totaux.stock)} encore en stock (livres non vendus)</p>
             )}
           </CardContent>
         </Card>
@@ -132,12 +145,12 @@ export function RentabiliteTab({
         </Card>
         <Card className="bg-card/70">
           <CardContent className="pt-5 pb-4">
-            <p className="text-xs text-muted-foreground uppercase tracking-wide">Résultat net global</p>
+            <p className="text-xs text-muted-foreground uppercase tracking-wide">Bénéfice depuis le début</p>
             <p className={cn("text-xl font-bold mt-1 flex items-center gap-2", netGlobal >= 0 ? "text-emerald-400" : "text-red-400")}>
               {netGlobal >= 0 ? <TrendingUp className="h-4 w-4" /> : <TrendingDown className="h-4 w-4" />}
               {fmtFCFA(netGlobal)}
             </p>
-            <p className="text-[11px] text-muted-foreground mt-1">CA − commissions − royalties − coûts</p>
+            <p className="text-[11px] text-muted-foreground mt-1">Ventes − commissions − droits − impression des livres vendus − dépenses</p>
           </CardContent>
         </Card>
         <Card className="bg-card/70">
@@ -158,8 +171,9 @@ export function RentabiliteTab({
           </CardTitle>
           <CardDescription className="flex items-start gap-1.5">
             <Info className="h-3.5 w-3.5 mt-0.5 shrink-0" />
-            Coût de production = coût unitaire d'impression × exemplaires imprimés (Stock interne). Renseignez le coût
-            unitaire d'impression dans la fiche stock pour un calcul précis.
+            Le bénéfice compte l'impression des seuls exemplaires vendus : les livres non vendus restent du stock, pas une
+            perte. C'est le même calcul que la Vue d'ensemble. Renseignez le coût d'impression dans le Stock interne pour un
+            calcul juste.
           </CardDescription>
         </CardHeader>
         <CardContent>
@@ -173,11 +187,11 @@ export function RentabiliteTab({
                     <th className="py-2 pr-3">Livre</th>
                     <th className="py-2 pr-3 text-right">Vendus</th>
                     <th className="py-2 pr-3 text-right">CA</th>
-                    <th className="py-2 pr-3 text-right">Coût prod.</th>
+                    <th className="py-2 pr-3 text-right">Impression vendus</th>
                     <th className="py-2 pr-3 text-right">Dépenses</th>
                     <th className="py-2 pr-3 text-right">Royalties</th>
                     <th className="py-2 pr-3 text-right">Commissions</th>
-                    <th className="py-2 pr-3 text-right">Résultat net</th>
+                    <th className="py-2 pr-3 text-right">Bénéfice</th>
                     <th className="py-2 pr-3 text-right">Marge</th>
                     <th className="py-2 text-center">Statut</th>
                   </tr>
@@ -190,15 +204,21 @@ export function RentabiliteTab({
                         <td className="py-2.5 pr-3">
                           <p className="font-medium">{r.titre}</p>
                           <p className="text-xs text-muted-foreground">{r.auteur}</p>
-                          {r.seuil !== null && r.net <= 0 && (
-                            <p className="text-[11px] text-amber-400/90 mt-0.5">
-                              Seuil de rentabilité : {r.seuil} ex. ({r.vendus}/{r.seuil} vendus)
+                          {r.seuil !== null && r.vendus < r.seuil && (
+                            <p className="text-[11px] text-amber-600 dark:text-amber-400 mt-0.5">
+                              Impression remboursée après {r.seuil} ex. vendus ({r.vendus}/{r.seuil})
+                            </p>
+                          )}
+                          {(r.imprimes > 10000 || r.coutProd > 20_000_000) && (
+                            <p className="text-[11px] text-red-500 mt-0.5 flex items-center gap-1">
+                              <AlertTriangle className="h-3 w-3 shrink-0" />
+                              À vérifier : {r.imprimes.toLocaleString("fr-FR")} ex. imprimés pour {fmtFCFA(r.coutProd)}
                             </p>
                           )}
                         </td>
                         <td className="py-2.5 pr-3 text-right">{r.vendus}</td>
                         <td className="py-2.5 pr-3 text-right font-medium text-[color:var(--gold)]">{fmtFCFA(r.ca)}</td>
-                        <td className="py-2.5 pr-3 text-right">{fmtFCFA(r.coutProd)}</td>
+                        <td className="py-2.5 pr-3 text-right">{fmtFCFA(r.coutVendus)}</td>
                         <td className="py-2.5 pr-3 text-right">{fmtFCFA(r.depenses)}</td>
                         <td className="py-2.5 pr-3 text-right">{fmtFCFA(r.royalties)}</td>
                         <td className="py-2.5 pr-3 text-right">{fmtFCFA(r.commissions)}</td>

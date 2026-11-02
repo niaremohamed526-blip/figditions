@@ -1308,6 +1308,13 @@ function EditStockDialog({
     if (form.quantite_disponible + sortis > form.quantite_imprimee) {
       return toast.error(`Incohérent : ${sortis} ex. déjà sortis (librairies, ventes, événements). Imprimés doit être ≥ ${form.quantite_disponible + sortis}.`);
     }
+    // Garde-fou contre les fautes de frappe (30 000 au lieu de 3 000) qui faussent la rentabilité.
+    const coutTirage = form.quantite_imprimee * form.cout_unitaire;
+    const inhabituel = form.quantite_imprimee > 10000 || coutTirage > 20_000_000;
+    const change = form.quantite_imprimee !== stock.quantite_imprimee || form.cout_unitaire !== Number(stock.cout_unitaire_impression_fcfa ?? 0);
+    if (inhabituel && change && !window.confirm(
+      `Vérification : ${form.quantite_imprimee.toLocaleString("fr-FR")} exemplaires imprimés à ${form.cout_unitaire.toLocaleString("fr-FR")} FCFA, soit ${coutTirage.toLocaleString("fr-FR")} FCFA d'impression. C'est bien correct ?`,
+    )) return;
     setLoading(true);
     const { error } = await (supabase as any).from("stock_interne").update({
       quantite_imprimee: form.quantite_imprimee,
