@@ -120,6 +120,10 @@ function Story() {
             les délestages électriques, la connectivité intermittente, les paiements via
             Mobile Money et l'importance des langues nationales.
           </p>
+          <p>
+            Vous avez cherché « Figdition », « Fig Ditions » ou « Fig Éditions » ? C'est bien nous :
+            le nom s'écrit FIGDITIONS, en un seul mot, avec un S à la fin.
+          </p>
         </div>
       </div>
     </section>

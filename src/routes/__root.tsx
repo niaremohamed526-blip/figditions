@@ -69,6 +69,8 @@ function ErrorComponent({ error, reset }: ErrorComponentProps) {
   );
 }
 
+const FIGDITIONS_AUTRES_NOMS = ["Figditions", "Figdition", "Fig Ditions", "Fig Editions", "FIG Éditions"];
+
 export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()({
   head: () => ({
     meta: [
@@ -112,6 +114,8 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
             {
               "@type": "Organization",
               name: "FIGDITIONS",
+              // Spellings people type, so search engines still find the site.
+              alternateName: FIGDITIONS_AUTRES_NOMS,
               url: "https://figditions.xyz",
               logo: FIGDITIONS_SITE_LOGO_ABSOLUTE_URL,
               description: "Plateforme éditoriale tout-en-un pour les maisons d'édition, partout dans le monde.",
@@ -120,6 +124,7 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
             {
               "@type": "WebSite",
               name: "FIGDITIONS",
+              alternateName: FIGDITIONS_AUTRES_NOMS,
               url: "https://figditions.xyz",
               inLanguage: "fr",
             },
