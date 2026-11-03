@@ -29,7 +29,6 @@ import { fcfa } from "@/lib/format";
 import { SecurityCard } from "@/components/security-card";
 import { PdfFiligraneCard } from "@/components/pdf-filigrane-card";
 import { NotificationsCard } from "@/components/notifications-card";
-import { ConfigStatusSection } from "@/components/config-status-section";
 import {
   PAGES, PRESETS, applyPreset, defaultInvitationPermissions, fullPermissions,
   type Permissions, type PermissionKey,
@@ -138,7 +137,6 @@ function ParametresPage() {
           {isAdmin && <TabsTrigger value="equipe" className="min-h-10">Mon équipe</TabsTrigger>}
           <TabsTrigger value="plan" id="plan" className="min-h-10">Plans</TabsTrigger>
           {isAdmin && <TabsTrigger value="paiements" className="min-h-10">Paiements</TabsTrigger>}
-          {isAdmin && <TabsTrigger value="config" className="min-h-10">Configuration</TabsTrigger>}
           <TabsTrigger value="danger" className="text-destructive min-h-10">Zone dangereuse</TabsTrigger>
         </TabsList>
 
@@ -177,12 +175,6 @@ function ParametresPage() {
         {isAdmin && (
           <TabsContent value="paiements" className="mt-6">
             <PaymentsHistory entrepriseId={profile?.entreprise_id ?? null} />
-          </TabsContent>
-        )}
-
-        {isAdmin && (
-          <TabsContent value="config" className="mt-6">
-            <ConfigStatusSection />
           </TabsContent>
         )}
 
