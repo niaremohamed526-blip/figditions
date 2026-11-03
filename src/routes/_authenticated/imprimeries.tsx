@@ -50,7 +50,7 @@ function ImprimeriesPage() {
 
   const load = async () => {
     setItems(null);
-    const { data, error } = await (supabase as any).from("imprimeries").select("*").order("est_partenaire", { ascending: false }).order("nom");
+    const { data, error } = await supabase.from("imprimeries").select("*").order("est_partenaire", { ascending: false }).order("nom");
     if (error) toast.error(error.message);
     setItems((data ?? []) as Imprimerie[]);
   };
@@ -202,7 +202,7 @@ function AddImprimerieDrawer({ open, onOpenChange, onSaved }: { open: boolean; o
   const submit = async () => {
     if (!form.nom.trim()) return toast.error("Le nom est obligatoire");
     setSaving(true);
-    const { error } = await (supabase as any).from("imprimeries").insert({
+    const { error } = await supabase.from("imprimeries").insert({
       nom: form.nom,
       adresse: form.adresse || null,
       telephone: form.telephone || null,

@@ -331,8 +331,8 @@ function EtrangerForm({
       statut: "publie",
     };
     const { error } = existing
-      ? await (supabase as any).from("manuscrits").update(payload).eq("id", existing.id)
-      : await (supabase as any).from("manuscrits").insert({ ...payload, entreprise_id: entrepriseId });
+      ? await supabase.from("manuscrits").update(payload).eq("id", existing.id)
+      : await supabase.from("manuscrits").insert({ ...payload, entreprise_id: entrepriseId });
     setLoading(false);
     if (error) return toast.error(error.message);
     toast.success(existing ? "Livre étranger mis à jour" : "Livre étranger ajouté");

@@ -34,13 +34,13 @@ function AuteurDetailPage() {
     let active = true;
     (async () => {
       setLoading(true);
-      const { data: a } = await (supabase as any)
+      const { data: a } = await supabase
         .from("auteurs").select("*").eq("id", auteurId).maybeSingle();
       if (!active) return;
       setAuteur(a as Auteur | null);
 
       if (a) {
-        const { data: ms } = await (supabase as any).from("manuscrits").select("*");
+        const { data: ms } = await supabase.from("manuscrits").select("*");
         const list = ((ms ?? []) as any[]).filter(
           (m) => m.auteur_id === a.id || (m.auteur && m.auteur.toLowerCase() === a.nom_complet.toLowerCase())
         );
@@ -49,7 +49,7 @@ function AuteurDetailPage() {
 
         const ids = list.map((m: any) => m.id);
         if (ids.length) {
-          const { data: ventes } = await (supabase as any)
+          const { data: ventes } = await supabase
             .from("ventes").select("droits_auteur_fcfa, manuscrit_id, statut_paiement").eq("statut_annulation", "active")
             .in("manuscrit_id", ids).eq("statut_paiement", "en_attente");
           const total = ((ventes ?? []) as any[]).reduce(

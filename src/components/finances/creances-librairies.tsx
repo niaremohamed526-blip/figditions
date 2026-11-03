@@ -10,7 +10,8 @@ import { Label } from "@/components/ui/label";
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { cn } from "@/lib/utils";
 import { pl } from "@/lib/plural";
-import { fmtFCFA, type VenteRow } from "@/lib/finance-types";
+import { type VenteRow } from "@/lib/finance-types";
+import { fcfa } from "@/lib/format";
 import { resteAEncaisser } from "@/lib/finance-calc";
 import { withSessionRecovery } from "@/lib/session-recovery";
 import { generateRecuLibrairiePdf, numeroRecu, type RecuLibrairieInput } from "@/lib/pdf-recu-librairie";
@@ -59,7 +60,7 @@ function messageRelance(c: Creance, entrepriseNom: string) {
   return [
     "Bonjour,",
     "",
-    `Ici ${entrepriseNom}. Selon nos comptes, il reste ${fmtFCFA(c.du)} à régler pour les livres vendus depuis le ${dateFr(c.depuis)}.`,
+    `Ici ${entrepriseNom}. Selon nos comptes, il reste ${fcfa(c.du)} à régler pour les livres vendus depuis le ${dateFr(c.depuis)}.`,
     "Pouvez-vous nous dire quand le paiement est prévu ?",
     "",
     "Merci et bonne journée.",
@@ -111,7 +112,7 @@ export function CreancesLibrairies({
     if (!paiement) return;
     const recu = Math.round(Number(montant) || 0);
     if (recu <= 0) { toast.error("Indiquez le montant reçu"); return; }
-    if (recu > paiement.du) { toast.error(`${paiement.nom} ne doit que ${fmtFCFA(paiement.du)}`); return; }
+    if (recu > paiement.du) { toast.error(`${paiement.nom} ne doit que ${fcfa(paiement.du)}`); return; }
     setBusy(true);
     let fait = 0;
     const reglees: RecuLibrairieInput["lignes"] = [];
@@ -119,12 +120,12 @@ export function CreancesLibrairies({
       // Une vente après l'autre ; on s'arrête au premier échec pour ne jamais compter deux fois.
       for (const { vente, montant: part } of repartition) {
         const { data, error } = await withSessionRecovery(supabase.auth, () =>
-          (supabase as any).rpc("enregistrer_encaissement", { p_vente_id: vente.id, p_montant: part, p_date: date }),
+          supabase.rpc("enregistrer_encaissement", { p_vente_id: vente.id, p_montant: part, p_date: date }),
         );
         if (error || (data as any)?.ok === false) {
           const msg = error?.message ?? (data as any)?.error ?? "Erreur";
           toast.error(fait > 0
-            ? `${fmtFCFA(fait)} enregistrés, puis arrêt : ${msg}. Vérifiez avant de réessayer.`
+            ? `${fcfa(fait)} enregistrés, puis arrêt : ${msg}. Vérifiez avant de réessayer.`
             : msg);
           return;
         }
@@ -231,7 +232,7 @@ export function CreancesLibrairies({
             </span>
             <DialogTitle>Paiement enregistré</DialogTitle>
             <DialogDescription>
-              {recu && <>{fmtFCFA(recu.montant)} reçus de {recu.librairieNom}.{recu.resteDu > 0 && <> Reste {fmtFCFA(recu.resteDu)}.</>}</>}
+              {recu && <>{fcfa(recu.montant)} reçus de {recu.librairieNom}.{recu.resteDu > 0 && <> Reste {fcfa(recu.resteDu)}.</>}</>}
             </DialogDescription>
           </DialogHeader>
           <DialogFooter className="sm:justify-center gap-2">
@@ -257,7 +258,7 @@ export function CreancesLibrairies({
           <DialogHeader>
             <DialogTitle>Paiement reçu de {paiement?.nom}</DialogTitle>
             <DialogDescription>
-              Doit au total {fmtFCFA(paiement?.du ?? 0)}. Le montant est affecté aux ventes les plus anciennes d'abord.
+              Doit au total {fcfa(paiement?.du ?? 0)}. Le montant est affecté aux ventes les plus anciennes d'abord.
             </DialogDescription>
           </DialogHeader>
           <div className="grid grid-cols-2 gap-3">
@@ -277,7 +278,7 @@ export function CreancesLibrairies({
                 return (
                   <div key={vente.id} className="flex justify-between gap-3 px-3 py-1.5 border-b border-border last:border-0">
                     <span className="text-muted-foreground">Vente du {format(new Date(vente.date_vente), "dd/MM/yyyy")}</span>
-                    <span className="tabular-nums">{fmtFCFA(part)} {solde ? "· soldée" : "· en partie"}</span>
+                    <span className="tabular-nums">{fcfa(part)} {solde ? "· soldée" : "· en partie"}</span>
                   </div>
                 );
               })}

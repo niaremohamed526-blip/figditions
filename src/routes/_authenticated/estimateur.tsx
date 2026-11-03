@@ -117,8 +117,8 @@ function EstimateurPage() {
 
   const loadAll = async () => {
     const [{ data: ms }, { data: est }] = await Promise.all([
-      (supabase as any).from("manuscrits").select("id, titre, nombre_pages"),
-      (supabase as any).from("estimations_cout").select("id, nom_estimation, manuscrit_id, tirage, methode_impression, cout_total_fcfa, prix_vente_suggere_fcfa, created_at").order("created_at", { ascending: false }),
+      supabase.from("manuscrits").select("id, titre, nombre_pages"),
+      supabase.from("estimations_cout").select("id, nom_estimation, manuscrit_id, tirage, methode_impression, cout_total_fcfa, prix_vente_suggere_fcfa, created_at").order("created_at", { ascending: false }),
     ]);
     setManuscrits((ms ?? []) as Manuscrit[]);
     setHistory((est ?? []) as Estimation[]);
@@ -209,7 +209,7 @@ function EstimateurPage() {
     if (!profile?.entreprise_id) return toast.error("Profil non chargé");
     if (!nom.trim()) return toast.error("Donnez un nom à l'estimation");
     setSaving(true);
-    const { error } = await (supabase as any).from("estimations_cout").insert({
+    const { error } = await supabase.from("estimations_cout").insert({
       entreprise_id: profile.entreprise_id,
       manuscrit_id: manuscritId === "none" ? null : manuscritId,
       nom_estimation: nom,
@@ -249,7 +249,7 @@ function EstimateurPage() {
 
   const confirmDelete = async () => {
     if (!toDelete) return;
-    const { error } = await (supabase as any).from("estimations_cout").delete().eq("id", toDelete.id);
+    const { error } = await supabase.from("estimations_cout").delete().eq("id", toDelete.id);
     if (error) return toast.error(error.message);
     toast.success("Estimation supprimée");
     setHistory((h) => h?.filter((x) => x.id !== toDelete.id) ?? null);
@@ -265,12 +265,12 @@ function EstimateurPage() {
     const coutUnitaire = tirage > 0 ? toApply.cout_total_fcfa / tirage : 0;
     const prixUnitaire = tirage > 0 ? toApply.prix_vente_suggere_fcfa / tirage : 0;
 
-    const { data: existing } = await (supabase as any)
+    const { data: existing } = await supabase
       .from("stock_interne").select("*").eq("manuscrit_id", mid).maybeSingle();
 
     let error: any;
     if (existing) {
-      ({ error } = await (supabase as any).from("stock_interne").update({
+      ({ error } = await supabase.from("stock_interne").update({
         quantite_imprimee: (existing.quantite_imprimee ?? 0) + tirage,
         quantite_disponible: (existing.quantite_disponible ?? 0) + tirage,
         cout_unitaire_impression_fcfa: coutUnitaire,
@@ -278,7 +278,7 @@ function EstimateurPage() {
         date_impression: new Date().toISOString().slice(0, 10),
       }).eq("id", existing.id));
     } else {
-      ({ error } = await (supabase as any).from("stock_interne").insert({
+      ({ error } = await supabase.from("stock_interne").insert({
         entreprise_id: profile.entreprise_id,
         manuscrit_id: mid,
         quantite_imprimee: tirage,
@@ -295,7 +295,7 @@ function EstimateurPage() {
     }
     // Trace du mouvement (impression reçue)
     if (!error) {
-      await (supabase as any).from("mouvements_stock").insert({
+      await supabase.from("mouvements_stock").insert({
         entreprise_id: profile.entreprise_id,
         manuscrit_id: mid,
         type_mouvement: "ajustement",

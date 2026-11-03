@@ -1,6 +1,7 @@
 import { useMemo } from "react";
 import { Info, AlertTriangle } from "lucide-react";
-import { fmtFCFA, type DepenseRow, type VenteRow } from "@/lib/finance-types";
+import { type DepenseRow, type VenteRow } from "@/lib/finance-types";
+import { fcfa } from "@/lib/format";
 import { cn } from "@/lib/utils";
 import { pl } from "@/lib/plural";
 import { Eyebrow, Montant, Panel, Vide, fmtMontant } from "@/components/finances/finance-ui";
@@ -188,7 +189,7 @@ export function RentabiliteTab({
                 {suspect && (
                   <p className="mt-3 flex items-center gap-1.5 rounded-md bg-red-500/10 px-2.5 py-1.5 text-xs text-red-500">
                     <AlertTriangle className="h-3.5 w-3.5 shrink-0" />
-                    À vérifier : {r.imprimes.toLocaleString("fr-FR")} ex. imprimés pour {fmtFCFA(r.coutProd)}
+                    À vérifier : {r.imprimes.toLocaleString("fr-FR")} ex. imprimés pour {fcfa(r.coutProd)}
                   </p>
                 )}
               </Panel>

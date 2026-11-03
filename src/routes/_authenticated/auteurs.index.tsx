@@ -52,7 +52,7 @@ function AuteursPage() {
     setItems(null);
     // fetchAllRows : contourne la limite silencieuse de 1000 lignes de l'API.
     const list = await fetchAllRows<Auteur>(() =>
-      (supabase as any).from("auteurs").select("*").order("created_at", { ascending: false }),
+      supabase.from("auteurs").select("*").order("created_at", { ascending: false }),
     ).catch((e: any) => { toast.error(e?.message ?? "Erreur de chargement"); return [] as Auteur[]; });
     setItems(list);
 
@@ -82,7 +82,7 @@ function AuteursPage() {
   const confirmDelete = async () => {
     if (!toDelete) return;
     setDeleting(true);
-    const { error } = await (supabase as any).from("auteurs").delete().eq("id", toDelete.id);
+    const { error } = await supabase.from("auteurs").delete().eq("id", toDelete.id);
     setDeleting(false);
     if (error) return toast.error(error.message);
     toast.success("Auteur supprimé");
@@ -252,8 +252,8 @@ function AuteurForm({
       numero_mobile_money: form.numero_mobile_money || null,
     };
     const { error } = existing
-      ? await (supabase as any).from("auteurs").update(payload).eq("id", existing.id)
-      : await (supabase as any).from("auteurs").insert({ ...payload, entreprise_id: entrepriseId });
+      ? await supabase.from("auteurs").update(payload).eq("id", existing.id)
+      : await supabase.from("auteurs").insert({ ...payload, entreprise_id: entrepriseId });
     setLoading(false);
     if (error) return toast.error(error.message);
     toast.success(existing ? "Auteur mis à jour" : "Auteur ajouté avec succès");

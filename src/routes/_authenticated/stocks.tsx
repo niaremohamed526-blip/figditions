@@ -1,6 +1,7 @@
 import { CHART_TOOLTIP_STYLE } from "@/lib/chart-style";
 import { LibrairieInput } from "@/components/librairie-input";
 import { pl } from "@/lib/plural";
+import { derniersReglagesLibrairie, nomLibrairieExact } from "@/lib/librairie";
 import { createFileRoute } from "@tanstack/react-router";
 import { CommissionFields } from "@/components/commission-fields";
 import { useEffect, useMemo, useState } from "react";
@@ -729,14 +730,7 @@ function StockForm({
     const nom = form.librairie_nom.trim();
     if (!nom || !entrepriseId) return;
     const handler = setTimeout(async () => {
-      const { data } = await (supabase as any)
-        .from("stocks")
-        .select("taux_commission_pct, applique_droits_auteur, librairie_adresse")
-        .eq("entreprise_id", entrepriseId)
-        .ilike("librairie_nom", nom)
-        .order("created_at", { ascending: false })
-        .limit(1);
-      const prev = data?.[0];
+      const prev = await derniersReglagesLibrairie(entrepriseId, nom);
       if (prev) {
         setForm((f) => ({
           ...f,
@@ -762,7 +756,7 @@ function StockForm({
         .select("exemplaires_restants, exemplaires_deposes")
         .eq("entreprise_id", entrepriseId)
         .eq("manuscrit_id", form.manuscrit_id)
-        .ilike("librairie_nom", nom)
+        .ilike("librairie_nom", nomLibrairieExact(nom))
         .order("created_at", { ascending: true })
         .limit(1);
       setDejaEnPlace(data?.[0] ?? null);

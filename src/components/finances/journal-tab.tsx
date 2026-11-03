@@ -6,7 +6,8 @@ import { Badge } from "@/components/ui/badge";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { History, ShoppingCart, Wallet, ReceiptText, Loader2, User } from "lucide-react";
 import { useMemo, useState } from "react";
-import { fmtFCFA, methodeLabel, type AuditRow } from "@/lib/finance-types";
+import { methodeLabel, type AuditRow } from "@/lib/finance-types";
+import { fcfa } from "@/lib/format";
 import { cn } from "@/lib/utils";
 import { humanizeSystemValue } from "@/lib/format";
 
@@ -32,31 +33,31 @@ function summarize(e: AuditRow): string {
 
   if (e.entite === "ventes") {
     if (e.action === "insert")
-      return `Vente de ${num(a.quantite_vendue)} ex. : ${fmtFCFA(num(a.montant_total_fcfa))} (droits : ${fmtFCFA(num(a.droits_auteur_fcfa))})`;
+      return `Vente de ${num(a.quantite_vendue)} ex. : ${fcfa(num(a.montant_total_fcfa))} (droits : ${fcfa(num(a.droits_auteur_fcfa))})`;
     if (e.action === "delete")
-      return `Vente supprimée : ${num(b.quantite_vendue)} ex. : ${fmtFCFA(num(b.montant_total_fcfa))}`;
+      return `Vente supprimée : ${num(b.quantite_vendue)} ex. : ${fcfa(num(b.montant_total_fcfa))}`;
     const changes: string[] = [];
     if (a.statut_paiement !== b.statut_paiement)
       changes.push(`droits : ${b.statut_paiement === "paye" ? "payés" : "en attente"} → ${a.statut_paiement === "paye" ? "payés" : String(a.statut_paiement)}`);
     if (a.statut_encaissement !== b.statut_encaissement)
       changes.push(`encaissement : ${humanizeSystemValue(String(b.statut_encaissement ?? ""))} → ${humanizeSystemValue(String(a.statut_encaissement ?? ""))}`);
     if (num(a.montant_encaisse_fcfa) !== num(b.montant_encaisse_fcfa))
-      changes.push(`encaissé : ${fmtFCFA(num(b.montant_encaisse_fcfa))} → ${fmtFCFA(num(a.montant_encaisse_fcfa))}`);
+      changes.push(`encaissé : ${fcfa(num(b.montant_encaisse_fcfa))} → ${fcfa(num(a.montant_encaisse_fcfa))}`);
     if (num(a.montant_total_fcfa) !== num(b.montant_total_fcfa))
-      changes.push(`montant : ${fmtFCFA(num(b.montant_total_fcfa))} → ${fmtFCFA(num(a.montant_total_fcfa))}`);
+      changes.push(`montant : ${fcfa(num(b.montant_total_fcfa))} → ${fcfa(num(a.montant_total_fcfa))}`);
     return changes.length ? changes.join(" • ") : "Vente modifiée";
   }
 
   if (e.entite === "depenses") {
-    if (e.action === "insert") return `Dépense « ${String(a.libelle ?? "")} » : ${fmtFCFA(num(a.montant_fcfa))}`;
-    if (e.action === "delete") return `Dépense supprimée « ${String(b.libelle ?? "")} » : ${fmtFCFA(num(b.montant_fcfa))}`;
+    if (e.action === "insert") return `Dépense « ${String(a.libelle ?? "")} » : ${fcfa(num(a.montant_fcfa))}`;
+    if (e.action === "delete") return `Dépense supprimée « ${String(b.libelle ?? "")} » : ${fcfa(num(b.montant_fcfa))}`;
     if (num(a.montant_fcfa) !== num(b.montant_fcfa))
-      return `Dépense « ${String(a.libelle ?? "")} » : ${fmtFCFA(num(b.montant_fcfa))} → ${fmtFCFA(num(a.montant_fcfa))}`;
+      return `Dépense « ${String(a.libelle ?? "")} » : ${fcfa(num(b.montant_fcfa))} → ${fcfa(num(a.montant_fcfa))}`;
     return `Dépense « ${String(a.libelle ?? "")} » modifiée`;
   }
 
   if (e.entite === "paiements_royalties") {
-    return `Quittance ${String(a.numero ?? "")} : ${String(a.auteur_nom ?? "")} : ${fmtFCFA(num(a.montant_fcfa))} (${methodeLabel(String(a.methode ?? ""))})`;
+    return `Quittance ${String(a.numero ?? "")} : ${String(a.auteur_nom ?? "")} : ${fcfa(num(a.montant_fcfa))} (${methodeLabel(String(a.methode ?? ""))})`;
   }
 
   return `${humanizeSystemValue(e.entite)} ${humanizeSystemValue(e.action).toLocaleLowerCase("fr-FR")}`;
@@ -70,7 +71,7 @@ export function JournalTab() {
     queryKey: ["finance-audit-log"],
     queryFn: () =>
       fetchAllRows<AuditRow>(() =>
-        (supabase as any).from("finance_audit_log").select("*").order("created_at", { ascending: false }),
+        supabase.from("finance_audit_log").select("*").order("created_at", { ascending: false }),
       ),
   });
 

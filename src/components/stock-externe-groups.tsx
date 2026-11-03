@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { pl } from "@/lib/plural";
+import { nomLibrairieExact } from "@/lib/librairie";
 import { Store, ChevronDown, Plus, BookOpen, Pencil, Trash2, Wallet, Package, XCircle, CalendarDays } from "lucide-react";
 import { format } from "date-fns";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -40,7 +41,7 @@ function BatchHistoryBadge({
       .from("depot_batches")
       .select("id, manuscrit_id, librairie_nom, quantite_deposee, date_depot, provenance, notes, statut_annulation, raison_annulation")
       .eq("manuscrit_id", manuscritId)
-      .ilike("librairie_nom", librairieNom)
+      .ilike("librairie_nom", nomLibrairieExact(librairieNom))
       .order("date_depot", { ascending: false });
     setBatches((data as DepotBatch[]) ?? []);
   };

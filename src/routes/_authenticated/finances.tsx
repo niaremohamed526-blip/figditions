@@ -1,4 +1,5 @@
 import { CHART_TOOLTIP_STYLE } from "@/lib/chart-style";
+import { fmtMontant } from "@/components/finances/finance-ui";
 import { createFileRoute } from "@tanstack/react-router";
 import { useEffect, useMemo, useState } from "react";
 import {
@@ -114,11 +115,11 @@ function FinancesInner({
       // fetchAllRows : contourne la limite silencieuse de 1000 lignes de l'API.
       const [v, dp, pr, ms, as, si] = await Promise.all([
         fetchAllRows<VenteRow>(() => supabase.from("ventes").select("*").order("date_vente", { ascending: false })),
-        fetchAllRows<DepenseRow>(() => (supabase as any).from("depenses").select("*").order("date_depense", { ascending: false })),
-        fetchAllRows<PaiementRoyaltiesRow>(() => (supabase as any).from("paiements_royalties").select("*").order("paye_le", { ascending: false })),
-        fetchAllRows<Manuscrit>(() => (supabase as any).from("manuscrits").select("id, titre, auteur, auteur_id, origine")),
-        fetchAllRows<Auteur>(() => (supabase as any).from("auteurs").select("id, nom_complet, numero_mobile_money, operateur")),
-        fetchAllRows<StockInterneLite>(() => (supabase as any).from("stock_interne").select("id, manuscrit_id, quantite_imprimee, cout_unitaire_impression_fcfa")),
+        fetchAllRows<DepenseRow>(() => supabase.from("depenses").select("*").order("date_depense", { ascending: false })),
+        fetchAllRows<PaiementRoyaltiesRow>(() => supabase.from("paiements_royalties").select("*").order("paye_le", { ascending: false })),
+        fetchAllRows<Manuscrit>(() => supabase.from("manuscrits").select("id, titre, auteur, auteur_id, origine")),
+        fetchAllRows<Auteur>(() => supabase.from("auteurs").select("id, nom_complet, numero_mobile_money, operateur")),
+        fetchAllRows<StockInterneLite>(() => supabase.from("stock_interne").select("id, manuscrit_id, quantite_imprimee, cout_unitaire_impression_fcfa")),
       ]);
       setVentes(v);
       setDepenses(dp);
@@ -301,7 +302,7 @@ function FinancesInner({
                   "font-wordmark-serif mt-2 text-5xl leading-none tabular-nums sm:text-6xl",
                   resultat.benefice >= 0 ? "text-foreground" : "text-red-500",
                 )}>
-                  {fmtCourt(resultat.benefice)}<span className="ml-2 font-sans text-base text-muted-foreground">FCFA</span>
+                  {fmtMontant(resultat.benefice)}<span className="ml-2 font-sans text-base text-muted-foreground">FCFA</span>
                 </p>
               )}
               <div className="mt-5 grid grid-cols-2 gap-x-6 gap-y-2 text-sm sm:grid-cols-3">
@@ -328,7 +329,7 @@ function FinancesInner({
                 <p className="text-[12px] uppercase tracking-[0.2em] text-muted-foreground">On vous doit</p>
                 {loading ? <Skeleton className="mt-3 h-9 w-40" /> : (
                   <p className="font-wordmark-serif mt-1.5 text-4xl leading-none tabular-nums">
-                    {fmtCourt(totals.aEncaisser)}<span className="ml-1.5 font-sans text-sm text-muted-foreground">FCFA</span>
+                    {fmtMontant(totals.aEncaisser)}<span className="ml-1.5 font-sans text-sm text-muted-foreground">FCFA</span>
                   </p>
                 )}
                 <div className="mt-4 h-1.5 overflow-hidden rounded-full bg-muted" aria-hidden>
@@ -348,7 +349,7 @@ function FinancesInner({
                 </div>
                 {loading ? <Skeleton className="mt-3 h-9 w-40" /> : (
                   <p className="font-wordmark-serif mt-1.5 text-4xl leading-none tabular-nums">
-                    {fmtCourt(totals.pending)}<span className="ml-1.5 font-sans text-sm text-muted-foreground">FCFA</span>
+                    {fmtMontant(totals.pending)}<span className="ml-1.5 font-sans text-sm text-muted-foreground">FCFA</span>
                   </p>
                 )}
                 <p className="mt-3 text-xs text-muted-foreground">
@@ -529,13 +530,12 @@ function FinancesInner({
 }
 
 /** Montant sans l'unité (affichée à part, plus petite). */
-const fmtCourt = (n: number) => Math.round(n).toLocaleString("fr-FR");
 
 function Ligne({ label, value }: { label: string; value: number }) {
   return (
     <div className="flex items-baseline justify-between gap-2 border-b border-border/60 pb-1.5">
       <span className="text-muted-foreground">{label}</span>
-      <span className="tabular-nums">{value < 0 ? "−" : ""}{fmtCourt(Math.abs(value))}</span>
+      <span className="tabular-nums">{value < 0 ? "−" : ""}{fmtMontant(Math.abs(value))}</span>
     </div>
   );
 }

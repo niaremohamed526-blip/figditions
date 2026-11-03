@@ -17,7 +17,7 @@ export function useLibrairiesConnues(): LibrairieConnue[] {
   useEffect(() => {
     let alive = true;
     fetchAllRows<{ librairie_nom: string | null; librairie_adresse: string | null }>(() =>
-      (supabase as any).from("stocks").select("librairie_nom, librairie_adresse"),
+      supabase.from("stocks").select("librairie_nom, librairie_adresse"),
     )
       .then((rows) => {
         const map = new Map<string, LibrairieConnue>();

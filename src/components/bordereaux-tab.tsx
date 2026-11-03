@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
 import { pl } from "@/lib/plural";
+import { nomLibrairieExact } from "@/lib/librairie";
 import { format } from "date-fns";
 import { fr } from "date-fns/locale";
 import { FileText, Loader2, Download, Trash2, Sparkles, ImagePlus, X } from "lucide-react";
@@ -346,7 +347,7 @@ function GenerateDialog({
         const { data: batchRows } = await supabase
           .from("depot_batches")
           .select("manuscrit_id, quantite_deposee, date_depot, provenance")
-          .ilike("librairie_nom", selected.nom)
+          .ilike("librairie_nom", nomLibrairieExact(selected.nom))
           .order("date_depot", { ascending: false });
         const batches = (batchRows ?? []) as {
           manuscrit_id: string;

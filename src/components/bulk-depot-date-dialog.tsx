@@ -11,6 +11,7 @@ import {
   Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle,
 } from "@/components/ui/dialog";
 import { pl } from "@/lib/plural";
+import { nomLibrairieExact } from "@/lib/librairie";
 import type { ExterneStockRow } from "@/components/librairies-tab";
 
 /**
@@ -54,7 +55,7 @@ export function BulkDepotDateDialog({
       const { data: batches, error: bErr } = await supabase
         .from("depot_batches")
         .select("id, manuscrit_id, date_depot, created_at, statut_annulation")
-        .ilike("librairie_nom", librairieNom)
+        .ilike("librairie_nom", nomLibrairieExact(librairieNom))
         .in("manuscrit_id", selected.map((r) => r.manuscrit_id))
         .order("date_depot", { ascending: false })
         .order("created_at", { ascending: false });

@@ -23,7 +23,8 @@ import { Eyebrow, Montant, Panel, PanelHeader, Pastille, Vide, GOLD_BUTTON, fmtM
 import { generateFactureVentePdf } from "@/lib/pdf-facture-vente";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
-import { fmtFCFA, type VenteRow } from "@/lib/finance-types";
+import { type VenteRow } from "@/lib/finance-types";
+import { fcfa } from "@/lib/format";
 
 const PAGE = 30;
 const dateCourte = (d: string) => format(new Date(d), "d MMM yyyy", { locale: fr });
@@ -293,7 +294,7 @@ export function VentesTab({
     const montant = Number(encMontant);
     if (!montant || montant <= 0) { toast.error("Montant invalide"); return; }
     if (montant > resteDe(encVente)) {
-      toast.error(`Le montant dépasse le reste à encaisser (${fmtFCFA(resteDe(encVente))})`);
+      toast.error(`Le montant dépasse le reste à encaisser (${fcfa(resteDe(encVente))})`);
       return;
     }
     setEncBusy(true);
@@ -310,7 +311,7 @@ export function VentesTab({
       toast.success(
         data.statut === "encaisse"
           ? "Vente totalement encaissée"
-          : `Encaissement partiel enregistré : reste ${fmtFCFA(data.reste)}`,
+          : `Encaissement partiel enregistré : reste ${fcfa(data.reste)}`,
       );
       setEncVente(null);
       onChanged();
@@ -370,7 +371,7 @@ export function VentesTab({
         if (error || data?.ok === false) {
           const msg = error?.message ?? data?.error ?? "Erreur";
           toast.error(ok > 0
-            ? `${fmtFCFA(montant)} enregistrés, puis arrêt : ${msg}. Vérifiez avant de réessayer.`
+            ? `${fcfa(montant)} enregistrés, puis arrêt : ${msg}. Vérifiez avant de réessayer.`
             : msg);
           break;
         }
@@ -378,7 +379,7 @@ export function VentesTab({
         montant += reste;
       }
       if (ok === cibles.length) {
-        toast.success(`${pl(ok, "vente encaissée", "ventes encaissées")} : ${fmtFCFA(montant)}`);
+        toast.success(`${pl(ok, "vente encaissée", "ventes encaissées")} : ${fcfa(montant)}`);
         setEncGroupe(null);
       }
       if (ok > 0) onChanged();
@@ -763,7 +764,7 @@ export function VentesTab({
               {encVente && (
                 <>
                   {manuscritMap.get(encVente.manuscrit_id)?.titre ?? "Vente"} : reste à encaisser :{" "}
-                  <strong className="text-[color:var(--gold)]">{fmtFCFA(encVente ? resteDe(encVente) : 0)}</strong>
+                  <strong className="text-[color:var(--gold)]">{fcfa(encVente ? resteDe(encVente) : 0)}</strong>
                   {encVente.librairie_nom && <> · {encVente.librairie_nom}</>}
                 </>
               )}
@@ -819,10 +820,10 @@ export function VentesTab({
           {encGroupe && (
             <div className="space-y-3">
               <div className="rounded-lg border border-[rgba(200,146,42,0.25)] bg-[rgba(200,146,42,0.08)] p-3 text-sm space-y-1">
-                <p>Montant total : <strong className="text-[color:var(--gold)]">{fmtFCFA(encGroupe.total_montant)}</strong></p>
-                <p>Reste à encaisser : <strong className="text-[color:var(--gold)]">{fmtFCFA(encGroupe.total_reste)}</strong></p>
-                <p>Commission librairie : {fmtFCFA(encGroupe.total_commission)}</p>
-                {!hideDroits && <p>Droits d'auteur : {fmtFCFA(encGroupe.total_droits)}</p>}
+                <p>Montant total : <strong className="text-[color:var(--gold)]">{fcfa(encGroupe.total_montant)}</strong></p>
+                <p>Reste à encaisser : <strong className="text-[color:var(--gold)]">{fcfa(encGroupe.total_reste)}</strong></p>
+                <p>Commission librairie : {fcfa(encGroupe.total_commission)}</p>
+                {!hideDroits && <p>Droits d'auteur : {fcfa(encGroupe.total_droits)}</p>}
               </div>
               <div className="space-y-1.5">
                 <Label>Date d'encaissement</Label>
@@ -895,7 +896,7 @@ export function VentesTab({
               {cancelVente && (
                 <>
                   <p>
-                    <strong>{manuscritMap.get(cancelVente.manuscrit_id)?.titre ?? "Vente"}</strong> : {fmtFCFA(cancelVente.montant_total_fcfa)} : {pl(cancelVente.quantite_vendue, "exemplaire", "exemplaires")}
+                    <strong>{manuscritMap.get(cancelVente.manuscrit_id)?.titre ?? "Vente"}</strong> : {fcfa(cancelVente.montant_total_fcfa)} : {pl(cancelVente.quantite_vendue, "exemplaire", "exemplaires")}
                   </p>
 
                   <div className="rounded-lg border border-amber-500/30 bg-amber-500/10 p-3 text-sm">
@@ -903,7 +904,7 @@ export function VentesTab({
                     <div className="grid grid-cols-2 gap-3 text-xs">
                       <div>
                         <p className="text-muted-foreground">Avant annulation</p>
-                        <p>Vente : <span className="text-red-300">{fmtFCFA(cancelVente.montant_total_fcfa)}</span></p>
+                        <p>Vente : <span className="text-red-300">{fcfa(cancelVente.montant_total_fcfa)}</span></p>
                         <p>Stock vendu : <span className="text-red-300">{cancelVente.quantite_vendue} ex.</span></p>
                       </div>
                       <div>
@@ -958,7 +959,7 @@ export function VentesTab({
                 <>
                   <p>
                     <strong>{cancelGroupe.librairie_nom}</strong> : {dateCourte(cancelGroupe.date_vente)} ·{" "}
-                    {pl(cancelGroupe.nb_actives, "vente", "ventes")} · {pl(cancelGroupe.total_qte, "exemplaire", "exemplaires")} · {fmtFCFA(cancelGroupe.total_montant)}
+                    {pl(cancelGroupe.nb_actives, "vente", "ventes")} · {pl(cancelGroupe.total_qte, "exemplaire", "exemplaires")} · {fcfa(cancelGroupe.total_montant)}
                   </p>
                   <p className="text-xs text-muted-foreground">
                     Chaque ligne est annulée séparément : les exemplaires sont remis en stock titre par titre. Les ventes dont les droits d'auteur sont déjà payés seront ignorées.

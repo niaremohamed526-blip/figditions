@@ -114,6 +114,3 @@ export const ENCAISSEMENT_META: Record<string, { label: string; className: strin
   en_attente: { label: "À encaisser", className: "bg-red-500/10 text-red-400 border-red-500/30" },
 };
 
-export function fmtFCFA(n: number | null | undefined): string {
-  return `${Math.round(Number(n || 0)).toLocaleString("fr-FR")} FCFA`;
-}

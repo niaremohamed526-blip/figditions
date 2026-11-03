@@ -13,7 +13,8 @@ import { Users, Download, Loader2, ReceiptText, CheckCircle2 } from "lucide-reac
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
 import { Eyebrow, Montant, Panel, PanelHeader, Pastille, Vide, GOLD_BUTTON, fmtMontant } from "@/components/finances/finance-ui";
-import { fmtFCFA, methodeLabel, PAIEMENT_METHODES, type PaiementRoyaltiesRow, type VenteRow } from "@/lib/finance-types";
+import { methodeLabel, PAIEMENT_METHODES, type PaiementRoyaltiesRow, type VenteRow } from "@/lib/finance-types";
+import { fcfa } from "@/lib/format";
 import { generateQuittancePdf, quittanceFilename, type QuittanceLigne } from "@/lib/pdf-quittance";
 import { generateReleveAuteurPdf } from "@/lib/pdf-releve-auteur";
 
@@ -164,7 +165,7 @@ export function RoyaltiesTab({
       if (error) throw error;
       if (data?.ok === false) throw new Error(data.error ?? "Erreur");
 
-      toast.success(`Quittance ${data.numero} générée : ${fmtFCFA(data.montant)} payés à ${data.auteur_nom}`);
+      toast.success(`Quittance ${data.numero} générée : ${fcfa(data.montant)} payés à ${data.auteur_nom}`);
 
       // Télécharge immédiatement le reçu PDF
       downloadQuittance({
@@ -353,13 +354,13 @@ export function RoyaltiesTab({
                         {manuscritMap.get(v.manuscrit_id)?.titre ?? "Livre"}
                         <span className="text-muted-foreground"> · {new Date(v.date_vente).toLocaleDateString("fr-FR")}</span>
                       </span>
-                      <span className="tabular-nums">{fmtFCFA(v.droits_auteur_fcfa)}</span>
+                      <span className="tabular-nums">{fcfa(v.droits_auteur_fcfa)}</span>
                     </label>
                   ))}
                 </div>
                 <div className="flex justify-between border-t border-border px-3 py-2 text-sm font-medium">
                   <span>{pl(choisies.length, "vente", "ventes")}</span>
-                  <span className="tabular-nums text-[color:var(--gold)]">{fmtFCFA(montantChoisi)}</span>
+                  <span className="tabular-nums text-[color:var(--gold)]">{fcfa(montantChoisi)}</span>
                 </div>
               </div>
             )}
@@ -395,7 +396,7 @@ export function RoyaltiesTab({
               className={GOLD_BUTTON}
             >
               {busy ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : <ReceiptText className="h-4 w-4 mr-2" />}
-              Payer {fmtFCFA(montantChoisi)}
+              Payer {fcfa(montantChoisi)}
             </Button>
           </DialogFooter>
         </DialogContent>

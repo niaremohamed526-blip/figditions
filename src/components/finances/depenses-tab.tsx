@@ -30,7 +30,8 @@ function Chip({ active, onClick, children }: { active: boolean; onClick: () => v
     </button>
   );
 }
-import { DEPENSE_CATEGORIES, categorieLabel, fmtFCFA, type DepenseRow } from "@/lib/finance-types";
+import { DEPENSE_CATEGORIES, categorieLabel, type DepenseRow } from "@/lib/finance-types";
+import { fcfa } from "@/lib/format";
 
 interface ManuscritLite { id: string; titre: string; }
 
@@ -175,11 +176,11 @@ export function DepensesTab({
         notes: form.notes.trim() || null,
       };
       if (editing) {
-        const { error } = await (supabase as any).from("depenses").update(payload).eq("id", editing.id);
+        const { error } = await supabase.from("depenses").update(payload).eq("id", editing.id);
         if (error) throw error;
         toast.success("Dépense modifiée");
       } else {
-        const { error } = await (supabase as any)
+        const { error } = await supabase
           .from("depenses")
           .insert({ ...payload, entreprise_id: entrepriseId, created_by: userId });
         if (error) throw error;
@@ -198,7 +199,7 @@ export function DepensesTab({
     if (!toDelete) return;
     setBusy(true);
     try {
-      const { error } = await (supabase as any).from("depenses").delete().eq("id", toDelete.id);
+      const { error } = await supabase.from("depenses").delete().eq("id", toDelete.id);
       if (error) throw error;
       toast.success("Dépense supprimée");
       setToDelete(null);
@@ -358,7 +359,7 @@ export function DepensesTab({
           <AlertDialogHeader>
             <AlertDialogTitle>Supprimer cette dépense ?</AlertDialogTitle>
             <AlertDialogDescription>
-              « {toDelete?.libelle} » : {fmtFCFA(toDelete?.montant_fcfa ?? 0)}. La suppression sera consignée dans le journal d'audit.
+              « {toDelete?.libelle} » : {fcfa(toDelete?.montant_fcfa ?? 0)}. La suppression sera consignée dans le journal d'audit.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>

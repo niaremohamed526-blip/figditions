@@ -78,11 +78,11 @@ export function ExportFinancesDialog({
       // Fetch data (RLS scopes to entreprise) : fetchAllRows évite la limite de 1000 lignes.
       const [v, m, a, st, si, dp] = await Promise.all([
         fetchAllRows<Vente>(() => supabase.from("ventes").select("*").eq("statut_annulation", "active").gte("date_vente", from).lte("date_vente", to).order("date_vente", { ascending: true })),
-        fetchAllRows<Manuscrit>(() => (supabase as any).from("manuscrits").select("id, titre, auteur, auteur_id, genre, origine")),
+        fetchAllRows<Manuscrit>(() => supabase.from("manuscrits").select("id, titre, auteur, auteur_id, genre, origine")),
         fetchAllRows<any>(() => supabase.from("auteurs").select("id, nom_complet, email, telephone, operateur, numero_mobile_money")),
         fetchAllRows<any>(() => supabase.from("stocks").select("id, manuscrit_id, librairie_nom, librairie_adresse, exemplaires_deposes, exemplaires_vendus, exemplaires_restants, derniere_visite, prix_unitaire_fcfa")),
         fetchAllRows<any>(() => supabase.from("stock_interne").select("id, manuscrit_id, quantite_imprimee, quantite_disponible, quantite_reservee, quantite_vendue_directement, prix_vente_direct_fcfa, seuil_alerte, cout_unitaire_impression_fcfa")),
-        fetchAllRows<Depense>(() => (supabase as any).from("depenses").select("categorie, libelle, montant_fcfa, date_depense, manuscrit_id").gte("date_depense", from).lte("date_depense", to).order("date_depense", { ascending: true })),
+        fetchAllRows<Depense>(() => supabase.from("depenses").select("categorie, libelle, montant_fcfa, date_depense, manuscrit_id").gte("date_depense", from).lte("date_depense", to).order("date_depense", { ascending: true })),
       ]);
 
       // Comparison window (same length just before "from")

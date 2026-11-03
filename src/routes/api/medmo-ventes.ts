@@ -101,8 +101,10 @@ export const Route = createFileRoute("/api/medmo-ventes")({
               .eq("entreprise_id", eid)
               .eq("manuscrit_id", m.id)
               .ilike("librairie_nom", `%${librairie}%`)
-              .limit(3);
-            const depots = rows ?? [];
+              .limit(10);
+            // "Tonino" also matches "Tonino Koutiala" (another branch): an exact name wins.
+            const exact = (rows ?? []).filter((d) => (d.librairie_nom ?? "").trim().toLowerCase() === librairie.toLowerCase());
+            const depots = exact.length > 0 ? exact : rows ?? [];
             if (depots.length === 0) {
               resultats.push({ index, ok: false, message: `« ${m.titre} » : aucun dépôt trouvé chez « ${librairie} ». Créez d'abord le dépôt (Pr. MEDMO peut le faire).` });
               continue;

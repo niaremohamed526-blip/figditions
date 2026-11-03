@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { LibrairieInput } from "@/components/librairie-input";
 import { pl } from "@/lib/plural";
+import { derniersReglagesLibrairie } from "@/lib/librairie";
 import { format } from "date-fns";
 import { Loader2, Zap, Trash2, Plus, CheckCircle2, X, Store, Keyboard, AlertTriangle, Save, Warehouse } from "lucide-react";
 import { toast } from "sonner";
@@ -160,18 +161,12 @@ export function StockPosDialog({
     const nom = librairieNom.trim();
     if (!nom) return;
     const handler = setTimeout(async () => {
-      const { data } = await (supabase as any)
-        .from("stocks")
-        .select("taux_commission_pct, applique_droits_auteur, librairie_adresse")
-        .eq("entreprise_id", entrepriseId)
-        .ilike("librairie_nom", nom)
-        .order("created_at", { ascending: false })
-        .limit(1);
-      const prev = data?.[0];
+      const prev = await derniersReglagesLibrairie(entrepriseId, nom);
       if (!prev) return;
       if (prev.taux_commission_pct != null) setTauxCommission(Number(prev.taux_commission_pct));
       if (prev.applique_droits_auteur != null) setAppliqueDroits(!!prev.applique_droits_auteur);
-      if (prev.librairie_adresse) setLibrairieAdresse((a) => a || prev.librairie_adresse);
+      const adresse = prev.librairie_adresse;
+      if (adresse) setLibrairieAdresse((a) => a || adresse);
     }, 350);
     return () => clearTimeout(handler);
   }, [open, librairieNom, entrepriseId, tauxTouched]);
