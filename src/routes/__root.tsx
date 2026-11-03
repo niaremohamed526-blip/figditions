@@ -100,9 +100,9 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
       { rel: "icon", type: "image/png", sizes: "512x512", href: `/pwa-512.png?v=${FIGDITIONS_APP_ICON_VERSION}` },
       { rel: "apple-touch-icon", sizes: "180x180", href: `/apple-touch-icon.png?v=${FIGDITIONS_APP_ICON_VERSION}` },
       { rel: "shortcut icon", href: `/favicon.ico?v=${FIGDITIONS_APP_ICON_VERSION}` },
-      { rel: "preconnect", href: "https://fonts.googleapis.com" },
-      { rel: "preconnect", href: "https://fonts.gstatic.com", crossOrigin: "anonymous" },
-      { rel: "stylesheet", href: "https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&family=Plus+Jakarta+Sans:wght@600;700&family=JetBrains+Mono:wght@500&family=Instrument+Serif:ital@0;1&display=swap" },
+      // Fonts are self-hosted (src/fonts.css); the two used on every first screen load early.
+      { rel: "preload", href: "/fonts/inter-normal-latin-6ab57b19.woff2", as: "font", type: "font/woff2", crossOrigin: "anonymous" },
+      { rel: "preload", href: "/fonts/instrument-serif-normal-latin-d65c2644.woff2", as: "font", type: "font/woff2", crossOrigin: "anonymous" },
       { rel: "dns-prefetch", href: "https://diklslghxbwbyqyzvygn.supabase.co" },
     ],
     scripts: [

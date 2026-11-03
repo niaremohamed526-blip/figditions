@@ -10,6 +10,8 @@ export interface FlutterwaveCredentials {
 }
 
 const FLW_BASE = "https://api.flutterwave.com/v3";
+// A stuck Flutterwave call fails after this instead of hanging the checkout.
+const FLW_TIMEOUT_MS = 20_000;
 
 export function getFlutterwaveCredentials(): FlutterwaveCredentials {
   const secretKey = process.env.FLUTTERWAVE_SECRET_KEY;
@@ -90,6 +92,7 @@ export async function createFlutterwavePayment(args: CreateInvoiceArgs): Promise
     method: "POST",
     headers: flwHeaders(creds),
     body: JSON.stringify(payload),
+    signal: AbortSignal.timeout(FLW_TIMEOUT_MS),
   });
   const data = (await res.json()) as {
     status?: string;
@@ -121,7 +124,7 @@ export async function verifyFlutterwaveByReference(txRef: string): Promise<Verif
   const creds = getFlutterwaveCredentials();
   const res = await fetch(
     `${FLW_BASE}/transactions/verify_by_reference?tx_ref=${encodeURIComponent(txRef)}`,
-    { method: "GET", headers: flwHeaders(creds) },
+    { method: "GET", headers: flwHeaders(creds), signal: AbortSignal.timeout(FLW_TIMEOUT_MS) },
   );
   const body = (await res.json()) as {
     status?: string;

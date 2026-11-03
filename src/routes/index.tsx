@@ -268,6 +268,7 @@ function Hero() {
       <img
         src={heroAsset.url}
         alt="FIGDITIONS, la plateforme des maisons d'édition"
+        fetchPriority="high"
         className="absolute inset-y-0 right-0 h-full w-full md:w-[70%] object-cover object-center pointer-events-none select-none"
         style={{
           WebkitMaskImage:
@@ -530,7 +531,7 @@ function Partners() {
         />
         <div className="grid md:grid-cols-12 gap-8 items-start">
           <a href="https://figuiraeditions.org" target="_blank" rel="noopener noreferrer" className="md:col-span-3 inline-block">
-            <img src={figuiraLogo} alt="Figuira Éditions" style={{ height: "88px", width: "auto" }} />
+            <img src={figuiraLogo} alt="Figuira Éditions" loading="lazy" decoding="async" style={{ height: "88px", width: "auto" }} />
           </a>
           <div className="md:col-span-9 max-w-2xl">
             <h3 className="font-wordmark-serif font-normal text-white text-3xl md:text-4xl">Figuira Éditions</h3>
