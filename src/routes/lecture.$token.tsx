@@ -224,10 +224,10 @@ function SecureViewer({ token, data }: { token: string; data: Exemplaire }) {
     }).catch(() => undefined);
   };
 
-  const flashObscure = (reason: string, type: Evenement, ms = 3000) => {
+  const flashObscure = (reason: string, type: Evenement | null, ms = 3000) => {
     setObscureReason(reason);
     setObscured(true);
-    signaler(type);
+    if (type) signaler(type);
     try { navigator.clipboard?.writeText("Contenu protégé FIGDITIONS").catch(() => {}); } catch {}
     window.setTimeout(() => setObscured(false), ms);
   };
@@ -255,9 +255,11 @@ function SecureViewer({ token, data }: { token: string; data: Exemplaire }) {
       if (document.visibilityState === "hidden") flashObscure("Onglet inactif. Contenu masqué", "fenetre_quittee", 60_000);
       else setObscured(false);
     };
+    // A zoomed page or a browser side panel also widens this gap, so it only
+    // hides the page; the publisher is told about real shortcuts only.
     const devtoolsCheck = () => {
       const gap = Math.max(window.outerWidth - window.innerWidth, window.outerHeight - window.innerHeight);
-      if (gap > 200) flashObscure("Outils de développement détectés. Contenu masqué", "outils_dev", 5000);
+      if (gap > 200) flashObscure("Outils de développement détectés. Contenu masqué", null, 5000);
     };
     document.addEventListener("contextmenu", onCtx);
     document.addEventListener("keydown", onKey);
