@@ -43,7 +43,6 @@ import { Route as AuthenticatedManuscritsIndexRouteImport } from './routes/_auth
 import { Route as AuthenticatedManuscritsManuscritIdRouteImport } from './routes/_authenticated/manuscrits.$manuscritId'
 import { Route as AuthenticatedMedmoIndexRouteImport } from './routes/_authenticated/medmo.index'
 import { Route as AuthenticatedMedmoThreadIdRouteImport } from './routes/_authenticated/medmo.$threadId'
-import { Route as ApiPublicFlutterwaveWebhookRouteImport } from './routes/api/public/flutterwave-webhook'
 import { Route as ApiPublicHooksCheckRemindersRouteImport } from './routes/api/public/hooks/check-reminders'
 import { Route as ApiPublicHooksMorningBriefRouteImport } from './routes/api/public/hooks/morning-brief'
 import { Route as ApiPublicHooksSendPushRouteImport } from './routes/api/public/hooks/send-push'
@@ -229,12 +228,6 @@ const AuthenticatedMedmoThreadIdRoute =
     path: '/$threadId',
     getParentRoute: () => AuthenticatedMedmoRoute,
   } as any)
-const ApiPublicFlutterwaveWebhookRoute =
-  ApiPublicFlutterwaveWebhookRouteImport.update({
-    id: '/api/public/flutterwave-webhook',
-    path: '/api/public/flutterwave-webhook',
-    getParentRoute: () => rootRouteImport,
-  } as any)
 const ApiPublicHooksCheckRemindersRoute =
   ApiPublicHooksCheckRemindersRouteImport.update({
     id: '/api/public/hooks/check-reminders',
@@ -283,7 +276,6 @@ export interface FileRoutesByFullPath {
   '/contrats/modeles': typeof AuthenticatedContratsModelesRoute
   '/manuscrits/$manuscritId': typeof AuthenticatedManuscritsManuscritIdRoute
   '/medmo/$threadId': typeof AuthenticatedMedmoThreadIdRoute
-  '/api/public/flutterwave-webhook': typeof ApiPublicFlutterwaveWebhookRoute
   '/auteurs/': typeof AuthenticatedAuteursIndexRoute
   '/contrats/': typeof AuthenticatedContratsIndexRoute
   '/manuscrits/': typeof AuthenticatedManuscritsIndexRoute
@@ -321,7 +313,6 @@ export interface FileRoutesByTo {
   '/contrats/modeles': typeof AuthenticatedContratsModelesRoute
   '/manuscrits/$manuscritId': typeof AuthenticatedManuscritsManuscritIdRoute
   '/medmo/$threadId': typeof AuthenticatedMedmoThreadIdRoute
-  '/api/public/flutterwave-webhook': typeof ApiPublicFlutterwaveWebhookRoute
   '/auteurs': typeof AuthenticatedAuteursIndexRoute
   '/contrats': typeof AuthenticatedContratsIndexRoute
   '/manuscrits': typeof AuthenticatedManuscritsIndexRoute
@@ -362,7 +353,6 @@ export interface FileRoutesById {
   '/_authenticated/contrats/modeles': typeof AuthenticatedContratsModelesRoute
   '/_authenticated/manuscrits/$manuscritId': typeof AuthenticatedManuscritsManuscritIdRoute
   '/_authenticated/medmo/$threadId': typeof AuthenticatedMedmoThreadIdRoute
-  '/api/public/flutterwave-webhook': typeof ApiPublicFlutterwaveWebhookRoute
   '/_authenticated/auteurs/': typeof AuthenticatedAuteursIndexRoute
   '/_authenticated/contrats/': typeof AuthenticatedContratsIndexRoute
   '/_authenticated/manuscrits/': typeof AuthenticatedManuscritsIndexRoute
@@ -403,7 +393,6 @@ export interface FileRouteTypes {
     | '/contrats/modeles'
     | '/manuscrits/$manuscritId'
     | '/medmo/$threadId'
-    | '/api/public/flutterwave-webhook'
     | '/auteurs/'
     | '/contrats/'
     | '/manuscrits/'
@@ -441,7 +430,6 @@ export interface FileRouteTypes {
     | '/contrats/modeles'
     | '/manuscrits/$manuscritId'
     | '/medmo/$threadId'
-    | '/api/public/flutterwave-webhook'
     | '/auteurs'
     | '/contrats'
     | '/manuscrits'
@@ -481,7 +469,6 @@ export interface FileRouteTypes {
     | '/_authenticated/contrats/modeles'
     | '/_authenticated/manuscrits/$manuscritId'
     | '/_authenticated/medmo/$threadId'
-    | '/api/public/flutterwave-webhook'
     | '/_authenticated/auteurs/'
     | '/_authenticated/contrats/'
     | '/_authenticated/manuscrits/'
@@ -508,7 +495,6 @@ export interface RootRouteChildren {
   ApiMedmoVentesRoute: typeof ApiMedmoVentesRoute
   LectureTokenRoute: typeof LectureTokenRoute
   RejoindreTokenRoute: typeof RejoindreTokenRoute
-  ApiPublicFlutterwaveWebhookRoute: typeof ApiPublicFlutterwaveWebhookRoute
   ApiPublicHooksCheckRemindersRoute: typeof ApiPublicHooksCheckRemindersRoute
   ApiPublicHooksMorningBriefRoute: typeof ApiPublicHooksMorningBriefRoute
   ApiPublicHooksSendPushRoute: typeof ApiPublicHooksSendPushRoute
@@ -754,13 +740,6 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedMedmoThreadIdRouteImport
       parentRoute: typeof AuthenticatedMedmoRoute
     }
-    '/api/public/flutterwave-webhook': {
-      id: '/api/public/flutterwave-webhook'
-      path: '/api/public/flutterwave-webhook'
-      fullPath: '/api/public/flutterwave-webhook'
-      preLoaderRoute: typeof ApiPublicFlutterwaveWebhookRouteImport
-      parentRoute: typeof rootRouteImport
-    }
     '/api/public/hooks/check-reminders': {
       id: '/api/public/hooks/check-reminders'
       path: '/api/public/hooks/check-reminders'
@@ -858,7 +837,6 @@ const rootRouteChildren: RootRouteChildren = {
   ApiMedmoVentesRoute: ApiMedmoVentesRoute,
   LectureTokenRoute: LectureTokenRoute,
   RejoindreTokenRoute: RejoindreTokenRoute,
-  ApiPublicFlutterwaveWebhookRoute: ApiPublicFlutterwaveWebhookRoute,
   ApiPublicHooksCheckRemindersRoute: ApiPublicHooksCheckRemindersRoute,
   ApiPublicHooksMorningBriefRoute: ApiPublicHooksMorningBriefRoute,
   ApiPublicHooksSendPushRoute: ApiPublicHooksSendPushRoute,
