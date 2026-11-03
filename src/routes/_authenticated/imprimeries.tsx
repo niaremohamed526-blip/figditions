@@ -39,7 +39,8 @@ interface Imprimerie {
 function ImprimeriesPage() {
   const { user } = useAuth();
   const { profile } = useProfile(user?.id);
-  const isAdmin = profile?.role === "admin";
+  // The directory is shared by every publisher, so only the platform owner edits it.
+  const isAdmin = (profile as { is_superadmin?: boolean } | null)?.is_superadmin === true;
 
   const [items, setItems] = useState<Imprimerie[] | null>(null);
   const [search, setSearch] = useState("");
