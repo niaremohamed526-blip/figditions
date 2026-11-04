@@ -440,6 +440,20 @@ function StocksPage() {
                 <Zap className="h-3.5 w-3.5 text-primary" /> Rapide
               </button>
             </div>
+            <div className="relative">
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+              <Input
+                placeholder="Rechercher une librairie ou un titre…"
+                value={q}
+                onChange={(e) => setQ(e.target.value)}
+                className="pl-9 pr-9 h-11 bg-card border-border"
+              />
+              {q && (
+                <button onClick={() => setQ("")} aria-label="Effacer la recherche" className="absolute right-2 top-1/2 -translate-y-1/2 p-1.5 text-muted-foreground hover:text-foreground">
+                  <XIcon className="h-4 w-4" />
+                </button>
+              )}
+            </div>
           </div>
 
           {/* ============================================================
@@ -1046,7 +1060,7 @@ function InventoryAnalytics({ stocks, titreMap }: { stocks: Stock[]; titreMap: R
       e.remaining += s.exemplaires_restants ?? 0;
       map.set(name, e);
     });
-    return [...map.values()].slice(0, 10);
+    return [...map.values()].sort((a, b) => b.deposited - a.deposited).slice(0, 10);
   }, [stocks]);
 
   const salesEvolution = useMemo(() => {
@@ -1065,7 +1079,13 @@ function InventoryAnalytics({ stocks, titreMap }: { stocks: Stock[]; titreMap: R
       byManuscript.forEach((counts, mid) => { row[titreMap[mid] ?? mid.slice(0, 6)] = counts[m] ?? 0; });
       return row;
     });
-    const titles = [...byManuscript.keys()].map((id) => titreMap[id] ?? id.slice(0, 6));
+    // Only the 6 best sellers of the period: one line per book made the
+    // legend cover the whole section once a publisher has dozens of titles.
+    const top = [...byManuscript.entries()]
+      .map(([id, counts]) => ({ id, total: Object.values(counts).reduce((a, b) => a + b, 0) }))
+      .sort((a, b) => b.total - a.total)
+      .slice(0, 6);
+    const titles = top.map(({ id }) => titreMap[id] ?? id.slice(0, 6));
     return { data, titles };
   }, [ventes, range, titreMap]);
 
@@ -1100,7 +1120,7 @@ function InventoryAnalytics({ stocks, titreMap }: { stocks: Stock[]; titreMap: R
           </div>
         </div>
         <div className="rounded-xl border border-border bg-background/40 p-5">
-          <h3 className="font-semibold mb-3">Évolution des ventes par livre</h3>
+          <h3 className="font-semibold mb-3">Évolution des ventes : top 6 des livres</h3>
           <div className="h-64">
             {salesEvolution.titles.length === 0 ? <EmptyChart /> : (
               <ResponsiveContainer width="100%" height="100%">
@@ -1109,7 +1129,7 @@ function InventoryAnalytics({ stocks, titreMap }: { stocks: Stock[]; titreMap: R
                   <XAxis dataKey="label" stroke="#94A3B8" fontSize={12} />
                   <YAxis stroke="#94A3B8" fontSize={12} allowDecimals={false} />
                   <Tooltip contentStyle={CHART_TOOLTIP_STYLE} />
-                  <Legend />
+                  <Legend wrapperStyle={{ fontSize: 11, maxHeight: 64, overflowY: "auto" }} />
                   {salesEvolution.titles.map((t, i) => <Line key={t} type="monotone" dataKey={t} stroke={colors[i % colors.length]} strokeWidth={2} />)}
                 </LineChart>
               </ResponsiveContainer>
