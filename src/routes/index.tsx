@@ -202,7 +202,7 @@ function Navbar() {
           <InstallAppButton
             variant="ghost"
             size="sm"
-            className="h-10 px-3 text-[15px] font-normal text-white/80 hover:bg-transparent hover:text-white"
+            className="hidden xl:inline-flex h-10 px-3 text-[15px] font-normal text-white/80 hover:bg-transparent hover:text-white"
           />
           <Link to="/login" className="text-[15px] text-white/80 hover:text-white transition-colors">
             {t("Se connecter", "Sign in")}
