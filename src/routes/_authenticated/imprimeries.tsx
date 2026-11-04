@@ -75,9 +75,9 @@ function ImprimeriesPage() {
       <header className="flex flex-wrap items-end justify-between gap-4">
         <div>
           <h1 className="text-3xl font-bold tracking-tight flex items-center gap-2">
-            <Factory className="h-7 w-7 text-primary" /> Imprimeries à Bamako
+            <Factory className="h-7 w-7 text-primary" /> Imprimeries
           </h1>
-          <p className="text-muted-foreground mt-1">Trouvez le bon partenaire d'impression pour votre prochain livre.</p>
+          <p className="text-muted-foreground mt-1">Trouvez le bon partenaire d'impression pour votre prochain livre, où que vous soyez.</p>
         </div>
         {isAdmin && (
           <Button onClick={() => setOpen(true)} className="bg-primary text-primary-foreground hover:bg-primary/90">

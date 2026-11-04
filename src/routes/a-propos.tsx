@@ -90,9 +90,8 @@ function Mission() {
           des outils numériques à la hauteur de leur talent.
         </p>
         <p>
-          Le secteur de l'édition au Mali et en Afrique de l'Ouest regorge de talents
-          extraordinaires, mais souffre d'un manque criant d'outils de gestion adaptés à
-          sa réalité.
+          Partout dans le monde, l'édition indépendante regorge de talents extraordinaires,
+          mais manque souvent d'outils de gestion adaptés à sa réalité.
         </p>
         <p>
           Notre mission est de démocratiser l'accès aux outils de gestion professionnels
@@ -110,10 +109,10 @@ function Story() {
         <h2 className="text-3xl md:text-4xl font-bold tracking-tight">Notre Histoire</h2>
         <div className="mt-6 space-y-4 text-muted-foreground leading-relaxed text-[15px]">
           <p>
-            En 2026, face aux défis quotidiens rencontrés par les éditeurs maliens, notamment la gestion
+            En 2026, face aux défis quotidiens des éditeurs indépendants, notamment la gestion
             manuelle des manuscrits, stocks dans des cahiers, paiements des droits d'auteur
             non automatisés, FIGDITIONS a été créée pour apporter une solution numérique
-            complète et locale.
+            complète et adaptée au terrain.
           </p>
           <p>
             Développée à Bamako et pensée pour le monde, FIGDITIONS comprend les réalités du terrain :
@@ -132,7 +131,7 @@ function Story() {
 
 function Numbers() {
   const stats = [
-    { value: "126+", label: "Maisons d'édition recensées au Mali, notre premier marché" },
+    { value: "24h/24", label: "Accessible depuis un téléphone, une tablette ou un ordinateur" },
     { value: "10", label: "Étapes de workflow éditorial" },
     { value: "Partout", label: "Utilisable dans tous les pays, en ligne" },
     { value: "99,5%", label: "Objectif de disponibilité de la plateforme" },
@@ -158,7 +157,7 @@ function Numbers() {
 
 function Values() {
   const values = [
-    { icon: Globe, title: "Local First", desc: "Conçu pour la réalité africaine, pas adapté de solutions occidentales" },
+    { icon: Globe, title: "Local First", desc: "Conçu pour la réalité du terrain : coupures, connexion lente, Mobile Money" },
     { icon: Shield, title: "Confiance", desc: "Vos données sont sécurisées et vous appartiennent" },
     { icon: Rocket, title: "Innovation", desc: "Nous améliorons constamment la plateforme grâce aux retours de nos utilisateurs" },
   ];
