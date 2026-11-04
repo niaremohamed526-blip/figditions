@@ -194,10 +194,10 @@ function Navbar() {
           iconOnly
           variant="ghost"
           size="icon"
-          className="hidden md:inline-flex -ml-2 h-10 w-10 text-white/80 hover:bg-white/10 hover:text-white"
+          className="hidden xl:inline-flex -ml-2 h-10 w-10 text-white/80 hover:bg-white/10 hover:text-white"
         />
 
-        <div className="hidden md:flex items-center gap-12 absolute left-1/2 -translate-x-1/2">
+        <div className="hidden xl:flex items-center gap-12 absolute left-1/2 -translate-x-1/2">
           {navLinks.map((l) => (
             <a key={l.label} href={l.href} className="text-[15px] text-white/80 hover:text-white transition-colors">
               {l.label}
@@ -205,7 +205,7 @@ function Navbar() {
           ))}
         </div>
 
-        <div className="hidden md:flex items-center gap-6 ml-auto">
+        <div className="hidden xl:flex items-center gap-6 ml-auto">
           <Link to="/login" className="text-[15px] text-white/80 hover:text-white transition-colors">
             {t("Se connecter", "Sign in")}
           </Link>
@@ -217,13 +217,13 @@ function Navbar() {
           </Link>
         </div>
 
-        <button className="md:hidden p-2 ml-auto text-white" onClick={() => setOpen(!open)} aria-label="Menu">
+        <button className="xl:hidden p-2 ml-auto text-white" onClick={() => setOpen(!open)} aria-label="Menu">
           {open ? <X className="h-6 w-6" /> : <Menu className="h-6 w-6" />}
         </button>
       </nav>
 
       {open && (
-        <div className="md:hidden bg-[rgba(10,7,4,0.95)] backdrop-blur-xl border-b border-[rgba(200,146,42,0.2)] px-4 py-4 space-y-3 animate-fade-in">
+        <div className="xl:hidden bg-[rgba(10,7,4,0.95)] backdrop-blur-xl border-b border-[rgba(200,146,42,0.2)] px-4 py-4 space-y-3 animate-fade-in">
           {navLinks.map((l) => (
             <a key={l.label} href={l.href} onClick={() => setOpen(false)} className="block text-sm font-medium text-white/80 hover:text-white py-2">
               {l.label}
