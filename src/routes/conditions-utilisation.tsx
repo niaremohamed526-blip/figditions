@@ -106,14 +106,13 @@ function TermsPage() {
         </p>
         <p>
           Des codes promotionnels peuvent être proposés ponctuellement. Ils sont soumis à
-          leurs propres conditions (durée, plan attribué, usage unique par utilisateur).
+          leurs propres conditions (durée, plan attribué, un seul usage par maison d'édition).
         </p>
       </Section>
 
       <Section id="paiement" title="5. Paiement">
         <ul>
-          <li>Les moyens de paiement acceptés sont : Orange Money Mali et Wave Mali.</li>
-          <li>Les paiements manuels par QR code se font via Orange Money Mali ou Wave Mali. Vous scannez le QR affiché, effectuez le transfert, puis transmettez la référence à FIGDITIONS par WhatsApp ou email. L'activation de l'abonnement est validée manuellement par FIGDITIONS dans les meilleurs délais.</li>
+          <li>Le paiement se fait par Orange Money Mali ou Wave Mali, par QR code. Vous scannez le QR affiché, effectuez le transfert, puis transmettez la référence à FIGDITIONS par WhatsApp ou email. L'activation de l'abonnement est validée manuellement par FIGDITIONS dans les meilleurs délais.</li>
           <li>Les abonnements sont payés d'avance, pour un mois ou un an. Il n'y a aucun renouvellement automatique : rien n'est prélevé sans votre action.</li>
           <li>Sans nouveau paiement, votre maison repasse au plan Starter à la fin de la période payée. Vos données sont conservées ; seules les fonctionnalités et limites du plan Starter s'appliquent.</li>
           <li>Sauf disposition légale contraire, les périodes entamées ne sont pas remboursables.</li>
@@ -126,7 +125,8 @@ function TermsPage() {
           logos et données déposés sur FIGDITIONS. Nous ne revendiquons aucun droit de
           propriété intellectuelle sur vos contenus. Vous nous accordez uniquement la
           licence technique strictement nécessaire à l'exécution du service (stockage,
-          affichage à votre équipe, génération de PDF, conversion sur votre demande).
+          affichage à votre équipe, génération de PDF, et transmission à nos prestataires
+          lorsque vous utilisez la conversion ou Pr. MEDMO).
         </p>
       </Section>
 
@@ -144,8 +144,8 @@ function TermsPage() {
 
       <Section id="conversion" title="8. Conversion et partage sécurisé">
         <ul>
-          <li>La conversion de fichiers (PDF, DOCX, TXT vers EPUB / MOBI) est effectuée via CloudConvert. Le fichier source est transmis via une URL signée temporaire et n'est pas conservé au-delà de la durée nécessaire à la conversion.</li>
-          <li>Le partage sécurisé génère un lien signé avec durée de validité, filigrane et protections contre la capture. Ces protections dissuasives ne peuvent garantir l'impossibilité absolue de copie sans connexion.</li>
+          <li>La conversion de fichiers (PDF, DOCX, TXT vers EPUB / MOBI) est effectuée via CloudConvert. Le fichier source lui est transmis par un lien temporaire valable une heure ; CloudConvert supprime sa copie selon sa propre politique (généralement sous 24 h). Le fichier converti reste dans votre espace FIGDITIONS jusqu'à ce que vous le supprimiez.</li>
+          <li>Le partage sécurisé génère un lien personnel, avec la durée de validité et le nombre de lectures que vous choisissez, un filigrane au nom du lecteur et des mesures dissuasives contre la capture. Ces protections ne peuvent garantir l'impossibilité absolue de copie, par exemple par la photo d'un écran.</li>
           <li>Vous êtes responsable de la légalité des contenus que vous partagez et de la vérification des droits associés.</li>
         </ul>
       </Section>
@@ -155,8 +155,9 @@ function TermsPage() {
           Pr. MEDMO et l'import de contrats utilisent l'API Gemini de Google. Pr. MEDMO
           demande votre confirmation avant d'enregistrer une vente ou de créer ou modifier
           un auteur, un manuscrit ou un dépôt. Vos conversations sont conservées dans votre
-          historique. Les contenus
-          générés par IA sont fournis « en l'état ». Vous devez les relire et les
+          historique. Vos questions, les données nécessaires pour y répondre et les photos ou
+          documents joints sont transmis à Google, qui les traite selon ses propres
+          conditions. Les contenus générés par IA sont fournis « en l'état ». Vous devez les relire et les
           valider avant tout usage contractuel, commercial ou éditorial. FIGDITIONS ne
           garantit ni l'exactitude ni l'exhaustivité des sorties générées.
         </p>
