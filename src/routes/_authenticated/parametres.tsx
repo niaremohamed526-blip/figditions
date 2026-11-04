@@ -225,13 +225,11 @@ function ExpiryBanner({ entreprise, onRenew }: { entreprise: any; onRenew: () =>
 
 function AccountSection({ profile, email, entrepriseName, role }: { profile: any; email: string; entrepriseName: string; role: AppRole }) {
   const [fullName, setFullName] = useState(profile?.full_name ?? "");
-  const [phone, setPhone] = useState((profile as any)?.telephone ?? "");
   const [saving, setSaving] = useState(false);
   const [pwOpen, setPwOpen] = useState(false);
 
   useEffect(() => {
     setFullName(profile?.full_name ?? "");
-    setPhone((profile as any)?.telephone ?? "");
   }, [profile]);
 
   const save = async () => {
@@ -251,10 +249,6 @@ function AccountSection({ profile, email, entrepriseName, role }: { profile: any
           <div className="space-y-2">
             <Label>Nom complet</Label>
             <Input value={fullName} onChange={(e) => setFullName(e.target.value)} />
-          </div>
-          <div className="space-y-2">
-            <Label>Téléphone</Label>
-            <Input value={phone} onChange={(e) => setPhone(e.target.value)} placeholder="+223 ..." />
           </div>
           <div className="space-y-2">
             <Label>Email</Label>
