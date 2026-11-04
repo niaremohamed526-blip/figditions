@@ -6,11 +6,11 @@ export const Route = createFileRoute("/politique-de-confidentialite")({
   head: () => ({
     meta: [
       { title: "Politique de Confidentialité | FIGDITIONS" },
-      { name: "description", content: "Politique de confidentialité de FIGDITIONS : données collectées, prestataires, sécurité, RGPD/OHADA et droits des utilisateurs." },
+      { name: "description", content: "Politique de confidentialité de FIGDITIONS : données collectées, prestataires, sécurité et droits des utilisateurs." },
       { property: "og:title", content: "Politique de Confidentialité | FIGDITIONS" },
-      { property: "og:description", content: "Politique de confidentialité de FIGDITIONS : données collectées, prestataires, sécurité, RGPD/OHADA et droits des utilisateurs." },
+      { property: "og:description", content: "Politique de confidentialité de FIGDITIONS : données collectées, prestataires, sécurité et droits des utilisateurs." },
       { name: "twitter:title", content: "Politique de Confidentialité | FIGDITIONS" },
-      { name: "twitter:description", content: "Politique de confidentialité de FIGDITIONS : données collectées, prestataires, sécurité, RGPD/OHADA et droits des utilisateurs." },
+      { name: "twitter:description", content: "Politique de confidentialité de FIGDITIONS : données collectées, prestataires, sécurité et droits des utilisateurs." },
       { property: "og:image", content: "https://figditions.xyz/assets/og-figditions.jpg" },
       { name: "twitter:image", content: "https://figditions.xyz/assets/og-figditions.jpg" },
       { property: "og:url", content: "https://figditions.xyz/politique-de-confidentialite" },
@@ -34,9 +34,8 @@ const toc = [
   { id: "cookies", label: "10. Cookies & stockage local" },
   { id: "notifications", label: "11. Notifications push" },
   { id: "ia", label: "12. Intelligence artificielle" },
-  { id: "ohada", label: "13. Conformité OHADA" },
-  { id: "contact", label: "14. Contact & réclamations" },
-  { id: "modifs", label: "15. Modifications" },
+  { id: "contact", label: "13. Contact & réclamations" },
+  { id: "modifs", label: "14. Modifications" },
 ];
 
 function PrivacyPage() {
@@ -60,26 +59,25 @@ function PrivacyPage() {
         <h3>Données de compte</h3>
         <ul>
           <li>Nom, prénom, adresse email, mot de passe (haché côté fournisseur d'authentification)</li>
-          <li>Numéro de téléphone (facultatif), photo de profil (facultatif)</li>
           
         </ul>
         <h3>Données de la maison d'édition</h3>
         <ul>
-          <li>Nom, adresse, ville, logo, coordonnées bancaires et fiscales (utilisées pour la génération de contrats et bordereaux)</li>
+          <li>Nom, adresse, ville, téléphone, logo, cachet, coordonnées bancaires et fiscales (NIF, RCCM), nom, qualité et NINA du représentant légal (utilisés pour générer contrats, factures et bordereaux)</li>
           <li>Rôles et invitations des membres de l'équipe</li>
         </ul>
         <h3>Données éditoriales</h3>
         <ul>
           <li>Manuscrits (PDF, DOCX, TXT), couvertures, métadonnées (titre, auteur, ISBN, etc.)</li>
-          <li>Contrats d'édition, auteurs, ayants droit, taux de commission et royalties</li>
+          <li>Contrats d'édition, auteurs et leurs coordonnées (téléphone, email, numéro Mobile Money), taux de commission et droits d'auteur</li>
           <li>Stocks, ventes, bordereaux, historique financier</li>
-          <li>Liens de partage sécurisé et journal d'accès associé</li>
+          <li>Liens de partage sécurisé et journal d'accès associé, y compris le nom saisi par chaque lecteur</li>
         </ul>
         <h3>Utilisation de Pr. MEDMO (assistant IA)</h3>
         <ul>
           <li>Vos questions, les réponses et l'historique de vos conversations</li>
           <li>Les photos (par exemple d'un cahier de ventes) et documents que vous joignez</li>
-          <li>Un compteur de questions par mois (date, membre, type d'usage), pour appliquer le quota de votre plan</li>
+          <li>Un compteur de questions par mois (date, membre, type d'usage), pour appliquer le quota de votre plan</li><li>Les corrections de noms de livres et de librairies que vous validez, pour mieux reconnaître vos prochaines saisies</li>
         </ul>
         <h3>Données techniques</h3>
         <ul>
@@ -109,7 +107,7 @@ function PrivacyPage() {
       <Section id="base-legale" title="4. Base légale du traitement">
         <ul>
           <li><strong>Exécution du contrat</strong> : fournir le service souscrit</li>
-          <li><strong>Consentement</strong> : envoi d'emails non essentiels</li>
+          <li><strong>Consentement</strong> : notifications push, que vous pouvez désactiver à tout moment</li>
           <li><strong>Intérêt légitime</strong> : sécurité de la plateforme, prévention des abus</li>
           <li><strong>Obligation légale</strong> : conservation comptable et fiscale</li>
         </ul>
@@ -154,7 +152,6 @@ function PrivacyPage() {
           <li><strong>Google (API Gemini) :</strong> traitement des questions, photos et documents envoyés à Pr. MEDMO, uniquement lorsque vous l'utilisez</li>
           <li><strong>Services de notification des navigateurs :</strong> acheminement des notifications push si vous les avez activées</li>
           
-          <li><strong>Figuira Éditions :</strong> partenaire officiel, uniquement pour les fonctionnalités contractuellement partagées avec votre autorisation</li>
         </ul>
       </Section>
 
@@ -165,8 +162,8 @@ function PrivacyPage() {
           <li>Chiffrement au repos fourni par l'infrastructure Supabase</li>
           <li>Sécurité au niveau des lignes (RLS) : chaque maison d'édition n'accède qu'à ses propres données</li>
           <li>Contrôle d'accès basé sur les rôles pour les membres de l'équipe</li>
-          <li>Liens de partage sécurisé signés, avec journal d'accès, filigrane, protection contre la capture et flou lorsque la page perd le focus</li>
-          <li>Application PWA installable avec cache local chiffré par le navigateur</li>
+          <li>Liens de partage sécurisé signés, avec journal d'accès, filigrane nominatif, mesures dissuasives contre la capture et flou lorsque la page perd le focus</li>
+          <li>Les données gardées pour le mode hors connexion sont effacées de l'appareil à la déconnexion</li>
           <li>Le personnel de FIGDITIONS n'accède pas au contenu de vos manuscrits sans motif légitime ou autorisation explicite</li>
         </ul>
         <p>
@@ -187,8 +184,8 @@ function PrivacyPage() {
 
       <Section id="droits" title="9. Vos droits (RGPD & loi malienne)">
         <p>
-          Conformément au RGPD européen et à la législation malienne sur la protection des
-          données personnelles, vous disposez des droits suivants :
+          Quel que soit votre pays, vous disposez des droits suivants sur vos données personnelles, dans l'esprit du RGPD européen et de la législation malienne sur la protection des
+          données personnelles :
         </p>
         <ul>
           <li><strong>Accès</strong> : obtenir une copie de vos données</li>
@@ -244,15 +241,7 @@ function PrivacyPage() {
         </p>
       </Section>
 
-      <Section id="ohada" title="13. Conformité OHADA">
-        <p>
-          En tant que plateforme opérant en zone OHADA, FIGDITIONS respecte les dispositions
-          de l'Acte Uniforme OHADA relatif au droit commercial général concernant la
-          confidentialité des contrats d'édition et des données commerciales.
-        </p>
-      </Section>
-
-      <Section id="contact" title="14. Contact et réclamations">
+      <Section id="contact" title="13. Contact et réclamations">
         <p>Pour toute question relative à cette politique :</p>
         <ul>
           <li>Email : <a href="mailto:figditions@gmail.com">figditions@gmail.com</a></li>
@@ -263,7 +252,7 @@ function PrivacyPage() {
         </p>
       </Section>
 
-      <Section id="modifs" title="15. Modifications">
+      <Section id="modifs" title="14. Modifications">
         <p>
           Nous nous réservons le droit de modifier cette politique. En cas de changement
           important, vous serez notifié par email et/ou via l'application. La version en

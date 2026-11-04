@@ -367,7 +367,7 @@ export function UpgradePaymentModal({ open, onOpenChange, plan, defaultPeriode =
           )}
 
           <div className="mt-4 grid grid-cols-2 gap-1.5 text-[11px] text-muted-foreground">
-            <span className="flex items-center gap-1"><Lock className="h-3 w-3" /> Paiement 100% sécurisé</span>
+            <span className="flex items-center gap-1"><Lock className="h-3 w-3" /> Validé par notre équipe</span>
             <span className="flex items-center gap-1"><Smartphone className="h-3 w-3" /> {m.label}</span>
           </div>
           <div className="mt-2 flex items-center justify-center gap-1 text-[10px] text-muted-foreground">

@@ -117,8 +117,8 @@ function Story() {
           </p>
           <p>
             Développée à Bamako et pensée pour le monde, FIGDITIONS comprend les réalités du terrain :
-            les délestages électriques, la connectivité intermittente, les paiements via
-            Mobile Money et l'importance des langues nationales.
+            les délestages électriques, la connectivité intermittente et les paiements via
+            Mobile Money.
           </p>
           <p>
             Vous avez cherché « Figdition », « Fig Ditions » ou « Fig Éditions » ? C'est bien nous :
@@ -159,7 +159,7 @@ function Numbers() {
 function Values() {
   const values = [
     { icon: Globe, title: "Local First", desc: "Conçu pour la réalité africaine, pas adapté de solutions occidentales" },
-    { icon: Shield, title: "Confiance", desc: "Vos données sont sécurisées, sauvegardées et vous appartiennent" },
+    { icon: Shield, title: "Confiance", desc: "Vos données sont sécurisées et vous appartiennent" },
     { icon: Rocket, title: "Innovation", desc: "Nous améliorons constamment la plateforme grâce aux retours de nos utilisateurs" },
   ];
   return (

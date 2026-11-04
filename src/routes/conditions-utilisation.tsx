@@ -130,12 +130,14 @@ function TermsPage() {
         </p>
       </Section>
 
-      <Section id="documents" title="7. Documents générés (contrats, bordereaux, factures)">
+      <Section id="documents" title="7. Documents générés">
         <p>
-          FIGDITIONS fournit des modèles de contrats d'édition, bordereaux de vente et
-          factures adaptés au contexte malien / OHADA. Ces documents sont fournis à titre
-          d'aide et ne constituent pas un conseil juridique. Il vous appartient de les
-          relire, de les faire valider si nécessaire par un professionnel et d'y faire
+          FIGDITIONS génère des documents à partir de vos données : contrats d'édition,
+          bordereaux de dépôt, factures, reçus de paiement, quittances et relevés de droits
+          d'auteur, et rapports financiers. Les modèles de contrat sont modifiables par
+          chaque maison d'édition. Ces documents sont une aide à la gestion et ne
+          constituent pas un conseil juridique : il vous appartient de vérifier leur
+          exactitude, de les faire valider si nécessaire par un professionnel et d'y faire
           apposer les signatures requises.
         </p>
       </Section>
@@ -151,7 +153,9 @@ function TermsPage() {
       <Section id="ia" title="9. Fonctionnalités IA">
         <p>
           Pr. MEDMO et l'import de contrats utilisent l'API Gemini de Google. Pr. MEDMO
-          n'enregistre aucune vente ni aucune donnée sans votre confirmation. Les contenus
+          demande votre confirmation avant d'enregistrer une vente ou de créer ou modifier
+          un auteur, un manuscrit ou un dépôt. Vos conversations sont conservées dans votre
+          historique. Les contenus
           générés par IA sont fournis « en l'état ». Vous devez les relire et les
           valider avant tout usage contractuel, commercial ou éditorial. FIGDITIONS ne
           garantit ni l'exactitude ni l'exhaustivité des sorties générées.
@@ -162,7 +166,7 @@ function TermsPage() {
         <h3>FIGDITIONS s'engage à :</h3>
         <ul>
           <li>Mettre en œuvre les moyens raisonnables pour assurer la disponibilité et la sécurité du service</li>
-          <li>Sauvegarder régulièrement les données via l'infrastructure de son hébergeur</li>
+          <li>Vous permettre d'exporter vos données principales (rapports financiers, documents PDF)</li>
           <li>Notifier tout incident de sécurité majeur dans les meilleurs délais</li>
           <li>Protéger la confidentialité de vos données selon la Politique de Confidentialité</li>
         </ul>
@@ -171,7 +175,7 @@ function TermsPage() {
           <li>Ne pas mettre en ligne de contenu illégal, contrefait ou pour lequel il ne détient pas les droits</li>
           <li>Ne pas tenter d'accéder à des données d'autres tenants, de contourner l'authentification, de scraper ou de surcharger la plateforme</li>
           <li>Maintenir la confidentialité de ses identifiants et de ceux de son équipe</li>
-          <li>Utiliser la plateforme conformément aux lois maliennes, OHADA et internationales applicables</li>
+          <li>Utiliser la plateforme conformément aux lois applicables dans son pays</li>
         </ul>
       </Section>
 
@@ -191,7 +195,9 @@ function TermsPage() {
           Dans les limites autorisées par la loi applicable, FIGDITIONS ne peut être tenu
           responsable des pertes indirectes (perte de chiffre d'affaires, perte de clientèle,
           dommage à la réputation) résultant d'une interruption du service, d'une perte de
-          données, ou d'un usage non conforme de la plateforme.
+          données, ou d'un usage non conforme de la plateforme. FIGDITIONS ne garantit pas
+          à ce jour de sauvegarde automatique de vos données : conservez régulièrement vos
+          exports.
           La responsabilité totale de FIGDITIONS est en tout état de cause limitée au montant
           effectivement payé par l'utilisateur au titre des 12 derniers mois d'abonnement.
         </p>
