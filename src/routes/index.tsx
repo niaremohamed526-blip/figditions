@@ -189,6 +189,13 @@ function Navbar() {
         <Link to="/" className="flex items-center shrink-0">
           <Logo className="h-12 md:h-16 w-auto" style={{ filter: "drop-shadow(0 1px 6px rgba(0,0,0,0.35))" }} />
         </Link>
+        {/* Next to the logo: the centred links leave no room on the right. */}
+        <InstallAppButton
+          iconOnly
+          variant="ghost"
+          size="icon"
+          className="hidden md:inline-flex -ml-2 h-10 w-10 text-white/80 hover:bg-white/10 hover:text-white"
+        />
 
         <div className="hidden md:flex items-center gap-12 absolute left-1/2 -translate-x-1/2">
           {navLinks.map((l) => (
@@ -199,11 +206,6 @@ function Navbar() {
         </div>
 
         <div className="hidden md:flex items-center gap-6 ml-auto">
-          <InstallAppButton
-            variant="ghost"
-            size="sm"
-            className="hidden xl:inline-flex h-10 px-3 text-[15px] font-normal text-white/80 hover:bg-transparent hover:text-white"
-          />
           <Link to="/login" className="text-[15px] text-white/80 hover:text-white transition-colors">
             {t("Se connecter", "Sign in")}
           </Link>

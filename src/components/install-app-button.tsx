@@ -35,11 +35,13 @@ function etapes(p: Plateforme, t: T): { icone: React.ReactNode; texte: string }[
  * "Installer l'application": one click where the browser allows it,
  * otherwise the 3 steps for this device. Hidden once installed.
  */
-export function InstallAppButton({ className, variant = "outline", size, full }: {
+export function InstallAppButton({ className, variant = "outline", size, full, iconOnly }: {
   className?: string;
   variant?: "outline" | "default" | "ghost";
-  size?: "default" | "sm" | "lg";
+  size?: "default" | "sm" | "lg" | "icon";
   full?: boolean;
+  /** Icon only, label as tooltip: for tight menus. */
+  iconOnly?: boolean;
 }) {
   const { t } = useI18n();
   const { pret, installee, direct, plateforme, installer } = usePwaInstall();
@@ -57,9 +59,17 @@ export function InstallAppButton({ className, variant = "outline", size, full }:
 
   return (
     <>
-      <Button type="button" variant={variant} size={size} onClick={onClick} className={cn(full && "w-full", className)}>
+      <Button
+        type="button"
+        variant={variant}
+        size={size}
+        onClick={onClick}
+        className={cn(full && "w-full", className)}
+        title={iconOnly ? t("Installer l'application", "Install the app") : undefined}
+        aria-label={iconOnly ? t("Installer l'application", "Install the app") : undefined}
+      >
         <Download className="h-4 w-4" />
-        {t("Installer l'application", "Install the app")}
+        {!iconOnly && t("Installer l'application", "Install the app")}
       </Button>
       <Dialog open={aide} onOpenChange={setAide}>
         <DialogContent className="max-w-sm">
